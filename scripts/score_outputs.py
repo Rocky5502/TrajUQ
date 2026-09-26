@@ -75,7 +75,10 @@ def main() -> None:
     if out.exists():
         raise SystemExit(f"Refusing to overwrite existing scored artifact: {out}")
 
-    refs = {str(r["id"]): r for r in read_jsonl(input_path)}
+    try:
+        refs = reference_index(input_path)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     seen: set[str] = set()
     total = 0
     correct = 0
@@ -96,13 +99,15 @@ def main() -> None:
             raise SystemExit(f"Run id missing from normalized input: {item_id}")
 
         source = refs[item_id]
-        expected_prompt_hash = sha256_text(str(source["prompt"]))
-        if rec.get("prompt_sha256") != expected_prompt_hash:
-            raise SystemExit(
-                f"Prompt hash mismatch for {item_id}: scoring input differs from generation input"
+        try:
+            dataset = validate_record_source(
+                rec,
+                source,
+                item_id=item_id,
             )
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
 
-        dataset = str(rec["dataset"])
         is_correct, scorer = score_record(
             dataset=dataset,
             output_text=rec["generation"]["text"],

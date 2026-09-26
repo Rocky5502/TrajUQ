@@ -1,7 +1,4 @@
-.PHONY: install-dev test lint smoke audit-env
-
-install-dev:
-	python -m pip install -e ".[dev]"
+.PHONY: test lint smoke env preflight
 
 test:
 	pytest -q
@@ -12,5 +9,8 @@ lint:
 smoke:
 	python scripts/smoke_metrics.py
 
-audit-env:
-	python scripts/environment_snapshot.py
+env:
+	python scripts/environment_snapshot.py --output results/environment.json
+
+preflight:
+	@echo "Usage: python scripts/preflight.py --model-config <yaml> --data <jsonl> --require-cuda"

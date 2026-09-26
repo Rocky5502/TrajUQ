@@ -79,3 +79,18 @@ def test_primary_analysis_rejects_reordered_or_duplicate_ids(tmp_path):
         encoding="utf-8",
     )
     assert not exact_id_coverage(source, scored)
+
+
+def test_primary_macro_command_is_bound_to_analysis_plan():
+    text = Path("scripts/plan_primary_analysis.py").read_text(encoding="utf-8")
+
+    assert '"--analysis-plan"' in text
+    assert "args.output" in text
+
+
+def test_primary_macro_aggregator_requires_frozen_test_coverage():
+    text = Path("scripts/aggregate_cells.py").read_text(encoding="utf-8")
+
+    assert "validate_plan_provenance(analysis_plan)" in text
+    assert "predictions do not exactly cover the frozen" in text
+    assert "scored test target" in text

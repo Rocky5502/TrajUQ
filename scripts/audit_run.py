@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 
 from trajuq.io import read_jsonl
+from trajuq.schema import SCHEMA_VERSION
 
 
 def sha256_file(path: Path) -> str:
@@ -33,6 +34,7 @@ def main() -> None:
     feature_names: set[str] | None = None
     models: set[str] = set()
     adapters: set[str] = set()
+    schema_versions: set[str] = set()
 
     if not rows:
         failures.append("artifact contains zero records")
@@ -55,6 +57,16 @@ def main() -> None:
 
         models.add(str(row.get("model")))
         adapters.add(str(row.get("adapter")))
+
+        schema_version = row.get("schema_version")
+        if not schema_version:
+            failures.append(f"row {i}: missing schema_version")
+        else:
+            schema_versions.add(str(schema_version))
+            if str(schema_version) != SCHEMA_VERSION:
+                failures.append(
+                    f"row {i}: schema_version={schema_version!r}; expected {SCHEMA_VERSION!r}"
+                )
 
         feats = row.get("generation", {}).get("features", {})
         names = set(feats)
@@ -97,6 +109,8 @@ def main() -> None:
         "unique_ids": len(ids),
         "models": sorted(models),
         "adapters": sorted(adapters),
+        "schema_versions": sorted(schema_versions),
+        "expected_schema_version": SCHEMA_VERSION,
         "feature_count": len(feature_names or set()),
         "feature_names": sorted(feature_names or set()),
         "failures": failures,

@@ -157,9 +157,12 @@ Linux/macOS:
 bash scripts/verify_cpu.sh
 ```
 
-Both local verification paths run compile checks, Ruff, pytest, metric smoke,
-the leak-safe synthetic end-to-end pipeline, the pinned MATH-500 scorer audit,
-and the paper anonymity audit. They do not replace GPU model parity.
+Both local verification paths call `scripts/verify_cpu.py`, which archives
+`results/cpu_verification.json` plus per-step logs. The primary readiness gate
+requires this verification to PASS on a clean git worktree. The suite covers
+compile checks, Ruff, pytest, metric smoke, the leak-safe synthetic end-to-end
+pipeline, the pinned MATH-500 scorer audit, and the paper anonymity audit. It
+does not replace GPU model parity.
 
 ## Prepare a frozen benchmark pair
 

@@ -69,8 +69,9 @@ The remaining work is primarily **execution**, not paper-number invention.
 
 ### Pre-primary hard gates
 
-1. Fix/restore hosted GitHub Actions runner allocation, or archive equivalent
-   local CPU verification at the frozen commit. See issue #6.
+1. Run the clean-commit CPU verification suite and archive
+   results/cpu_verification.json. Hosted GitHub Actions is still preferred when
+   runner allocation works, but the same suite is runnable locally. See issue #6.
 2. Resolve immutable model/data SHAs and archive results/revision_ledger.json.
 3. Run LLaDA 20-prompt native-vs-instrumented exact parity. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot and complete the 10-trace

@@ -18,17 +18,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,math]"
 
-      - name: Lint
-        run: ruff check src tests scripts
+      - name: Complete CPU verification
+        run: |
+          python scripts/verify_cpu.py \
+            --output results/ci_cpu_verification.json \
+            --logs-dir results/ci_cpu_verification_logs
 
-      - name: Unit tests
-        run: pytest -q
-
-      - name: CPU end-to-end smoke
-        run: python scripts/smoke_end_to_end.py --output-dir results/ci_smoke
-
-      - name: MATH-500 scorer audit
-        run: python scripts/audit_math500_scorer.py --output results/ci_math500_scorer_audit.json
-
-      - name: Paper anonymity audit
-        run: python scripts/audit_paper.py
+      - name: Upload verification artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trajuq-cpu-verification
+          path: |
+            results/ci_cpu_verification.json
+            results/ci_cpu_verification_logs/
+            results/math500_scorer_audit.json

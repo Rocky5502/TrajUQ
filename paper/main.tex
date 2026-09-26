@@ -262,7 +262,7 @@ Decision entropy & \PrimaryDecisionAUROC & \PrimaryDecisionAUPRC & \PrimaryDecis
 Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
 \midrule
 Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
-\method (matched subset) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
+\method (single trajectory) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
 \bottomrule
 \end{tabular}
 \caption{Expensive five-sample baseline on the complete frozen $3\times6$ model--dataset matrix. MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. This comparator remains secondary to the pre-registered RQ1 endpoint.}
@@ -308,7 +308,7 @@ Trajectory instrumentation is model-runtime dependent and must be parity-validat
 Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.
 Post-hoc logistic calibration requires a representative calibration partition and can degrade under distribution shift.
 Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
-The repeated-sampling baseline has higher inference cost, and MATH-500 semantic voting is disabled until symbolic clustering is implemented.
+The repeated-sampling baseline has substantially higher inference cost. For MATH-500, its vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.
 Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
 
 \section*{Ethical Considerations}

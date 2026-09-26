@@ -1,6 +1,7 @@
 param(
     [string]$Python = "python",
-    [switch]$SkipInstall
+    [switch]$SkipInstall,
+    [switch]$AllowDirty
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,17 +16,25 @@ function Run-Step {
 }
 
 if (-not $SkipInstall) {
-    Run-Step "Install CPU/dev dependencies" { & $Python -m pip install -e ".[dev,math]" }
+    Run-Step "Install CPU/dev dependencies" {
+        & $Python -m pip install -e ".[dev,math]"
+    }
 }
 
-Run-Step "Compile Python sources" { & $Python -m compileall -q src scripts tests }
-Run-Step "Ruff" { & $Python -m ruff check src tests scripts }
-Run-Step "Pytest" { & $Python -m pytest -q }
-Run-Step "Metric smoke" { & $Python scripts/smoke_metrics.py }
-Run-Step "End-to-end leak-safe smoke" { & $Python scripts/smoke_end_to_end.py --output-dir results/smoke_e2e_local }
-Run-Step "MATH-500 scorer audit" { & $Python scripts/audit_math500_scorer.py --output results/math500_scorer_audit.json }
-Run-Step "Paper anonymity audit" { & $Python scripts/audit_paper.py }
+$VerifyArgs = @(
+    "scripts/verify_cpu.py",
+    "--output", "results/cpu_verification.json",
+    "--logs-dir", "results/cpu_verification_logs"
+)
+if ($AllowDirty) {
+    $VerifyArgs += "--allow-dirty"
+}
+
+Run-Step "TrajUQ CPU verification" {
+    & $Python @VerifyArgs
+}
 
 Write-Host ""
 Write-Host "LOCAL CPU VERIFICATION PASS" -ForegroundColor Green
+Write-Host "Artifact: results/cpu_verification.json"
 Write-Host "This does not replace model-specific GPU parity gates."

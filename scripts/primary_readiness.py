@@ -39,6 +39,7 @@ def evaluate_readiness(
     parity_paths: dict[str, str],
     math500_audit_path: str = "results/math500_scorer_audit.json",
     math500_manual_path: str = "results/math500_scorer_manual_review.json",
+    cpu_verification_path: str = "results/cpu_verification.json",
 ) -> dict:
     failures: list[str] = []
     checks: dict[str, dict] = {}
@@ -55,6 +56,27 @@ def evaluate_readiness(
         ]
         if not primary_models:
             failures.append("primary config contains no primary models")
+
+    try:
+        cpu = load_json(cpu_verification_path)
+        cpu_steps = cpu.get("steps", [])
+        cpu_pass = (
+            cpu.get("status") == "PASS"
+            and cpu.get("git_clean") is True
+            and len(cpu_steps) == len(cpu.get("expected_steps", []))
+            and all(step.get("status") == "PASS" for step in cpu_steps)
+        )
+        checks["cpu_verification"] = {
+            "path": cpu_verification_path,
+            "status": cpu.get("status"),
+            "git_commit": cpu.get("git_commit"),
+            "git_clean": cpu.get("git_clean"),
+            "completed_steps": cpu.get("completed_steps"),
+        }
+        if not cpu_pass:
+            failures.append("CPU repository verification is not a clean PASS")
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"CPU verification artifact unavailable/invalid: {exc}")
 
     try:
         quality = load_json(pilot_quality_path)
@@ -183,6 +205,10 @@ def main() -> None:
         default="configs/experiments/primary.yaml",
     )
     parser.add_argument(
+        "--cpu-verification",
+        default="results/cpu_verification.json",
+    )
+    parser.add_argument(
         "--pilot-quality",
         default="results/llada_gsm8k_pilot50_gate.json",
     )
@@ -220,6 +246,7 @@ def main() -> None:
         parity_paths,
         args.math500_scorer_audit,
         args.math500_manual_review,
+        args.cpu_verification,
     )
 
     out = Path(args.output)

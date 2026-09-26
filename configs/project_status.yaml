@@ -134,6 +134,12 @@ implementation:
       - .github/workflows/ci.yml
 
 execution_gates:
+  - id: cpu_verification_artifact
+    label: "Clean-commit CPU verification suite"
+    stage: pre_primary
+    issue: 6
+    artifact: results/cpu_verification.json
+    expect: {key: status, equals: PASS}
   - id: llada_parity
     label: "LLaDA 20-prompt exact parity"
     stage: pre_primary

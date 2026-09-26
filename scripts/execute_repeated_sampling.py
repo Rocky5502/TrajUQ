@@ -20,6 +20,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def audit_passes(path: Path) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
@@ -53,6 +64,106 @@ def valid_jsonl(path: Path) -> bool:
     except Exception:
         return False
     return bool(rows)
+
+
+def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    if plan.get("protocol") != "trajuq_repeated_sampling_plan_v2":
+        failures.append("repeated-sampling plan protocol is not v2")
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != expected_commit:
+        failures.append(
+            "current git commit differs from the frozen experiment commit"
+        )
+
+    for key, hash_key in (
+        ("primary_plan", "primary_plan_sha256"),
+        ("primary_analysis_plan", "primary_analysis_plan_sha256"),
+        ("primary_config", "primary_config_sha256"),
+    ):
+        path = Path(str(plan.get(key, "")))
+        expected_hash = str(plan.get(hash_key, ""))
+        if not path.exists() or not expected_hash:
+            failures.append(f"repeated plan missing bound {key} artifact")
+        elif sha256_file(path) != expected_hash:
+            failures.append(f"{key} hash differs from repeated plan")
+
+    for cell in plan.get("cells", []):
+        label = str(cell.get("cell", "<unknown>"))
+        provenance = cell.get("provenance", {})
+        for partition in ("calibration", "test"):
+            spec = provenance.get(partition, {})
+            generation_input = Path(str(spec.get("generation_input", "")))
+            input_hash = str(spec.get("generation_input_sha256", ""))
+            if not generation_input.exists() or not input_hash:
+                failures.append(
+                    f"{label} {partition}: bound generation input missing"
+                )
+            elif sha256_file(generation_input) != input_hash:
+                failures.append(
+                    f"{label} {partition}: generation input hash drifted"
+                )
+
+            scored = Path(str(spec.get("scored_target", "")))
+            scored_hash = str(spec.get("scored_target_sha256", ""))
+            audit = Path(str(spec.get("scored_audit", "")))
+            audit_hash = str(spec.get("scored_audit_sha256", ""))
+            if not scored.exists() or not scored_hash:
+                failures.append(
+                    f"{label} {partition}: bound scored target missing"
+                )
+                continue
+            observed_scored_hash = sha256_file(scored)
+            if observed_scored_hash != scored_hash:
+                failures.append(
+                    f"{label} {partition}: scored target hash drifted"
+                )
+
+            if not audit.exists() or not audit_hash:
+                failures.append(f"{label} {partition}: bound scored audit missing")
+                continue
+            if sha256_file(audit) != audit_hash:
+                failures.append(
+                    f"{label} {partition}: scored audit hash drifted"
+                )
+                continue
+            try:
+                audit_payload = json.loads(audit.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                failures.append(
+                    f"{label} {partition}: scored audit is invalid JSON"
+                )
+                continue
+            if (
+                audit_payload.get("status") != "PASS"
+                or audit_payload.get("stage") != "scored"
+            ):
+                failures.append(
+                    f"{label} {partition}: scored audit is not a PASS"
+                )
+            if str(audit_payload.get("sha256", "")) != observed_scored_hash:
+                failures.append(
+                    f"{label} {partition}: scored audit no longer binds target"
+                )
+
+        trajuq_predictions = Path(
+            str(provenance.get("trajuq_predictions", ""))
+        )
+        predictions_hash = str(
+            provenance.get("trajuq_predictions_sha256", "")
+        )
+        if not valid_jsonl(trajuq_predictions) or not predictions_hash:
+            failures.append(
+                f"{label}: bound TrajUQ predictions are missing or invalid"
+            )
+        elif sha256_file(trajuq_predictions) != predictions_hash:
+            failures.append(f"{label}: TrajUQ predictions hash drifted")
+
+    return failures
 
 
 def generation_dir_from_argv(argv: list[str]) -> Path:
@@ -162,8 +273,10 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         else "IN_PROGRESS"
     )
     return {
-        "protocol": "trajuq_repeated_execution_state_v1",
+        "protocol": "trajuq_repeated_execution_state_v2",
         "status": status,
+        "plan_protocol": plan.get("protocol"),
+        "experiment_git_commit": plan.get("experiment_git_commit"),
         "expected_cells": expected,
         "observed_cells": len(cells),
         "complete_cells": complete_cells,
@@ -279,6 +392,13 @@ def main() -> None:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if plan.get("status") != "PASS":
         raise SystemExit("Repeated-sampling plan is not PASS.")
+
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Repeated-sampling provenance validation failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
 
     cells = list(plan.get("cells", []))
     expected = int(plan.get("expected_cells", 0))
@@ -412,7 +532,8 @@ def main() -> None:
         print("[SKIP] repeated macro_aggregation: complete")
     elif macro == "INVALID":
         raise SystemExit(
-            "Existing repeated macro is invalid; do not overwrite automatically."
+            "Existing repeated macro is invalid; "
+            "do not overwrite automatically."
         )
 
     final = write_snapshot(plan, state_path)

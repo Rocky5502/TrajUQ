@@ -205,7 +205,7 @@ execution_gates:
     label: "LLaDA + GSM8K 50-example pilot quality"
     stage: pre_primary
     issue: 1
-    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot."
+    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot. The pilot-quality v2 artifact must be a clean-checkout, hash-bound PASS at the frozen commit/model revision."
     artifact: results/llada_gsm8k_pilot50_gate.json
     expect: {key: status, equals: PASS}
   - id: pilot_manual
@@ -233,7 +233,7 @@ execution_gates:
     label: "Automatic MATH-500 scorer audit"
     stage: pre_primary
     issue: 4
-    action: "The clean CPU verification already runs scripts/audit_math500_scorer.py; on Windows scripts/math500_gate_windows.ps1 -Stage prepare revalidates the commit-bound protocol-v2 artifact and frozen dependency versions before the calibration pilot."
+    action: "The clean CPU verification already runs scripts/audit_math500_scorer.py; on Windows scripts/math500_gate_windows.ps1 -Stage prepare revalidates a clean-checkout commit-bound protocol-v2 artifact and the frozen dependency versions before the calibration pilot."
     artifact: results/math500_scorer_audit.json
     expect: {key: status, equals: PASS}
   - id: math500_manual

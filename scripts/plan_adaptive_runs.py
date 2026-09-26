@@ -298,6 +298,8 @@ def main() -> None:
                 )
 
             base_partitions[partition] = {
+                "input": str(generation_input),
+                "input_sha256": sha256_file(generation_input),
                 "raw_output": str(raw),
                 "scored_output": str(scored),
                 "generate_argv": generate,

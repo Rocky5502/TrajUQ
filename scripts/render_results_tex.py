@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import yaml
@@ -112,7 +113,7 @@ def require_claim_gate(
 
 
 def require_repeated(repeated: dict) -> None:
-    if repeated.get("protocol") != "trajuq_vs_repeated_macro_v1":
+    if repeated.get("protocol") != "trajuq_vs_repeated_macro_v2":
         raise ValueError("Repeated-sampling macro protocol is not recognized.")
     if repeated.get("comparison") != "single_trajectory_trajuq_vs_five_sample_baseline":
         raise ValueError("Repeated-sampling comparison contract is not recognized.")
@@ -122,6 +123,27 @@ def require_repeated(repeated: dict) -> None:
         raise ValueError("Repeated-sampling macro expected cell count is not 18.")
     if int(repeated.get("observed_cells", -1)) != 18:
         raise ValueError("Repeated-sampling macro observed cell count is not 18.")
+
+    compute = repeated.get("auxiliary_compute", {})
+    if compute.get("aggregation") != "equal_cell_weight_macro":
+        raise ValueError("Repeated-sampling compute aggregation is not frozen.")
+    if compute.get("complete") is not True:
+        raise ValueError("Repeated-sampling compute accounting is incomplete.")
+    if int(compute.get("expected_cells", -1)) != 18:
+        raise ValueError("Repeated-sampling compute expected cell count is not 18.")
+    if int(compute.get("observed_cells_with_complete_test_wall_time", -1)) != 18:
+        raise ValueError("Repeated-sampling compute coverage is incomplete.")
+    if int(compute.get("sample_count", -1)) != 5:
+        raise ValueError("Repeated-sampling compute accounting is not five-sample.")
+
+    for key in (
+        "mean_test_auxiliary_wall_time_seconds_per_example",
+        "mean_test_p90_auxiliary_wall_time_seconds_per_example",
+    ):
+        value = float(compute[key])
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"Repeated-sampling compute field {key} is invalid.")
+
     for metric in ("auroc", "auprc", "aurc"):
         node = repeated.get("macro", {}).get(metric)
         if not isinstance(node, dict):
@@ -204,6 +226,9 @@ def build_macros(
         # Candidate is TrajUQ; baseline is repeated sampling.
         macros[f"Repeated{suffix}"] = fmt(node["baseline_macro"])
         macros[f"RepeatedTraj{suffix}"] = fmt(node["candidate_macro"])
+    macros["RepeatedAuxWallTime"] = (
+        f'{float(repeated["auxiliary_compute"]["mean_test_auxiliary_wall_time_seconds_per_example"]):.2f}'
+    )
 
     a = adaptive["macro"]
     macros.update(

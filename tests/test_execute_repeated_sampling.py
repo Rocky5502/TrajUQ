@@ -180,9 +180,26 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
     metrics = tmp_path / "metrics.json"
     predictions = tmp_path / "predictions.jsonl"
     comparison = tmp_path / "comparison.json"
-    metrics.write_text("{}", encoding="utf-8")
+    metrics.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_repeated_sampling_baseline_v2",
+                "n_test": 1,
+            }
+        ),
+        encoding="utf-8",
+    )
     predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
-    comparison.write_text("{}", encoding="utf-8")
+    comparison.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_vs_repeated_sampling_v1",
+                "n": 1,
+                "metrics": {"auroc": {}, "auprc": {}, "aurc": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     macro = tmp_path / "macro.json"
     plan = {
@@ -228,7 +245,26 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
 
     macro.write_text(
         json.dumps(
-            {"cell_set_complete": True, "observed_cells": 1}
+            {
+                "protocol": "trajuq_vs_repeated_macro_v1",
+                "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "macro": {
+                    key: {}
+                    for key in (
+                        "auroc",
+                        "auprc",
+                        "brier",
+                        "nll",
+                        "ece15",
+                        "aurc",
+                        "risk50",
+                        "risk80",
+                    )
+                },
+            }
         ),
         encoding="utf-8",
     )

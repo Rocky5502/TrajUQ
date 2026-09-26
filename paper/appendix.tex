@@ -133,7 +133,7 @@ For each model--dataset cell, the primary nested comparison fits:
 \end{align}
 Both are fit only on calibration examples and evaluated on the same test examples.
 Paired class-stratified bootstrap resampling estimates confidence intervals for AUROC, AUPRC, and AURC differences.
-AURC improvements are sign-normalized so positive always means the trajectory model is better.
+AURC improvements are sign-normalized so positive always means the trajectory model is better. Exact uncertainty-score ties are evaluated by the expected cumulative error under a uniform random tie ordering, preventing arbitrary dataset row order from changing risk--coverage metrics.
 
 \section{Feature-Family Ablations}
 

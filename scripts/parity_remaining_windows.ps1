@@ -19,6 +19,20 @@ function Get-FileSha256 {
     param([string]$Path)
     return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
 }
+function Test-RunAuditPass {
+    param(
+        [string]$Artifact,
+        [string]$ExpectedStage
+    )
+    $AuditPath = "$Artifact.audit.json"
+    if (-not (Test-Path $Artifact) -or -not (Test-Path $AuditPath)) { return $false }
+    $Audit = Get-Content $AuditPath -Raw | ConvertFrom-Json
+    return (
+        $Audit.status -eq "PASS" -and
+        $Audit.stage -eq $ExpectedStage -and
+        $Audit.sha256 -eq (Get-FileSha256 $Artifact)
+    )
+}
 
 function Read-FrozenState {
     $LedgerPath = "results/revision_ledger.json"
@@ -77,6 +91,7 @@ function Require-ExistingParity {
         (Test-Path $Instrumented) -and
         $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
     )
+    $InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
@@ -90,10 +105,11 @@ function Require-ExistingParity {
         $Parity.run_provenance.adapter -eq $Adapter -and
         $Parity.run_provenance.model_revision -eq $Revision -and
         $ReferenceHashOk -and
-        $InstrumentedHashOk
+        $InstrumentedHashOk -and
+        $InstrumentedAuditOk
     )
     if (-not $Pass) {
-        throw "Existing $Path is not a clean hash-bound frozen parity PASS. Inspect it before rerunning."
+        throw "Existing $Path is not a clean hash/audit-bound frozen parity PASS. Inspect it before rerunning."
     }
     return $true
 }
@@ -246,7 +262,11 @@ else {
         throw "Existing GSM8K test hash differs from its split manifest."
     }
     if (
+        $Audit.protocol -ne "trajuq_split_pair_audit_v1" -or
         $Audit.status -ne "PASS" -or
+        $Audit.requested_revision -ne $DatasetSha -or
+        $Audit.calibration_sha256 -ne (Get-FileSha256 $CalData) -or
+        $Audit.test_sha256 -ne (Get-FileSha256 $TestData) -or
         $Audit.id_overlap_count -ne 0 -or
         $Audit.exact_prompt_overlap_count -ne 0
     ) {

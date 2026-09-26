@@ -82,7 +82,7 @@ TrajUQ/
 | LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | sampler-aligned pilot adapter; exact GPU parity required |
 | SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | instrumented pilot adapter; on-GPU upstream parity required |
 | Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | hook-based pilot adapter; GPU audit required |
-| FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | upstream boundary; noncommercial upstream terms |
+| FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | native trace bridge implemented; parity + AR/diff export pending |
 
 Exact model/tokenizer revisions must be pinned before primary experiments. A model name alone is not a reproducible experimental specification.
 
@@ -268,6 +268,12 @@ The LLaDA pilot adapter now mirrors the public sampler's attention-mask, transfe
 
 A native no-hook reference runner is provided for the Dream parity gate. See `docs/DREAM_INSTRUMENTATION.md` and `scripts/run_dream_reference.py`; compare exact token IDs with `scripts/compare_run_parity.py` before reporting Dream results.
 
+## HybridDiffusion native trace
+
+The pinned upstream runtime already exposes a JSONL trace switch. TrajUQ parses it without modifying/vendoring the SGLang server. See `docs/FLARE_INSTRUMENTATION.md` and `scripts/convert_hybrid_trace.py`.
+
+The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vocabulary entropy and stays an RQ4 diagnostic unless a parity-safe full-logit summary is added.
+
 ## Scientific guardrails
 
 1. **No invented results.**
@@ -286,7 +292,7 @@ The repository tracks the remaining gates as GitHub issues:
 
 - GPU pilot / 50-item gate;
 - SDAR telemetry parity (adapter implemented; GPU parity still open);
-- FLARE/HybridDiffusion diagnostic parity;
+- FLARE/HybridDiffusion native-trace parity and AR/diffusion export;
 - Dream hook parity;
 - MATH-500 symbolic scorer;
 - CI runner allocation.

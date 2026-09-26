@@ -8,8 +8,13 @@ upstream:
   repository: yuchen-zhu-zyc/HybridDiffusion
   commit: 6ca547aebb72bfe897e80e0a683c776789e5f38c
 license_note: PolyForm Noncommercial 1.0.0 for HybridDiffusion-authored code/checkpoints at the inspected release
-status: integration_boundary
+status: native_trace_bridge_implemented_parity_pending
 notes:
   - Used primarily for the same-checkpoint AR versus diffusion diagnostic.
-  - Keep the specialized upstream runtime external; do not vendor it into TrajUQ.
+  - Keep the specialized upstream runtime external; consume its built-in JSONL trace through scripts/convert_hybrid_trace.py.
   - Do not report FLARE/HybridDiffusion results until AR and diffusion telemetry are parity-validated.
+trace:
+  path_env: SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_PATH
+  topk_env: SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_TOPK
+  recommended_topk: 16
+  entropy_semantics: topk_proxy_not_full_entropy

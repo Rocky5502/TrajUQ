@@ -29,6 +29,17 @@ def git_head() -> str | None:
         return None
 
 
+def git_status_porcelain() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
 
@@ -89,6 +100,14 @@ def main() -> None:
     elif current_head != experiment_commit:
         failures.append(
             "current git commit differs from the frozen experiment commit"
+        )
+    current_status = git_status_porcelain()
+    if current_status is None:
+        failures.append("current git worktree status could not be resolved")
+    elif current_status:
+        failures.append(
+            "current git worktree is dirty; analysis planning requires the "
+            "frozen clean checkout"
         )
 
     cfg_path = Path(args.primary_config)

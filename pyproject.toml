@@ -30,6 +30,9 @@ dev = [
 math = [
   "math-verify[antlr4_13_2]==0.9.0",
 ]
+analysis = [
+  "matplotlib>=3.8",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

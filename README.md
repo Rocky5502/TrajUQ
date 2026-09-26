@@ -234,7 +234,13 @@ After calibration and test runs are frozen and scored:
 python scripts/evaluate_run.py \
   --calibration runs/llada_gsm8k_cal.scored.jsonl \
   --test runs/llada_gsm8k_test.scored.jsonl \
-  --output results/llada_gsm8k_metrics.json
+  --output results/llada_gsm8k_metrics.json \
+  --predictions-output results/llada_gsm8k_predictions.jsonl
+
+pip install -e ".[analysis]"
+python scripts/plot_paper_figures.py \
+  --predictions results/llada_gsm8k_predictions.jsonl \
+  --output-dir paper/figures/generated
 
 python scripts/compare_calibrated.py \
   --calibration runs/llada_gsm8k_cal.scored.jsonl \

@@ -12,7 +12,6 @@ from trajuq.io import read_jsonl
 from trajuq.statistics import paired_bootstrap_improvement
 
 
-
 def load(path: str, feature_names: list[str]):
     rows = list(read_jsonl(path))
     ids = [str(r["example_id"]) for r in rows]
@@ -33,8 +32,8 @@ def load(path: str, feature_names: list[str]):
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Primary RQ1 nested comparison: trajectory+final logistic versus "
-            "final-entropy logistic on a frozen calibration/test pair."
+            "Primary RQ1 nested comparison: trajectory+decision logistic versus "
+            "decision-entropy logistic on a frozen calibration/test pair."
         )
     )
     parser.add_argument("--calibration", required=True)
@@ -46,8 +45,8 @@ def main() -> None:
 
     cal_ids_b, x_cal_b, y_cal_b = load(args.calibration, FINAL_BASELINE_FEATURES)
     test_ids_b, x_test_b, y_test_b = load(args.test, FINAL_BASELINE_FEATURES)
-    cal_ids_t, x_cal_t, y_cal_t = load(args.calibration, TRAJECTORY_PLUS_FINAL_BASELINE_FEATURES)
-    test_ids_t, x_test_t, y_test_t = load(args.test, TRAJECTORY_PLUS_FINAL_BASELINE_FEATURES)
+    cal_ids_t, x_cal_t, y_cal_t = load(args.calibration, PRIMARY_TRAJECTORY_FEATURES)
+    test_ids_t, x_test_t, y_test_t = load(args.test, PRIMARY_TRAJECTORY_FEATURES)
 
     if cal_ids_b != cal_ids_t or test_ids_b != test_ids_t:
         raise SystemExit("Feature loaders produced inconsistent example ordering")

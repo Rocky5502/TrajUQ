@@ -147,7 +147,9 @@ def main() -> None:
     cal_scored = root / "calibration.scored.jsonl"
     test_scored = root / "test.scored.jsonl"
     metrics = root / "metrics.json"
-    for path in (cal_scored, test_scored, metrics):
+    nested_bootstrap = root / "nested_bootstrap.json"
+    feature_ablation = root / "feature_ablation.json"
+    for path in (cal_scored, test_scored, metrics, nested_bootstrap, feature_ablation):
         if path.exists():
             path.unlink()
 
@@ -177,10 +179,42 @@ def main() -> None:
         "--output", str(metrics),
     )
 
+    run(
+        "scripts/compare_calibrated.py",
+        "--calibration", str(cal_scored),
+        "--test", str(test_scored),
+        "--n-boot", "100",
+        "--seed", str(args.seed),
+        "--output", str(nested_bootstrap),
+    )
+    run(
+        "scripts/evaluate_feature_ablation.py",
+        "--calibration", str(cal_scored),
+        "--test", str(test_scored),
+        "--n-boot", "100",
+        "--seed", str(args.seed),
+        "--output", str(feature_ablation),
+    )
+
     result = json.loads(metrics.read_text(encoding="utf-8"))
+    nested = json.loads(nested_bootstrap.read_text(encoding="utf-8"))
+    ablation = json.loads(feature_ablation.read_text(encoding="utf-8"))
     trajectory_auroc = float(result["trajectory_plus_decision_logistic"]["auroc"])
     if trajectory_auroc < 0.90:
         raise SystemExit(f"synthetic smoke regression: trajectory AUROC={trajectory_auroc:.3f}")
+
+    nested_delta = float(nested["metrics"]["auroc"]["point"])
+    if nested_delta <= 0:
+        raise SystemExit(
+            f"synthetic smoke regression: nested AUROC improvement={nested_delta:.3f}"
+        )
+
+    full_auroc = float(ablation["groups"]["full"]["auroc"])
+    decision_auroc = float(ablation["groups"]["decision_only"]["auroc"])
+    if full_auroc <= decision_auroc:
+        raise SystemExit(
+            "synthetic smoke regression: full trajectory ablation did not beat decision-only"
+        )
 
     print(f"[TrajUQ] END-TO-END SMOKE PASS -> {root}")
 

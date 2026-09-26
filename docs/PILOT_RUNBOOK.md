@@ -167,7 +167,7 @@ Manually inspect at least ten trajectories before interpreting any UQ metric.
 
 Proceed to the full matrix only if:
 - exact 20-prompt parity is PASS;
-- raw audit is PASS;
+- raw and scored audits are PASS and still SHA-bind their corresponding files;
 - all features are finite;
 - trajectory features show non-trivial variance;
 - scorer output is manually plausible;
@@ -197,11 +197,15 @@ The pilot wrapper prepares the frozen GSM8K pair, snapshots the environment,
 runs 20-prompt native/instrumented parity from those exact revisions, measures
 telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits
 raw/scored artifacts, checks feature variation/timing/schema integrity, and
-exports a 10-example manual review sheet.
+exports a 10-example manual review sheet. Before every parity/pilot stage it
+revalidates the frozen split/audit, frozen LLaDA config, and pilot-freeze
+manifest hashes. Existing pilot evidence is reused only if both raw/scored
+`audit_run.py` artifacts are still PASS and SHA-bound.
 
 The automated gate does not replace the required human inspection of at least
 ten trajectories. The pilot quality artifact is protocol v2 and binds its raw
-and scored files by SHA-256.
+and scored files by SHA-256. The review sheet additionally records the exact
+scored-pilot path and SHA-256 reviewed by the human.
 
 ## Reproducibility note
 
@@ -225,9 +229,12 @@ python scripts/record_manual_gate.py \
 
 The command is an attestation recorder, not an automated review. Do not run it
 until those checks have actually been performed. It refuses a dirty worktree.
-Manual-gate protocol v2 binds the review sheet, LLaDA parity artifact, and
-pilot-quality artifact by SHA-256 at the frozen experiment commit and records
-that the attestation was made from a clean checkout.
+Before writing PASS it revalidates the parity source hashes, pilot-quality
+scored source, and pilot raw/scored audits. Manual-gate protocol v2 binds the
+review sheet, its exact scored-pilot source, LLaDA parity artifact, and
+pilot-quality artifact by SHA-256 at the frozen experiment commit.
+`primary_readiness.py` independently performs the same source/audit checks, so
+editing an attestation JSON cannot bypass the evidence gate.
 
 Before launching the full 3-model primary matrix, require all primary-model
 parity artifacts plus the pilot gates:

@@ -451,7 +451,7 @@ def evaluate_readiness(
             }
             if not passed:
                 failures.append(
-                    f"{model} parity gate is not an exact hash-bound 20-prompt PASS at the frozen clean revision/commit"
+                    f"{model} parity gate is not an exact 20-prompt PASS at the frozen revision/commit with clean hash-bound evidence"
                 )
         except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")

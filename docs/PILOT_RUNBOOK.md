@@ -59,6 +59,66 @@ overwrite partial/stale artifacts, revalidates the frozen GSM8K split and pilot
 manifest, requires exact parity-v3 with 20 shared prompts, and only then runs the
 50-example pilot. Use Python >=3.10; Ubuntu 20.04's system Python may be older.
 
+Recommended A100/Ubuntu sequence after the repository code is frozen:
+
+```bash
+nvidia-smi
+python --version
+bash scripts/freeze_preprimary.sh
+bash scripts/pilot_linux.sh prepare
+bash scripts/pilot_linux.sh parity
+bash scripts/pilot_linux.sh pilot
+```
+
+After manually reviewing the exported ten LLaDA/GSM8K trajectories, record the
+attestation:
+
+```bash
+python scripts/record_manual_gate.py \
+  --review-sheet results/llada_gsm8k_pilot50_trace_review.md \
+  --reviewed-records 10 \
+  --trajectory-semantics-pass \
+  --scorer-audit-pass \
+  --parity-artifact-reviewed \
+  --no-leakage-observed \
+  --notes "Reviewed frozen 10-example pilot sheet on the A100 run."
+```
+
+Then clear the other two primary-model parity gates on the same frozen checkout:
+
+```bash
+bash scripts/parity_remaining_linux.sh all
+```
+
+Run the frozen MATH-500 scorer path:
+
+```bash
+bash scripts/math500_gate_linux.sh prepare
+bash scripts/math500_gate_linux.sh pilot
+```
+
+After manually reviewing all 25 exported MATH-500 calibration examples, record
+that attestation:
+
+```bash
+python scripts/record_math500_scorer_review.py \
+  --review-sheet results/math500_scorer_review.md \
+  --reviewed-records 25 \
+  --answer-extraction-pass \
+  --symbolic-equivalence-pass \
+  --no-manual-label-flips \
+  --notes "Reviewed frozen 25-example MATH-500 scorer sheet."
+```
+
+Finally:
+
+```bash
+python scripts/primary_readiness.py
+```
+
+Only a protocol-v2 `status=PASS` result authorizes creation/execution of the
+full 18-cell primary matrix.
+
 This performs the same clean-checkout CPU verification, immutable revision
 resolution, post-freeze cleanliness check, status refresh, and private handoff
 export as the Windows wrapper. Revision-ledger protocol v2

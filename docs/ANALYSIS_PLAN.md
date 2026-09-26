@@ -28,7 +28,7 @@ Before primary outcomes are inspected, the following ablations are frozen: decis
 
 ## Expensive repeated-sampling baseline
 
-As a stronger but more expensive uncertainty comparator, freeze a five-sample final-answer disagreement baseline using seeds 2027--2031, native sampling temperature 0.2, and top-$p=1.0$. For each example, independently generated label-free samples are canonicalized without consulting the reference answer; variation ratio, normalized vote entropy, and unique-answer fraction are calibrated on the calibration partition and evaluated on the same held-out target labels. Its extra inference cost must be reported explicitly. The evaluator requires the same five seed IDs and identical generation configuration on calibration and test, verifies that sample artifacts contain no outcome labels, and reports auxiliary repeated-generation wall time per target example. Paired held-out comparisons against \method use the exact same test IDs and labels. For MATH-500, the five sampled answers are clustered without reference answers using the same pinned Math-Verify equivalence relation as the correctness scorer. All ten sample pairs are checked, connected components define vote classes, and exact text equality is accepted before symbolic parsing. This enables the repeated-sampling comparator on the full frozen 18-cell matrix without unsafe string matching.
+As a stronger but more expensive uncertainty comparator, freeze a five-sample final-answer disagreement baseline using seeds 2027--2031, native sampling temperature 0.2, and top-$p=1.0$. For each example, independently generated label-free samples are canonicalized without consulting the reference answer; variation ratio, normalized vote entropy, and unique-answer fraction are calibrated on the calibration partition and evaluated on the same held-out target labels. Its extra inference cost must be reported explicitly. The evaluator requires the same five seed IDs and identical generation configuration on calibration and test, verifies that sample artifacts contain no outcome labels, and reports auxiliary repeated-generation wall time per target example. The final 18-cell repeated-sampling artifact requires complete test-time wall-time metadata in every cell and reports the equal-cell-weight mean auxiliary seconds per example (target generation excluded), so compute accounting cannot be silently dropped during macro aggregation. Paired held-out comparisons against \method use the exact same test IDs and labels. For MATH-500, the five sampled answers are clustered without reference answers using the same pinned Math-Verify equivalence relation as the correctness scorer. All ten sample pairs are checked, connected components define vote classes, and exact text equality is accepted before symbolic parsing. This enables the repeated-sampling comparator on the full frozen 18-cell matrix without unsafe string matching.
 
 ## RQ2 — Calibration and selective generation
 
@@ -52,8 +52,13 @@ Freeze two complete-generation budgets per model: LLaDA and Dream use 32 versus 
 Compare against:
 1. fixed base compute;
 2. fixed refined compute;
-3. random refinement at the same expected fraction;
-4. native confidence/remasking scheduling where the model exposes it.
+3. random refinement at the same expected fraction.
+
+Model-native confidence/remasking schedulers are not part of the frozen primary
+RQ3 comparator because they are not available under one matched policy contract
+across all three primary model families. Any future model-specific scheduler
+analysis must be labeled exploratory and cannot replace the frozen comparisons
+above.
 
 The primary execution semantics are a **selective second-pass rerun**: every example pays the complete base generation, and a selected high-risk example launches a separate full refined-budget generation from scratch. Thus mean nominal compute is $B_0 + fB_1$, not $B_0+f(B_1-B_0)$, where $f$ is the selected fraction. This is directly realizable from paired frozen artifacts and does not pretend that an independently generated refined answer is a continuation of the base trajectory. A true continuation policy is reserved for future model-specific runtime support.
 

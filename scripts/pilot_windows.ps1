@@ -15,10 +15,95 @@ function Run-Step {
     if ($LASTEXITCODE -ne 0) { throw "$Name failed with exit code $LASTEXITCODE" }
 }
 
-function Remove-Artifact {
+function Get-FileSha256 {
     param([string]$Path)
-    Remove-Item $Path -ErrorAction SilentlyContinue
-    Remove-Item "$Path.audit.json" -ErrorAction SilentlyContinue
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
+
+function Require-No-ExistingArtifacts {
+    param([string[]]$Paths)
+    $Existing = @($Paths | Where-Object { Test-Path $_ })
+    if ($Existing.Count -gt 0) {
+        throw (
+            "Existing partial/frozen artifacts require inspection before rerun: " +
+            ($Existing -join ", ") +
+            ". This wrapper will not delete or overwrite evidence."
+        )
+    }
+}
+
+function Assert-ParityPass {
+    param(
+        [string]$Path,
+        [string]$ModelSha,
+        [string]$Commit
+    )
+    if (-not (Test-Path $Path)) { return $false }
+    $Parity = Get-Content $Path -Raw | ConvertFrom-Json
+    $Reference = [string]$Parity.reference
+    $Instrumented = [string]$Parity.instrumented
+    $ReferenceHashOk = (
+        (Test-Path $Reference) -and
+        $Parity.reference_sha256 -eq (Get-FileSha256 $Reference)
+    )
+    $InstrumentedHashOk = (
+        (Test-Path $Instrumented) -and
+        $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
+    )
+    $Pass = (
+        $Parity.protocol -eq "trajuq_exact_parity_v3" -and
+        $Parity.status -eq "PASS" -and
+        $Parity.git_clean -eq $true -and
+        $Parity.require_token_ids -eq $true -and
+        $Parity.require_provenance -eq $true -and
+        $Parity.git_commit -eq $Commit -and
+        $Parity.shared_records -eq 20 -and
+        $Parity.mismatch_count -eq 0 -and
+        $Parity.provenance_mismatch_count -eq 0 -and
+        $Parity.run_provenance.adapter -eq "llada" -and
+        $Parity.run_provenance.model_revision -eq $ModelSha -and
+        $ReferenceHashOk -and
+        $InstrumentedHashOk
+    )
+    if (-not $Pass) {
+        throw "Existing $Path is not a clean hash-bound frozen parity-v3 PASS. Inspect it before rerunning."
+    }
+    return $true
+}
+
+function Assert-PilotGatePass {
+    param(
+        [string]$Path,
+        [string]$Raw,
+        [string]$Scored,
+        [string]$ModelSha,
+        [string]$Commit
+    )
+    if (-not (Test-Path $Path)) { return $false }
+    if (-not (Test-Path $Raw) -or -not (Test-Path $Scored)) {
+        throw "Pilot gate exists but its bound raw/scored artifacts are missing."
+    }
+    $Gate = Get-Content $Path -Raw | ConvertFrom-Json
+    $Revisions = @($Gate.model_revisions)
+    $Pass = (
+        $Gate.protocol -eq "trajuq_pilot_quality_gate_v2" -and
+        $Gate.status -eq "PASS" -and
+        $Gate.git_commit -eq $Commit -and
+        $Gate.raw -eq $Raw -and
+        $Gate.scored -eq $Scored -and
+        $Gate.raw_sha256 -eq (Get-FileSha256 $Raw) -and
+        $Gate.scored_sha256 -eq (Get-FileSha256 $Scored) -and
+        $Gate.raw_records -eq 50 -and
+        $Gate.scored_records -eq 50 -and
+        @($Gate.adapters).Count -eq 1 -and
+        @($Gate.adapters)[0] -eq "llada" -and
+        $Revisions.Count -eq 1 -and
+        [string]$Revisions[0] -eq $ModelSha
+    )
+    if (-not $Pass) {
+        throw "Existing $Path is not a clean hash-bound frozen 50-example pilot PASS. Inspect it before rerunning."
+    }
+    return $true
 }
 
 function Read-FrozenLedger {

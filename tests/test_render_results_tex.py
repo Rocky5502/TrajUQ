@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.render_results_tex import build_macros
+from scripts.render_results_tex import ABLATION_SUFFIXES, build_macros
 
 
 def primary():
@@ -83,6 +83,32 @@ def repeated():
     }
 
 
+def ablation():
+    groups = {}
+    for idx, name in enumerate(ABLATION_SUFFIXES, start=1):
+        delta = 0.01 * idx
+        groups[name] = {
+            "metrics": {
+                metric: {
+                    "baseline_macro": 0.60,
+                    "candidate_macro": 0.60 + delta,
+                    "improvement_macro": delta,
+                    "improvement_ci_low": delta - 0.01,
+                    "improvement_ci_high": delta + 0.01,
+                }
+                for metric in ("auroc", "auprc", "aurc")
+            }
+        }
+    return {
+        "protocol": "trajuq_feature_ablation_macro_v1",
+        "baseline": "decision_only",
+        "cell_set_complete": True,
+        "expected_cells": 18,
+        "observed_cells": 18,
+        "groups": groups,
+    }
+
+
 def adaptive():
     return {
         "protocol": "trajuq_adaptive_macro_v1",
@@ -106,10 +132,11 @@ def adaptive():
 
 
 def test_result_macros_are_derived_from_complete_artifacts():
-    macros = build_macros(primary(), claim(), repeated(), adaptive())
+    macros = build_macros(primary(), claim(), repeated(), ablation(), adaptive())
     assert macros["PrimaryTrajAUROC"] == "0.700"
     assert macros["RepeatedAUROC"] == "0.620"
     assert macros["RepeatedAuxWallTime"] == "12.34"
+    assert macros["AblationFullAUROCDelta"] == "+0.040"
     assert macros["AdaptiveDeltaRandom"] == "+0.040"
     assert "positive point improvement" in macros["AbstractResultSentence"]
 
@@ -118,11 +145,11 @@ def test_result_renderer_rejects_partial_primary_matrix():
     payload = primary()
     payload["cell_set_complete"] = False
     with pytest.raises(ValueError):
-        build_macros(payload, claim(), repeated(), adaptive())
+        build_macros(payload, claim(), repeated(), ablation(), adaptive())
 
 
 def test_result_renderer_uses_narrow_language_when_claim_gate_fails():
-    macros = build_macros(primary(), claim(False), repeated(), adaptive())
+    macros = build_macros(primary(), claim(False), repeated(), ablation(), adaptive())
     assert "not met" in macros["AbstractResultSentence"]
 
 
@@ -130,11 +157,18 @@ def test_result_renderer_rejects_contradictory_claim_flag_and_decision():
     payload = claim(True)
     payload["decision"] = "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"
     with pytest.raises(ValueError, match="contradicts"):
-        build_macros(primary(), payload, repeated(), adaptive())
+        build_macros(primary(), payload, repeated(), ablation(), adaptive())
 
 
 def test_result_renderer_rejects_incomplete_repeated_compute():
     payload = repeated()
     payload["auxiliary_compute"]["complete"] = False
     with pytest.raises(ValueError, match="compute accounting is incomplete"):
-        build_macros(primary(), claim(), payload, adaptive())
+        build_macros(primary(), claim(), payload, ablation(), adaptive())
+
+
+def test_result_renderer_rejects_incomplete_ablation_matrix():
+    payload = ablation()
+    payload["cell_set_complete"] = False
+    with pytest.raises(ValueError, match="Feature-ablation macro cell set is incomplete"):
+        build_macros(primary(), claim(), repeated(), payload, adaptive())

@@ -56,7 +56,13 @@ def main() -> None:
     if set(raw) != set(scored):
         failures.append("raw/scored example-ID sets differ")
 
+    observed_models: set[str] = set()
+    observed_adapters: set[str] = set()
+    observed_revisions: set[str] = set()
+
     for item_id, row in raw.items():
+        observed_models.add(str(row.get("model")))
+        observed_adapters.add(str(row.get("adapter")))
         if row.get("schema_version") != SCHEMA_VERSION:
             failures.append(
                 f"{item_id}: schema={row.get('schema_version')!r}; expected {SCHEMA_VERSION!r}"
@@ -69,10 +75,29 @@ def main() -> None:
         revision = meta.get("model_revision") or row.get("metadata", {}).get("model_revision")
         if not revision:
             failures.append(f"{item_id}: missing pinned model revision")
-        if not finite_float(meta.get("wall_time_seconds")):
-            failures.append(f"{item_id}: missing/non-finite wall_time_seconds")
-        if not finite_float(meta.get("peak_gpu_memory_bytes")):
-            warnings.append(f"{item_id}: peak_gpu_memory_bytes missing/non-finite")
+        else:
+            observed_revisions.add(str(revision))
+        if meta.get("trajectory_semantics") != "active_unresolved_positions_v4":
+            failures.append(
+                f"{item_id}: trajectory_semantics is not active_unresolved_positions_v4"
+            )
+        if not finite_float(meta.get("wall_time_seconds")) or float(meta["wall_time_seconds"]) <= 0:
+            failures.append(f"{item_id}: missing/non-positive wall_time_seconds")
+        if (
+            not finite_float(meta.get("peak_gpu_memory_bytes"))
+            or float(meta["peak_gpu_memory_bytes"]) <= 0
+        ):
+            failures.append(f"{item_id}: missing/non-positive peak_gpu_memory_bytes")
+
+    if len(observed_models) != 1:
+        failures.append(f"pilot mixes model IDs: {sorted(observed_models)}")
+    if observed_adapters != {"llada"}:
+        failures.append(f"pilot adapter must be llada; observed={sorted(observed_adapters)}")
+    if len(observed_revisions) != 1:
+        failures.append(
+            f"pilot must use exactly one immutable model revision; "
+            f"observed={sorted(observed_revisions)}"
+        )
 
     if set(raw) == set(scored):
         for item_id in raw:
@@ -159,10 +184,15 @@ def main() -> None:
         if finite_float(row.get("generation", {}).get("metadata", {}).get("peak_gpu_memory_bytes"))
     ]
     step_counts = [len(row.get("generation", {}).get("steps", [])) for row in raw_rows]
+    if any(count <= 0 for count in step_counts):
+        failures.append("one or more pilot records has zero trajectory step summaries")
 
     payload = {
         "status": "PASS" if not failures else "FAIL",
         "schema_version": SCHEMA_VERSION,
+        "model_ids": sorted(observed_models),
+        "adapters": sorted(observed_adapters),
+        "model_revisions": sorted(observed_revisions),
         "raw": args.raw,
         "scored": args.scored,
         "expected_records": args.expected_records,

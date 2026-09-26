@@ -28,6 +28,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def audit_passes(path: Path, stage: str) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
@@ -61,6 +72,95 @@ def valid_jsonl(path: Path) -> bool:
     except Exception:
         return False
     return bool(rows)
+
+
+def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    if plan.get("protocol") != "trajuq_adaptive_matrix_plan_v3":
+        failures.append("adaptive plan protocol is not v3")
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != expected_commit:
+        failures.append(
+            "current git commit differs from the frozen experiment commit"
+        )
+
+    for key, hash_key in (
+        ("primary_plan", "primary_plan_sha256"),
+        ("primary_config", "primary_config_sha256"),
+    ):
+        path = Path(str(plan.get(key, "")))
+        expected_hash = str(plan.get(hash_key, ""))
+        if not path.exists() or not expected_hash:
+            failures.append(f"adaptive plan missing bound {key} artifact")
+        elif sha256_file(path) != expected_hash:
+            failures.append(f"{key} hash differs from adaptive plan")
+
+    for cell in plan.get("cells", []):
+        label = str(cell.get("cell", "<unknown>"))
+        provenance = cell.get("provenance", {})
+        for partition in ("calibration", "test"):
+            spec = provenance.get(partition, {})
+            generation_input = Path(str(spec.get("generation_input", "")))
+            input_hash = str(spec.get("generation_input_sha256", ""))
+            if not generation_input.exists() or not input_hash:
+                failures.append(
+                    f"{label} {partition}: bound generation input missing"
+                )
+            elif sha256_file(generation_input) != input_hash:
+                failures.append(
+                    f"{label} {partition}: generation input hash drifted"
+                )
+
+            refined = Path(str(spec.get("refined_scored", "")))
+            refined_hash = str(spec.get("refined_scored_sha256", ""))
+            audit = Path(str(spec.get("refined_audit", "")))
+            audit_hash = str(spec.get("refined_audit_sha256", ""))
+
+            if not refined.exists() or not refined_hash:
+                failures.append(
+                    f"{label} {partition}: bound refined scored input missing"
+                )
+                continue
+            observed_refined_hash = sha256_file(refined)
+            if observed_refined_hash != refined_hash:
+                failures.append(
+                    f"{label} {partition}: refined scored input hash drifted"
+                )
+
+            if not audit.exists() or not audit_hash:
+                failures.append(
+                    f"{label} {partition}: bound refined audit missing"
+                )
+                continue
+            if sha256_file(audit) != audit_hash:
+                failures.append(
+                    f"{label} {partition}: refined audit hash drifted"
+                )
+                continue
+            try:
+                audit_payload = json.loads(audit.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                failures.append(
+                    f"{label} {partition}: refined audit is invalid JSON"
+                )
+                continue
+            if (
+                audit_payload.get("status") != "PASS"
+                or audit_payload.get("stage") != "scored"
+            ):
+                failures.append(
+                    f"{label} {partition}: refined audit is not a PASS"
+                )
+            if str(audit_payload.get("sha256", "")) != observed_refined_hash:
+                failures.append(
+                    f"{label} {partition}: refined audit no longer binds input"
+                )
+
+    return failures
 
 
 def base_partition_state(spec: dict[str, Any]) -> dict[str, Any]:
@@ -153,8 +253,10 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         else "IN_PROGRESS"
     )
     return {
-        "protocol": "trajuq_adaptive_execution_state_v1",
+        "protocol": "trajuq_adaptive_execution_state_v2",
         "status": status,
+        "plan_protocol": plan.get("protocol"),
+        "experiment_git_commit": plan.get("experiment_git_commit"),
         "expected_cells": expected,
         "observed_cells": len(cells),
         "complete_cells": complete_cells,
@@ -291,6 +393,13 @@ def main() -> None:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if plan.get("status") != "PASS":
         raise SystemExit("Adaptive plan is not PASS.")
+
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Adaptive provenance validation failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
 
     cells = list(plan.get("cells", []))
     expected = int(plan.get("expected_cells", 0))

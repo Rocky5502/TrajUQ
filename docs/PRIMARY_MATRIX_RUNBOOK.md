@@ -204,14 +204,18 @@ python scripts/plan_primary_analysis.py
 This writes `results/primary_analysis_plan.json`. Protocol v2 requires every
 scored calibration/test artifact to have a clean protocol-v1 scored audit from
 the frozen experiment commit, then SHA-binds those inputs/audits together with
-the frozen primary plan/config and experiment commit. For every model--dataset cell it freezes commands for the calibrated
-baseline/TrajUQ metrics, paired nested bootstrap comparison, frozen
-feature-family ablations, and the training-free raw-risk diagnostic.
+the frozen primary plan/config and experiment commit. For every model--dataset
+cell it freezes commands for the calibrated baseline/TrajUQ metrics, paired
+nested bootstrap comparison, frozen feature-family ablations with per-example
+group probabilities, and the training-free raw-risk diagnostic.
 
-Only after **all 18** cell analyses exist should the plan's macro aggregation
-command be executed. The macro command rejects selective cell omission. Run the
-RQ1 claim-gate command last; a negative gate is a valid result and must not be
-used as a reason to redesign the test analysis.
+Only after **all 18** cell analyses exist should the plan's primary macro and
+feature-ablation macro commands be executed. Both reject selective cell
+omission. The ablation aggregator uses the same equal-cell paired hierarchical
+bootstrap and writes
+`results/primary_analysis/macro_feature_ablation.json`. Run the RQ1
+claim-gate command last; a negative gate is a valid result and must not be used
+as a reason to redesign the test analysis.
 
 The preferred resumable analysis executor is:
 
@@ -223,7 +227,7 @@ python scripts/execute_primary_analysis.py
 python scripts/execute_primary_analysis.py --cell llada:gsm8k --execute
 
 # Resume all missing cell analyses and, only when all 18 are complete,
-# run the macro aggregation and frozen RQ1 claim gate:
+# run the primary macro, feature-ablation macro, and frozen RQ1 claim gate:
 python scripts/execute_primary_analysis.py --execute
 ```
 

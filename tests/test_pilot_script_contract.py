@@ -67,3 +67,16 @@ def test_gpu_stages_revalidate_frozen_pilot_inputs():
     assert "-FreezeManifestPath \"results/pilot_freeze_manifest.json\"" in between
     assert "-DatasetSha $DatasetSha" in between
     assert "-Commit $Ledger.git_commit" in between
+
+
+def test_pilot_human_review_is_source_bound():
+    export_text = Path("scripts/export_trace_review.py").read_text(encoding="utf-8")
+    record_text = Path("scripts/record_manual_gate.py").read_text(encoding="utf-8")
+    readiness_text = Path("scripts/primary_readiness.py").read_text(encoding="utf-8")
+
+    assert "- scored artifact: " in export_text
+    assert "- scored SHA-256: " in export_text
+    assert "review_scored_artifact" in record_text
+    assert "review_scored_sha256" in record_text
+    assert "LLaDA parity reference source hash is stale" in record_text
+    assert "review_source_ok" in readiness_text

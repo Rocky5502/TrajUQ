@@ -35,6 +35,7 @@ def git_clean() -> bool | None:
     except Exception:
         return None
 
+
 def review_sheet_metadata(path: Path) -> dict[str, str]:
     prefixes = {
         "- scored artifact: ": "scored_artifact",
@@ -48,6 +49,7 @@ def review_sheet_metadata(path: Path) -> dict[str, str]:
             if line.startswith(prefix):
                 found[key] = line[len(prefix):].strip()
     return found
+
 
 def scored_audit_passes(
     path: Path,

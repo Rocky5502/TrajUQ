@@ -103,7 +103,7 @@ Preferred split policy:
 | TruthfulQA | frozen internal holdout of validation | frozen internal holdout of validation |
 | MATH-500 | frozen internal holdout only | frozen internal holdout only |
 
-For one-split datasets, results are explicitly described as **internal held-out evaluation**, not a standard full-benchmark score. MATH-500 is additionally blocked until an audited symbolic-equivalence scorer is frozen.
+For one-split datasets, results are explicitly described as **internal held-out evaluation**, not a standard full-benchmark score. MATH-500 uses a pinned judge-free Math-Verify symbolic-equivalence scorer; it remains an internal held-out evaluation rather than the standard full-benchmark score.
 
 See `docs/DATA_SPLITS.md`.
 
@@ -274,6 +274,10 @@ The pinned upstream runtime already exposes a JSONL trace switch. TrajUQ parses 
 
 The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vocabulary entropy and stays an RQ4 diagnostic unless a parity-safe full-logit summary is added. Frozen same-checkpoint AR/diffusion outputs can be joined with `scripts/join_hybrid_paths.py`; the resulting disagreement features contain no correctness labels.
 
+## MATH-500 scorer
+
+MATH-500 scoring is now wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. See `docs/MATH500_SCORING.md`. The scorer is judge-free and symbolic; primary MATH-500 numbers still require the manual scorer-audit gate.
+
 ## Scientific guardrails
 
 1. **No invented results.**
@@ -294,7 +298,7 @@ The repository tracks the remaining gates as GitHub issues:
 - SDAR telemetry parity (adapter implemented; GPU parity still open);
 - FLARE/HybridDiffusion native-trace parity and AR/diffusion export;
 - Dream hook parity;
-- MATH-500 symbolic scorer;
+- MATH-500 scorer manual-audit gate;
 - CI runner allocation.
 
 Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass.

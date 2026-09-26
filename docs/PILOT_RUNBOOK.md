@@ -1,8 +1,20 @@
 # First GPU pilot runbook
 
-## Windows staged wrapper
+## Windows frozen-commit + staged wrapper
 
-From the repository root, the preferred execution path is:
+Before any GPU parity run, freeze one clean experiment commit:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
+```
+
+This installs the CPU/model/data dependencies unless skipped, runs the complete
+CPU verification suite, resolves immutable revisions for all three primary
+models and all six datasets, and writes `results/revision_ledger.json` plus
+`results/frozen_models/*.yaml`. GPQA is gated, so Hugging Face authentication
+must already permit access.
+
+Do not edit tracked experiment code after this freeze. Then run:
 
 ```powershell
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
@@ -10,26 +22,32 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-The wrapper hard-stops on failed exact parity and never writes paper numbers before the gate passes.
-
+The pilot wrapper consumes the ledger-resolved LLaDA and GSM8K SHAs. It
+hard-stops unless parity protocol v3 covers exactly 20 shared prompts with zero
+output/provenance mismatches at the same git commit and model SHA as the ledger.
 
 The first pilot is frozen to the **LLaDA-MoE-7B-A1B-Instruct + GSM8K calibration** path. Do not scale to other models until the exact token-parity gate passes.
 
-## A. Resolve immutable revisions
+## A. Freeze immutable revisions at one experiment commit
 
-```bash
-python scripts/resolve_hf_revision.py \
-  --repo-type model \
-  --repo-id inclusionAI/LLaDA-MoE-7B-A1B-Instruct \
-  --output results/llada_model_revision.json
+Preferred Windows command:
 
-python scripts/resolve_hf_revision.py \
-  --repo-type dataset \
-  --repo-id openai/gsm8k \
-  --output results/gsm8k_dataset_revision.json
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 ```
 
-Create an artifact-local runtime config at `results/llada_pilot_model_config.yaml` by copying `configs/models/llada.yaml` and replacing only its `revision:` value with the resolved model SHA. Do **not** edit the tracked template. Pass the resolved dataset SHA to `prepare_eval_pair.py --revision`. The Windows wrapper performs this automatically.
+Manual equivalent on other platforms:
+
+```bash
+bash scripts/verify_cpu.sh
+python scripts/resolve_experiment_revisions.py
+```
+
+Do not change commits between the two commands. Revision-ledger protocol v2
+records the git commit, primary-config hash, dataset-manifest hash, immutable
+model/data SHAs, and frozen model-config hashes. Primary readiness v2 later
+requires CPU verification and every primary parity artifact to match this
+provenance.
 
 ## B. Prepare the frozen calibration/test pair
 
@@ -45,14 +63,14 @@ Do not regenerate these files after seeing model outcomes.
 
 ```bash
 python scripts/preflight.py \
-  --model-config results/llada_pilot_model_config.yaml \
+  --model-config results/frozen_models/llada.yaml \
   --data data/processed/gsm8k/calibration.jsonl \
   --require-cuda
 
 python scripts/environment_snapshot.py --output results/pilot_environment.json
 
 python scripts/freeze_manifest.py \
-  --model-config results/llada_pilot_model_config.yaml \
+  --model-config results/frozen_models/llada.yaml \
   --dataset data/processed/gsm8k/calibration.jsonl \
   --dataset data/processed/gsm8k/test.jsonl \
   --output results/pilot_freeze_manifest.json
@@ -159,18 +177,27 @@ A weak uncertainty signal is not a reason to redesign features using final test 
 
 ## Automated Windows wrapper
 
-The first-pilot sequence is split into a one-time frozen-commit setup plus the staged LLaDA wrapper. Run them separately on the first pass:
+Run the frozen-commit setup once, then the LLaDA stages separately on the first
+pass:
 
 ```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-The freeze wrapper records one clean experiment commit, runs CPU verification, resolves all primary model/data SHAs, and writes hash-bound frozen model configs. The pilot wrapper then prepares the frozen GSM8K pair, snapshots the environment, runs 20-prompt native/instrumented parity from those exact revisions, measures telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits raw/scored artifacts, checks feature variation/timing/schema integrity, and exports a 10-example manual review sheet.
+The freeze wrapper records one clean experiment commit, runs CPU verification,
+resolves all primary model/data SHAs, and writes hash-bound frozen model configs.
+The pilot wrapper prepares the frozen GSM8K pair, snapshots the environment,
+runs 20-prompt native/instrumented parity from those exact revisions, measures
+telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits
+raw/scored artifacts, checks feature variation/timing/schema integrity, and
+exports a 10-example manual review sheet.
 
-The automated gate does not replace the required human inspection of at least ten trajectories.
-
+The automated gate does not replace the required human inspection of at least
+ten trajectories. The pilot quality artifact is protocol v2 and binds its raw
+and scored files by SHA-256.
 
 ## Reproducibility note
 
@@ -193,7 +220,9 @@ python scripts/record_manual_gate.py \
 ```
 
 The command is an attestation recorder, not an automated review. Do not run it
-until those checks have actually been performed.
+until those checks have actually been performed. Manual-gate protocol v2 binds
+the review sheet, LLaDA parity artifact, and pilot-quality artifact by SHA-256
+at the frozen experiment commit.
 
 Before launching the full 3-model primary matrix, require all primary-model
 parity artifacts plus the pilot gates:

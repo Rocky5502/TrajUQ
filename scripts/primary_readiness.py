@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -31,6 +32,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def git_text(*args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def parse_override(value: str) -> tuple[str, str]:
     if "=" not in value:
         raise argparse.ArgumentTypeError("--parity must use MODEL=PATH")
@@ -50,6 +62,10 @@ def evaluate_readiness(
     math500_manual_path: str = "results/math500_scorer_manual_review.json",
     cpu_verification_path: str = "results/cpu_verification.json",
     revision_ledger_path: str = "results/revision_ledger.json",
+    *,
+    enforce_current_git: bool = False,
+    current_git_commit: str | None = None,
+    current_git_clean: bool | None = None,
 ) -> dict:
     failures: list[str] = []
     checks: dict[str, dict] = {}
@@ -101,6 +117,33 @@ def evaluate_readiness(
             ledger_pass = False
             failures.append("primary config hash differs from revision ledger")
 
+        dataset_manifest_path = Path(str(ledger.get("dataset_manifest", "")))
+        expected_dataset_manifest_sha = ledger.get("dataset_manifest_sha256")
+        if (
+            not dataset_manifest_path.is_file()
+            or not expected_dataset_manifest_sha
+        ):
+            ledger_pass = False
+            failures.append("dataset manifest recorded by revision ledger is missing")
+        elif sha256_file(dataset_manifest_path) != expected_dataset_manifest_sha:
+            ledger_pass = False
+            failures.append("dataset manifest hash differs from revision ledger")
+
+        if enforce_current_git:
+            if not current_git_commit:
+                ledger_pass = False
+                failures.append("current git commit could not be resolved")
+            elif current_git_commit != experiment_commit:
+                ledger_pass = False
+                failures.append(
+                    "current git commit differs from frozen experiment commit"
+                )
+            if current_git_clean is not True:
+                ledger_pass = False
+                failures.append(
+                    "current git worktree is not clean at readiness evaluation"
+                )
+
         frozen_configs = ledger.get("frozen_model_configs", {})
         frozen_hashes = ledger.get("frozen_model_config_sha256", {})
         for model in primary_models:
@@ -132,6 +175,10 @@ def evaluate_readiness(
             "protocol": ledger.get("protocol"),
             "git_commit": experiment_commit,
             "primary_config_sha256": ledger.get("primary_config_sha256"),
+            "dataset_manifest": ledger.get("dataset_manifest"),
+            "dataset_manifest_sha256": ledger.get("dataset_manifest_sha256"),
+            "current_git_commit": current_git_commit if enforce_current_git else None,
+            "current_git_clean": current_git_clean if enforce_current_git else None,
             "model_adapters": sorted(ledger_models),
             "datasets": sorted(ledger_datasets),
         }
@@ -143,10 +190,16 @@ def evaluate_readiness(
     try:
         cpu = load_json(cpu_verification_path)
         cpu_steps = cpu.get("steps", [])
+        expected_cpu_steps = list(cpu.get("expected_steps", []))
+        completed_cpu_steps = list(cpu.get("completed_steps", []))
+        observed_cpu_step_names = [step.get("name") for step in cpu_steps]
         cpu_pass = (
-            cpu.get("status") == "PASS"
+            cpu.get("protocol") == "trajuq_cpu_verification_v1"
+            and cpu.get("status") == "PASS"
             and cpu.get("git_clean") is True
-            and len(cpu_steps) == len(cpu.get("expected_steps", []))
+            and completed_cpu_steps == expected_cpu_steps
+            and observed_cpu_step_names == expected_cpu_steps
+            and len(cpu_steps) == len(expected_cpu_steps)
             and all(step.get("status") == "PASS" for step in cpu_steps)
             and experiment_commit is not None
             and cpu.get("git_commit") == experiment_commit
@@ -154,9 +207,12 @@ def evaluate_readiness(
         checks["cpu_verification"] = {
             "path": cpu_verification_path,
             "status": cpu.get("status"),
+            "protocol": cpu.get("protocol"),
             "git_commit": cpu.get("git_commit"),
             "git_clean": cpu.get("git_clean"),
-            "completed_steps": cpu.get("completed_steps"),
+            "expected_steps": expected_cpu_steps,
+            "completed_steps": completed_cpu_steps,
+            "observed_step_names": observed_cpu_step_names,
         }
         if not cpu_pass:
             failures.append(
@@ -435,6 +491,8 @@ def main() -> None:
 
     parity_paths = dict(DEFAULT_PARITY)
     parity_paths.update(dict(args.parity))
+    current_commit = git_text("rev-parse", "HEAD")
+    current_status = git_text("status", "--porcelain")
     payload = evaluate_readiness(
         args.primary_config,
         args.pilot_quality,
@@ -444,6 +502,9 @@ def main() -> None:
         args.math500_manual_review,
         args.cpu_verification,
         args.revision_ledger,
+        enforce_current_git=True,
+        current_git_commit=current_commit,
+        current_git_clean=(current_status == "" if current_status is not None else None),
     )
 
     out = Path(args.output)

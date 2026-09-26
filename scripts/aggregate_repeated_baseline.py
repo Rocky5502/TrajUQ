@@ -13,6 +13,7 @@ from trajuq.aggregation import (
     metric_value,
     oriented_improvement,
 )
+from scripts.execute_repeated_sampling import validate_plan_provenance
 from trajuq.io import read_jsonl
 
 
@@ -42,8 +43,16 @@ def load_cell(spec: dict) -> PredictionCell:
     label = str(spec["cell"])
     traj = index(str(spec["trajuq_predictions"]))
     repeated = index(str(spec["repeated_predictions"]))
+    expected = index(
+        str(spec["provenance"]["test"]["scored_target"])
+    )
     if set(traj) != set(repeated):
         raise SystemExit(f"{label}: prediction ID sets differ")
+    if set(traj) != set(expected):
+        raise SystemExit(
+            f"{label}: repeated comparison does not exactly cover "
+            "the frozen scored test target"
+        )
 
     ids = sorted(traj)
     y = np.asarray([int(traj[item]["y_error"]) for item in ids], dtype=int)
@@ -91,6 +100,12 @@ def main() -> None:
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
     if plan.get("status") != "PASS":
         raise SystemExit("Repeated-sampling plan is not PASS.")
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Repeated-sampling plan provenance check failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
     specs = plan.get("cells", [])
     expected = int(plan.get("expected_cells", 0))
     if expected <= 0 or len(specs) != expected:

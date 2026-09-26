@@ -133,6 +133,7 @@ def build_snapshot(root: Path, config: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "protocol": "trajuq_project_status_v1",
+        "validation_scope": "dashboard_expectations_only_not_protocol_revalidation",
         "project": config.get("project", {}),
         "implementation": implementation,
         "execution_gates": gates,
@@ -168,6 +169,12 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
         "# TrajUQ local status snapshot",
         "",
         f"Target: **{project.get('target', 'unknown')}**",
+        "",
+        (
+            "**Dashboard scope:** artifact existence/configured-field checks only. "
+            "A dashboard PASS is not a substitute for the artifact's authoritative "
+            "protocol validator (for example, primary_readiness.py)."
+        ),
         "",
         (
             "Implementation evidence verified: "
@@ -246,7 +253,10 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Audit TrajUQ implementation evidence and experiment gate artifacts."
+        description=(
+            "Build a lightweight TrajUQ progress dashboard from implementation "
+            "evidence and configured artifact fields. This is not protocol revalidation."
+        )
     )
     parser.add_argument(
         "--config",

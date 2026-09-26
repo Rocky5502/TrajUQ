@@ -389,7 +389,7 @@ def test_primary_readiness_rejects_mutated_pilot_artifact(tmp_path):
 
     result = evaluate(case)
     assert result["status"] == "FAIL"
-    assert any("hash-bound PASS" in item for item in result["failures"])
+    assert any("hash/audit-bound PASS" in item for item in result["failures"])
 
 
 def test_primary_readiness_rejects_stale_human_review_binding(tmp_path):

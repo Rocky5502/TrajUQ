@@ -381,7 +381,7 @@ The repository tracks the remaining gates as GitHub issues:
 - MATH-500 scorer manual-audit gate;
 - CI runner allocation.
 
-Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass. After the human review is recorded, run `python scripts/primary_readiness.py`; it hard-fails unless the 50-item pilot, manual gate, and exact parity artifacts for every primary model are PASS.
+Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass. After the human review is recorded, run `python scripts/primary_readiness.py`; it hard-fails unless the 50-item pilot, manual gate, and exact parity artifacts for every primary model are PASS. Once exact model/data revisions are frozen, `python scripts/plan_primary_matrix.py` creates the inspectable 18-cell execution plan without launching GPU work.
 
 ## Paper
 
@@ -424,3 +424,12 @@ The builder excludes paper source, author metadata, raw/gated data, model weight
 run outputs, and the public development-repository identity. It scans selected
 text files for identity/tracking-path leaks and writes a SHA-256 manifest inside
 the archive.
+
+
+## Full primary matrix
+
+The tracked YAML files remain generic templates. Freeze model revisions into
+artifact-local configs with `scripts/freeze_model_config.py`, prepare each
+dataset at an immutable revision, pass `scripts/primary_readiness.py`, and only
+then generate `results/primary_matrix_plan.json` with
+`scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`.

@@ -47,3 +47,20 @@ def test_parity_provenance_requires_prompt_hash_when_strict():
         require=True,
     )
     assert any(item["field"] == "prompt_sha256" for item in errors)
+
+
+
+def test_strict_parity_requires_adapter_generation_settings():
+    reference = row()
+    reference["generation"]["metadata"].pop("block_length")
+    errors = provenance_mismatches(
+        "x",
+        reference,
+        row(),
+        require=True,
+    )
+    assert any(
+        item["field"] == "generation.metadata.block_length"
+        and item["reason"] == "missing_provenance"
+        for item in errors
+    )

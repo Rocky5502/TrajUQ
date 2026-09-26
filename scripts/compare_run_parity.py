@@ -10,6 +10,42 @@ from pathlib import Path
 from trajuq.io import read_jsonl
 
 
+REQUIRED_GENERATION_KEYS_BY_ADAPTER = {
+    "llada": (
+        "model_revision",
+        "mask_id",
+        "steps_requested",
+        "gen_length",
+        "block_length",
+        "temperature",
+        "cfg_scale",
+        "remasking",
+    ),
+    "dream": (
+        "model_revision",
+        "steps_requested",
+        "max_new_tokens",
+        "temperature",
+        "top_p",
+        "algorithm",
+        "algorithm_temperature",
+    ),
+    "sdar": (
+        "model_revision",
+        "mask_id",
+        "gen_length",
+        "block_length",
+        "denoising_steps",
+        "temperature",
+        "top_k",
+        "top_p",
+        "remasking_strategy",
+        "confidence_threshold",
+        "upstream_repository",
+        "upstream_commit",
+    ),
+}
+
 GENERATION_PROVENANCE_KEYS = (
     "model_revision",
     "mask_id",
@@ -123,10 +159,16 @@ def provenance_mismatches(
 
     left_meta = generation_metadata(reference)
     right_meta = generation_metadata(instrumented)
+    adapter = reference.get("adapter") or instrumented.get("adapter")
+    required_generation_keys = set(
+        REQUIRED_GENERATION_KEYS_BY_ADAPTER.get(str(adapter), ())
+    )
     for key in GENERATION_PROVENANCE_KEYS:
         left = left_meta.get(key)
         right = right_meta.get(key)
-        if key == "model_revision" and require and (left is None or right is None):
+        if require and key in required_generation_keys and (
+            left is None or right is None
+        ):
             mismatches.append(
                 {
                     "id": item_id,

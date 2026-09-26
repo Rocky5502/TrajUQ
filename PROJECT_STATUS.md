@@ -39,7 +39,9 @@ particular, the following are implemented and versioned:
 - held-out risk calibration, discrimination, calibration, and tie-aware
   risk-coverage metrics;
 - exact-parity harnesses for LLaDA, SDAR, and Dream, including same prompt hash,
-  model/revision, seed, and frozen-generation provenance checks;
+  model/revision, seed, and adapter-specific frozen-generation provenance
+  checks; primary readiness accepts only protocol-v2 parity artifacts with
+  strict token and provenance checks enabled;
 - frozen 18-cell primary planning and hierarchical aggregation;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation;

@@ -242,6 +242,8 @@ def main() -> None:
                     "metadata": {
                         "model_revision": args.revision,
                         "native_reference": True,
+                        "upstream_repository": "ML-GSAI/LLaDA",
+                        "upstream_commit": "9182493720ed723ef8031210d85959364e51cbe0",
                         "mask_id": int(mask_id),
                         "steps_requested": int(args.steps),
                         "gen_length": int(args.max_new_tokens),

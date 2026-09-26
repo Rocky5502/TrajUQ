@@ -67,8 +67,12 @@ def test_primary_readiness_passes_only_with_all_gates(tmp_path):
         write_json(
             path,
             {
+                "protocol": "trajuq_exact_parity_v2",
                 "status": "PASS",
+                "require_token_ids": True,
+                "require_provenance": True,
                 "mismatch_count": 0,
+                "provenance_mismatch_count": 0,
                 "shared_records": 20,
             },
         )
@@ -183,7 +187,15 @@ def test_primary_readiness_fails_without_math500_manual_gate(tmp_path):
     )
     write_json(
         parity_path,
-        {"status": "PASS", "mismatch_count": 0, "shared_records": 20},
+        {
+            "protocol": "trajuq_exact_parity_v2",
+            "status": "PASS",
+            "require_token_ids": True,
+            "require_provenance": True,
+            "mismatch_count": 0,
+            "provenance_mismatch_count": 0,
+            "shared_records": 20,
+        },
     )
     write_json(math_audit, {"status": "PASS", "failure_count": 0})
     write_json(
@@ -242,7 +254,15 @@ def test_primary_readiness_fails_without_cpu_verification(tmp_path):
     )
     write_json(
         parity_path,
-        {"status": "PASS", "mismatch_count": 0, "shared_records": 20},
+        {
+            "protocol": "trajuq_exact_parity_v2",
+            "status": "PASS",
+            "require_token_ids": True,
+            "require_provenance": True,
+            "mismatch_count": 0,
+            "provenance_mismatch_count": 0,
+            "shared_records": 20,
+        },
     )
     write_json(math_audit, {"status": "PASS", "failure_count": 0})
     write_json(

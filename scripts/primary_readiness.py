@@ -163,17 +163,32 @@ def evaluate_readiness(
             payload = load_json(path)
             status = payload.get("status")
             mismatch_count = payload.get("mismatch_count")
+            provenance_mismatch_count = payload.get("provenance_mismatch_count")
             shared = payload.get("shared_records")
-            passed = status == "PASS"
+            passed = (
+                status == "PASS"
+                and payload.get("protocol") == "trajuq_exact_parity_v2"
+                and payload.get("require_token_ids") is True
+                and payload.get("require_provenance") is True
+            )
             if mismatch_count is not None:
                 passed = passed and int(mismatch_count) == 0
+            if provenance_mismatch_count is not None:
+                passed = passed and int(provenance_mismatch_count) == 0
+            else:
+                passed = False
             if shared is not None:
                 passed = passed and int(shared) > 0
             parity_checks[model] = {
                 "path": path,
                 "status": status,
+                "protocol": payload.get("protocol"),
+                "require_token_ids": payload.get("require_token_ids"),
+                "require_provenance": payload.get("require_provenance"),
                 "mismatch_count": mismatch_count,
+                "provenance_mismatch_count": provenance_mismatch_count,
                 "shared_records": shared,
+                "git_commit": payload.get("git_commit"),
             }
             if not passed:
                 failures.append(f"{model} parity gate is not PASS")

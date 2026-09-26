@@ -185,7 +185,7 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-`-Stage all` runs the same stages sequentially, but the script hard-stops if exact token parity fails. The pilot stage also writes `results/llada_gsm8k_pilot50_gate.json` and a stratified 10-example manual trace-review sheet.
+`-Stage all` runs the same stages sequentially, but the script hard-stops if exact token parity fails. The prepare stage writes a frozen runtime config at `results/llada_pilot_model_config.yaml` without modifying the tracked template. The parity stage records telemetry overhead, and the pilot stage writes `results/llada_gsm8k_pilot50_gate.json` plus a stratified 10-example manual trace-review sheet.
 
 ## 50-example GPU pilot
 

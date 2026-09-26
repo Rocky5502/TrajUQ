@@ -139,6 +139,7 @@ def test_result_macros_are_derived_from_complete_artifacts():
     assert macros["AblationFullAUROCDelta"] == "+0.040"
     assert macros["AdaptiveDeltaRandom"] == "+0.040"
     assert "positive point improvement" in macros["AbstractResultSentence"]
+    assert macros["PaperStateLimitationsSentence"] == ""
 
 
 def test_result_renderer_rejects_partial_primary_matrix():

@@ -116,12 +116,14 @@ def main() -> None:
 
     try:
         refs = reference_index(input_path)
+        raw_audit_path, raw_audit = verify_raw_audit(run_path)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     seen: set[str] = set()
     total = 0
     correct = 0
     raw_sha = sha256_file(run_path)
+    raw_audit_sha = sha256_file(raw_audit_path)
     input_sha = sha256_file(input_path)
 
     for rec in read_jsonl(run_path):
@@ -159,6 +161,8 @@ def main() -> None:
             {
                 "scorer": scorer,
                 "raw_run_sha256": raw_sha,
+                "raw_audit_sha256": raw_audit_sha,
+                "raw_audit_git_commit": raw_audit.get("git_commit"),
                 "scoring_input_sha256": input_sha,
             }
         )

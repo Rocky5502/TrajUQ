@@ -17,6 +17,27 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def reference_index(path: Path) -> dict[str, dict]:
+    rows = list(read_jsonl(path))
+    if not rows:
+        raise ValueError(f"normalized input is empty: {path}")
+
+    out: dict[str, dict] = {}
+    for i, row in enumerate(rows):
+        item_id = str(row.get("id", "")).strip()
+        if not item_id:
+            raise ValueError(f"normalized input row {i} has no id")
+        if item_id in out:
+            raise ValueError(f"normalized input has duplicate id: {item_id}")
+        dataset = str(row.get("dataset", "")).strip()
+        if not dataset:
+            raise ValueError(f"normalized input row {i} has no dataset identity")
+        if row.get("reference") is None:
+            raise ValueError(f"normalized input row {i} has no reference")
+        out[item_id] = row
+    return out
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", required=True, help="Audited pre-outcome generation JSONL")

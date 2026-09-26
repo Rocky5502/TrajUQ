@@ -142,6 +142,15 @@ def main() -> None:
     args = parser.parse_args()
 
     failures: list[str] = []
+
+    preprimary_readiness = run_json_command(
+        [sys.executable, "scripts/primary_readiness.py"]
+    )
+    if preprimary_readiness.get("status") != "PASS":
+        failures.append(
+            "pre-primary provenance/readiness revalidation failed at submission time"
+        )
+
     config = yaml.safe_load(
         Path(args.status_config).read_text(encoding="utf-8")
     )
@@ -208,6 +217,7 @@ def main() -> None:
         "status": "PASS" if not failures else "FAIL",
         "project_gate_summary": snapshot["summary"],
         "required_gate_failures": required_not_pass,
+        "preprimary_readiness_revalidation": preprimary_readiness,
         "generated_results": rendered,
         "paper_audit": paper_audit,
         "supplement_build": supplement_build,

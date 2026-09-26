@@ -60,6 +60,20 @@ def run_audit_passes(
     )
     return passed, payload
 
+def review_sheet_metadata(path: Path) -> dict[str, str]:
+    prefixes = {
+        "- scored artifact: ": "scored_artifact",
+        "- scored SHA-256: ": "scored_sha256",
+    }
+    found: dict[str, str] = {}
+    if not path.exists():
+        return found
+    for line in path.read_text(encoding="utf-8").splitlines():
+        for prefix, key in prefixes.items():
+            if line.startswith(prefix):
+                found[key] = line[len(prefix):].strip()
+    return found
+
 
 def parse_override(value: str) -> tuple[str, str]:
     if "=" not in value:
@@ -309,6 +323,18 @@ def evaluate_readiness(
             review_sheet.exists()
             and manual.get("review_sheet_sha256") == sha256_file(review_sheet)
         )
+        review_meta = review_sheet_metadata(review_sheet)
+        quality_payload = load_json(pilot_quality_path)
+        expected_review_scored = str(quality_payload.get("scored", ""))
+        expected_review_scored_sha = str(quality_payload.get("scored_sha256", ""))
+        review_source_ok = (
+            bool(expected_review_scored)
+            and bool(expected_review_scored_sha)
+            and manual.get("review_scored_artifact") == expected_review_scored
+            and manual.get("review_scored_sha256") == expected_review_scored_sha
+            and review_meta.get("scored_artifact") == expected_review_scored
+            and review_meta.get("scored_sha256") == expected_review_scored_sha
+        )
         parity_hash_ok = (
             llada_parity_path.exists()
             and manual.get("parity_artifact_sha256")
@@ -326,6 +352,7 @@ def evaluate_readiness(
             and manual.get("git_clean") is True
             and int(manual.get("reviewed_records", 0)) >= 10
             and review_hash_ok
+            and review_source_ok
             and parity_hash_ok
             and quality_hash_ok
             and all(
@@ -346,6 +373,9 @@ def evaluate_readiness(
             "git_clean": manual.get("git_clean"),
             "reviewed_records": manual.get("reviewed_records"),
             "review_sheet_hash_ok": review_hash_ok,
+            "review_source_ok": review_source_ok,
+            "review_scored_artifact": review_meta.get("scored_artifact"),
+            "review_scored_sha256": review_meta.get("scored_sha256"),
             "parity_hash_ok": parity_hash_ok,
             "pilot_quality_hash_ok": quality_hash_ok,
         }

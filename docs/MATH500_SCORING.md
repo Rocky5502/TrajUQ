@@ -72,12 +72,13 @@ PowerShell -ExecutionPolicy Bypass -File scripts/math500_gate_windows.ps1 -Stage
 ```
 
 This wrapper requires the clean CPU/revision freeze and an exact LLaDA parity-v3
-PASS at the same frozen commit/revision. It verifies the installed
-`math-verify==0.9.0` and `antlr4-python3-runtime==4.13.2`, prepares the frozen
-MATH-500 calibration/test pair, runs exactly 25 calibration-only LLaDA examples,
-audits raw/scored artifacts separately, and exports the deterministic review
-sheet. It intentionally does **not** create the human attestation and refuses to
-overwrite existing pilot/review evidence.
+PASS at the same frozen commit/revision. Before reuse it re-hashes the parity
+reference/instrumented sources and revalidates the frozen MATH-500 calibration/
+test split manifest plus split audit. It verifies the installed
+`math-verify==0.9.0` and `antlr4-python3-runtime==4.13.2`, runs exactly 25
+calibration-only LLaDA examples, audits raw/scored artifacts separately, and
+exports the deterministic review sheet. It intentionally does **not** create
+the human attestation and refuses to overwrite existing pilot/review evidence.
 
 Before any primary MATH-500 generation, run the automatic audit at the same
 frozen experiment commit recorded by revision-ledger v2:
@@ -107,6 +108,8 @@ symbolic-equivalence behavior, and parser failures. Record that review with:
 ```bash
 python scripts/record_math500_scorer_review.py \
   --review-sheet results/math500_scorer_review.md \
+  --scored runs/llada_math500_scorer_pilot.scored.jsonl \
+  --input data/processed/math500/calibration.jsonl \
   --reviewed-records 25 \
   --answer-extraction-pass \
   --symbolic-equivalence-pass \
@@ -115,8 +118,11 @@ python scripts/record_math500_scorer_review.py \
 ```
 
 The human recorder emits protocol
-`trajuq_math500_manual_scorer_gate_v2`, binds the review sheet and automatic
-audit by SHA-256, and requires the automatic audit to come from the same git
-commit. `scripts/primary_readiness.py` re-verifies those hashes and blocks the
-full primary matrix unless both artifacts are current PASSes. Do not inspect
-final test labels to tune the scorer.
+`trajuq_math500_manual_scorer_gate_v2`. Before writing PASS it revalidates the
+clean automatic audit and pinned dependency versions, the exact reviewed scored
+pilot, its scored `audit_run.py` artifact, and the frozen calibration input.
+The review sheet carries the scored/input SHA-256 values, and the recorder
+stores those bindings in the attestation. `scripts/primary_readiness.py`
+independently re-verifies the review sheet, scored pilot, scored audit,
+calibration input, and automatic audit before allowing the full primary matrix.
+Do not inspect final test labels to tune the scorer.

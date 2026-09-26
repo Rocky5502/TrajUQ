@@ -26,7 +26,7 @@ Trajectory-Aware Uncertainty for Selective and Adaptive Generation}
 \begin{abstract}
 Diffusion language models generate text by repeatedly revising partially masked sequences, exposing a temporal signal that autoregressive confidence estimators do not observe.
 We study whether this denoising trajectory can reveal answer-level failure \emph{before} benchmark correctness is known.
-We introduce \method, a training-free telemetry and calibration framework that measures uncertainty only on positions that are active and unresolved at each denoising step.
+We introduce \method, a training-free telemetry framework with post-hoc calibration that measures uncertainty only on positions that are active and unresolved at each denoising step.
 Its features combine predictive entropy and margin, consecutive-step Jensen--Shannon drift, proposal revisions, mask persistence, and commitment timing.
 A held-out calibrator maps these pre-outcome signals to error probability, which supports selective generation and a two-budget adaptive-compute policy.
 The primary test is deliberately nested: a trajectory-augmented predictor must improve over a strong per-token decision-time entropy baseline evaluated on the same held-out examples.
@@ -265,7 +265,7 @@ Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
 \method (single trajectory) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
 \bottomrule
 \end{tabular}
-\caption{Expensive five-sample baseline on the complete frozen $3\times6$ model--dataset matrix. MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. This comparator remains secondary to the pre-registered RQ1 endpoint.}
+\caption{Expensive five-sample baseline on the complete frozen $3\times6$ model--dataset matrix. The five auxiliary generations require \RepeatedAuxWallTime\ s/example on average (equal-cell macro; target generation excluded). MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. This comparator remains secondary to the pre-registered RQ1 endpoint.}
 \label{tab:repeated}
 \end{table}
 

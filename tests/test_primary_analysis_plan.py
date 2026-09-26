@@ -1,9 +1,12 @@
 import hashlib
 import json
+from pathlib import Path
+
 from scripts.plan_primary_analysis import (
     audit_passes,
     exact_id_coverage,
     main as analysis_main,
+    scored_source_chain_passes,
 )
 
 
@@ -79,6 +82,58 @@ def test_primary_analysis_rejects_reordered_or_duplicate_ids(tmp_path):
         encoding="utf-8",
     )
     assert not exact_id_coverage(source, scored)
+
+
+def test_scored_source_chain_requires_raw_audit_and_metadata_bindings(
+    tmp_path,
+):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "run.raw.jsonl"
+    raw_audit = raw.with_suffix(raw.suffix + ".audit.json")
+    scored = tmp_path / "run.scored.jsonl"
+    source.write_text('{"id":"x"}\n', encoding="utf-8")
+    raw.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    raw_audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": "frozen-commit",
+                "git_clean": True,
+                "stage": "raw",
+                "sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
+            }
+        ),
+        encoding="utf-8",
+    )
+    metadata = {
+        "scorer": "gsm8k_numeric_exact",
+        "raw_run_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
+        "raw_audit_sha256": hashlib.sha256(raw_audit.read_bytes()).hexdigest(),
+        "raw_audit_git_commit": "frozen-commit",
+        "scoring_input_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+    }
+    scored.write_text(
+        json.dumps({"example_id": "x", "metadata": metadata}) + "\n",
+        encoding="utf-8",
+    )
+
+    assert scored_source_chain_passes(
+        source,
+        raw,
+        scored,
+        "frozen-commit",
+    )
+
+    payload = json.loads(scored.read_text(encoding="utf-8"))
+    payload["metadata"]["raw_run_sha256"] = "tampered"
+    scored.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    assert not scored_source_chain_passes(
+        source,
+        raw,
+        scored,
+        "frozen-commit",
+    )
 
 
 def test_primary_macro_command_is_bound_to_analysis_plan():

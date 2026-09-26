@@ -9,6 +9,7 @@ import numpy as np
 
 from trajuq.calibration import RiskCalibrator
 from trajuq.evaluation import (
+    SELECTIVE_RISK_VERSION,
     calibration_metrics,
     error_detection_metrics,
     expected_calibration_error,
@@ -113,6 +114,7 @@ def main() -> None:
 
     results = {
         "protocol": "trajuq_heldout_evaluation_v1",
+        "selective_risk_version": SELECTIVE_RISK_VERSION,
         "seed": args.seed,
         "decision_entropy_baseline": summarize(
             y_test_b,

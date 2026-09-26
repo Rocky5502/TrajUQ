@@ -57,6 +57,7 @@ def make_record() -> dict:
         adapter="llada",
         seed=2027,
         generation=result,
+        metadata={"model_revision": "sha"},
     ).to_dict()
 
 
@@ -77,6 +78,15 @@ def run_audit(tmp_path: Path, record: dict) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
     )
+
+
+def test_run_audit_accepts_coherent_frozen_raw_artifact(tmp_path):
+    result = run_audit(tmp_path, make_record())
+
+    assert result.returncode == 0
+    assert '"status": "PASS"' in result.stdout
+    assert '"model_revisions": [' in result.stdout
+    assert '"seeds": [' in result.stdout
 
 
 def test_run_audit_rejects_bounded_feature_violation(tmp_path):

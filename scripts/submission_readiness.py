@@ -289,6 +289,93 @@ def verify_generated_results(
     }
 
 
+def verify_result_figures(manifest_path: Path) -> dict:
+    failures: list[str] = []
+    try:
+        manifest = load_json(manifest_path)
+    except ValueError as exc:
+        return {
+            "status": "FAIL",
+            "manifest": str(manifest_path),
+            "failures": [str(exc)],
+        }
+
+    if manifest.get("protocol") != "trajuq_paper_result_figures_v2":
+        failures.append("result-figure manifest protocol is not v2")
+    if int(manifest.get("expected_cells", -1)) != 18:
+        failures.append("result-figure manifest expected cell count is not 18")
+
+    required_sources = {
+        "primary",
+        "primary_config",
+        "cap_025",
+        "cap_050",
+        "cap_075",
+    }
+    sources = manifest.get("sources", {})
+    if not isinstance(sources, dict):
+        failures.append("result-figure sources is not an object")
+        sources = {}
+    missing_sources = sorted(required_sources - set(sources))
+    if missing_sources:
+        failures.append(
+            "result-figure manifest missing sources: "
+            + ", ".join(missing_sources)
+        )
+
+    for name in sorted(required_sources.intersection(sources)):
+        source = sources[name]
+        path = Path(str(source.get("path", "")))
+        if not path.exists():
+            failures.append(f"result-figure source missing: {name} -> {path}")
+            continue
+        if sha256_file(path) != str(source.get("sha256", "")):
+            failures.append(f"result-figure source hash changed: {name}")
+
+    required_outputs = {
+        "primary_auroc_matrix",
+        "family_macro_auroc",
+        "adaptive_tradeoff",
+    }
+    outputs = manifest.get("outputs", {})
+    if not isinstance(outputs, dict):
+        failures.append("result-figure outputs is not an object")
+        outputs = {}
+    missing_outputs = sorted(required_outputs - set(outputs))
+    if missing_outputs:
+        failures.append(
+            "result-figure manifest missing outputs: "
+            + ", ".join(missing_outputs)
+        )
+
+    for name in sorted(required_outputs.intersection(outputs)):
+        item = outputs[name]
+        path = Path(str(item.get("path", "")))
+        if not path.exists():
+            failures.append(f"result figure missing: {name} -> {path}")
+            continue
+        if path.suffix.lower() != ".pdf":
+            failures.append(f"result figure is not a PDF: {name}")
+            continue
+        data = path.read_bytes()
+        if not data.startswith(b"%PDF-"):
+            failures.append(f"result figure has invalid PDF header: {name}")
+        if sha256_file(path) != str(item.get("sha256", "")):
+            failures.append(f"result figure hash changed: {name}")
+        try:
+            expected_bytes = int(item.get("bytes", -1))
+        except (TypeError, ValueError):
+            expected_bytes = -1
+        if expected_bytes != path.stat().st_size:
+            failures.append(f"result figure byte count changed: {name}")
+
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "manifest": str(manifest_path),
+        "failures": failures,
+    }
+
+
 def prerequisite_gate_failures(
     snapshot: dict,
     *,
@@ -372,6 +459,10 @@ def main() -> None:
         default="paper/generated_results.tex",
     )
     parser.add_argument(
+        "--result-figure-manifest",
+        default="paper/figures/generated/result_figure_manifest.json",
+    )
+    parser.add_argument(
         "--supplement",
         default="dist/trajuq_anonymous_software.zip",
     )
@@ -431,6 +522,11 @@ def main() -> None:
     )
     failures.extend(rendered["failures"])
 
+    result_figures = verify_result_figures(
+        Path(args.result_figure_manifest)
+    )
+    failures.extend(result_figures["failures"])
+
     paper_audit = run_json_command(
         [sys.executable, "scripts/audit_paper.py", "--submission-ready"]
     )
@@ -478,6 +574,7 @@ def main() -> None:
         "preprimary_readiness_revalidation": preprimary_readiness,
         "downstream_provenance_revalidation": downstream_provenance,
         "generated_results": rendered,
+        "result_figures": result_figures,
         "paper_audit": paper_audit,
         "supplement_build": supplement_build,
         "supplement": supplement,

@@ -162,6 +162,11 @@ $ParityTrajUQ = "runs/llada_parity_trajuq.raw.jsonl"
 $ParityResult = "results/llada_parity.json"
 $PilotRaw = "runs/llada_gsm8k_pilot50.raw.jsonl"
 $PilotScored = "runs/llada_gsm8k_pilot50.scored.jsonl"
+$PilotGate = "results/llada_gsm8k_pilot50_gate.json"
+$PilotReview = "results/llada_gsm8k_pilot50_trace_review.md"
+$ParityOverhead = "results/llada_instrumentation_overhead.json"
+$SplitManifest = "data/processed/gsm8k/split_manifest.json"
+$SplitAudit = "data/processed/gsm8k/split_audit.json"
 
 New-Item -ItemType Directory -Force -Path results | Out-Null
 New-Item -ItemType Directory -Force -Path runs | Out-Null
@@ -183,10 +188,70 @@ Write-Host "MODEL_SHA=$ModelSha"
 Write-Host "DATASET_SHA=$DatasetSha"
 
 if ($Stage -in @("prepare", "all")) {
-    Run-Step "Prepare frozen GSM8K pair" { & $Python scripts/prepare_eval_pair.py --dataset gsm8k --revision $DatasetSha }
-    Run-Step "CUDA preflight" { & $Python scripts/preflight.py --model-config $ModelConfig --data $CalData --require-cuda }
-    Run-Step "Environment snapshot" { & $Python scripts/environment_snapshot.py --output results/pilot_environment.json }
-    Run-Step "Freeze manifest" { & $Python scripts/freeze_manifest.py --model-config $ModelConfig --dataset $CalData --dataset $TestData --output results/pilot_freeze_manifest.json }
+    $SplitArtifacts = @($CalData, $TestData, $SplitManifest, $SplitAudit)
+    $ExistingSplitArtifacts = @($SplitArtifacts | Where-Object { Test-Path $_ })
+    if ($ExistingSplitArtifacts.Count -eq 0) {
+        Run-Step "Prepare frozen GSM8K pair" {
+            & $Python scripts/prepare_eval_pair.py --dataset gsm8k --revision $DatasetSha
+        }
+    }
+    elseif ($ExistingSplitArtifacts.Count -ne $SplitArtifacts.Count) {
+        throw (
+            "Partial GSM8K split artifacts exist: " +
+            ($ExistingSplitArtifacts -join ", ") +
+            ". Inspect them before rerunning; this wrapper will not overwrite frozen data."
+        )
+    }
+    else {
+        $Split = Get-Content $SplitManifest -Raw | ConvertFrom-Json
+        $Audit = Get-Content $SplitAudit -Raw | ConvertFrom-Json
+        if ($Split.requested_revision -ne $DatasetSha) {
+            throw "Existing GSM8K split revision differs from the frozen revision ledger."
+        }
+        if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalData)) {
+            throw "Existing GSM8K calibration hash differs from its split manifest."
+        }
+        if ($Split.test_sha256 -ne (Get-FileSha256 $TestData)) {
+            throw "Existing GSM8K test hash differs from its split manifest."
+        }
+        if (
+            $Audit.status -ne "PASS" -or
+            $Audit.id_overlap_count -ne 0 -or
+            $Audit.exact_prompt_overlap_count -ne 0
+        ) {
+            throw "Existing GSM8K split audit is not a zero-overlap PASS."
+        }
+        Write-Host "Frozen GSM8K pair already present and hash-valid; preserving it." -ForegroundColor Green
+    }
+
+    Run-Step "CUDA preflight" {
+        & $Python scripts/preflight.py --model-config $ModelConfig --data $CalData --require-cuda
+    }
+
+    if (-not (Test-Path "results/pilot_environment.json")) {
+        Run-Step "Environment snapshot" {
+            & $Python scripts/environment_snapshot.py --output results/pilot_environment.json
+        }
+    }
+    else {
+        Write-Host "Preserving existing results/pilot_environment.json." -ForegroundColor Green
+    }
+
+    if (-not (Test-Path "results/pilot_freeze_manifest.json")) {
+        Run-Step "Freeze manifest" {
+            & $Python scripts/freeze_manifest.py --model-config $ModelConfig --dataset $CalData --dataset $TestData --output results/pilot_freeze_manifest.json
+        }
+    }
+    else {
+        $Freeze = Get-Content results/pilot_freeze_manifest.json -Raw | ConvertFrom-Json
+        if ($Freeze.git_commit -ne $Ledger.git_commit) {
+            throw "Existing pilot freeze manifest belongs to another git commit."
+        }
+        if ($Freeze.model_config_sha256 -ne (Get-FileSha256 $ModelConfig)) {
+            throw "Existing pilot freeze manifest model-config hash drifted."
+        }
+        Write-Host "Preserving existing results/pilot_freeze_manifest.json." -ForegroundColor Green
+    }
 }
 
 if ($Stage -in @("parity", "pilot", "all")) {
@@ -197,47 +262,92 @@ if ($Stage -in @("pilot", "all")) {
 }
 
 if ($Stage -in @("parity", "all")) {
-    Remove-Artifact $ParityReference
-    Remove-Artifact $ParityTrajUQ
-    Remove-Item $ParityResult -ErrorAction SilentlyContinue
-    Remove-Item results/llada_instrumentation_overhead.json -ErrorAction SilentlyContinue
+    if (Assert-ParityPass $ParityResult $ModelSha $Ledger.git_commit) {
+        Write-Host "LLaDA parity already PASS and hash-valid; preserving existing evidence." -ForegroundColor Green
+        if (-not (Test-Path $ParityOverhead)) {
+            Run-Step "Instrumentation overhead" {
+                & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output $ParityOverhead
+            }
+        }
+    }
+    else {
+        Require-No-ExistingArtifacts @(
+            $ParityReference,
+            $ParityTrajUQ,
+            "$ParityTrajUQ.audit.json",
+            $ParityOverhead
+        )
 
-    Run-Step "20-prompt native reference" { & $Python scripts/run_llada_reference.py --model $ModelId --revision $ModelSha --input $CalData --output $ParityReference --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0 }
-    Run-Step "20-prompt TrajUQ telemetry" { & $Python scripts/run_generation.py --adapter llada --model $ModelId --revision $ModelSha --input $CalData --output $ParityTrajUQ --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0 }
-    Run-Step "Raw parity-run audit" { & $Python scripts/audit_run.py --run $ParityTrajUQ --stage raw --require-revision }
-    Run-Step "Exact token parity" { & $Python scripts/compare_run_parity.py --reference $ParityReference --instrumented $ParityTrajUQ --require-token-ids --require-provenance --output $ParityResult }
+        Run-Step "20-prompt native reference" {
+            & $Python scripts/run_llada_reference.py --model $ModelId --revision $ModelSha --input $CalData --output $ParityReference --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0
+        }
+        Run-Step "20-prompt TrajUQ telemetry" {
+            & $Python scripts/run_generation.py --adapter llada --model $ModelId --revision $ModelSha --input $CalData --output $ParityTrajUQ --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0
+        }
+        Run-Step "Raw parity-run audit" {
+            & $Python scripts/audit_run.py --run $ParityTrajUQ --stage raw --require-revision
+        }
+        Run-Step "Exact token parity" {
+            & $Python scripts/compare_run_parity.py --reference $ParityReference --instrumented $ParityTrajUQ --require-token-ids --require-provenance --output $ParityResult
+        }
 
-    $Parity = Get-Content $ParityResult -Raw | ConvertFrom-Json
-    if ($Parity.protocol -ne "trajuq_exact_parity_v3") { throw "Parity protocol is not v3. STOP." }
-    if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP: do not run the 50-item pilot." }
-    if ($Parity.git_commit -ne $Ledger.git_commit) { throw "Parity commit differs from revision ledger. STOP." }
-    if ($Parity.shared_records -ne 20) { throw "Parity did not cover exactly 20 shared prompts. STOP." }
-    if ($Parity.run_provenance.model_revision -ne $ModelSha) { throw "Parity model revision differs from revision ledger. STOP." }
+        if (-not (Assert-ParityPass $ParityResult $ModelSha $Ledger.git_commit)) {
+            throw "Parity did not produce a reusable PASS artifact."
+        }
 
-    Run-Step "Instrumentation overhead" { & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output results/llada_instrumentation_overhead.json }
+        Run-Step "Instrumentation overhead" {
+            & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output $ParityOverhead
+        }
+    }
 }
 
 if ($Stage -in @("pilot", "all")) {
-    if (-not (Test-Path $ParityResult)) { throw "Missing $ParityResult. Run -Stage parity first." }
-    $Parity = Get-Content $ParityResult -Raw | ConvertFrom-Json
-    if ($Parity.protocol -ne "trajuq_exact_parity_v3") { throw "Parity protocol is not v3. STOP." }
-    if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP." }
-    if ($Parity.git_commit -ne $Ledger.git_commit) { throw "Parity commit differs from revision ledger. STOP." }
-    if ($Parity.run_provenance.model_revision -ne $ModelSha) { throw "Parity model revision differs from revision ledger. STOP." }
+    if (-not (Assert-ParityPass $ParityResult $ModelSha $Ledger.git_commit)) {
+        throw "Missing valid LLaDA parity PASS. Run -Stage parity first."
+    }
 
-    Remove-Artifact $PilotRaw
-    Remove-Artifact $PilotScored
-    Remove-Item results/llada_gsm8k_pilot50_gate.json -ErrorAction SilentlyContinue
-    Remove-Item results/llada_gsm8k_pilot50_trace_review.md -ErrorAction SilentlyContinue
+    if (Assert-PilotGatePass $PilotGate $PilotRaw $PilotScored $ModelSha $Ledger.git_commit) {
+        Write-Host "LLaDA + GSM8K 50-example pilot already PASS and hash-valid; preserving evidence." -ForegroundColor Green
+        if (-not (Test-Path $PilotReview)) {
+            Run-Step "Export 10-example manual review sheet" {
+                & $Python scripts/export_trace_review.py --scored $PilotScored --output $PilotReview --count 10
+            }
+        }
+    }
+    else {
+        Require-No-ExistingArtifacts @(
+            $PilotRaw,
+            "$PilotRaw.audit.json",
+            $PilotScored,
+            "$PilotScored.audit.json",
+            $PilotReview,
+            "results/llada_gsm8k_pilot50_manual_review.json"
+        )
 
-    Run-Step "50-item TrajUQ pilot" { & $Python scripts/run_generation.py --adapter llada --model $ModelId --revision $ModelSha --input $CalData --output $PilotRaw --limit 50 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0 }
-    Run-Step "Raw pilot audit" { & $Python scripts/audit_run.py --run $PilotRaw --stage raw --require-revision }
-    Run-Step "Score pilot into separate artifact" { & $Python scripts/score_outputs.py --run $PilotRaw --input $CalData --output $PilotScored }
-    Run-Step "Scored pilot audit" { & $Python scripts/audit_run.py --run $PilotScored --stage scored --require-revision }
-    Run-Step "Automated pilot quality gate" { & $Python scripts/pilot_quality_gate.py --raw $PilotRaw --scored $PilotScored --output results/llada_gsm8k_pilot50_gate.json }
-    Run-Step "Export 10-example manual review sheet" { & $Python scripts/export_trace_review.py --scored $PilotScored --output results/llada_gsm8k_pilot50_trace_review.md --count 10 }
+        Run-Step "50-item TrajUQ pilot" {
+            & $Python scripts/run_generation.py --adapter llada --model $ModelId --revision $ModelSha --input $CalData --output $PilotRaw --limit 50 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0
+        }
+        Run-Step "Raw pilot audit" {
+            & $Python scripts/audit_run.py --run $PilotRaw --stage raw --require-revision
+        }
+        Run-Step "Score pilot into separate artifact" {
+            & $Python scripts/score_outputs.py --run $PilotRaw --input $CalData --output $PilotScored
+        }
+        Run-Step "Scored pilot audit" {
+            & $Python scripts/audit_run.py --run $PilotScored --stage scored --require-revision
+        }
+        Run-Step "Automated pilot quality gate" {
+            & $Python scripts/pilot_quality_gate.py --raw $PilotRaw --scored $PilotScored --output $PilotGate
+        }
+        if (-not (Assert-PilotGatePass $PilotGate $PilotRaw $PilotScored $ModelSha $Ledger.git_commit)) {
+            throw "Pilot quality gate did not produce a reusable PASS artifact."
+        }
+        Run-Step "Export 10-example manual review sheet" {
+            & $Python scripts/export_trace_review.py --scored $PilotScored --output $PilotReview --count 10
+        }
+    }
 
     Write-Host ""
     Write-Host "AUTOMATED PILOT COMPLETE." -ForegroundColor Green
-    Write-Host "Manual gate remains: review results/llada_gsm8k_pilot50_trace_review.md."
+    Write-Host "Manual gate remains: review $PilotReview."
 }

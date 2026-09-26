@@ -205,7 +205,7 @@ Each adapter must pass an exact token-level parity gate against an uninstrumente
 
 \subsection{Tasks}
 
-The planned suite spans mathematical reasoning, science QA, multiple-choice knowledge, and truthfulness:
+The frozen suite spans mathematical reasoning, science QA, multiple-choice knowledge, and truthfulness:
 GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
 Where official calibration/test splits exist, they are kept separate.
 Single-split datasets use a deterministic pre-generation internal holdout and are reported explicitly as such.
@@ -250,7 +250,7 @@ Decision entropy & \PrimaryDecisionAUROC & \PrimaryDecisionAUPRC & \PrimaryDecis
 \method & \PrimaryTrajAUROC & \PrimaryTrajAUPRC & \PrimaryTrajBrier & \PrimaryTrajECE & \PrimaryTrajAURC\\
 \bottomrule
 \end{tabular}
-\caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values remain blank until frozen experiments are complete.}
+\caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values are populated only from traceable frozen result artifacts.}
 \label{tab:main}
 \end{table*}
 
@@ -316,7 +316,7 @@ Finally, adaptive refinement is evaluated with two frozen budgets; richer dynami
 Better uncertainty estimates can support abstention and compute allocation, but they do not make model outputs inherently safe or correct.
 A calibrated score is task- and distribution-dependent and should not be interpreted as a universal probability of truth.
 We avoid using correctness labels during generation and record provenance needed to audit reported numbers.
-No proprietary user data are required by the planned benchmark suite.
+No proprietary user data are required by the frozen benchmark suite.
 Gated datasets are used according to their access conditions and are not redistributed.
 
 \bibliography{references}

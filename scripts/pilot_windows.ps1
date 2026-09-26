@@ -64,6 +64,8 @@ if ($Stage -in @("parity","all")) {
 
     $Parity = Get-Content results/llada_parity.json | ConvertFrom-Json
     if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP: do not run the 50-item pilot." }
+
+    Run-Step "Instrumentation overhead" { & $Python scripts/compare_instrumentation_overhead.py --reference runs/llada_parity_reference.jsonl --instrumented runs/llada_parity_trajuq.raw.jsonl --output results/llada_instrumentation_overhead.json }
 }
 
 if ($Stage -in @("pilot","all")) {

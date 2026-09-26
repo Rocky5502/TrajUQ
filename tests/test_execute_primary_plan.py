@@ -3,7 +3,9 @@ import json
 from pathlib import Path
 
 from scripts.execute_primary_plan import (
+    artifact_id_state,
     audit_passes,
+    command_needed,
     execution_snapshot,
     partition_state,
     validate_plan_provenance,
@@ -13,6 +15,23 @@ from scripts.execute_primary_plan import (
 def write_artifact(path: Path, content: str = "x\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def write_input(path: Path, ids: list[str]) -> None:
+    write_artifact(
+        path,
+        "".join(json.dumps({"id": item_id}) + "\n" for item_id in ids),
+    )
+
+
+def write_run(path: Path, ids: list[str]) -> None:
+    write_artifact(
+        path,
+        "".join(
+            json.dumps({"example_id": item_id}) + "\n"
+            for item_id in ids
+        ),
+    )
 
 
 def write_pass_audit(
@@ -50,39 +69,52 @@ def test_audit_passes_requires_matching_hash(tmp_path):
 
 
 def test_partition_complete_only_after_both_audited_artifacts(tmp_path):
+    source = tmp_path / "calibration.jsonl"
     raw = tmp_path / "cal.raw.jsonl"
     scored = tmp_path / "cal.scored.jsonl"
-    spec = {"raw_output": str(raw), "scored_output": str(scored)}
+    write_input(source, ["a", "b"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
 
     assert not partition_state(spec)["complete"]
-    write_artifact(raw)
+    write_run(raw, ["a", "b"])
     write_pass_audit(raw)
     assert not partition_state(spec)["complete"]
-    write_artifact(scored)
+    write_run(scored, ["a", "b"])
     write_pass_audit(scored)
     assert partition_state(spec)["complete"]
 
 
 def test_execution_snapshot_counts_complete_partitions(tmp_path):
+    cal_input = tmp_path / "calibration.jsonl"
+    test_input = tmp_path / "test.jsonl"
     cal_raw = tmp_path / "cal.raw.jsonl"
     cal_scored = tmp_path / "cal.scored.jsonl"
+    write_input(cal_input, ["c"])
+    write_input(test_input, ["t"])
     for path in (cal_raw, cal_scored):
-        write_artifact(path)
+        write_run(path, ["c"])
         write_pass_audit(path)
 
     plan = {
         "protocol": "trajuq_primary_matrix_plan_v1",
         "expected_cells": 1,
+        "experiment_git_commit": "frozen-commit",
         "cells": [
             {
                 "cell": "llada:gsm8k",
                 "adapter": "llada",
                 "dataset": "gsm8k",
                 "calibration": {
+                    "input": str(cal_input),
                     "raw_output": str(cal_raw),
                     "scored_output": str(cal_scored),
                 },
                 "test": {
+                    "input": str(test_input),
                     "raw_output": str(tmp_path / "test.raw.jsonl"),
                     "scored_output": str(tmp_path / "test.scored.jsonl"),
                 },
@@ -94,6 +126,48 @@ def test_execution_snapshot_counts_complete_partitions(tmp_path):
     assert snapshot["complete_partitions"] == 1
     assert snapshot["total_partitions"] == 2
     assert snapshot["status"] == "IN_PROGRESS"
+
+
+def test_partial_raw_prefix_is_resumed_not_counted_complete(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "run.raw.jsonl"
+    scored = tmp_path / "run.scored.jsonl"
+    write_input(source, ["a", "b", "c"])
+    write_run(raw, ["a", "b"])
+    write_pass_audit(raw, stage="raw")
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    assert artifact_id_state(raw, spec) == "PREFIX"
+    assert command_needed("generate", spec, "frozen-commit")
+    state = partition_state(spec, "frozen-commit")
+    assert state["raw_id_state"] == "PREFIX"
+    assert not state["complete"]
+
+
+def test_partial_scored_artifact_is_rejected_before_overwrite(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "run.raw.jsonl"
+    scored = tmp_path / "run.scored.jsonl"
+    write_input(source, ["a", "b"])
+    write_run(raw, ["a", "b"])
+    write_run(scored, ["a"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    assert artifact_id_state(scored, spec) == "PREFIX"
+    try:
+        command_needed("score", spec, "frozen-commit")
+    except ValueError as exc:
+        assert "partial/invalid scored artifact" in str(exc)
+    else:
+        raise AssertionError("partial scored artifact must not be silently reused")
 
 
 def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):

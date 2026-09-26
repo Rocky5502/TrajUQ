@@ -62,3 +62,8 @@ def test_remaining_parity_wrapper_revalidates_source_and_split_hashes():
     assert "split_manifest.json" in text
     assert "split_audit.json" in text
     assert "zero-overlap PASS" in text
+    assert "trajuq_split_pair_audit_v1" in text
+    assert "$Audit.requested_revision -ne $DatasetSha" in text
+    assert "function Test-RunAuditPass" in text
+    assert '$InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"' in text
+    assert "$InstrumentedAuditOk" in text

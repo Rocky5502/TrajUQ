@@ -153,6 +153,79 @@ function Read-FrozenLedger {
     return $Ledger
 }
 
+function Assert-FrozenPilotInputs {
+    param(
+        [string]$CalibrationData,
+        [string]$TestData,
+        [string]$SplitManifestPath,
+        [string]$SplitAuditPath,
+        [string]$FreezeManifestPath,
+        [string]$ModelConfigPath,
+        [string]$DatasetSha,
+        [string]$Commit
+    )
+
+    foreach ($Path in @(
+        $CalibrationData,
+        $TestData,
+        $SplitManifestPath,
+        $SplitAuditPath,
+        $FreezeManifestPath,
+        $ModelConfigPath
+    )) {
+        if (-not (Test-Path $Path)) {
+            throw "Missing frozen pilot input: $Path. Run -Stage prepare first."
+        }
+    }
+
+    $Split = Get-Content $SplitManifestPath -Raw | ConvertFrom-Json
+    $Audit = Get-Content $SplitAuditPath -Raw | ConvertFrom-Json
+    if ($Split.requested_revision -ne $DatasetSha) {
+        throw "Frozen GSM8K split revision differs from the revision ledger."
+    }
+    if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalibrationData)) {
+        throw "Frozen GSM8K calibration hash differs from its split manifest."
+    }
+    if ($Split.test_sha256 -ne (Get-FileSha256 $TestData)) {
+        throw "Frozen GSM8K test hash differs from its split manifest."
+    }
+    if (
+        $Audit.protocol -ne "trajuq_split_pair_audit_v1" -or
+        $Audit.status -ne "PASS" -or
+        $Audit.requested_revision -ne $DatasetSha -or
+        $Audit.calibration_sha256 -ne (Get-FileSha256 $CalibrationData) -or
+        $Audit.test_sha256 -ne (Get-FileSha256 $TestData) -or
+        $Audit.id_overlap_count -ne 0 -or
+        $Audit.exact_prompt_overlap_count -ne 0
+    ) {
+        throw "Frozen GSM8K split audit is stale or not a zero-overlap PASS."
+    }
+
+    $Freeze = Get-Content $FreezeManifestPath -Raw | ConvertFrom-Json
+    if ($Freeze.git_commit -ne $Commit) {
+        throw "Pilot freeze manifest belongs to another git commit."
+    }
+    if ($Freeze.model_config_sha256 -ne (Get-FileSha256 $ModelConfigPath)) {
+        throw "Pilot freeze manifest model-config hash drifted."
+    }
+    $FrozenDatasets = @{}
+    foreach ($Item in @($Freeze.datasets)) {
+        $FrozenDatasets[[string]$Item.path] = [string]$Item.sha256
+    }
+    if (-not $FrozenDatasets.ContainsKey($CalibrationData)) {
+        throw "Pilot freeze manifest is missing the calibration dataset path."
+    }
+    if (-not $FrozenDatasets.ContainsKey($TestData)) {
+        throw "Pilot freeze manifest is missing the test dataset path."
+    }
+    if ($FrozenDatasets[$CalibrationData] -ne (Get-FileSha256 $CalibrationData)) {
+        throw "Pilot freeze manifest calibration hash drifted."
+    }
+    if ($FrozenDatasets[$TestData] -ne (Get-FileSha256 $TestData)) {
+        throw "Pilot freeze manifest test hash drifted."
+    }
+}
+
 $ModelId = "inclusionAI/LLaDA-MoE-7B-A1B-Instruct"
 $LedgerPath = "results/revision_ledger.json"
 $ModelConfig = "results/frozen_models/llada.yaml"
@@ -272,7 +345,15 @@ if ($Stage -in @("prepare", "all")) {
 }
 
 if ($Stage -in @("parity", "pilot", "all")) {
-    if (-not (Test-Path $CalData)) { throw "Missing $CalData. Run -Stage prepare first." }
+    Assert-FrozenPilotInputs `
+        -CalibrationData $CalData `
+        -TestData $TestData `
+        -SplitManifestPath $SplitManifest `
+        -SplitAuditPath $SplitAudit `
+        -FreezeManifestPath "results/pilot_freeze_manifest.json" `
+        -ModelConfigPath $ModelConfig `
+        -DatasetSha $DatasetSha `
+        -Commit $Ledger.git_commit
 }
 if ($Stage -in @("pilot", "all")) {
     if (-not (Test-Path $TestData)) { throw "Missing $TestData. Run -Stage prepare first." }

@@ -45,7 +45,6 @@ def gsm8k_reference_number(reference: str) -> float | None:
     return extract_number(tail)
 
 
-
 @lru_cache(maxsize=1)
 def _math500_metric():
     """Build the frozen judge-free MATH-500 equivalence metric lazily."""
@@ -96,6 +95,7 @@ def score_math500(output_text: str, reference: str) -> bool:
     except Exception:
         return False
     return bool(grade == 1 or grade == 1.0)
+
 
 def score_record(dataset: str, output_text: str, reference: str) -> tuple[bool, str]:
     name = dataset.lower()

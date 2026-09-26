@@ -4,8 +4,24 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def main() -> None:
@@ -34,22 +50,40 @@ def main() -> None:
     failures: list[str] = []
     audit_path = Path(args.automatic_audit)
     review_sheet = Path(args.review_sheet)
+
     review_sheet_sha256 = None
     if not review_sheet.exists():
         failures.append(f"missing review sheet: {review_sheet}")
     else:
-        review_sheet_sha256 = hashlib.sha256(review_sheet.read_bytes()).hexdigest()
+        review_sheet_sha256 = sha256_file(review_sheet)
+
     audit_status = None
+    audit_protocol = None
+    audit_commit = None
+    audit_sha256 = None
     if not audit_path.exists():
         failures.append(f"missing automatic scorer audit: {audit_path}")
     else:
         try:
             audit = json.loads(audit_path.read_text(encoding="utf-8"))
             audit_status = audit.get("status")
+            audit_protocol = audit.get("protocol")
+            audit_commit = audit.get("git_commit")
+            audit_sha256 = sha256_file(audit_path)
             if audit_status != "PASS":
                 failures.append("automatic MATH-500 scorer audit is not PASS")
+            if audit_protocol != "trajuq_math500_scorer_audit_v2":
+                failures.append("automatic MATH-500 scorer audit is not protocol v2")
         except json.JSONDecodeError as exc:
             failures.append(f"invalid automatic audit JSON: {exc}")
+
+    commit = git_head()
+    if not commit:
+        failures.append("git commit could not be resolved")
+    if audit_commit is not None and commit is not None and audit_commit != commit:
+        failures.append(
+            f"automatic scorer audit commit {audit_commit} differs from current commit {commit}"
+        )
 
     if args.reviewed_records < 25:
         failures.append("at least 25 frozen calibration examples must be reviewed")
@@ -63,11 +97,15 @@ def main() -> None:
         failures.append("manual review notes must be non-empty")
 
     payload = {
-        "protocol": "trajuq_math500_manual_scorer_gate_v1",
+        "protocol": "trajuq_math500_manual_scorer_gate_v2",
         "status": "PASS" if not failures else "FAIL",
         "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": commit,
         "automatic_audit": str(audit_path),
+        "automatic_audit_sha256": audit_sha256,
         "automatic_audit_status": audit_status,
+        "automatic_audit_protocol": audit_protocol,
+        "automatic_audit_git_commit": audit_commit,
         "review_sheet": str(review_sheet),
         "review_sheet_sha256": review_sheet_sha256,
         "reviewed_records": int(args.reviewed_records),

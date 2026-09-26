@@ -95,7 +95,7 @@ python scripts/compare_instrumentation_overhead.py \
   --output results/sdar_instrumentation_overhead.json
 ```
 
-The hard gate requires exact token equality for all 20 seed-matched prompts. Primary-paper SDAR results remain blocked until this passes.
+The hard gate requires exact token equality for all 20 seed-matched prompts. The comparator emits `trajuq_exact_parity_v3`; primary readiness additionally requires uniform run provenance, the revision-ledger SDAR SHA, and the same frozen experiment git commit. Primary-paper SDAR results remain blocked until this passes.
 
 ## Pilot/primary configuration
 

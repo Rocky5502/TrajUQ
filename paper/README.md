@@ -54,3 +54,19 @@ The target is the ARR October 2026 cycle for NAACL 2027. The current official
 ARR deadline is **2026-10-12 (AoE)**. See `docs/NAACL2027_SUBMISSION.md` for the
 verified submission/anonymity/service checklist. The development repository
 must not be linked from the anonymous review PDF.
+
+
+## Final repository-side submission gate
+
+After all frozen results are rendered, run:
+
+    python scripts/submission_readiness.py
+
+This requires every **required** project execution gate to be PASS, verifies
+that the result-render manifest still hashes to the exact source artifacts,
+runs the manuscript audit in submission-ready mode, and rebuilds the
+deterministic anonymous software supplement. It records the supplement SHA-256
+in `results/submission_readiness.json`.
+
+The remaining external checks are the official ACL/ARR PDF compile, pubcheck,
+page/anonymity inspection, and submission-form upload.

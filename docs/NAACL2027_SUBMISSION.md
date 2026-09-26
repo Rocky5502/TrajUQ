@@ -91,7 +91,32 @@ Do not populate the manuscript's result cells until:
 
 ## Submission-week checklist
 
-Run:
+First render paper numbers only from the frozen aggregate artifacts:
+
+```bash
+python scripts/render_results_tex.py
+```
+
+The renderer re-evaluates the RQ1 claim gate from
+`configs/experiments/primary.yaml` and writes a manifest that SHA-binds the
+primary macro, claim gate, repeated-sampling macro, adaptive macro, and primary
+config. Commit or stash all final tracked paper changes so the submission
+worktree is clean.
+
+Then run the final repository gate:
+
+```bash
+python scripts/submission_readiness.py
+```
+
+This gate intentionally treats the experiment commit and submission commit as
+different roles: it historically revalidates the frozen pre-primary artifacts
+and downstream plan hashes, while separately requiring the current submission
+checkout to be clean. It writes the historical check to
+`results/submission_preprimary_revalidation.json` and does not overwrite the
+original `results/primary_readiness.json`.
+
+Also run:
 
 ```bash
 python scripts/audit_paper.py --submission-ready

@@ -10,20 +10,23 @@ from pathlib import Path
 
 import yaml
 
-from scripts.execute_adaptive_plan import (
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_adaptive_plan import (  # noqa: E402
     validate_plan_provenance as validate_adaptive_provenance,
 )
-from scripts.execute_primary_analysis import (
+from scripts.execute_primary_analysis import (  # noqa: E402
     validate_plan_provenance as validate_analysis_provenance,
 )
-from scripts.execute_primary_plan import (
+from scripts.execute_primary_plan import (  # noqa: E402
     validate_plan_provenance as validate_primary_provenance,
 )
-from scripts.execute_repeated_sampling import (
+from scripts.execute_repeated_sampling import (  # noqa: E402
     validate_plan_provenance as validate_repeated_provenance,
 )
-from scripts.project_status import build_snapshot
-from scripts.render_results_tex import build_macros, render_tex
+from scripts.project_status import build_snapshot  # noqa: E402
+from scripts.render_results_tex import build_macros, render_tex  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:

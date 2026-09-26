@@ -5,11 +5,15 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
 
-from scripts.plan_primary_analysis import scored_source_chain_passes
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.plan_primary_analysis import scored_source_chain_passes  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:

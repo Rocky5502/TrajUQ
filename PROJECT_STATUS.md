@@ -46,8 +46,10 @@ particular, the following are implemented and versioned:
 - frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, configs, frozen model configs, and prepared dataset inputs;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation;
-- pinned MATH-500 symbolic scoring, commit-bound automatic audit, deterministic
-  calibration review-sheet export, and SHA-bound human attestation gate;
+- pinned MATH-500 symbolic scoring, commit-bound automatic audit with runtime
+  dependency-version verification, deterministic calibration review-sheet
+  export, a guarded calibration-only Windows pilot wrapper, and SHA-bound human
+  attestation gate;
 - RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation; adaptive plan protocol v3 binds the primary plan/config plus refined scored artifacts and their audits before low-budget execution;
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
 - revision-ledger protocol v2 binding the experiment git commit, primary/data
@@ -112,7 +114,9 @@ The remaining work is primarily **execution**, not paper-number invention.
 7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen commit,
    then a >=25-example calibration-only MATH-500 scoring pilot, deterministic
    review sheet, and protocol-v2 human attestation bound to the audit/sheet
-   hashes. See issue #4.
+   hashes. On Windows, `scripts/math500_gate_windows.ps1 -Stage all` performs
+   the automated portion from the frozen clean state and deliberately stops
+   before the human attestation. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
    CPU, parity, pilot, human-review, MATH-500 scorer, dataset-manifest, commit,

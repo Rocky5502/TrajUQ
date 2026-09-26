@@ -20,7 +20,7 @@ export SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_TOPK=16
 Windows PowerShell:
 
 ```powershell
-$env:SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_PATH = "G:\TrajUQ\runs\hybrid_trace.jsonl"
+$env:SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_PATH = "runs/hybrid_trace.jsonl"
 $env:SGLANG_HYBRID_DIFFUSION_SELF_SPEC_TRACE_TOPK = "16"
 ```
 

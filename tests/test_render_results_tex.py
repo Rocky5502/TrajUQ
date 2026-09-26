@@ -52,8 +52,8 @@ def claim(supported: bool = True):
 def repeated():
     return {
         "cell_set_complete": True,
-        "expected_cells": 15,
-        "observed_cells": 15,
+        "expected_cells": 18,
+        "observed_cells": 18,
         "macro": {
             name: {
                 "baseline_macro": baseline,

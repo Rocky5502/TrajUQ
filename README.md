@@ -298,6 +298,7 @@ python scripts/evaluate_repeated_sampling.py \
   --expected-samples 5 \
   --output results/llada_gsm8k_repeated_sampling.json \
   --predictions-output results/llada_gsm8k_repeated_predictions.jsonl
+```
 
 The frozen primary repeated-sampling baseline requires exactly five seeds
 (2027--2031) by default. The evaluator verifies unique/matched seeds, identical
@@ -384,7 +385,7 @@ The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vo
 
 ## MATH-500 scorer
 
-MATH-500 scoring is now wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. See `docs/MATH500_SCORING.md`. The scorer is judge-free and symbolic; primary MATH-500 numbers still require the manual scorer-audit gate.
+MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass.
 
 ## Scientific guardrails
 

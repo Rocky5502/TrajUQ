@@ -37,6 +37,8 @@ def evaluate_readiness(
     pilot_quality_path: str,
     manual_gate_path: str,
     parity_paths: dict[str, str],
+    math500_audit_path: str = "results/math500_scorer_audit.json",
+    math500_manual_path: str = "results/math500_scorer_manual_review.json",
 ) -> dict:
     failures: list[str] = []
     checks: dict[str, dict] = {}
@@ -92,6 +94,42 @@ def evaluate_readiness(
             failures.append("human pilot-review gate is incomplete")
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"manual pilot artifact unavailable/invalid: {exc}")
+
+    try:
+        math_audit = load_json(math500_audit_path)
+        math_audit_pass = (
+            math_audit.get("status") == "PASS"
+            and int(math_audit.get("failure_count", 1)) == 0
+        )
+        checks["math500_scorer"] = {
+            "path": math500_audit_path,
+            "status": math_audit.get("status"),
+            "failure_count": math_audit.get("failure_count"),
+        }
+        if not math_audit_pass:
+            failures.append("MATH-500 automatic scorer audit is not PASS")
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"MATH-500 scorer audit unavailable/invalid: {exc}")
+
+    try:
+        math_manual = load_json(math500_manual_path)
+        math_checks = math_manual.get("checks", {})
+        math_manual_pass = (
+            math_manual.get("status") == "PASS"
+            and int(math_manual.get("reviewed_records", 0)) >= 25
+            and math_checks.get("answer_extraction") is True
+            and math_checks.get("symbolic_equivalence") is True
+            and math_checks.get("no_manual_label_flips") is True
+        )
+        checks["math500_manual_review"] = {
+            "path": math500_manual_path,
+            "status": math_manual.get("status"),
+            "reviewed_records": math_manual.get("reviewed_records"),
+        }
+        if not math_manual_pass:
+            failures.append("MATH-500 manual scorer review is incomplete")
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"MATH-500 manual scorer review unavailable/invalid: {exc}")
 
     parity_checks: dict[str, dict] = {}
     for model in primary_models:
@@ -153,6 +191,14 @@ def main() -> None:
         default="results/llada_gsm8k_pilot50_manual_review.json",
     )
     parser.add_argument(
+        "--math500-scorer-audit",
+        default="results/math500_scorer_audit.json",
+    )
+    parser.add_argument(
+        "--math500-manual-review",
+        default="results/math500_scorer_manual_review.json",
+    )
+    parser.add_argument(
         "--parity",
         action="append",
         type=parse_override,
@@ -172,6 +218,8 @@ def main() -> None:
         args.pilot_quality,
         args.manual_gate,
         parity_paths,
+        args.math500_scorer_audit,
+        args.math500_manual_review,
     )
 
     out = Path(args.output)

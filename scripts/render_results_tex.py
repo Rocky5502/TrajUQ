@@ -69,10 +69,10 @@ def require_claim_gate(claim: dict, primary: dict) -> None:
 def require_repeated(repeated: dict) -> None:
     if repeated.get("cell_set_complete") is not True:
         raise ValueError("Repeated-sampling macro cell set is incomplete.")
-    if int(repeated.get("expected_cells", -1)) != 15:
-        raise ValueError("Repeated-sampling macro expected cell count is not 15.")
-    if int(repeated.get("observed_cells", -1)) != 15:
-        raise ValueError("Repeated-sampling macro observed cell count is not 15.")
+    if int(repeated.get("expected_cells", -1)) != 18:
+        raise ValueError("Repeated-sampling macro expected cell count is not 18.")
+    if int(repeated.get("observed_cells", -1)) != 18:
+        raise ValueError("Repeated-sampling macro observed cell count is not 18.")
     for metric in ("auroc", "auprc", "aurc"):
         node = repeated.get("macro", {}).get(metric)
         if not isinstance(node, dict):

@@ -1,0 +1,11 @@
+{
+  "protocol": "trajuq_math500_manual_scorer_gate_v1",
+  "status": "FAIL",
+  "reviewed_records": 0,
+  "checks": {
+    "answer_extraction": false,
+    "symbolic_equivalence": false,
+    "no_manual_label_flips": false
+  },
+  "notes": "Template only. Use scripts/record_math500_scorer_review.py after the human review."
+}

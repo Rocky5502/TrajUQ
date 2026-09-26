@@ -1,3 +1,8 @@
+import json
+
+import pytest
+
+from scripts.aggregate_repeated_baseline import load_cell
 from trajuq.repeated_sampling import equivalence_cluster_labels, vote_uncertainty
 
 
@@ -33,3 +38,28 @@ def test_equivalence_cluster_labels_are_deterministic():
     labels = equivalence_cluster_labels(values, equivalent)
     assert labels[0] == labels[1] == labels[3]
     assert labels[2] != labels[0]
+
+
+def test_repeated_macro_rejects_partial_frozen_test_coverage(tmp_path):
+    target = tmp_path / "test.scored.jsonl"
+    traj = tmp_path / "trajuq.jsonl"
+    repeated = tmp_path / "repeated.jsonl"
+    target.write_text(
+        '{"example_id":"a"}\n{"example_id":"b"}\n',
+        encoding="utf-8",
+    )
+    traj.write_text('{"example_id":"a"}\n', encoding="utf-8")
+    repeated.write_text('{"example_id":"a"}\n', encoding="utf-8")
+    spec = {
+        "cell": "llada:gsm8k",
+        "adapter": "llada",
+        "dataset": "gsm8k",
+        "trajuq_predictions": str(traj),
+        "repeated_predictions": str(repeated),
+        "provenance": {
+            "test": {"scored_target": str(target)}
+        },
+    }
+
+    with pytest.raises(SystemExit, match="exactly cover"):
+        load_cell(spec)

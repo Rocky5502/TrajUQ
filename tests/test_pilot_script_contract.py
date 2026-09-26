@@ -10,6 +10,9 @@ def test_windows_pilot_wrapper_has_single_stage_blocks():
     assert "results/llada_pilot_model_config.yaml" not in text
     assert "compare_run_parity.py" in text
     assert "pilot_quality_gate.py" in text
+    assert "git status --porcelain" in text
+    assert "results/cpu_verification.json" in text
+    assert "trajuq_cpu_verification_v1" in text
 
 
 def test_windows_pilot_wrapper_has_no_known_corruption_fragments():

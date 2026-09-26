@@ -304,6 +304,14 @@ def main() -> None:
         "readiness_sha256": sha256_file(readiness_path),
         "seed": seed,
         "models": expected_adapters,
+        "model_configs": {
+            adapter: {
+                "path": str(Path(configured[adapter])),
+                "sha256": model_cfg_hashes[adapter],
+                "revision": model_cfgs[adapter]["revision"],
+            }
+            for adapter in expected_adapters
+        },
         "datasets": datasets,
         "expected_cells": len(expected_adapters) * len(datasets),
         "cell_count": len(cells),

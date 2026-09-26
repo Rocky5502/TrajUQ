@@ -239,24 +239,37 @@ def main() -> None:
     fig.savefig(tradeoff_path, bbox_inches="tight")
     plt.close(fig)
 
+    primary_config_path = Path(args.primary_config)
     sources = {
         "primary": {
             "path": str(primary_path),
             "sha256": sha256_file(primary_path),
+        },
+        "primary_config": {
+            "path": str(primary_config_path),
+            "sha256": sha256_file(primary_config_path),
         },
         **{
             key: {"path": str(path), "sha256": sha256_file(path)}
             for key, path in adaptive_paths.items()
         },
     }
+    output_paths = {
+        "primary_auroc_matrix": heatmap_path,
+        "family_macro_auroc": family_path,
+        "adaptive_tradeoff": tradeoff_path,
+    }
     manifest = {
-        "protocol": "trajuq_paper_result_figures_v1",
+        "protocol": "trajuq_paper_result_figures_v2",
         "sources": sources,
         "expected_cells": expected,
         "outputs": {
-            "primary_auroc_matrix": str(heatmap_path),
-            "family_macro_auroc": str(family_path),
-            "adaptive_tradeoff": str(tradeoff_path),
+            name: {
+                "path": str(path),
+                "sha256": sha256_file(path),
+                "bytes": path.stat().st_size,
+            }
+            for name, path in output_paths.items()
         },
     }
     manifest_path = out_dir / "result_figure_manifest.json"

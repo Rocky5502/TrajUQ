@@ -67,6 +67,8 @@ adaptive_compute:
   threshold_selection: out_of_fold_calibration_only
   matched_compute: true
   max_refine_fraction_grid: [0.25, 0.50, 0.75]
+  paired_bootstrap_n: 2000
+  report_deltas_vs: [base, fixed_refined, random_refinement]
 
 integrity:
   outcome_isolation: true

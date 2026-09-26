@@ -41,6 +41,8 @@ Compare against:
 3. random refinement at the same expected fraction;
 4. native confidence/remasking scheduling where the model exposes it.
 
+For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined compute, and versus the expected random-refinement policy at the same selected refinement fraction. The threshold remains fixed from calibration during all test resamples.
+
 The repository's `evaluate_adaptive.py` implements the two-budget TrajUQ-versus-random comparison. Model-native schedulers remain model-specific.
 
 ## RQ4 — Sampler/denoiser diagnostics

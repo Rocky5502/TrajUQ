@@ -6,7 +6,11 @@ import json
 
 import numpy as np
 
-from trajuq.adaptive import evaluate_two_budget_policy, select_threshold_under_budget
+from trajuq.adaptive import (
+    bootstrap_two_budget_policy,
+    evaluate_two_budget_policy,
+    select_threshold_under_budget,
+)
 from trajuq.calibration import RiskCalibrator, cross_fitted_error_probabilities
 from trajuq.features import PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
@@ -71,6 +75,7 @@ def main() -> None:
     parser.add_argument("--refined-compute", type=float, required=True)
     parser.add_argument("--crossfit-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=2027)
+    parser.add_argument("--n-boot", type=int, default=2000)
     args = parser.parse_args()
 
     cal_ids, x_cal, y_cal, cal_base, cal_refined = aligned(
@@ -114,12 +119,24 @@ def main() -> None:
         refined_compute=args.refined_compute,
     )
 
+    bootstrap = bootstrap_two_budget_policy(
+        test_risk,
+        test_base,
+        test_refined,
+        threshold=selected.threshold,
+        base_compute=args.base_compute,
+        refined_compute=args.refined_compute,
+        n_boot=args.n_boot,
+        seed=args.seed,
+    )
+
     payload = {
-        "risk_source": "trajectory_plus_final_logistic",
+        "risk_source": "trajectory_plus_decision_logistic",
         "policy_threshold_source": "out_of_fold_calibration_predictions",
         "crossfit_folds_used": folds_used,
         "selected_on_calibration": selected.to_dict(),
         "test": test.to_dict(),
+        "paired_bootstrap": bootstrap.to_dict(),
         "n_calibration": len(cal_ids),
         "n_test": len(test_ids),
         "base_accuracy": float(test_base.mean()),

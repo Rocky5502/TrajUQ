@@ -255,7 +255,8 @@ python scripts/evaluate_adaptive.py \
   --test-refined runs/test_refined.scored.jsonl \
   --max-refine-fraction 0.50 \
   --base-compute 64 \
-  --refined-compute 128
+  --refined-compute 128 \
+  --n-boot 2000
 ```
 
 ## SDAR pilot

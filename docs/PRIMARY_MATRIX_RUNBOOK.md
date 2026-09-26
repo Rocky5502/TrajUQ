@@ -18,13 +18,17 @@ PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 Linux/macOS equivalent:
 
 ```bash
-bash scripts/verify_cpu.sh
-python scripts/resolve_experiment_revisions.py
+bash scripts/freeze_preprimary.sh
 ```
 
-Do not change tracked experiment code between those commands. The revision
-resolver requires Hugging Face access to all frozen primary assets, including
-GPQA. It writes:
+For the NVIDIA A100 80GB Linux path, follow
+`docs/A100_EXECUTION.md` end-to-end rather than mixing low-level commands from
+different runbooks.
+
+Do not change tracked experiment code after the freeze passes. The freeze
+wrapper runs the CPU verifier and revision resolver at one clean commit. The
+revision resolver requires Hugging Face access to all frozen primary assets,
+including GPQA. It writes:
 
 - `results/revision_ledger.json` with protocol
   `trajuq_revision_ledger_v2`;

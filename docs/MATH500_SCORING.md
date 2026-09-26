@@ -65,11 +65,15 @@ keeps MATH-500 in the same 18-cell repeated-sampling matrix as the other tasks.
 
 ## Pre-primary scorer gates
 
-Before any primary MATH-500 generation:
+Before any primary MATH-500 generation, run the automatic audit at the same
+frozen experiment commit recorded by revision-ledger v2:
 
 ```bash
 python scripts/audit_math500_scorer.py
 ```
+
+The resulting `trajuq_math500_scorer_audit_v2` artifact records the git commit
+and must contain zero regression failures.
 
 After LLaDA parity passes, generate and score a small MATH-500 **calibration-only**
 pilot with at least 25 examples. Export a deterministic subject/level-diverse
@@ -96,6 +100,9 @@ python scripts/record_math500_scorer_review.py \
   --notes "Summary of the frozen calibration-split scorer review."
 ```
 
-`scripts/primary_readiness.py` blocks the full primary matrix unless both the
-automatic audit and this human review artifact are PASS. Do not inspect final
-test labels to tune the scorer.
+The human recorder emits protocol
+`trajuq_math500_manual_scorer_gate_v2`, binds the review sheet and automatic
+audit by SHA-256, and requires the automatic audit to come from the same git
+commit. `scripts/primary_readiness.py` re-verifies those hashes and blocks the
+full primary matrix unless both artifacts are current PASSes. Do not inspect
+final test labels to tune the scorer.

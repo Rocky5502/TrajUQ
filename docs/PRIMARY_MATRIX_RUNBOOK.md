@@ -232,3 +232,28 @@ current artifact. Unverified partial artifacts are never overwritten
 automatically. The executor writes
 `results/repeated_sampling_execution_state.json` and an append-only event log.
 The full macro is run only after all 18 cells are complete.
+
+
+## 10. Execute the adaptive RQ3 matrix resumably
+
+After `results/adaptive_matrix_plan.json` is frozen, use:
+
+```bash
+# Dry-run/status:
+python scripts/execute_adaptive_plan.py
+
+# One cell, all frozen caps:
+python scripts/execute_adaptive_plan.py --cell llada:gsm8k --execute
+
+# Only the primary 50% cap:
+python scripts/execute_adaptive_plan.py --fraction-key cap_050 --execute
+
+# Resume the complete 18-cell adaptive matrix:
+python scripts/execute_adaptive_plan.py --execute
+```
+
+The executor first creates/audits/scores the low-budget base artifacts, then
+runs the frozen 25%, 50%, and 75% cap evaluations. Existing partial result
+pairs are never overwritten automatically. Hierarchical macro aggregation for a
+cap is blocked until all 18 cells for that cap are complete. Progress is written
+to `results/adaptive_execution_state.json` with an append-only event log.

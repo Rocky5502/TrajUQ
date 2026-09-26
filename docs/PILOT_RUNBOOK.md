@@ -141,3 +141,18 @@ Proceed to the full matrix only if:
 - the frozen code/data/model revisions are recorded.
 
 A weak uncertainty signal is not a reason to redesign features using final test labels. It is a scientific result or a calibration-set design decision.
+
+
+## Automated Windows wrapper
+
+The full first-pilot sequence is encoded in `scripts/pilot_windows.ps1`. Run each stage separately on the first pass:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
+```
+
+The wrapper resolves immutable model/data SHAs, writes the model SHA into the LLaDA YAML, prepares the frozen GSM8K pair, snapshots the environment, runs 20-prompt native/instrumented parity, hard-stops on mismatch, runs the 50-example pilot, audits raw/scored artifacts, checks feature variation/timing/schema integrity, and exports a 10-example manual review sheet.
+
+The automated gate does not replace the required human inspection of at least ten trajectories.

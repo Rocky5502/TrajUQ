@@ -47,3 +47,10 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] No third-party model weights committed.
 - [ ] MATH-500 symbolic verifier frozen before MATH-500 primary scoring.
 - [ ] Every paper number maps to a frozen result artifact and code commit.
+
+
+## Pilot automation artifacts
+- [ ] `results/llada_parity.json` reports PASS.
+- [ ] `results/llada_gsm8k_pilot50_gate.json` reports PASS.
+- [ ] `results/llada_gsm8k_pilot50_trace_review.md` manually reviewed.
+- [ ] At least 10 trajectory traces checked for logging/parsing plausibility.

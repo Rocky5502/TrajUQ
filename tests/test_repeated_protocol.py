@@ -37,10 +37,11 @@ def test_repeated_seed_reuse_requires_frozen_clean_audit(tmp_path):
         encoding="utf-8",
     )
 
-    assert verified_raw_artifact(raw, "frozen-commit")
-    assert not verified_raw_artifact(raw, "other-commit")
+    assert verified_raw_artifact(raw, "frozen-commit", ["x"])
+    assert not verified_raw_artifact(raw, "other-commit", ["x"])
+    assert not verified_raw_artifact(raw, "frozen-commit", ["x", "y"])
 
     payload = json.loads(audit.read_text(encoding="utf-8"))
     payload["git_clean"] = False
     audit.write_text(json.dumps(payload), encoding="utf-8")
-    assert not verified_raw_artifact(raw, "frozen-commit")
+    assert not verified_raw_artifact(raw, "frozen-commit", ["x"])

@@ -9,13 +9,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from trajuq.features import FROZEN_FEATURE_GROUPS
 from trajuq.io import read_jsonl
 
 
 CELL_STEPS = (
     ("evaluate", "evaluate_argv", ("metrics", "predictions")),
     ("nested_comparison", "nested_comparison_argv", ("nested_bootstrap",)),
-    ("feature_ablation", "feature_ablation_argv", ("feature_ablation",)),
+    (
+        "feature_ablation",
+        "feature_ablation_argv",
+        ("feature_ablation", "feature_ablation_predictions"),
+    ),
     ("raw_risk_diagnostic", "raw_risk_diagnostic_argv", ("raw_risk_diagnostic",)),
 )
 
@@ -116,6 +121,39 @@ def semantic_output_valid(
         except (OSError, json.JSONDecodeError, ValueError, TypeError):
             return False
 
+    if key == "feature_ablation_predictions":
+        try:
+            rows = list(read_jsonl(path))
+            if artifact_example_ids(path) != test_ids:
+                return False
+            expected_groups = set(FROZEN_FEATURE_GROUPS)
+            target_rows = list(read_jsonl(Path(str(cell["inputs"]["test"]["path"]))))
+            target_by_id = {str(row["example_id"]): row for row in target_rows}
+            for row in rows:
+                item_id = str(row["example_id"])
+                target = target_by_id[item_id]
+                expected_y = 0 if bool(target["correct"]) else 1
+                if int(row.get("y_error", -1)) != expected_y:
+                    return False
+                if bool(row.get("correct")) != bool(target["correct"]):
+                    return False
+                scores = row.get("p_error_by_group", {})
+                if set(scores) != expected_groups:
+                    return False
+                for value in scores.values():
+                    number = float(value)
+                    if not (0.0 <= number <= 1.0):
+                        return False
+            return True
+        except (
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+            TypeError,
+            KeyError,
+        ):
+            return False
+
     if path.suffix != ".json":
         return output_valid(path)
 
@@ -159,12 +197,16 @@ def semantic_output_valid(
             and set(payload.get("metrics", {})) >= {"auroc", "auprc", "aurc"}
         )
     if key == "feature_ablation":
+        expected_groups = list(FROZEN_FEATURE_GROUPS)
         return (
             payload.get("protocol") == "frozen_feature_family_ablation_v1"
             and int(payload.get("n_calibration", -1)) == n_cal
             and int(payload.get("n_test", -1)) == n_test
             and payload.get("baseline") == "decision_only"
-            and bool(payload.get("groups"))
+            and payload.get("group_order") == expected_groups
+            and set(payload.get("groups", {})) == set(expected_groups)
+            and set(payload.get("paired_improvements_vs_decision_only", {}))
+            == (set(expected_groups) - {"decision_only"})
         )
     if key == "raw_risk_diagnostic":
         return (
@@ -342,6 +384,7 @@ def cell_state(cell: dict[str, Any]) -> dict[str, Any]:
 
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
+    ablation = Path(str(plan["final_outputs"]["macro_feature_ablation"]))
     claim = Path(str(plan["final_outputs"]["rq1_claim_gate"]))
     expected_cells = int(plan.get("cell_count", 0))
 
@@ -375,6 +418,36 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 else "INVALID"
             )
 
+    ablation_status = "MISSING"
+    if ablation.exists():
+        if not valid_json(ablation):
+            ablation_status = "INVALID"
+        else:
+            payload = json.loads(ablation.read_text(encoding="utf-8"))
+            expected_groups = set(FROZEN_FEATURE_GROUPS) - {"decision_only"}
+            groups = payload.get("groups", {})
+            metrics_complete = all(
+                set(groups.get(group, {}).get("metrics", {}))
+                >= {"auroc", "auprc", "aurc"}
+                for group in expected_groups
+            )
+            ablation_status = (
+                "COMPLETE"
+                if (
+                    payload.get("protocol")
+                    == "trajuq_feature_ablation_macro_v1"
+                    and payload.get("baseline") == "decision_only"
+                    and payload.get("cell_set_complete") is True
+                    and int(payload.get("observed_cells", -1))
+                    == expected_cells
+                    and int(payload.get("expected_cells", -1))
+                    == expected_cells
+                    and set(groups) == expected_groups
+                    and metrics_complete
+                )
+                else "INVALID"
+            )
+
     claim_status = "MISSING"
     if claim.exists():
         if not valid_json(claim):
@@ -398,6 +471,7 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "macro_primary": macro_status,
+        "macro_feature_ablation": ablation_status,
         "rq1_claim_gate": claim_status,
     }
 
@@ -412,6 +486,7 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         if len(cells) == expected
         and complete_cells == expected
         and final["macro_primary"] == "COMPLETE"
+        and final["macro_feature_ablation"] == "COMPLETE"
         and final["rq1_claim_gate"] == "COMPLETE"
         else "IN_PROGRESS"
     )
@@ -642,6 +717,40 @@ def main() -> None:
 
         final = macro_state(plan)
         if final["macro_primary"] == "COMPLETE":
+            if final["macro_feature_ablation"] == "MISSING":
+                run_command(
+                    [
+                        str(value)
+                        for value in plan["feature_ablation_macro_argv"]
+                    ],
+                    execute=args.execute,
+                    scope="primary",
+                    step="feature_ablation_macro",
+                    event_log=event_path,
+                )
+                if (
+                    args.execute
+                    and macro_state(plan)["macro_feature_ablation"]
+                    != "COMPLETE"
+                ):
+                    write_snapshot(plan, state_path)
+                    raise SystemExit(
+                        "Feature-ablation macro command did not produce "
+                        "a complete artifact."
+                    )
+            elif final["macro_feature_ablation"] == "INVALID":
+                raise SystemExit(
+                    "Existing feature-ablation macro is invalid; "
+                    "do not overwrite it automatically."
+                )
+            else:
+                print("[SKIP] primary feature_ablation_macro: complete")
+
+        final = macro_state(plan)
+        if (
+            final["macro_primary"] == "COMPLETE"
+            and final["macro_feature_ablation"] == "COMPLETE"
+        ):
             if final["rq1_claim_gate"] == "MISSING":
                 run_command(
                     [str(value) for value in plan["rq1_claim_gate_argv"]],
@@ -664,6 +773,7 @@ def main() -> None:
         f"{final_snapshot['complete_cells']}/"
         f"{final_snapshot['expected_cells']} cells; "
         f"macro={final_snapshot['final']['macro_primary']}; "
+        f"ablation={final_snapshot['final']['macro_feature_ablation']}; "
         f"claim_gate={final_snapshot['final']['rq1_claim_gate']}"
     )
 

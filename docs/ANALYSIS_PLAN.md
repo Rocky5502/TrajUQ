@@ -18,6 +18,10 @@ A claim that the trajectory adds information requires a meaningful held-out impr
 
 Before primary outcomes are inspected, the following ablations are frozen: decision-only; decision plus distribution-trajectory features; decision plus stability features (JS drift and revisions); decision plus persistence/commitment features; the full feature set; and leave-family-out variants removing JS, revisions, or persistence. Every variant is fit only on the calibration partition and evaluated on the identical held-out test examples. Paired bootstrap deltas are always reported relative to the decision-only baseline.
 
+## Expensive repeated-sampling baseline
+
+As a stronger but more expensive uncertainty comparator, freeze a five-sample final-answer disagreement baseline. For each example, independently generated label-free samples are canonicalized without consulting the reference answer; variation ratio, normalized vote entropy, and unique-answer fraction are calibrated on the calibration partition and evaluated on the same held-out target labels. Its extra inference cost must be reported explicitly. MATH-500 is excluded from this baseline until algebraic-equivalence clustering is implemented; string matching is not permitted as a substitute.
+
 ## RQ2 — Calibration and selective generation
 
 Fit probability calibrators on the frozen calibration partition only. Primary calibrator: standardized logistic regression over the frozen feature vector. Isotonic regression is a nonlinear sensitivity analysis when calibration data are sufficient.

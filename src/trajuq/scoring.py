@@ -122,3 +122,30 @@ def score_record(dataset: str, output_text: str, reference: str) -> tuple[bool, 
         return (score_math500(output_text, reference), "math_verify_0.9.0_precision6")
 
     raise ValueError(f"No frozen scorer for dataset: {dataset}")
+
+
+
+def canonical_prediction(dataset: str, output_text: str) -> str | None:
+    """Canonical prediction used only for label-free repeated-sampling agreement.
+
+    This deliberately avoids reference answers. MATH-500 is excluded because
+    clustering algebraically equivalent free-form expressions requires the
+    symbolic equivalence layer rather than unsafe string normalization.
+    """
+
+    name = dataset.lower()
+    if name in {"arc_challenge", "mmlu_pro", "truthfulqa", "gpqa_diamond"}:
+        return extract_choice(output_text)
+    if name in {"gsm8k", "synthetic"}:
+        value = extract_number(output_text)
+        if value is None:
+            return None
+        if float(value).is_integer():
+            return str(int(value))
+        return format(float(value), ".12g")
+    if name == "math500":
+        raise ValueError(
+            "MATH-500 repeated-sampling clustering is not enabled: "
+            "use symbolic equivalence rather than string matching."
+        )
+    raise ValueError(f"No canonical prediction parser for dataset: {dataset}")

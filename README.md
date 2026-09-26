@@ -235,13 +235,23 @@ python scripts/evaluate_feature_ablation.py \
   --test runs/llada_gsm8k_test.scored.jsonl \
   --output results/llada_gsm8k_feature_ablation.json
 
+# Expensive five-sample uncertainty baseline (example; repeat --cal-sample/--test-sample):
+python scripts/evaluate_repeated_sampling.py \
+  --cal-target runs/llada_gsm8k_cal.scored.jsonl \
+  --cal-sample runs/cal_seed1.raw.jsonl \
+  --cal-sample runs/cal_seed2.raw.jsonl \
+  --test-target runs/llada_gsm8k_test.scored.jsonl \
+  --test-sample runs/test_seed1.raw.jsonl \
+  --test-sample runs/test_seed2.raw.jsonl \
+  --output results/llada_gsm8k_repeated_sampling.json
+
 # Training-free raw-risk sensitivity:
 python scripts/compare_methods.py \
   --input runs/llada_gsm8k_test.scored.jsonl \
   --n-boot 2000
 ```
 
-The primary nested comparison uses a strong per-token decision-time entropy baseline and paired class-stratified bootstrap intervals on identical examples. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
+The primary nested comparison uses a strong per-token decision-time entropy baseline and paired class-stratified bootstrap intervals on identical examples. A separately reported repeated-sampling baseline is intentionally more expensive and must include its generation cost. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
 
 ## RQ3: adaptive compute
 

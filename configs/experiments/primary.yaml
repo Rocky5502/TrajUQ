@@ -87,3 +87,16 @@ feature_ablation:
     - full_without_persistence
   comparison_baseline: decision_only
   paired_bootstrap: true
+
+baselines:
+  primary_single_run:
+    - decision_entropy_logistic
+  diagnostics:
+    - raw_trajectory_risk
+  expensive:
+    repeated_sampling:
+      samples: 5
+      features: [sample_disagreement, sample_vote_entropy, sample_unique_fraction]
+      calibration: logistic
+      compute_report_required: true
+      math500: disabled_until_symbolic_sample_clustering

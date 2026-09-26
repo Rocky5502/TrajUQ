@@ -3,13 +3,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 
-from scripts.execute_adaptive_plan import validate_plan_provenance
 from trajuq.adaptive_aggregation import AdaptiveCell, hierarchical_macro_adaptive
 from trajuq.io import read_jsonl
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_adaptive_plan import validate_plan_provenance  # noqa: E402
 
 
 def load_prediction_cell(spec: dict, fraction_key: str) -> AdaptiveCell:

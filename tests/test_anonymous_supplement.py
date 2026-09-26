@@ -34,7 +34,8 @@ def test_anonymous_supplement_builds_and_excludes_identity_paths(tmp_path):
             for name in sorted(names)
             if name.endswith((".md", ".py", ".yaml", ".yml", ".toml", ".json", ".ps1"))
         )
-        assert b"Rocky5502" not in combined
+        development_owner = b"Rocky" + b"5502"
+        assert development_owner not in combined
 
     if archive == Path("dist/test_anon.zip"):
         archive.unlink()

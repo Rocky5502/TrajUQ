@@ -55,6 +55,9 @@ EXCLUDED_EXACT = {
     "README.md",
     "CITATION.cff",
     "docs/NAACL2027_SUBMISSION.md",
+    # The builder itself contains the development-identity denylist and is not
+    # needed by reviewers to run the submitted software.
+    "scripts/build_anonymous_supplement.py",
 }
 
 BANNED_PATTERNS = {

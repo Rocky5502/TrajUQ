@@ -1,7 +1,7 @@
 # NAACL 2027 submission gate
 
 Verified against the official NAACL 2027 main-conference call and the current
-ACL Rolling Review (ARR) call on **2026-09-26**.
+ACL Rolling Review (ARR) call on **2026-09-27**.
 
 Official pages:
 
@@ -16,6 +16,9 @@ NAACL 2027 uses the ARR **October 2026** cycle.
 
 - ARR submission deadline: **2026-10-12, 23:59 AoE**
 - Reviewer-registration deadline for all authors: **2026-10-12**
+  (the NAACL-specific CFP lists October 12; ARR's generic October-cycle table
+  currently lists October 14, so TrajUQ uses the earlier venue-specific date as
+  the fail-safe internal deadline)
 - ARR meta-reviews released: **2026-12-18**
 - NAACL commitment deadline: **2026-12-23**
 - NAACL notification: **2027-02-10**
@@ -99,9 +102,19 @@ python scripts/render_results_tex.py
 
 The renderer re-evaluates the RQ1 claim gate from
 `configs/experiments/primary.yaml` and writes a manifest that SHA-binds the
-primary macro, claim gate, repeated-sampling macro, adaptive macro, and primary
-config. Commit or stash all final tracked paper changes so the submission
-worktree is clean.
+primary macro, claim gate, repeated-sampling macro, complete feature-ablation
+macro, adaptive primary-cap macro, and primary config.
+
+Then render the frozen aggregate result figures:
+
+```bash
+python scripts/render_paper_result_figures.py
+```
+
+Require `paper/figures/generated/result_figure_manifest.json` protocol v2;
+it binds the primary/config sources, all three adaptive-cap artifacts, and all
+three generated PDF hashes. Commit or stash all final tracked paper changes so
+the submission worktree is clean.
 
 Then run the final repository gate:
 

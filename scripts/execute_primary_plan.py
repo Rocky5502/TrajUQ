@@ -37,6 +37,17 @@ def git_head() -> str | None:
         return None
 
 
+def git_status_porcelain() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -54,6 +65,13 @@ def validate_plan_provenance(
         elif current_head != expected_commit:
             failures.append(
                 "current git commit differs from the primary plan experiment commit"
+            )
+        current_status = git_status_porcelain()
+        if current_status is None:
+            failures.append("current git worktree status could not be resolved")
+        elif current_status:
+            failures.append(
+                "current git worktree is dirty; frozen execution requires a clean checkout"
             )
 
     for key, hash_key in (

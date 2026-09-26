@@ -67,19 +67,24 @@ def output_valid(path: Path) -> bool:
     return path.exists() and path.stat().st_size > 0
 
 
-def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+def validate_plan_provenance(
+    plan: dict[str, Any],
+    *,
+    require_current_commit: bool = True,
+) -> list[str]:
     failures: list[str] = []
     if plan.get("protocol") != "trajuq_primary_analysis_plan_v2":
         failures.append("primary analysis plan protocol is not v2")
 
     expected_commit = str(plan.get("experiment_git_commit", ""))
-    current_head = git_head()
-    if not current_head:
-        failures.append("current git commit could not be resolved")
-    elif current_head != expected_commit:
-        failures.append(
-            "current git commit differs from the frozen experiment commit"
-        )
+    if require_current_commit:
+        current_head = git_head()
+        if not current_head:
+            failures.append("current git commit could not be resolved")
+        elif current_head != expected_commit:
+            failures.append(
+                "current git commit differs from the frozen experiment commit"
+            )
 
     for key, hash_key in (
         ("primary_plan", "primary_plan_sha256"),

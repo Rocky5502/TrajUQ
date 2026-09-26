@@ -4,6 +4,9 @@ import hashlib
 from typing import Any
 
 
+NORMALIZER_VERSION = "trajuq-prompts-v1"
+
+
 def mc_prompt(question: str, choices: list[str], labels: list[str] | None = None) -> str:
     if labels is None:
         labels = [chr(ord("A") + i) for i in range(len(choices))]

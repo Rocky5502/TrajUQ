@@ -7,7 +7,12 @@ import json
 from pathlib import Path
 from typing import Iterable
 
-from trajuq.datasets import namespace_record_id, normalize_row, split_bucket
+from trajuq.datasets import (
+    NORMALIZER_VERSION,
+    namespace_record_id,
+    normalize_row,
+    split_bucket,
+)
 
 
 def file_sha256(path: Path) -> str:
@@ -44,6 +49,16 @@ def main() -> None:
     parser.add_argument("--manifest", default="data/manifests/evaluation_splits.json")
     parser.add_argument("--output-root", default="data/processed")
     parser.add_argument("--revision", default=None, help="Exact HF dataset revision/commit.")
+    parser.add_argument(
+        "--allow-unpinned-revision",
+        action="store_true",
+        help="Exploratory use only; primary experiments must pin a revision.",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Explicitly replace an existing prepared split. Never use after outcome inspection.",
+    )
     args = parser.parse_args()
 
     try:
@@ -56,6 +71,11 @@ def main() -> None:
         raise SystemExit(f"Unknown dataset {args.dataset!r}")
     spec = manifest["datasets"][args.dataset]
     revision = args.revision or spec.get("revision")
+    if not revision and not args.allow_unpinned_revision:
+        raise SystemExit(
+            "Dataset revision is unpinned. Resolve an immutable Hugging Face SHA "
+            "and pass --revision. Use --allow-unpinned-revision only for exploration."
+        )
     if spec.get("gated"):
         print("[TrajUQ] gated dataset: accept upstream terms and authenticate locally.")
 
@@ -63,6 +83,15 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     cal_path = out_dir / "calibration.jsonl"
     test_path = out_dir / "test.jsonl"
+    freeze_path = out_dir / "split_manifest.json"
+
+    existing = [path for path in (cal_path, test_path, freeze_path) if path.exists()]
+    if existing and not args.overwrite:
+        raise SystemExit(
+            "Refusing to replace frozen split artifacts: "
+            + ", ".join(str(path) for path in existing)
+            + ". Use a new output root, or --overwrite only before outcomes are inspected."
+        )
 
     fingerprints: dict[str, str | None] = {}
     strategy = spec["strategy"]
@@ -122,6 +151,7 @@ def main() -> None:
         "hf_id": spec["hf_id"],
         "config": spec.get("config"),
         "strategy": strategy,
+        "normalizer_version": NORMALIZER_VERSION,
         "requested_revision": revision,
         "fingerprints": fingerprints,
         "n_calibration": n_cal,
@@ -130,7 +160,6 @@ def main() -> None:
         "test_sha256": file_sha256(test_path),
         "nonstandard_note": spec.get("nonstandard_note"),
     }
-    freeze_path = out_dir / "split_manifest.json"
     freeze_path.write_text(json.dumps(freeze, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"[TrajUQ] calibration={n_cal} -> {cal_path}")

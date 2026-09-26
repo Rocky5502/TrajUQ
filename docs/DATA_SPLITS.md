@@ -47,3 +47,18 @@ datasets restart row numbering at zero in every split. Bare integer IDs would
 create false calibration/test overlap during the leakage audit. Internal
 holdouts retain their original source-split namespace on both sides; the
 partition itself is still determined only by the frozen hash rule.
+
+
+## Immutability and prompt versioning
+
+Prepared split files are immutable by default. `prepare_eval_pair.py` refuses to
+replace `calibration.jsonl`, `test.jsonl`, or `split_manifest.json` unless
+`--overwrite` is explicitly supplied. Never use that override after model
+outcomes have been inspected; create a new output root instead.
+
+Primary preparation also requires an immutable dataset revision by default.
+`--allow-unpinned-revision` exists only for exploratory work.
+
+Every split manifest records `normalizer_version` in addition to content
+SHA-256 hashes, dataset fingerprints, source split roles, and the requested
+immutable revision. This makes prompt-format changes visible in provenance.

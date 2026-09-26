@@ -130,6 +130,9 @@ def write_parity(
     write_json(
         instrumented.with_suffix(instrumented.suffix + ".audit.json"),
         {
+            "protocol": "trajuq_run_audit_v1",
+            "git_commit": commit,
+            "git_clean": True,
             "status": "PASS",
             "stage": "raw",
             "sha256": sha256_file(instrumented),
@@ -192,6 +195,9 @@ def build_case(
     write_json(
         raw.with_suffix(raw.suffix + ".audit.json"),
         {
+            "protocol": "trajuq_run_audit_v1",
+            "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "status": "PASS",
             "stage": "raw",
             "sha256": sha256_file(raw),
@@ -200,6 +206,9 @@ def build_case(
     write_json(
         scored.with_suffix(scored.suffix + ".audit.json"),
         {
+            "protocol": "trajuq_run_audit_v1",
+            "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "status": "PASS",
             "stage": "scored",
             "sha256": sha256_file(scored),
@@ -281,6 +290,9 @@ def build_case(
     write_json(
         math_scored.with_suffix(math_scored.suffix + ".audit.json"),
         {
+            "protocol": "trajuq_run_audit_v1",
+            "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "status": "PASS",
             "stage": "scored",
             "sha256": sha256_file(math_scored),
@@ -553,7 +565,14 @@ def test_primary_readiness_rejects_missing_or_stale_pilot_audits(tmp_path):
 
     write_json(
         raw_audit,
-        {"status": "PASS", "stage": "raw", "sha256": "wrong"},
+        {
+            "protocol": "trajuq_run_audit_v1",
+            "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
+            "status": "PASS",
+            "stage": "raw",
+            "sha256": "wrong",
+        },
     )
     result = evaluate(case)
     assert result["status"] == "FAIL"
@@ -595,3 +614,17 @@ def test_primary_readiness_rejects_missing_parity_raw_audit(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("hash/audit-bound evidence" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_run_audit_from_other_commit(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    quality = json.loads(case["quality"].read_text(encoding="utf-8"))
+    scored = Path(quality["scored"])
+    audit_path = scored.with_suffix(scored.suffix + ".audit.json")
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    audit["git_commit"] = "other-commit"
+    write_json(audit_path, audit)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash/audit-bound PASS" in item for item in result["failures"])

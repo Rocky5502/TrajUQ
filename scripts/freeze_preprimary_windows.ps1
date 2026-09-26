@@ -1,6 +1,6 @@
 param(
     [string]$Python = "python",
-    [switch]$SkipCpuInstall
+    [switch]$SkipDependencyInstall
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,9 +28,9 @@ if ($LASTEXITCODE -ne 0 -or -not $Head) {
 }
 Write-Host "FROZEN_GIT_COMMIT=$Head" -ForegroundColor Yellow
 
-if (-not $SkipCpuInstall) {
-    Run-Step "Install CPU/dev verification dependencies" {
-        & $Python -m pip install -e ".[dev,math]"
+if (-not $SkipDependencyInstall) {
+    Run-Step "Install CPU/model/data verification dependencies" {
+        & $Python -m pip install -e ".[dev,math,models]"
     }
 }
 

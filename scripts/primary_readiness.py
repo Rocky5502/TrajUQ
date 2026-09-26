@@ -287,6 +287,7 @@ def evaluate_readiness(
             manual.get("protocol") == "trajuq_pilot_manual_gate_v2"
             and manual.get("status") == "PASS"
             and manual.get("git_commit") == experiment_commit
+            and manual.get("git_clean") is True
             and int(manual.get("reviewed_records", 0)) >= 10
             and review_hash_ok
             and parity_hash_ok
@@ -306,6 +307,7 @@ def evaluate_readiness(
             "status": manual.get("status"),
             "protocol": manual.get("protocol"),
             "git_commit": manual.get("git_commit"),
+            "git_clean": manual.get("git_clean"),
             "reviewed_records": manual.get("reviewed_records"),
             "review_sheet_hash_ok": review_hash_ok,
             "parity_hash_ok": parity_hash_ok,
@@ -318,11 +320,14 @@ def evaluate_readiness(
 
     try:
         math_audit = load_json(math500_audit_path)
+        math_dependency_versions = math_audit.get("dependency_versions", {})
         math_audit_pass = (
             math_audit.get("protocol") == "trajuq_math500_scorer_audit_v2"
             and math_audit.get("status") == "PASS"
             and math_audit.get("git_commit") == experiment_commit
             and int(math_audit.get("failure_count", 1)) == 0
+            and math_dependency_versions.get("math-verify") == "0.9.0"
+            and math_dependency_versions.get("antlr4-python3-runtime") == "4.13.2"
         )
         checks["math500_scorer"] = {
             "path": math500_audit_path,
@@ -330,6 +335,7 @@ def evaluate_readiness(
             "protocol": math_audit.get("protocol"),
             "git_commit": math_audit.get("git_commit"),
             "failure_count": math_audit.get("failure_count"),
+            "dependency_versions": math_dependency_versions,
         }
         if not math_audit_pass:
             failures.append(
@@ -357,6 +363,7 @@ def evaluate_readiness(
             math_manual.get("protocol") == "trajuq_math500_manual_scorer_gate_v2"
             and math_manual.get("status") == "PASS"
             and math_manual.get("git_commit") == experiment_commit
+            and math_manual.get("git_clean") is True
             and math_manual.get("automatic_audit_git_commit") == experiment_commit
             and int(math_manual.get("reviewed_records", 0)) >= 25
             and math_review_hash_ok
@@ -370,6 +377,7 @@ def evaluate_readiness(
             "status": math_manual.get("status"),
             "protocol": math_manual.get("protocol"),
             "git_commit": math_manual.get("git_commit"),
+            "git_clean": math_manual.get("git_clean"),
             "reviewed_records": math_manual.get("reviewed_records"),
             "review_sheet_hash_ok": math_review_hash_ok,
             "automatic_audit_hash_ok": math_audit_hash_ok,

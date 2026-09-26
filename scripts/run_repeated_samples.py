@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -9,6 +10,29 @@ from pathlib import Path
 
 
 DEFAULT_SEEDS = [2027, 2028, 2029, 2030, 2031]
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verified_raw_artifact(path: Path) -> bool:
+    audit = path.with_suffix(path.suffix + ".audit.json")
+    if not path.exists() or not audit.exists():
+        return False
+    try:
+        payload = json.loads(audit.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        payload.get("status") == "PASS"
+        and payload.get("stage") == "raw"
+        and str(payload.get("sha256")) == sha256_file(path)
+    )
 
 
 def main() -> None:
@@ -36,6 +60,14 @@ def main() -> None:
     parser.add_argument("--sdar-remasking-strategy", default="low_confidence_dynamic")
     parser.add_argument("--sdar-confidence-threshold", type=float, default=0.85)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--resume-verified",
+        action="store_true",
+        help=(
+            "Skip an existing seed only when its raw audit is PASS and the "
+            "audit SHA-256 matches the current artifact."
+        ),
+    )
     args = parser.parse_args()
 
     if args.temperature <= 0:
@@ -68,9 +100,20 @@ def main() -> None:
 
     for seed in args.seeds:
         output = out_dir / f"seed-{seed}.raw.jsonl"
+        if output.exists() and args.resume_verified and verified_raw_artifact(output):
+            print(f"[TrajUQ repeated] verified seed already complete -> {output}")
+            manifest["runs"].append(
+                {
+                    "seed": seed,
+                    "path": str(output),
+                    "status": "REUSED_VERIFIED",
+                }
+            )
+            continue
         if output.exists() and not args.overwrite:
             raise SystemExit(
-                f"Refusing to overwrite {output}. Use a new output directory or --overwrite."
+                f"Refusing to overwrite unverified {output}. "
+                "Inspect/delete the artifact or use --overwrite intentionally."
             )
         if output.exists():
             output.unlink()
@@ -144,7 +187,9 @@ def main() -> None:
             ],
             check=True,
         )
-        manifest["runs"].append({"seed": seed, "path": str(output)})
+        manifest["runs"].append(
+            {"seed": seed, "path": str(output), "status": "GENERATED"}
+        )
 
     manifest_path = out_dir / "manifest.json"
     manifest_path.write_text(

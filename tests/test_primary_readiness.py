@@ -182,6 +182,22 @@ def build_case(
     raw.write_text('{"dummy":"raw"}\n', encoding="utf-8")
     scored.write_text('{"dummy":"scored"}\n', encoding="utf-8")
     write_json(
+        raw.with_suffix(raw.suffix + ".audit.json"),
+        {
+            "status": "PASS",
+            "stage": "raw",
+            "sha256": sha256_file(raw),
+        },
+    )
+    write_json(
+        scored.with_suffix(scored.suffix + ".audit.json"),
+        {
+            "status": "PASS",
+            "stage": "scored",
+            "sha256": sha256_file(scored),
+        },
+    )
+    write_json(
         quality,
         {
             "protocol": "trajuq_pilot_quality_gate_v2",
@@ -472,3 +488,23 @@ def test_primary_readiness_rejects_dirty_math_scorer_audit(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("automatic scorer audit" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_missing_or_stale_pilot_audits(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    quality = json.loads(case["quality"].read_text(encoding="utf-8"))
+    raw = Path(quality["raw"])
+    raw_audit = raw.with_suffix(raw.suffix + ".audit.json")
+    raw_audit.unlink()
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash/audit-bound PASS" in item for item in result["failures"])
+
+    write_json(
+        raw_audit,
+        {"status": "PASS", "stage": "raw", "sha256": "wrong"},
+    )
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash/audit-bound PASS" in item for item in result["failures"])

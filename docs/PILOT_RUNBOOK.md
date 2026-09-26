@@ -22,9 +22,12 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-The pilot wrapper consumes the ledger-resolved LLaDA and GSM8K SHAs. It
-hard-stops unless parity protocol v3 covers exactly 20 shared prompts with zero
-output/provenance mismatches at the same git commit and model SHA as the ledger.
+The pilot wrapper consumes the ledger-resolved LLaDA and GSM8K SHAs. It is
+non-overwriting: valid hash-bound frozen evidence is preserved, while partial or
+stale artifacts stop for inspection. It hard-stops unless parity protocol v3
+covers exactly 20 shared prompts with zero output/provenance mismatches at the
+same clean git commit/model SHA as the ledger, with unchanged reference and
+instrumented SHA-256 evidence.
 
 The first pilot is frozen to the **LLaDA-MoE-7B-A1B-Instruct + GSM8K calibration** path. Do not scale to other models until the exact token-parity gate passes.
 
@@ -36,14 +39,15 @@ Preferred Windows command:
 PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 ```
 
-Manual equivalent on other platforms:
+Linux/macOS guarded equivalent:
 
 ```bash
-bash scripts/verify_cpu.sh
-python scripts/resolve_experiment_revisions.py
+bash scripts/freeze_preprimary.sh
 ```
 
-Do not change commits between the two commands. Revision-ledger protocol v2
+This performs the same clean-checkout CPU verification, immutable revision
+resolution, post-freeze cleanliness check, status refresh, and private handoff
+export as the Windows wrapper. Revision-ledger protocol v2
 records the git commit, primary-config hash, dataset-manifest hash, immutable
 model/data SHAs, and frozen model-config hashes. Primary readiness v2 later
 requires CPU verification and every primary parity artifact to match this
@@ -220,9 +224,10 @@ python scripts/record_manual_gate.py \
 ```
 
 The command is an attestation recorder, not an automated review. Do not run it
-until those checks have actually been performed. Manual-gate protocol v2 binds
-the review sheet, LLaDA parity artifact, and pilot-quality artifact by SHA-256
-at the frozen experiment commit.
+until those checks have actually been performed. It refuses a dirty worktree.
+Manual-gate protocol v2 binds the review sheet, LLaDA parity artifact, and
+pilot-quality artifact by SHA-256 at the frozen experiment commit and records
+that the attestation was made from a clean checkout.
 
 Before launching the full 3-model primary matrix, require all primary-model
 parity artifacts plus the pilot gates:

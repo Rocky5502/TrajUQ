@@ -185,6 +185,7 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
             {
                 "protocol": "trajuq_repeated_sampling_baseline_v2",
                 "n_test": 1,
+                "sample_count": 5,
                 "auxiliary_compute": {
                     "test": {
                         "mean_auxiliary_wall_time_seconds_per_example": 5.0,
@@ -384,6 +385,29 @@ def test_pair_state_rejects_missing_compute_accounting(tmp_path):
             {
                 "protocol": "trajuq_repeated_sampling_baseline_v2",
                 "n_test": 1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    assert pair_state(metrics, predictions, ["x"]) == "INVALID"
+
+
+def test_pair_state_rejects_non_five_sample_metrics(tmp_path):
+    metrics = tmp_path / "metrics.json"
+    predictions = tmp_path / "predictions.jsonl"
+    metrics.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_repeated_sampling_baseline_v2",
+                "n_test": 1,
+                "sample_count": 4,
+                "auxiliary_compute": {
+                    "test": {
+                        "mean_auxiliary_wall_time_seconds_per_example": 4.0,
+                        "p90_auxiliary_wall_time_seconds_per_example": 5.0,
+                    }
+                },
             }
         ),
         encoding="utf-8",

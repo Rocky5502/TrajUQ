@@ -54,3 +54,16 @@ def test_math500_wrapper_revalidates_hash_bound_split_and_parity_sources():
     assert "test_sha256" in text
     assert "$Audit.requested_revision -ne $DatasetSha" in text
     assert text.count("Assert-Math500FrozenPair") == 3
+
+
+def test_math500_human_review_is_calibration_source_bound():
+    record_text = Path("scripts/record_math500_scorer_review.py").read_text(encoding="utf-8")
+    readiness_text = Path("scripts/primary_readiness.py").read_text(encoding="utf-8")
+
+    assert "review_scored_artifact" in record_text
+    assert "review_scored_sha256" in record_text
+    assert "review_input" in record_text
+    assert "review_input_sha256" in record_text
+    assert "data/processed/math500/calibration.jsonl" in record_text
+    assert "math_scored_audit_ok" in readiness_text
+    assert "math_input_hash_ok" in readiness_text

@@ -187,6 +187,7 @@ def build_case(
             "protocol": "trajuq_pilot_quality_gate_v2",
             "status": "PASS",
             "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "raw": str(raw),
             "raw_sha256": sha256_file(raw),
             "scored": str(scored),
@@ -230,6 +231,7 @@ def build_case(
             "protocol": "trajuq_math500_scorer_audit_v2",
             "status": "PASS",
             "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "failure_count": 0,
             "dependency_versions": {
                 "math-verify": "0.9.0",
@@ -448,3 +450,25 @@ def test_primary_readiness_rejects_dirty_parity_artifact(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("hash-bound evidence" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_dirty_pilot_quality_artifact(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    quality = json.loads(case["quality"].read_text(encoding="utf-8"))
+    quality["git_clean"] = False
+    write_json(case["quality"], quality)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("pilot quality gate" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_dirty_math_scorer_audit(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    audit = json.loads(case["math_audit"].read_text(encoding="utf-8"))
+    audit["git_clean"] = False
+    write_json(case["math_audit"], audit)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("automatic scorer audit" in item for item in result["failures"])

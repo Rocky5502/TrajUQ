@@ -106,6 +106,12 @@ implementation:
       - scripts/plan_adaptive_runs.py
       - scripts/aggregate_adaptive.py
       - src/trajuq/adaptive_aggregation.py
+  - id: resumable_adaptive_executor
+    label: "Resumable adaptive RQ3 executor with cap-specific macro gates"
+    state: DONE
+    evidence:
+      - scripts/execute_adaptive_plan.py
+      - tests/test_execute_adaptive_plan.py
   - id: hybrid_rq4
     label: "Same-checkpoint AR/diffusion RQ4 diagnostic pipeline"
     state: DONE
@@ -248,6 +254,12 @@ execution_gates:
     stage: analysis
     artifact: results/adaptive_matrix_plan.json
     expect: {key: status, equals: PASS}
+  - id: adaptive_execution_complete
+    label: "All adaptive base runs, 25/50/75% evaluations, and macros complete"
+    stage: analysis
+    action: "Use python scripts/execute_adaptive_plan.py --execute to resume the full RQ3 matrix safely."
+    artifact: results/adaptive_execution_state.json
+    expect: {key: status, equals: COMPLETE}
   - id: primary_macro
     label: "Complete primary 18-cell macro result"
     stage: analysis

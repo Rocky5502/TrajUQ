@@ -38,7 +38,8 @@ def main() -> None:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--dtype", default="bfloat16")
     parser.add_argument("--steps", type=int, default=128)
-    parser.add_argument("--max-new-tokens", type=int, default=128)\n    parser.add_argument("--block-length", type=int, default=128)
+    parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument("--block-length", type=int, default=128)
     parser.add_argument("--mask-id", type=int, default=None)
     args = parser.parse_args()
 
@@ -52,6 +53,7 @@ def main() -> None:
     torch = None
     try:
         import torch as _torch
+
         torch = _torch
     except ImportError:
         pass
@@ -66,6 +68,7 @@ def main() -> None:
         if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats()
             torch.cuda.synchronize()
+
         start = time.perf_counter()
         if args.adapter == "dream":
             result = adapter.generate(
@@ -80,9 +83,12 @@ def main() -> None:
                 seed=args.seed,
                 steps=args.steps,
                 gen_length=args.max_new_tokens,
+                block_length=args.block_length,
             )
+
         if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
             torch.cuda.synchronize()
+
         result.metadata["wall_time_seconds"] = time.perf_counter() - start
         if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
             result.metadata["peak_gpu_memory_bytes"] = int(torch.cuda.max_memory_allocated())

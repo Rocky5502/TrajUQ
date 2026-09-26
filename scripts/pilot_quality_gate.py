@@ -55,6 +55,18 @@ def git_head() -> str | None:
         return None
 
 
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Automated 50-item TrajUQ pilot quality gate.")
     parser.add_argument("--raw", required=True)
@@ -209,13 +221,17 @@ def main() -> None:
         failures.append("one or more pilot records has zero trajectory step summaries")
 
     commit = git_head()
+    clean = git_clean()
     if not commit:
         failures.append("git commit could not be resolved")
+    if clean is not True:
+        failures.append("git worktree must be clean for the frozen pilot gate")
 
     payload = {
         "protocol": "trajuq_pilot_quality_gate_v2",
         "status": "PASS" if not failures else "FAIL",
         "git_commit": commit,
+        "git_clean": clean,
         "schema_version": SCHEMA_VERSION,
         "model_ids": sorted(observed_models),
         "adapters": sorted(observed_adapters),

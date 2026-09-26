@@ -112,7 +112,13 @@ def require_claim_gate(
 
     if primary_cfg is not None:
         expected = evaluate_gate(primary, primary_cfg)
-        for key in ("primary_endpoint", "decision", "claim_supported", "frozen_rules", "conditions"):
+        for key in (
+            "primary_endpoint",
+            "decision",
+            "claim_supported",
+            "frozen_rules",
+            "conditions",
+        ):
             if claim.get(key) != expected.get(key):
                 raise ValueError(
                     f"RQ1 claim gate field {key!r} differs from re-evaluated frozen gate."
@@ -275,9 +281,12 @@ def build_macros(
         # Candidate is TrajUQ; baseline is repeated sampling.
         macros[f"Repeated{suffix}"] = fmt(node["baseline_macro"])
         macros[f"RepeatedTraj{suffix}"] = fmt(node["candidate_macro"])
-    macros["RepeatedAuxWallTime"] = (
-        f'{float(repeated["auxiliary_compute"]["mean_test_auxiliary_wall_time_seconds_per_example"]):.2f}'
+    repeated_seconds = float(
+        repeated["auxiliary_compute"][
+            "mean_test_auxiliary_wall_time_seconds_per_example"
+        ]
     )
+    macros["RepeatedAuxWallTime"] = f"{repeated_seconds:.2f}"
 
     for group, suffix in ABLATION_SUFFIXES.items():
         metrics = ablation["groups"][group]["metrics"]

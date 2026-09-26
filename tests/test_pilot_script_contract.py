@@ -37,3 +37,19 @@ def test_preprimary_freeze_exports_private_handoff():
     assert "scripts/export_research_handoff.py" in text
     assert "dist/trajuq_preprimary_handoff.zip" in text
     assert "--skip-status-refresh" in text
+
+
+def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
+    text = Path("scripts/pilot_windows.ps1").read_text(encoding="utf-8")
+
+    assert "Remove-Item" not in text
+    assert "Remove-Artifact" not in text
+    assert "Require-No-ExistingArtifacts" in text
+    assert "will not delete or overwrite evidence" in text
+    assert "reference_sha256" in text
+    assert "instrumented_sha256" in text
+    assert "raw_sha256" in text
+    assert "scored_sha256" in text
+    assert "calibration_sha256" in text
+    assert "test_sha256" in text
+    assert "$Parity.git_clean -eq $true" in text

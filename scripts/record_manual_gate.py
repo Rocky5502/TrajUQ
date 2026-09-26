@@ -43,6 +43,24 @@ def git_clean() -> bool | None:
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
+def run_audit_passes(
+    artifact_path: Path,
+    expected_stage: str,
+) -> tuple[bool, dict]:
+    audit_path = artifact_path.with_suffix(artifact_path.suffix + ".audit.json")
+    if not artifact_path.exists() or not audit_path.exists():
+        return False, {}
+    try:
+        payload = load_json(audit_path)
+    except (OSError, json.JSONDecodeError):
+        return False, {}
+    passed = (
+        payload.get("status") == "PASS"
+        and payload.get("stage") == expected_stage
+        and str(payload.get("sha256", "")) == sha256_file(artifact_path)
+    )
+    return passed, payload
+
 def review_sheet_metadata(path: Path) -> dict[str, str]:
     prefixes = {
         "- scored artifact: ": "scored_artifact",
@@ -183,6 +201,14 @@ def main() -> None:
             if review_meta.get("scored_sha256") != quality_scored_sha:
                 failures.append("review sheet scored SHA-256 differs from pilot quality")
 
+        quality_raw = Path(str(quality.get("raw", "")))
+        raw_audit_ok, raw_audit = run_audit_passes(quality_raw, "raw")
+        scored_audit_ok, scored_audit = run_audit_passes(quality_scored, "scored")
+        if not raw_audit_ok:
+            failures.append("pilot raw audit is missing, stale, or not PASS")
+        if not scored_audit_ok:
+            failures.append("pilot scored audit is missing, stale, or not PASS")
+
     if args.reviewed_records < 10:
         failures.append("at least 10 trajectory records must be manually reviewed")
     if not args.trajectory_semantics_pass:
@@ -214,6 +240,8 @@ def main() -> None:
         "pilot_quality_sha256": quality_sha256,
         "pilot_quality_status": quality_status,
         "pilot_quality_protocol": quality_protocol,
+        "pilot_raw_audit_ok": raw_audit_ok if quality else False,
+        "pilot_scored_audit_ok": scored_audit_ok if quality else False,
         "reviewed_records": int(args.reviewed_records),
         "checks": {
             "trajectory_semantics": bool(args.trajectory_semantics_pass),

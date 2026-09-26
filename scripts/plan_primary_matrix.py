@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from trajuq.data_integrity import audit_split_pair
+
 
 DEFAULT_FROZEN_MODELS = {
     "llada": "results/frozen_models/llada.yaml",
@@ -164,6 +166,39 @@ def main() -> None:
                 "from uncommitted code"
             )
 
+    revision_ledger: dict = {}
+    revision_ledger_path: Path | None = None
+    if readiness:
+        ledger_check = readiness.get("checks", {}).get("revision_ledger", {})
+        ledger_path_text = str(ledger_check.get("path", "")).strip()
+        if not ledger_path_text:
+            failures.append("primary readiness does not identify its revision ledger")
+        else:
+            revision_ledger_path = Path(ledger_path_text)
+            if not revision_ledger_path.exists():
+                failures.append(
+                    f"missing revision ledger bound by readiness: {revision_ledger_path}"
+                )
+            else:
+                try:
+                    revision_ledger = json.loads(
+                        revision_ledger_path.read_text(encoding="utf-8")
+                    )
+                except json.JSONDecodeError as exc:
+                    failures.append(f"invalid revision ledger JSON: {exc}")
+                else:
+                    if revision_ledger.get("protocol") != "trajuq_revision_ledger_v2":
+                        failures.append("revision ledger protocol is not v2")
+                    if revision_ledger.get("status") != "PASS":
+                        failures.append("revision ledger is not PASS")
+                    if (
+                        revision_ledger.get("git_commit")
+                        != readiness.get("experiment_git_commit")
+                    ):
+                        failures.append(
+                            "revision ledger commit differs from primary readiness"
+                        )
+
     primary_path = Path(args.primary_config)
     if not primary_path.exists():
         failures.append(f"missing primary config: {primary_path}")
@@ -176,6 +211,16 @@ def main() -> None:
     model_cfgs: dict[str, dict] = {}
     model_cfg_hashes: dict[str, str] = {}
     expected_adapters: list[str] = []
+    ledger_models = {
+        str(item.get("adapter")): item
+        for item in revision_ledger.get("models", [])
+        if item.get("adapter")
+    }
+    ledger_datasets = {
+        str(item.get("name")): item
+        for item in revision_ledger.get("datasets", [])
+        if item.get("name")
+    }
     for model_path in primary.get("models", {}).get("primary", []):
         template = load_yaml(Path(model_path))
         adapter = str(template.get("adapter", ""))
@@ -194,6 +239,13 @@ def main() -> None:
             failures.append(f"{adapter}: frozen model_id differs from template")
         if frozen.get("adapter") != adapter:
             failures.append(f"{adapter}: frozen adapter differs from template")
+        expected_model_revision = ledger_models.get(adapter, {}).get("resolved_sha")
+        if not expected_model_revision:
+            failures.append(f"{adapter}: missing resolved model SHA in revision ledger")
+        elif str(revision) != str(expected_model_revision):
+            failures.append(
+                f"{adapter}: frozen model revision differs from revision ledger"
+            )
         model_cfgs[adapter] = frozen
         model_cfg_hashes[adapter] = sha256_file(frozen_path)
 
@@ -206,27 +258,64 @@ def main() -> None:
         test = root / "test.jsonl"
         manifest = root / "split_manifest.json"
         split_audit = root / "split_audit.json"
-        for path in (cal, test, manifest, split_audit):
-            if not path.exists():
-                failures.append(f"{dataset}: missing {path}")
-        if split_audit.exists():
-            audit = json.loads(split_audit.read_text(encoding="utf-8"))
-            if audit.get("status") != "PASS":
-                failures.append(f"{dataset}: split integrity audit is not PASS")
-            if int(audit.get("id_overlap_count", -1)) != 0:
-                failures.append(f"{dataset}: split audit reports ID overlap")
-            if int(audit.get("exact_prompt_overlap_count", -1)) != 0:
-                failures.append(f"{dataset}: split audit reports exact prompt overlap")
+        missing = [
+            path
+            for path in (cal, test, manifest, split_audit)
+            if not path.exists()
+        ]
+        for path in missing:
+            failures.append(f"{dataset}: missing {path}")
+        if missing:
+            continue
 
-        if manifest.exists():
+        try:
             meta = json.loads(manifest.read_text(encoding="utf-8"))
-            if not meta.get("requested_revision"):
-                failures.append(f"{dataset}: dataset revision is not pinned")
-            if int(meta.get("n_calibration", 0)) <= 0:
-                failures.append(f"{dataset}: empty calibration partition")
-            if int(meta.get("n_test", 0)) <= 0:
-                failures.append(f"{dataset}: empty test partition")
-            data_meta[dataset] = meta
+            saved_audit = json.loads(split_audit.read_text(encoding="utf-8"))
+            live_audit = audit_split_pair(cal, test, manifest)
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            failures.append(f"{dataset}: split artifacts are invalid: {exc}")
+            continue
+
+        if saved_audit != live_audit:
+            failures.append(
+                f"{dataset}: saved split audit is stale relative to current "
+                "calibration/test/manifest artifacts"
+            )
+        if live_audit.get("protocol") != "trajuq_split_pair_audit_v1":
+            failures.append(f"{dataset}: split audit protocol is not v1")
+        if live_audit.get("status") != "PASS":
+            failures.append(f"{dataset}: live split integrity audit is not PASS")
+        if int(live_audit.get("id_overlap_count", -1)) != 0:
+            failures.append(f"{dataset}: split audit reports ID overlap")
+        if int(live_audit.get("exact_prompt_overlap_count", -1)) != 0:
+            failures.append(f"{dataset}: split audit reports exact prompt overlap")
+
+        requested_revision = meta.get("requested_revision")
+        expected_dataset_revision = ledger_datasets.get(dataset, {}).get(
+            "resolved_sha"
+        )
+        if not requested_revision:
+            failures.append(f"{dataset}: dataset revision is not pinned")
+        if not expected_dataset_revision:
+            failures.append(
+                f"{dataset}: missing resolved dataset SHA in revision ledger"
+            )
+        elif str(requested_revision) != str(expected_dataset_revision):
+            failures.append(
+                f"{dataset}: prepared split revision differs from revision ledger"
+            )
+        if int(meta.get("n_calibration", 0)) <= 0:
+            failures.append(f"{dataset}: empty calibration partition")
+        if int(meta.get("n_test", 0)) <= 0:
+            failures.append(f"{dataset}: empty test partition")
+
+        data_meta[dataset] = {
+            "manifest": meta,
+            "manifest_path": str(manifest),
+            "manifest_sha256": sha256_file(manifest),
+            "audit_path": str(split_audit),
+            "audit_sha256": sha256_file(split_audit),
+        }
 
     if failures:
         payload = {
@@ -303,10 +392,11 @@ def main() -> None:
                     "model_revision": cfg["revision"],
                     "model_config_sha256": model_cfg_hashes[adapter],
                     "dataset": dataset,
-                    "dataset_revision": data_meta[dataset]["requested_revision"],
-                    "split_manifest_sha256": sha256_file(
-                        data_root / dataset / "split_manifest.json"
-                    ),
+                    "dataset_revision": data_meta[dataset]["manifest"]["requested_revision"],
+                    "split_manifest": data_meta[dataset]["manifest_path"],
+                    "split_manifest_sha256": data_meta[dataset]["manifest_sha256"],
+                    "split_audit": data_meta[dataset]["audit_path"],
+                    "split_audit_sha256": data_meta[dataset]["audit_sha256"],
                     "calibration": partition_commands["calibration"],
                     "test": partition_commands["test"],
                 }
@@ -321,6 +411,16 @@ def main() -> None:
         "primary_config_sha256": sha256_file(primary_path),
         "readiness": str(readiness_path),
         "readiness_sha256": sha256_file(readiness_path),
+        "revision_ledger": (
+            str(revision_ledger_path)
+            if revision_ledger_path is not None
+            else None
+        ),
+        "revision_ledger_sha256": (
+            sha256_file(revision_ledger_path)
+            if revision_ledger_path is not None
+            else None
+        ),
         "seed": seed,
         "models": expected_adapters,
         "model_configs": {

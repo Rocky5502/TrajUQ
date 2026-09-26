@@ -21,12 +21,31 @@ function Remove-Artifact {
     Remove-Item "$Path.audit.json" -ErrorAction SilentlyContinue
 }
 
+function Read-FrozenLedger {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) {
+        throw "Missing $Path. First run scripts/freeze_preprimary_windows.ps1."
+    }
+    $Ledger = Get-Content $Path -Raw | ConvertFrom-Json
+    if ($Ledger.status -ne "PASS") {
+        throw "Revision ledger is not PASS."
+    }
+    if ($Ledger.protocol -ne "trajuq_revision_ledger_v2") {
+        throw "Unexpected revision-ledger protocol: $($Ledger.protocol)"
+    }
+    $Head = (& git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $Head) {
+        throw "Unable to resolve current git commit."
+    }
+    if ($Ledger.git_commit -ne $Head) {
+        throw "Revision ledger was frozen at $($Ledger.git_commit), but current HEAD is $Head. Do not mix commits."
+    }
+    return $Ledger
+}
+
 $ModelId = "inclusionAI/LLaDA-MoE-7B-A1B-Instruct"
-$DatasetId = "openai/gsm8k"
-$ModelConfigTemplate = "configs/models/llada.yaml"
-$ModelConfig = "results/llada_pilot_model_config.yaml"
-$ModelRevisionJson = "results/llada_model_revision.json"
-$DatasetRevisionJson = "results/gsm8k_dataset_revision.json"
+$LedgerPath = "results/revision_ledger.json"
+$ModelConfig = "results/frozen_models/llada.yaml"
 $CalData = "data/processed/gsm8k/calibration.jsonl"
 $TestData = "data/processed/gsm8k/test.jsonl"
 $ParityReference = "runs/llada_parity_reference.jsonl"
@@ -38,39 +57,28 @@ $PilotScored = "runs/llada_gsm8k_pilot50.scored.jsonl"
 New-Item -ItemType Directory -Force -Path results | Out-Null
 New-Item -ItemType Directory -Force -Path runs | Out-Null
 
+$Ledger = Read-FrozenLedger $LedgerPath
+$ModelEntry = @($Ledger.models | Where-Object { $_.adapter -eq "llada" })
+$DatasetEntry = @($Ledger.datasets | Where-Object { $_.name -eq "gsm8k" })
+if ($ModelEntry.Count -ne 1) { throw "Revision ledger must contain exactly one LLaDA entry." }
+if ($DatasetEntry.Count -ne 1) { throw "Revision ledger must contain exactly one GSM8K entry." }
+
+$ModelSha = [string]$ModelEntry[0].resolved_sha
+$DatasetSha = [string]$DatasetEntry[0].resolved_sha
+if (-not $ModelSha -or $ModelSha -eq "null") { throw "Ledger has no frozen LLaDA SHA." }
+if (-not $DatasetSha -or $DatasetSha -eq "null") { throw "Ledger has no frozen GSM8K SHA." }
+if (-not (Test-Path $ModelConfig)) { throw "Missing frozen LLaDA model config: $ModelConfig" }
+
+Write-Host "FROZEN_GIT_COMMIT=$($Ledger.git_commit)" -ForegroundColor Yellow
+Write-Host "MODEL_SHA=$ModelSha"
+Write-Host "DATASET_SHA=$DatasetSha"
+
 if ($Stage -in @("prepare", "all")) {
-    Run-Step "Resolve model revision" { & $Python scripts/resolve_hf_revision.py --repo-type model --repo-id $ModelId --output $ModelRevisionJson }
-    Run-Step "Resolve GSM8K revision" { & $Python scripts/resolve_hf_revision.py --repo-type dataset --repo-id $DatasetId --output $DatasetRevisionJson }
-
-    $ModelSha = (Get-Content $ModelRevisionJson -Raw | ConvertFrom-Json).resolved_sha
-    $DatasetSha = (Get-Content $DatasetRevisionJson -Raw | ConvertFrom-Json).resolved_sha
-    if (-not $ModelSha) { throw "Model revision resolver returned no SHA." }
-    if (-not $DatasetSha) { throw "Dataset revision resolver returned no SHA." }
-
-    Write-Host "MODEL_SHA=$ModelSha"
-    Write-Host "DATASET_SHA=$DatasetSha"
-
-    $yaml = Get-Content $ModelConfigTemplate -Raw
-    if ($yaml -notmatch '(?m)^revision:\s*.*$') { throw "Model config template has no revision field: $ModelConfigTemplate" }
-    $yaml = $yaml -replace '(?m)^revision:\s*.*$', "revision: $ModelSha"
-    Set-Content -Path $ModelConfig -Value $yaml -Encoding UTF8
-    Write-Host "Frozen pilot model config -> $ModelConfig"
-
     Run-Step "Prepare frozen GSM8K pair" { & $Python scripts/prepare_eval_pair.py --dataset gsm8k --revision $DatasetSha }
     Run-Step "CUDA preflight" { & $Python scripts/preflight.py --model-config $ModelConfig --data $CalData --require-cuda }
     Run-Step "Environment snapshot" { & $Python scripts/environment_snapshot.py --output results/pilot_environment.json }
     Run-Step "Freeze manifest" { & $Python scripts/freeze_manifest.py --model-config $ModelConfig --dataset $CalData --dataset $TestData --output results/pilot_freeze_manifest.json }
 }
-
-$ModelSha = $null
-if (Test-Path $ModelRevisionJson) {
-    $ModelSha = (Get-Content $ModelRevisionJson -Raw | ConvertFrom-Json).resolved_sha
-}
-if (-not $ModelSha -and (Test-Path $ModelConfig)) {
-    $match = Select-String -Path $ModelConfig -Pattern '^revision:\s*(\S+)\s*$'
-    if ($match) { $ModelSha = $match.Matches[0].Groups[1].Value }
-}
-if (-not $ModelSha -or $ModelSha -eq "null") { throw "Exact model SHA is not frozen. Run -Stage prepare first." }
 
 if ($Stage -in @("parity", "pilot", "all")) {
     if (-not (Test-Path $CalData)) { throw "Missing $CalData. Run -Stage prepare first." }
@@ -91,7 +99,11 @@ if ($Stage -in @("parity", "all")) {
     Run-Step "Exact token parity" { & $Python scripts/compare_run_parity.py --reference $ParityReference --instrumented $ParityTrajUQ --require-token-ids --require-provenance --output $ParityResult }
 
     $Parity = Get-Content $ParityResult -Raw | ConvertFrom-Json
+    if ($Parity.protocol -ne "trajuq_exact_parity_v3") { throw "Parity protocol is not v3. STOP." }
     if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP: do not run the 50-item pilot." }
+    if ($Parity.git_commit -ne $Ledger.git_commit) { throw "Parity commit differs from revision ledger. STOP." }
+    if ($Parity.shared_records -ne 20) { throw "Parity did not cover exactly 20 shared prompts. STOP." }
+    if ($Parity.run_provenance.model_revision -ne $ModelSha) { throw "Parity model revision differs from revision ledger. STOP." }
 
     Run-Step "Instrumentation overhead" { & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output results/llada_instrumentation_overhead.json }
 }
@@ -99,7 +111,10 @@ if ($Stage -in @("parity", "all")) {
 if ($Stage -in @("pilot", "all")) {
     if (-not (Test-Path $ParityResult)) { throw "Missing $ParityResult. Run -Stage parity first." }
     $Parity = Get-Content $ParityResult -Raw | ConvertFrom-Json
+    if ($Parity.protocol -ne "trajuq_exact_parity_v3") { throw "Parity protocol is not v3. STOP." }
     if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP." }
+    if ($Parity.git_commit -ne $Ledger.git_commit) { throw "Parity commit differs from revision ledger. STOP." }
+    if ($Parity.run_provenance.model_revision -ne $ModelSha) { throw "Parity model revision differs from revision ledger. STOP." }
 
     Remove-Artifact $PilotRaw
     Remove-Artifact $PilotScored

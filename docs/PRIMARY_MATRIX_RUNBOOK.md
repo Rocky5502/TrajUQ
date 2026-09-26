@@ -109,3 +109,23 @@ examples are evaluated under the conservative **second-pass rerun** semantics:
 the base run is always paid and the refined run is an additional complete
 generation. The planner never uses the cheaper continuation cost formula unless
 a future runtime genuinely resumes the same denoising trajectory.
+
+
+## 7. Freeze the primary analysis plan
+
+After all 18 calibration/test pairs are generated, audited, and scored, create
+the analysis command ledger:
+
+```bash
+python scripts/plan_primary_analysis.py
+```
+
+This writes `results/primary_analysis_plan.json`. For every model--dataset
+cell it freezes commands for the calibrated baseline/TrajUQ metrics, paired
+nested bootstrap comparison, frozen feature-family ablations, and the
+training-free raw-risk diagnostic.
+
+Only after **all 18** cell analyses exist should the plan's macro aggregation
+command be executed. The macro command rejects selective cell omission. Run the
+RQ1 claim-gate command last; a negative gate is a valid result and must not be
+used as a reason to redesign the test analysis.

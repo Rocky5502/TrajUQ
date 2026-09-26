@@ -18,6 +18,7 @@ def main() -> None:
     parser.add_argument("--input", required=True, help="Scored test JSONL")
     parser.add_argument("--n-boot", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=2027)
+    parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     rows = [r for r in read_jsonl(args.input) if r.get("correct") is not None]
@@ -50,7 +51,14 @@ def main() -> None:
             seed=args.seed,
         ).to_dict()
 
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    rendered = json.dumps(payload, indent=2, sort_keys=True)
+    print(rendered)
+    if args.output:
+        from pathlib import Path
+
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(rendered + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

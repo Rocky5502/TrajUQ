@@ -30,3 +30,36 @@ def test_namespaced_ids_do_not_collide_across_official_splits():
     assert train_id == "gsm8k:train:0"
     assert test_id == "gsm8k:test:0"
     assert train_id != test_id
+
+
+def test_arc_numeric_labels_are_canonicalized_to_letters():
+    row = {
+        "id": "numeric",
+        "question": "Q?",
+        "choices": {
+            "text": ["one", "two", "three", "four"],
+            "label": ["1", "2", "3", "4"],
+        },
+        "answerKey": "3",
+    }
+    rec = normalize_row("arc_challenge", row, 0)
+
+    assert rec["reference"] == "C"
+    assert "A. one" in rec["prompt"]
+    assert "C. three" in rec["prompt"]
+    assert "1. one" not in rec["prompt"]
+
+
+def test_arc_letter_labels_preserve_answer_position():
+    row = {
+        "id": "letters",
+        "question": "Q?",
+        "choices": {
+            "text": ["one", "two", "three", "four"],
+            "label": ["A", "B", "C", "D"],
+        },
+        "answerKey": "D",
+    }
+    rec = normalize_row("arc_challenge", row, 0)
+
+    assert rec["reference"] == "D"

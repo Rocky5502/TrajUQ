@@ -10,15 +10,28 @@ from trajuq.io import append_jsonl, existing_ids, read_jsonl, sha256_text
 from trajuq.schema import ExampleRecord
 
 
-def build_adapter(name: str, model: str, device: str, dtype: str, mask_id: int | None):
+def build_adapter(
+    name: str,
+    model: str,
+    device: str,
+    dtype: str,
+    mask_id: int | None,
+    revision: str | None,
+):
     if name == "dream":
         from trajuq.adapters.dream import DreamAdapter
 
-        return DreamAdapter(model, device=device, dtype=dtype)
+        return DreamAdapter(model, device=device, dtype=dtype, revision=revision)
     if name == "llada":
         from trajuq.adapters.llada import LLaDAAdapter
 
-        return LLaDAAdapter(model, device=device, dtype=dtype, mask_id=mask_id)
+        return LLaDAAdapter(
+            model,
+            device=device,
+            dtype=dtype,
+            mask_id=mask_id,
+            revision=revision,
+        )
     if name in {"sdar", "flare"}:
         raise SystemExit(
             f"{name} is intentionally an upstream integration boundary. "
@@ -31,6 +44,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--adapter", choices=["dream", "llada", "sdar", "flare"], required=True)
     parser.add_argument("--model", required=True)
+    parser.add_argument("--revision", default=None, help="Exact model/tokenizer revision; required for frozen primary runs")
     parser.add_argument("--input", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--limit", type=int, default=None)
@@ -48,7 +62,14 @@ def main() -> None:
         rows = rows[: args.limit]
 
     done = existing_ids(args.output)
-    adapter = build_adapter(args.adapter, args.model, args.device, args.dtype, args.mask_id)
+    adapter = build_adapter(
+        args.adapter,
+        args.model,
+        args.device,
+        args.dtype,
+        args.mask_id,
+        args.revision,
+    )
 
     torch = None
     try:
@@ -106,7 +127,10 @@ def main() -> None:
             generation=result,
             correct=None,
             reference=None,
-            metadata={"source_input": str(Path(args.input))},
+            metadata={
+                "source_input": str(Path(args.input)),
+                "model_revision": args.revision,
+            },
         )
         append_jsonl(args.output, record.to_dict())
         done.add(example_id)

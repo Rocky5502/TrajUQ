@@ -10,7 +10,13 @@ class DreamAdapter(BaseAdapter):
 
     name = "dream"
 
-    def __init__(self, model_id: str, device: str = "cuda", dtype: str = "bfloat16"):
+    def __init__(
+        self,
+        model_id: str,
+        device: str = "cuda",
+        dtype: str = "bfloat16",
+        revision: str | None = None,
+    ):
         import torch
         from transformers import AutoModel, AutoTokenizer
 
@@ -20,13 +26,19 @@ class DreamAdapter(BaseAdapter):
         self.torch = torch
         self.device = device
         self.model_id = model_id
+        self.revision = revision
         dtype_obj = getattr(torch, dtype)
         self.model = AutoModel.from_pretrained(
             model_id,
+            revision=revision,
             torch_dtype=dtype_obj,
             trust_remote_code=True,
         ).to(device).eval()
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            revision=revision,
+            trust_remote_code=True,
+        )
 
     def generate(
         self,
@@ -90,6 +102,7 @@ class DreamAdapter(BaseAdapter):
             steps=summaries,
             metadata={
                 "model_id": self.model_id,
+                "model_revision": self.revision,
                 "steps_requested": int(steps),
                 "max_new_tokens": int(max_new_tokens),
                 "temperature": float(temperature),

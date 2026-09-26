@@ -20,6 +20,7 @@ class LLaDAAdapter(BaseAdapter):
         device: str = "cuda",
         dtype: str = "bfloat16",
         mask_id: int | None = None,
+        revision: str | None = None,
     ):
         import torch
         from transformers import AutoModel, AutoTokenizer
@@ -30,13 +31,19 @@ class LLaDAAdapter(BaseAdapter):
         self.torch = torch
         self.device = device
         self.model_id = model_id
+        self.revision = revision
         dtype_obj = getattr(torch, dtype)
         self.model = AutoModel.from_pretrained(
             model_id,
+            revision=revision,
             trust_remote_code=True,
             torch_dtype=dtype_obj,
         ).to(device).eval()
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            revision=revision,
+            trust_remote_code=True,
+        )
 
         inferred = self.tokenizer.mask_token_id
         if inferred is None and getattr(self.tokenizer, "mask_token", None):
@@ -48,8 +55,8 @@ class LLaDAAdapter(BaseAdapter):
         if mask_id is None:
             mask_id = inferred
         if mask_id is None and "LLaDA" in model_id:
-            # Upstream LLaDA-8B generation code uses this id. It is a fallback,
-            # not a substitute for freezing/checking the checkpoint tokenizer.
+            # Historical LLaDA-8B fallback. The pilot audit must verify the
+            # selected checkpoint's actual tokenizer/mask id before primary runs.
             mask_id = 126336
         if mask_id is None:
             raise ValueError("Could not infer mask token id; pass mask_id explicitly.")
@@ -177,6 +184,7 @@ class LLaDAAdapter(BaseAdapter):
             steps=summaries,
             metadata={
                 "model_id": self.model_id,
+                "model_revision": self.revision,
                 "mask_id": self.mask_id,
                 "steps_requested": int(steps),
                 "gen_length": int(gen_length),

@@ -7,6 +7,9 @@ import numpy as np
 from sklearn.metrics import average_precision_score, brier_score_loss, log_loss, roc_auc_score
 
 
+SELECTIVE_RISK_VERSION = "tie_aware_uniform_tie_break_v2"
+
+
 @dataclass
 class SelectiveCurve:
     coverage: np.ndarray
@@ -66,18 +69,46 @@ def calibration_metrics(
 
 
 def selective_curve(y_error: np.ndarray, risk_score: np.ndarray) -> SelectiveCurve:
+    """Tie-aware empirical risk--coverage curve.
+
+    Within an exact score tie, use expected cumulative error under a uniform
+    random ordering of tied examples. This removes benchmark-row-order effects
+    while preserving the attainable coverages k/n.
+    """
+
     y = np.asarray(y_error, dtype=float)
     s = np.asarray(risk_score, dtype=float)
     if len(y) == 0:
         raise ValueError("empty arrays")
+    if y.shape != s.shape:
+        raise ValueError("y_error and risk_score must have the same shape")
+    if not np.all(np.isfinite(s)):
+        raise ValueError("risk_score contains non-finite values")
+
     order = np.argsort(s, kind="stable")
-    accepted_errors = y[order]
-    cumulative_errors = np.cumsum(accepted_errors)
-    counts = np.arange(1, len(y) + 1)
+    sorted_y = y[order]
+    sorted_s = s[order]
+    expected_cumulative_errors = np.zeros(len(y), dtype=float)
+
+    running_errors = 0.0
+    start = 0
+    while start < len(y):
+        end = start + 1
+        while end < len(y) and sorted_s[end] == sorted_s[start]:
+            end += 1
+
+        group_errors = float(sorted_y[start:end].sum())
+        group_size = end - start
+        within = np.arange(1, group_size + 1, dtype=float)
+        expected_cumulative_errors[start:end] = (
+            running_errors + within * (group_errors / group_size)
+        )
+        running_errors += group_errors
+        start = end
+
+    counts = np.arange(1, len(y) + 1, dtype=float)
     coverage = counts / len(y)
-    risk = cumulative_errors / counts
-    # Discrete AURC: average selective risk over attainable coverages k/n.
-    # This is invariant to an arbitrary zero-coverage interpolation convention.
+    risk = expected_cumulative_errors / counts
     aurc = float(np.mean(risk))
     return SelectiveCurve(coverage=coverage, risk=risk, aurc=aurc)
 

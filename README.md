@@ -8,7 +8,7 @@
 
 TrajUQ studies whether the *denoising trajectory itself* can predict when a diffusion language model is likely to be wrong, and whether that uncertainty can support calibrated selective generation and adaptive inference-time compute.
 
-> **Status (2026-09-26): pre-experiment research implementation.**  
+> **Status (2026-09-27): pre-experiment research implementation.**  
 > The repository contains schema-v4 trajectory features, calibration and selective-generation metrics, leak-safe data/scoring, Dream/LLaDA/SDAR pilot adapters with parity gates, FLARE diagnostic bridging, run audits, paired bootstrap utilities, and a two-budget adaptive-compute evaluator. **No paper result is claimed yet.**
 
 ## Research questions
@@ -50,6 +50,7 @@ TrajUQ/
 │   ├── GPU_PILOT.md
 │   ├── PROTOCOL.md
 │   ├── REPRODUCIBILITY.md
+│   ├── RESULT_ARTIFACT_MAP.md
 │   ├── SDAR_INSTRUMENTATION.md
 │   └── UPSTREAMS.md
 ├── scripts/
@@ -59,6 +60,7 @@ TrajUQ/
 │   ├── score_outputs.py
 │   ├── evaluate_run.py
 │   ├── compare_methods.py
+│   ├── aggregate_feature_ablation.py
 │   ├── evaluate_adaptive.py
 │   ├── freeze_manifest.py
 │   ├── preflight.py
@@ -142,7 +144,9 @@ python scripts/project_status.py
 This verifies declared implementation evidence and inspects local experiment
 artifacts without pretending that implemented code means completed experiments.
 The canonical handoff is `PROJECT_STATUS.md`; the machine-readable gate
-specification is `configs/project_status.yaml`.
+specification is `configs/project_status.yaml`. The result-to-paper bridge is
+`docs/RESULT_ARTIFACT_MAP.md`, which fixes where every required frozen result
+enters the manuscript and prevents manual result copying.
 
 ## Local verification and frozen pre-primary commit
 

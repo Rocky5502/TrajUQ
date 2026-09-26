@@ -379,8 +379,11 @@ The frozen primary repeated-sampling baseline requires exactly five seeds
 (2027--2031) by default. The evaluator verifies unique/matched seeds, identical
 generation settings between calibration and test, raw outcome isolation, model
 identity, prompt hashes, and reports the auxiliary repeated-generation wall
-time. After both prediction artifacts exist, compare the expensive baseline
-directly with TrajUQ using:
+time. The full 18-cell aggregator emits protocol
+`trajuq_vs_repeated_macro_v2`; it refuses incomplete test-time wall-clock
+metadata and reports the equal-cell-weight mean auxiliary seconds per example
+with target generation excluded. After both prediction artifacts exist, compare
+the expensive baseline directly with TrajUQ using:
 
 ```bash
 python scripts/compare_repeated_to_trajuq.py \
@@ -389,7 +392,9 @@ python scripts/compare_repeated_to_trajuq.py \
   --output results/llada_gsm8k_trajuq_vs_repeated.json
 ```
 
-# Training-free raw-risk sensitivity:
+Training-free raw-risk sensitivity:
+
+```bash
 python scripts/compare_methods.py \
   --input runs/llada_gsm8k_test.scored.jsonl \
   --n-boot 2000

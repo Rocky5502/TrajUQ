@@ -23,9 +23,12 @@ PAPER_FILES = (
     "generated_results.tex",
 )
 BANNED_PATTERNS = {
-    "development repository owner": re.compile(r"Rocky5502", re.IGNORECASE),
-    "development repository URL": re.compile(
-        r"https?://(?:www\.)?github\.com/Rocky5502/TrajUQ",
+    "development repository owner": re.compile(
+        "Rocky" + "5502",
+        re.IGNORECASE,
+    ),
+    "public GitHub URL": re.compile(
+        r"https?://(?:www\.)?github\.com/",
         re.IGNORECASE,
     ),
     "Windows absolute path": re.compile(r"\b[A-Za-z]:\\"),

@@ -77,6 +77,16 @@ def verify_submission_checkout() -> dict:
     }
 
 
+def preprimary_revalidation_argv() -> list[str]:
+    return [
+        sys.executable,
+        "scripts/primary_readiness.py",
+        "--historical-provenance-only",
+        "--output",
+        "results/submission_preprimary_revalidation.json",
+    ]
+
+
 def verify_downstream_provenance(
     primary_plan_path: Path,
     analysis_plan_path: Path,
@@ -260,13 +270,7 @@ def main() -> None:
     failures.extend(submission_checkout["failures"])
 
     preprimary_readiness = run_json_command(
-        [
-            sys.executable,
-            "scripts/primary_readiness.py",
-            "--historical-provenance-only",
-            "--output",
-            "results/submission_preprimary_revalidation.json",
-        ]
+        preprimary_revalidation_argv()
     )
     if preprimary_readiness.get("status") != "PASS":
         failures.append(

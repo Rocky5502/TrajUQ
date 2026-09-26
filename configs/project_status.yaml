@@ -84,6 +84,12 @@ implementation:
       - scripts/run_repeated_samples.py
       - scripts/plan_repeated_sampling.py
       - scripts/aggregate_repeated_baseline.py
+  - id: resumable_repeated_executor
+    label: "Resumable SHA-verified five-sample baseline executor"
+    state: DONE
+    evidence:
+      - scripts/execute_repeated_sampling.py
+      - tests/test_execute_repeated_sampling.py
   - id: math500_symbolic
     label: "Pinned MATH-500 scoring and reference-free symbolic vote clustering"
     state: DONE
@@ -231,6 +237,12 @@ execution_gates:
     stage: analysis
     artifact: results/repeated_sampling_plan.json
     expect: {key: status, equals: PASS}
+  - id: repeated_execution_complete
+    label: "All 18 five-sample cells plus macro complete"
+    stage: analysis
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator safely."
+    artifact: results/repeated_sampling_execution_state.json
+    expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan
     label: "Frozen adaptive 18-cell plan"
     stage: analysis

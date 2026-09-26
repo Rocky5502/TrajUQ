@@ -18,6 +18,22 @@ def make_root(tmp_path: Path) -> Path:
     (root / "dist").mkdir()
     (root / "PROJECT_STATUS.md").write_text("status\n", encoding="utf-8")
     (root / "NEW_CHAT_MASTER_PROMPT.md").write_text("prompt\n", encoding="utf-8")
+    (root / "EXPERIMENT_FREEZE_CHECKLIST.md").write_text(
+        "freeze checklist\n",
+        encoding="utf-8",
+    )
+    (root / "docs" / "PILOT_RUNBOOK.md").write_text(
+        "pilot runbook\n",
+        encoding="utf-8",
+    )
+    (root / "docs" / "PRIMARY_MATRIX_RUNBOOK.md").write_text(
+        "primary runbook\n",
+        encoding="utf-8",
+    )
+    (root / "paper" / "generated_results.tex").write_text(
+        "% generated results placeholder\n",
+        encoding="utf-8",
+    )
     (root / "configs" / "project_status.yaml").write_text(
         "project: {}\n",
         encoding="utf-8",

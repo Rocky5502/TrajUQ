@@ -205,14 +205,14 @@ execution_gates:
     label: "LLaDA + GSM8K 50-example pilot quality"
     stage: pre_primary
     issue: 1
-    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot. The pilot-quality v2 artifact must be a clean-checkout, hash-bound PASS at the frozen commit/model revision."
+    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot. The pilot-quality v2 artifact must be a clean-checkout, hash-bound PASS at the frozen commit/model revision, and primary readiness additionally requires the raw/scored audit artifacts to PASS with matching SHA-256."
     artifact: results/llada_gsm8k_pilot50_gate.json
     expect: {key: status, equals: PASS}
   - id: pilot_manual
     label: "10-trace human pilot review"
     stage: pre_primary
     issue: 1
-    action: "Inspect the exported 10-trace sheet and record the protocol-v2 attestation with scripts/record_manual_gate.py from the same frozen clean checkout; it binds the review sheet, LLaDA parity, and pilot-quality artifacts by SHA-256."
+    action: "Inspect the exported 10-trace sheet and record the protocol-v2 attestation with scripts/record_manual_gate.py from the same frozen clean checkout. The sheet records the exact scored-pilot SHA; recorder/readiness bind that source plus the LLaDA parity and pilot-quality artifacts by SHA-256."
     artifact: results/llada_gsm8k_pilot50_manual_review.json
     expect: {key: status, equals: PASS}
   - id: sdar_parity
@@ -240,13 +240,13 @@ execution_gates:
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
-    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to generate/audit/score exactly 25 calibration-only examples and export the deterministic review sheet. Inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py from the same frozen clean checkout."
+    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to revalidate the frozen MATH split/parity evidence, generate/audit/score exactly 25 calibration-only examples, and export the deterministic review sheet. The sheet records scored/input SHA-256; inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py from the same frozen clean checkout. Readiness independently revalidates the scored artifact, calibration input, and scored audit."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, clean-checkout pilot/MATH human attestations, the frozen MATH dependency versions, and all three clean hash-bound exact-parity artifacts with source SHA revalidation."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, hash-bound pilot raw/scored audits, source-bound pilot/MATH human attestations, MATH scored-pilot audit evidence, frozen MATH dependency versions, and all three clean exact-parity artifacts with source SHA revalidation."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

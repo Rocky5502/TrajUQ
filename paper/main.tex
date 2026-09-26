@@ -247,12 +247,26 @@ No numerical claim is populated until it can be traced to a frozen run artifact,
 Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
 \midrule
 Decision entropy & \tbd & \tbd & \tbd\\
-Repeated sampling & \tbd & \tbd & \tbd\\
 \method & \tbd & \tbd & \tbd\\
 \bottomrule
 \end{tabular}
-\caption{Primary held-out uncertainty results. Values remain blank until frozen experiments are complete.}
+\caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values remain blank until frozen experiments are complete.}
 \label{tab:main}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
+\midrule
+Repeated sampling & \tbd & \tbd & \tbd\\
+\method (matched subset) & \tbd & \tbd & \tbd\\
+\bottomrule
+\end{tabular}
+\caption{Expensive five-sample baseline on the frozen matched subset of 15 model--dataset cells. MATH-500 is excluded until symbolic sample clustering is available; this table is therefore separate from the primary RQ1 endpoint.}
+\label{tab:repeated}
 \end{table}
 
 \begin{table}[t]

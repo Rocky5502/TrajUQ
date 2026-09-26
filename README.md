@@ -161,11 +161,11 @@ The processed benchmark directory is gitignored. The split manifest records requ
 
 ## Preflight and freeze
 
-Set an exact `revision` in the selected model YAML, then:
+Keep the tracked model YAML as a generic template. Resolve an immutable model SHA and create an artifact-local frozen config with `scripts/freeze_model_config.py`; use that frozen config for preflight and manifests:
 
 ```bash
 python scripts/preflight.py \
-  --model-config configs/models/llada.yaml \
+  --model-config results/frozen_models/llada.yaml \
   --data data/processed/gsm8k/calibration.jsonl \
   --require-cuda
 
@@ -173,7 +173,7 @@ python scripts/environment_snapshot.py \
   --output results/environment.json
 
 python scripts/freeze_manifest.py \
-  --model-config configs/models/llada.yaml \
+  --model-config results/frozen_models/llada.yaml \
   --dataset data/processed/gsm8k/calibration.jsonl \
   --dataset data/processed/gsm8k/test.jsonl \
   --output results/llada_gsm8k_freeze.json
@@ -286,9 +286,16 @@ python scripts/evaluate_repeated_sampling.py \
   --cal-target runs/llada_gsm8k_cal.scored.jsonl \
   --cal-sample runs/repeated/llada_gsm8k_cal/seed-2027.raw.jsonl \
   --cal-sample runs/repeated/llada_gsm8k_cal/seed-2028.raw.jsonl \
+  --cal-sample runs/repeated/llada_gsm8k_cal/seed-2029.raw.jsonl \
+  --cal-sample runs/repeated/llada_gsm8k_cal/seed-2030.raw.jsonl \
+  --cal-sample runs/repeated/llada_gsm8k_cal/seed-2031.raw.jsonl \
   --test-target runs/llada_gsm8k_test.scored.jsonl \
   --test-sample runs/repeated/llada_gsm8k_test/seed-2027.raw.jsonl \
   --test-sample runs/repeated/llada_gsm8k_test/seed-2028.raw.jsonl \
+  --test-sample runs/repeated/llada_gsm8k_test/seed-2029.raw.jsonl \
+  --test-sample runs/repeated/llada_gsm8k_test/seed-2030.raw.jsonl \
+  --test-sample runs/repeated/llada_gsm8k_test/seed-2031.raw.jsonl \
+  --expected-samples 5 \
   --output results/llada_gsm8k_repeated_sampling.json \
   --predictions-output results/llada_gsm8k_repeated_predictions.jsonl
 
@@ -325,7 +332,7 @@ python scripts/evaluate_adaptive.py \
   --test-base runs/test_base.scored.jsonl \
   --test-refined runs/test_refined.scored.jsonl \
   --max-refine-fraction 0.50 \
-  --base-compute 64 \
+  --base-compute 32 \
   --refined-compute 128 \
   --n-boot 2000 \
   --output results/llada_gsm8k_adaptive.json
@@ -379,7 +386,7 @@ MATH-500 scoring is now wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 a
 3. **Freeze before scale:** one model × 50 examples before the full matrix.
 4. **Freeze data roles before generation:** use official calibration/test separation when available.
 5. **No test-label tuning:** features, calibrators, thresholds, and adaptive policies are selected on calibration data only.
-6. **Matched compute for RQ3:** adaptive policies are compared at the same expected refinement fraction / mean compute.
+6. **Matched RQ3 comparator:** adaptive selection is compared with random second-pass selection at the same selected fraction; actual second-pass wall time is also reported when available.
 7. **Paired statistics:** method comparisons use identical examples and paired stratified bootstrap intervals.
 8. **Pin revisions:** model, tokenizer, upstream runtime, data, prompts, and code commit are part of the experimental specification.
 9. **Do not redistribute gated data, third-party model weights, or caches.**

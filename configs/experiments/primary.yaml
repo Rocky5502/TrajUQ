@@ -121,4 +121,11 @@ baselines:
       features: [sample_disagreement, sample_vote_entropy, sample_unique_fraction]
       calibration: logistic
       compute_report_required: true
-      math500: disabled_until_symbolic_sample_clustering
+      eligible_datasets:
+        - gsm8k
+        - gpqa_diamond
+        - arc_challenge
+        - mmlu_pro
+        - truthfulqa
+      excluded_datasets:
+        math500: symbolic_equivalence_clustering_not_implemented

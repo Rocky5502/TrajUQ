@@ -80,7 +80,11 @@ particular, the following are implemented and versioned:
   provenance, frozen MATH dependency versions, source-bound clean-checkout
   human attestations, MATH scored-pilot audit evidence, and hash-bound parity sources;
 - a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
-  handoff exporter that refuses to omit required continuation context.
+  handoff exporter that refuses to omit required continuation context;
+- guarded Linux/A100 wrappers for the LLaDA prepare/parity/pilot path,
+  remaining SDAR/Dream parity gates, and the MATH-500 scorer pilot, so the full
+  pre-primary GPU path can run on one frozen Linux checkout without weakening
+  the Windows evidence contract.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:

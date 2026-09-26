@@ -98,6 +98,7 @@ function Require-ScorerAudit {
     $Pass = (
         $Audit.protocol -eq "trajuq_math500_scorer_audit_v2" -and
         $Audit.status -eq "PASS" -and
+        $Audit.git_clean -eq $true -and
         $Audit.git_commit -eq $Head -and
         $Audit.failure_count -eq 0 -and
         $Audit.dependency_versions.'math-verify' -eq "0.9.0" -and

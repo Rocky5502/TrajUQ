@@ -19,6 +19,7 @@ def test_math500_wrapper_requires_frozen_scorer_dependencies():
     assert "trajuq_math500_scorer_audit_v2" in text
     assert "$Audit.dependency_versions.'math-verify' -eq \"0.9.0\"" in text
     assert "$Audit.dependency_versions.'antlr4-python3-runtime' -eq \"4.13.2\"" in text
+    assert "$Audit.git_clean -eq $true" in text
 
 
 def test_math500_wrapper_is_calibration_only_and_non_overwriting():

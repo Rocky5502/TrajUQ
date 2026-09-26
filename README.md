@@ -158,19 +158,20 @@ all primary model/data repositories to immutable Hugging Face SHAs, and writes
 `results/frozen_models/`. The CPU artifact and revision ledger must record the
 same git commit.
 
-Linux/macOS equivalent:
+Linux/macOS guarded equivalent:
 
 ```bash
-bash scripts/verify_cpu.sh
-python scripts/resolve_experiment_revisions.py
+bash scripts/freeze_preprimary.sh
 ```
 
-Do not change commits between those commands. Primary readiness v2 later requires
-all three parity-v3 artifacts to match this ledger git commit and their
-ledger-resolved model SHA. CPU verification covers compile checks, Ruff, pytest,
-metric smoke, the leak-safe synthetic end-to-end pipeline, the pinned MATH-500
-scorer audit, and the paper anonymity audit. It does not replace GPU model
-parity.
+Both freeze wrappers require a clean checkout, run CPU verification and immutable
+revision resolution without changing commits, re-check cleanliness afterward,
+refresh the project-status snapshot, and export a privacy-scanned private
+pre-primary handoff bundle. Primary readiness v2 later requires all three
+parity-v3 artifacts to match this ledger git commit and their ledger-resolved
+model SHA. CPU verification covers compile checks, Ruff, pytest, metric smoke,
+the leak-safe synthetic end-to-end pipeline, the pinned MATH-500 scorer audit,
+and the paper anonymity audit. It does not replace GPU model parity.
 
 ## Prepare a frozen benchmark pair
 
@@ -247,11 +248,14 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 The freeze wrapper writes `results/cpu_verification.json`,
 `results/revision_ledger.json`, and `results/frozen_models/*.yaml`. The pilot
 wrapper consumes those frozen LLaDA/GSM8K revisions; it does not re-resolve a
-moving Hugging Face head. The parity stage hard-stops unless protocol v3 has
-exactly 20 shared prompts, zero output/provenance mismatches, and the same git
-commit/model SHA as the ledger. The pilot stage writes
+moving Hugging Face head. Before every GPU parity/pilot stage it revalidates
+the frozen GSM8K split, split audit, model config, and freeze-manifest hashes.
+The parity stage hard-stops unless protocol v3 has exactly 20 shared prompts,
+zero output/provenance mismatches, and the same git commit/model SHA as the
+ledger. The pilot stage requires both raw/scored `audit_run.py` artifacts to
+remain PASS and SHA-bound before existing evidence can be reused. It writes
 `results/llada_gsm8k_pilot50_gate.json` plus a stratified 10-example manual
-trace-review sheet.
+trace-review sheet that records the exact scored-pilot path and SHA-256.
 
 ## 50-example GPU pilot
 
@@ -441,7 +445,7 @@ The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vo
 
 ## MATH-500 scorer
 
-MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass. Use `scripts/export_math500_scorer_review.py` to create the deterministic subject/level-diverse review sheet from a scored calibration-only pilot; the attestation records that sheet's SHA-256.
+MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass. Use `scripts/math500_gate_windows.ps1 -Stage all` on Windows for the guarded automated path. The deterministic review sheet records the exact scored-pilot and frozen calibration-input SHA-256 values; the human recorder and primary readiness revalidate those sources plus the scored-pilot audit before accepting the attestation.
 
 ## Scientific guardrails
 
@@ -471,8 +475,10 @@ revision-ledger v2, LLaDA/SDAR/Dream parity-v3 gates, 50-item pilot + human
 review, and MATH-500 automatic/manual scorer gates are complete. Then run
 `python scripts/primary_readiness.py`. Readiness v2 rejects stale or mixed
 artifacts: CPU verification and all parity files must share the ledger git
-commit, each parity model revision must equal the ledger SHA, and each parity
-run must contain exactly 20 shared prompts. Only after readiness PASS should
+commit; parity source files are re-hashed; pilot raw/scored audits must still
+bind the pilot files; the pilot review must identify the exact scored source;
+and the MATH review must still bind the frozen calibration input, scored pilot,
+and scored audit. Only after readiness PASS should
 `python scripts/plan_primary_matrix.py` create the inspectable 18-cell
 execution plan.
 

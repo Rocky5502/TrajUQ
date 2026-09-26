@@ -84,6 +84,26 @@ launching expensive runs.
 
 ## 5. Execute without mutation
 
+The preferred resumable executor is:
+
+```bash
+# Dry-run/status first:
+python scripts/execute_primary_plan.py
+
+# Execute only one cell:
+python scripts/execute_primary_plan.py --cell llada:gsm8k --execute
+
+# Resume the complete frozen plan serially:
+python scripts/execute_primary_plan.py --execute
+```
+
+The executor never overwrites existing raw/scored artifacts. It reuses an
+existing artifact only when the corresponding audit JSON is PASS **and** its
+stored SHA-256 matches the current file. After every executed step it rewrites
+`results/primary_execution_state.json` and appends an event to
+`results/primary_execution_events.jsonl`, making interruption/restart status
+explicit.
+
 When executing the plan:
 
 - use the argv values exactly;

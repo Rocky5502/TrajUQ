@@ -53,6 +53,12 @@ implementation:
     evidence:
       - scripts/plan_primary_matrix.py
       - docs/PRIMARY_MATRIX_RUNBOOK.md
+  - id: resumable_primary_executor
+    label: "Resumable non-overwriting primary executor with SHA-verified audits"
+    state: DONE
+    evidence:
+      - scripts/execute_primary_plan.py
+      - tests/test_execute_primary_plan.py
   - id: primary_analysis
     label: "18-cell analysis ledger and hierarchical macro aggregation"
     state: DONE
@@ -179,6 +185,11 @@ execution_gates:
     stage: primary_execution
     artifact: results/primary_matrix_plan.json
     expect: {key: status, equals: PASS}
+  - id: primary_execution_complete
+    label: "All 18 primary cells fully generated, audited, and scored"
+    stage: primary_execution
+    artifact: results/primary_execution_state.json
+    expect: {key: status, equals: COMPLETE}
   - id: primary_analysis_plan
     label: "Frozen 18-cell analysis command ledger"
     stage: analysis

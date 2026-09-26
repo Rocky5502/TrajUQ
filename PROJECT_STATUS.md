@@ -90,16 +90,18 @@ After readiness passes:
 
 1. prepare all six immutable dataset pairs;
 2. create and archive results/primary_matrix_plan.json;
-3. execute all 18 calibration/test cells exactly as planned;
-4. audit and score every cell without overwriting completed artifacts;
-5. create results/primary_analysis_plan.json;
-6. run every cell-level held-out analysis, ablation, and diagnostic;
-7. aggregate the complete 18-cell primary endpoint;
-8. run the RQ1 claim gate **without changing it after seeing the result**;
-9. run the complete 18-cell five-sample comparator;
-10. run RQ3 base-budget generations and all frozen 25/50/75% cap analyses;
-11. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
-12. render paper numbers only through scripts/render_results_tex.py.
+3. dry-run scripts/execute_primary_plan.py, then execute cells from the frozen
+   plan; the executor writes a resumable SHA-verified execution state;
+4. execute all 18 calibration/test cells exactly as planned;
+5. audit and score every cell without overwriting completed artifacts;
+6. create results/primary_analysis_plan.json;
+7. run every cell-level held-out analysis, ablation, and diagnostic;
+8. aggregate the complete 18-cell primary endpoint;
+9. run the RQ1 claim gate **without changing it after seeing the result**;
+10. run the complete 18-cell five-sample comparator;
+11. run RQ3 base-budget generations and all frozen 25/50/75% cap analyses;
+12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
+13. render paper numbers only through scripts/render_results_tex.py.
 
 A negative RQ1 claim gate is a valid scientific result. Do not redesign the
 test analysis because a frozen result is weak.

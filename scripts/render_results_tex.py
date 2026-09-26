@@ -365,6 +365,7 @@ def build_macros(
     macros["AbstractResultSentence"] = abstract_sentence
     macros["ResultsResultSentence"] = results_sentence
     macros["ConclusionResultSentence"] = conclusion_sentence
+    macros["PaperStateLimitationsSentence"] = ""
     return macros
 
 

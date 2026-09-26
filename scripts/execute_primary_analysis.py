@@ -147,8 +147,16 @@ def validate_plan_provenance(
             except (OSError, json.JSONDecodeError):
                 failures.append(f"{label} {partition}: audit is invalid JSON")
                 continue
-            if audit_payload.get("status") != "PASS":
-                failures.append(f"{label} {partition}: audit is not PASS")
+            if (
+                audit_payload.get("protocol") != "trajuq_run_audit_v1"
+                or audit_payload.get("status") != "PASS"
+                or audit_payload.get("git_clean") is not True
+                or audit_payload.get("git_commit") != expected_commit
+                or audit_payload.get("stage") != "scored"
+            ):
+                failures.append(
+                    f"{label} {partition}: audit is not a clean frozen scored PASS"
+                )
             if str(audit_payload.get("sha256", "")) != observed_scored_hash:
                 failures.append(
                     f"{label} {partition}: audit no longer binds scored input"

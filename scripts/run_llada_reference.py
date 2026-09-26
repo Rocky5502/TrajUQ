@@ -6,7 +6,7 @@ import json
 import time
 from pathlib import Path
 
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, sha256_text
 
 
 def get_num_transfer_tokens(torch, mask_index, steps: int):
@@ -228,7 +228,11 @@ def main() -> None:
             generated = output[0, input_ids.shape[1] :]
             payload = {
                 "example_id": str(row["id"]),
+                "dataset": row.get("dataset"),
+                "prompt_sha256": sha256_text(str(row["prompt"])),
                 "model": args.model,
+                "adapter": "llada",
+                "seed": int(args.seed),
                 "generation": {
                     "text": tokenizer.decode(
                         generated.tolist(),
@@ -239,7 +243,12 @@ def main() -> None:
                         "model_revision": args.revision,
                         "native_reference": True,
                         "mask_id": int(mask_id),
-                        "steps_requested": args.steps,
+                        "steps_requested": int(args.steps),
+                        "gen_length": int(args.max_new_tokens),
+                        "block_length": int(args.block_length),
+                        "temperature": float(args.temperature),
+                        "cfg_scale": float(args.cfg_scale),
+                        "remasking": args.remasking,
                         "wall_time_seconds": wall_time,
                         "peak_gpu_memory_bytes": peak_memory,
                         "gpu_name": (

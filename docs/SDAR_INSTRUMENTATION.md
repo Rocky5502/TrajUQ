@@ -86,6 +86,7 @@ python scripts/compare_run_parity.py \
   --reference runs/sdar_native_reference.jsonl \
   --instrumented runs/sdar_trajuq.raw.jsonl \
   --require-token-ids \
+  --require-provenance \
   --output results/sdar_parity.json
 
 python scripts/compare_instrumentation_overhead.py \

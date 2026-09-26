@@ -55,6 +55,7 @@ python scripts/compare_run_parity.py \
   --reference runs/llada_native_reference.jsonl \
   --instrumented runs/llada_trajuq.raw.jsonl \
   --require-token-ids \
+  --require-provenance \
   --output results/llada_parity.json
 ```
 

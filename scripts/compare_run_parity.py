@@ -2,10 +2,34 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 from trajuq.io import read_jsonl
+
+
+GENERATION_PROVENANCE_KEYS = (
+    "model_revision",
+    "mask_id",
+    "steps_requested",
+    "gen_length",
+    "max_new_tokens",
+    "block_length",
+    "temperature",
+    "cfg_scale",
+    "remasking",
+    "top_p",
+    "algorithm",
+    "algorithm_temperature",
+    "denoising_steps",
+    "top_k",
+    "remasking_strategy",
+    "confidence_threshold",
+    "upstream_repository",
+    "upstream_commit",
+)
 
 
 def index(path: str) -> dict[str, dict]:
@@ -19,6 +43,25 @@ def index(path: str) -> dict[str, dict]:
             raise SystemExit(f"{path}: duplicate id {item_id}")
         out[item_id] = row
     return out
+
+
+def sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def token_ids(row: dict) -> list[int] | None:
@@ -39,14 +82,93 @@ def generated_text(row: dict) -> str | None:
     return None if text is None else str(text)
 
 
+def generation_metadata(row: dict) -> dict:
+    value = row.get("generation", {}).get("metadata", {})
+    return value if isinstance(value, dict) else {}
+
+
+def provenance_mismatches(
+    item_id: str,
+    reference: dict,
+    instrumented: dict,
+    require: bool,
+) -> list[dict]:
+    mismatches: list[dict] = []
+
+    top_level_keys = ("dataset", "prompt_sha256", "model", "adapter", "seed")
+    for key in top_level_keys:
+        left = reference.get(key)
+        right = instrumented.get(key)
+        if require and (left is None or right is None):
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "missing_provenance",
+                    "field": key,
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+            continue
+        if left is not None and right is not None and left != right:
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "provenance_mismatch",
+                    "field": key,
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+
+    left_meta = generation_metadata(reference)
+    right_meta = generation_metadata(instrumented)
+    for key in GENERATION_PROVENANCE_KEYS:
+        left = left_meta.get(key)
+        right = right_meta.get(key)
+        if key == "model_revision" and require and (left is None or right is None):
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "missing_provenance",
+                    "field": f"generation.metadata.{key}",
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+            continue
+        if left is not None and right is not None and left != right:
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "provenance_mismatch",
+                    "field": f"generation.metadata.{key}",
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+    return mismatches
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Compare an upstream/reference generation file with an instrumented TrajUQ run."
+        description=(
+            "Compare an upstream/reference generation file with an instrumented "
+            "TrajUQ run under exact output and optional provenance constraints."
+        )
     )
     parser.add_argument("--reference", required=True)
     parser.add_argument("--instrumented", required=True)
     parser.add_argument("--output", default=None)
     parser.add_argument("--require-token-ids", action="store_true")
+    parser.add_argument(
+        "--require-provenance",
+        action="store_true",
+        help=(
+            "Require matching dataset, prompt hash, model, adapter, seed, "
+            "immutable model revision, and all shared frozen generation settings."
+        ),
+    )
     args = parser.parse_args()
 
     ref = index(args.reference)
@@ -55,18 +177,28 @@ def main() -> None:
     inst_ids = set(inst)
     shared = sorted(ref_ids & inst_ids)
 
-    mismatches: list[dict] = []
+    output_mismatches: list[dict] = []
+    provenance_errors: list[dict] = []
     missing_reference = sorted(inst_ids - ref_ids)
     missing_instrumented = sorted(ref_ids - inst_ids)
 
     for item_id in shared:
+        provenance_errors.extend(
+            provenance_mismatches(
+                item_id,
+                ref[item_id],
+                inst[item_id],
+                require=args.require_provenance,
+            )
+        )
+
         a_ids = token_ids(ref[item_id])
         b_ids = token_ids(inst[item_id])
         a_text = generated_text(ref[item_id])
         b_text = generated_text(inst[item_id])
 
         if args.require_token_ids and (a_ids is None or b_ids is None):
-            mismatches.append(
+            output_mismatches.append(
                 {
                     "id": item_id,
                     "reason": "missing_token_ids",
@@ -79,10 +211,14 @@ def main() -> None:
         if a_ids is not None and b_ids is not None:
             if a_ids != b_ids:
                 first = next(
-                    (i for i, (x, y) in enumerate(zip(a_ids, b_ids)) if x != y),
+                    (
+                        i
+                        for i, (left, right) in enumerate(zip(a_ids, b_ids))
+                        if left != right
+                    ),
                     min(len(a_ids), len(b_ids)),
                 )
-                mismatches.append(
+                output_mismatches.append(
                     {
                         "id": item_id,
                         "reason": "token_mismatch",
@@ -92,35 +228,47 @@ def main() -> None:
                     }
                 )
         elif a_text != b_text:
-            mismatches.append(
+            output_mismatches.append(
                 {
                     "id": item_id,
                     "reason": "text_mismatch",
                 }
             )
 
+    status = (
+        "PASS"
+        if shared
+        and not missing_reference
+        and not missing_instrumented
+        and not output_mismatches
+        and not provenance_errors
+        else "FAIL"
+    )
     payload = {
+        "protocol": "trajuq_exact_parity_v2",
+        "git_commit": git_head(),
         "reference": args.reference,
+        "reference_sha256": sha256_file(args.reference),
         "instrumented": args.instrumented,
+        "instrumented_sha256": sha256_file(args.instrumented),
+        "require_token_ids": bool(args.require_token_ids),
+        "require_provenance": bool(args.require_provenance),
         "shared_records": len(shared),
         "missing_reference": missing_reference,
         "missing_instrumented": missing_instrumented,
-        "mismatch_count": len(mismatches),
-        "mismatches": mismatches[:50],
-        "status": (
-            "PASS"
-            if shared
-            and not missing_reference
-            and not missing_instrumented
-            and not mismatches
-            else "FAIL"
-        ),
+        "mismatch_count": len(output_mismatches),
+        "mismatches": output_mismatches[:50],
+        "provenance_mismatch_count": len(provenance_errors),
+        "provenance_mismatches": provenance_errors[:100],
+        "status": status,
     }
 
     rendered = json.dumps(payload, indent=2, sort_keys=True)
     print(rendered)
     if args.output:
-        Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(rendered + "\n", encoding="utf-8")
     if payload["status"] != "PASS":
         raise SystemExit(1)
 

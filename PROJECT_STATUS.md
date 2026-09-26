@@ -38,7 +38,8 @@ particular, the following are implemented and versioned:
 - raw/scored outcome isolation, prompt-hash checking, and artifact audits;
 - held-out risk calibration, discrimination, calibration, and tie-aware
   risk-coverage metrics;
-- exact-parity harnesses for LLaDA, SDAR, and Dream;
+- exact-parity harnesses for LLaDA, SDAR, and Dream, including same prompt hash,
+  model/revision, seed, and frozen-generation provenance checks;
 - frozen 18-cell primary planning and hierarchical aggregation;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation;

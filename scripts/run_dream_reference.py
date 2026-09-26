@@ -6,7 +6,7 @@ import json
 import time
 from pathlib import Path
 
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, sha256_text
 
 
 def main() -> None:
@@ -104,7 +104,11 @@ def main() -> None:
             generated = output.sequences[0][input_ids.shape[1] :]
             payload = {
                 "example_id": str(row["id"]),
+                "dataset": row.get("dataset"),
+                "prompt_sha256": sha256_text(str(row["prompt"])),
                 "model": args.model,
+                "adapter": "dream",
+                "seed": int(args.seed),
                 "generation": {
                     "text": tokenizer.decode(
                         generated.tolist(),
@@ -114,7 +118,12 @@ def main() -> None:
                     "metadata": {
                         "model_revision": args.revision,
                         "native_reference": True,
-                        "steps_requested": args.steps,
+                        "steps_requested": int(args.steps),
+                        "max_new_tokens": int(args.max_new_tokens),
+                        "temperature": float(args.temperature),
+                        "top_p": float(args.top_p),
+                        "algorithm": args.alg,
+                        "algorithm_temperature": float(args.alg_temp),
                         "wall_time_seconds": wall_time,
                         "peak_gpu_memory_bytes": peak_memory,
                         "gpu_name": (

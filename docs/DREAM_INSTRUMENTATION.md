@@ -54,6 +54,7 @@ python scripts/compare_run_parity.py \
   --reference runs/dream_native_reference.jsonl \
   --instrumented runs/dream_trajuq.raw.jsonl \
   --require-token-ids \
+  --require-provenance \
   --output results/dream_parity.json
 ```
 

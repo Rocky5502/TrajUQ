@@ -88,7 +88,7 @@ if ($Stage -in @("parity", "all")) {
     Run-Step "20-prompt native reference" { & $Python scripts/run_llada_reference.py --model $ModelId --revision $ModelSha --input $CalData --output $ParityReference --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0 }
     Run-Step "20-prompt TrajUQ telemetry" { & $Python scripts/run_generation.py --adapter llada --model $ModelId --revision $ModelSha --input $CalData --output $ParityTrajUQ --limit 20 --steps 128 --max-new-tokens 128 --block-length 128 --temperature 0 }
     Run-Step "Raw parity-run audit" { & $Python scripts/audit_run.py --run $ParityTrajUQ --stage raw --require-revision }
-    Run-Step "Exact token parity" { & $Python scripts/compare_run_parity.py --reference $ParityReference --instrumented $ParityTrajUQ --require-token-ids --output $ParityResult }
+    Run-Step "Exact token parity" { & $Python scripts/compare_run_parity.py --reference $ParityReference --instrumented $ParityTrajUQ --require-token-ids --require-provenance --output $ParityResult }
 
     $Parity = Get-Content $ParityResult -Raw | ConvertFrom-Json
     if ($Parity.status -ne "PASS") { throw "Parity is not PASS. STOP: do not run the 50-item pilot." }

@@ -6,7 +6,7 @@ import json
 import time
 from pathlib import Path
 
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, sha256_text
 
 
 def top_k_logits(torch, logits, k: int):
@@ -325,7 +325,11 @@ def main() -> None:
             generated = output[0, input_ids.shape[1] : input_ids.shape[1] + args.max_new_tokens]
             payload = {
                 "example_id": str(row["id"]),
+                "dataset": row.get("dataset"),
+                "prompt_sha256": sha256_text(str(row["prompt"])),
                 "model": args.model,
+                "adapter": "sdar",
+                "seed": int(args.seed),
                 "generation": {
                     "text": tokenizer.decode(
                         generated.tolist(),
@@ -341,6 +345,7 @@ def main() -> None:
                         "temperature": float(args.temperature),
                         "top_k": int(args.top_k),
                         "top_p": float(args.top_p),
+                        "gen_length": int(args.max_new_tokens),
                         "block_length": int(args.block_length),
                         "denoising_steps": int(args.denoising_steps),
                         "remasking_strategy": args.remasking_strategy,

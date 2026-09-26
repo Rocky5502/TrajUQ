@@ -46,6 +46,7 @@ def load_json(path: Path) -> dict:
 def run_audit_passes(
     artifact_path: Path,
     expected_stage: str,
+    expected_commit: str | None,
 ) -> tuple[bool, dict]:
     audit_path = artifact_path.with_suffix(artifact_path.suffix + ".audit.json")
     if not artifact_path.exists() or not audit_path.exists():
@@ -55,7 +56,10 @@ def run_audit_passes(
     except (OSError, json.JSONDecodeError):
         return False, {}
     passed = (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("git_commit") == expected_commit
         and payload.get("stage") == expected_stage
         and str(payload.get("sha256", "")) == sha256_file(artifact_path)
     )
@@ -202,8 +206,8 @@ def main() -> None:
                 failures.append("review sheet scored SHA-256 differs from pilot quality")
 
         quality_raw = Path(str(quality.get("raw", "")))
-        raw_audit_ok, raw_audit = run_audit_passes(quality_raw, "raw")
-        scored_audit_ok, scored_audit = run_audit_passes(quality_scored, "scored")
+        raw_audit_ok, raw_audit = run_audit_passes(quality_raw, "raw", commit)
+        scored_audit_ok, scored_audit = run_audit_passes(quality_scored, "scored", commit)
         if not raw_audit_ok:
             failures.append("pilot raw audit is missing, stale, or not PASS")
         if not scored_audit_ok:

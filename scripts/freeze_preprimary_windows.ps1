@@ -45,7 +45,11 @@ Run-Step "Resolve immutable primary model/dataset revisions" {
 $Cpu = Get-Content results/cpu_verification.json -Raw | ConvertFrom-Json
 $Ledger = Get-Content results/revision_ledger.json -Raw | ConvertFrom-Json
 
+if ($Cpu.protocol -ne "trajuq_cpu_verification_v1") {
+    throw "Unexpected CPU-verification protocol: $($Cpu.protocol)"
+}
 if ($Cpu.status -ne "PASS") { throw "CPU verification did not PASS." }
+if ($Cpu.git_clean -ne $true) { throw "CPU verification was not recorded from a clean worktree." }
 if ($Ledger.status -ne "PASS") { throw "Revision ledger did not PASS." }
 if ($Ledger.protocol -ne "trajuq_revision_ledger_v2") {
     throw "Unexpected revision-ledger protocol: $($Ledger.protocol)"
@@ -55,6 +59,12 @@ if ($Cpu.git_commit -ne $Head) {
 }
 if ($Ledger.git_commit -ne $Head) {
     throw "Revision-ledger commit $($Ledger.git_commit) does not match frozen HEAD $Head."
+}
+
+$DirtyAfterFreeze = (& git status --porcelain) -join "`n"
+if ($LASTEXITCODE -ne 0) { throw "Unable to re-check git worktree after freeze." }
+if ($DirtyAfterFreeze) {
+    throw "Tracked worktree changed during the pre-primary freeze. Do not trust the frozen artifacts."
 }
 
 Run-Step "Refresh project status" {

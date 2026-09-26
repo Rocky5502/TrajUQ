@@ -56,6 +56,9 @@ particular, the following are implemented and versioned:
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus a one-command Windows
   pre-primary freeze wrapper;
+- a guarded Windows parity wrapper for SDAR/Dream that consumes the frozen
+  revision ledger, enforces a clean matching checkout, preserves valid PASS
+  artifacts, and refuses ambiguous partial evidence;
 - clean-checkout provenance guards across the pilot wrapper, primary readiness,
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;
@@ -99,10 +102,13 @@ The remaining work is primarily **execution**, not paper-number invention.
    at least 10 exported trajectories and record the protocol-v2 human attestation,
    which binds the review sheet, parity artifact, and pilot-quality artifact by
    SHA-256. See issue #1.
-5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. See
-   issue #2.
-6. Run Dream exact parity protocol v3 at the same frozen commit/revision. See
-   issue #5.
+5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. On
+   Windows, use `scripts/parity_remaining_windows.ps1 -Model sdar`; it binds
+   the run to the clean CPU/revision freeze and refuses ambiguous partial
+   artifacts. See issue #2.
+6. Run Dream exact parity protocol v3 at the same frozen commit/revision. On
+   Windows, use `scripts/parity_remaining_windows.ps1 -Model dream` with the
+   same frozen-state and non-overwrite safeguards. See issue #5.
 7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen commit,
    then a >=25-example calibration-only MATH-500 scoring pilot, deterministic
    review sheet, and protocol-v2 human attestation bound to the audit/sheet

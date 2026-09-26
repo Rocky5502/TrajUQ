@@ -62,6 +62,13 @@ particular, the following are implemented and versioned:
 - a guarded Windows parity wrapper for SDAR/Dream that consumes the frozen
   revision ledger, enforces a clean matching checkout, preserves valid PASS
   artifacts, and refuses ambiguous partial evidence;
+- protocol-v1 raw/scored run audits now record the clean git checkout and commit;
+  pre-primary parity, pilot, human-review, MATH-500, and readiness gates re-hash
+  those audits against their source artifacts and require the frozen experiment
+  commit, preventing a stale PASS label from being reused;
+- pilot and MATH-500 human review sheets are source-bound to the exact scored
+  calibration artifacts they display; their recorders and primary readiness
+  independently revalidate those hashes before the 18-cell matrix can launch;
 - clean-checkout provenance guards across the pilot wrapper, primary readiness,
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;

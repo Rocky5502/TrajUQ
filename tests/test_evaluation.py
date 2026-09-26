@@ -32,3 +32,17 @@ def test_aurc_is_discrete_mean_risk():
     s = np.array([0.1, 0.9, 0.2, 0.8])
     curve = selective_curve(y, s)
     assert np.isclose(curve.aurc, curve.risk.mean())
+
+
+
+def test_selective_curve_is_invariant_to_tie_order():
+    y_a = np.array([0, 1, 1, 0])
+    y_b = np.array([1, 0, 0, 1])
+    tied = np.full(4, 0.5)
+
+    curve_a = selective_curve(y_a, tied)
+    curve_b = selective_curve(y_b, tied)
+
+    assert np.allclose(curve_a.risk, 0.5)
+    assert np.allclose(curve_a.risk, curve_b.risk)
+    assert np.isclose(curve_a.aurc, curve_b.aurc)

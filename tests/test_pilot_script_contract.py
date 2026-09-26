@@ -85,3 +85,7 @@ def test_pilot_human_review_is_source_bound():
     assert "review_scored_sha256" in record_text
     assert "LLaDA parity {label} source hash is stale" in record_text
     assert "review_source_ok" in readiness_text
+    assert "pilot raw audit is missing, stale, or not PASS" in record_text
+    assert "pilot scored audit is missing, stale, or not PASS" in record_text
+    assert "pilot_raw_audit_ok" in record_text
+    assert "pilot_scored_audit_ok" in record_text

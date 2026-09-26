@@ -43,6 +43,7 @@ def git_clean() -> bool | None:
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
+
 def run_audit_passes(
     artifact_path: Path,
     expected_stage: str,
@@ -64,6 +65,7 @@ def run_audit_passes(
         and str(payload.get("sha256", "")) == sha256_file(artifact_path)
     )
     return passed, payload
+
 
 def review_sheet_metadata(path: Path) -> dict[str, str]:
     prefixes = {

@@ -137,12 +137,28 @@ def main() -> None:
     print(json.dumps(results, indent=2, sort_keys=True))
 
     if args.predictions_output:
+        test_meta_rows = list(read_jsonl(args.test))
+        if len(test_meta_rows) != len(test_ids_b):
+            raise SystemExit("Test metadata length differs from prediction length")
+        meta_by_id = {str(row["example_id"]): row for row in test_meta_rows}
+        if set(meta_by_id) != set(test_ids_b):
+            raise SystemExit("Test metadata IDs differ from prediction IDs")
+
         pred_path = Path(args.predictions_output)
         pred_path.parent.mkdir(parents=True, exist_ok=True)
         with pred_path.open("w", encoding="utf-8") as f:
             for item_id, y, pb, pt in zip(test_ids_b, y_test_b, p_base, p_traj):
+                source = meta_by_id[item_id]
+                revision = (
+                    source.get("generation", {}).get("metadata", {}).get("model_revision")
+                    or source.get("metadata", {}).get("model_revision")
+                )
                 row = {
                     "example_id": item_id,
+                    "dataset": source.get("dataset"),
+                    "adapter": source.get("adapter"),
+                    "model": source.get("model"),
+                    "model_revision": revision,
                     "y_error": int(y),
                     "correct": bool(1 - y),
                     "p_error_decision_entropy": float(pb),

@@ -14,6 +14,8 @@ class PredictionCell:
     y_error: np.ndarray
     candidate_score: np.ndarray
     baseline_score: np.ndarray
+    model_family: str | None = None
+    dataset: str | None = None
 
     def __post_init__(self):
         y = np.asarray(self.y_error, dtype=int)
@@ -121,6 +123,16 @@ def hierarchical_macro_bootstrap(
     positive_cells = int(sum(delta > 0 for delta in point_deltas))
     zero_cells = int(sum(np.isclose(delta, 0.0) for delta in point_deltas))
 
+    family_deltas: dict[str, list[float]] = {}
+    for cell, delta in zip(cells, point_deltas):
+        if cell.model_family:
+            family_deltas.setdefault(cell.model_family, []).append(float(delta))
+    family_macro = {
+        family: float(np.mean(values))
+        for family, values in sorted(family_deltas.items())
+    }
+    positive_families = int(sum(value > 0 for value in family_macro.values()))
+
     return {
         "candidate_macro": float(np.mean(candidate_points)),
         "baseline_macro": float(np.mean(baseline_points)),
@@ -131,5 +143,8 @@ def hierarchical_macro_bootstrap(
         "zero_cells": zero_cells,
         "negative_cells": int(len(cells) - positive_cells - zero_cells),
         "n_cells": len(cells),
+        "model_family_macro_improvement": family_macro,
+        "positive_model_families": positive_families,
+        "n_model_families": len(family_macro),
         "n_boot": int(n_boot),
     }

@@ -10,6 +10,10 @@ All entropy, confidence, and margin statistics are computed only on positions th
 
 For SDAR, each active block emits mergeable position- and step-level sufficient statistics. Global percentiles, extrema, late-stage rates, temporal slopes, and decision-time features are recomputed after concatenating blocks in generation order; block-level percentiles/slopes are never averaged. This keeps the primary feature semantics aligned across whole-sequence and blockwise diffusion.
 
+## Primary endpoint and claim gate
+
+The single primary RQ1 endpoint is the equal-cell-weight hierarchical macro improvement in AUROC of the trajectory-augmented logistic model over the decision-time entropy logistic baseline. AUPRC and AURC improvements are secondary endpoints. A positive RQ1 claim requires the 95\% hierarchical bootstrap interval for macro AUROC improvement to lie above zero and positive point improvement in at least two of the three primary model families. Cell-level and secondary results are reported regardless of direction; this gate is frozen to prevent choosing the most favorable metric after test inspection.
+
 ## RQ1 — Does the trajectory add predictive information?
 
 The primary incremental-information test compares two calibration-fitted predictors on identical held-out examples: (i) a per-token **decision-time entropy** baseline, defined as mean normalized entropy at the last unresolved observation immediately before each token is committed, and (ii) a nested logistic model containing that exact baseline feature plus the frozen trajectory feature vector. This directly tests whether the trajectory adds information beyond a strong final-decision confidence baseline and avoids the unstable alternative of using only the last global denoising step, which may contain very few unresolved tokens. Primary discrimination metrics are AUROC and AUPRC; the primary selective metric is discrete AURC. Use paired, class-stratified bootstrap confidence intervals. All reported improvement deltas are oriented so positive means the trajectory-augmented method is better.

@@ -222,9 +222,10 @@ MATH-500 is excluded from repeated-sampling voting until symbolic answer cluster
 \subsection{Statistics}
 
 All method comparisons are paired on identical examples.
-For AUROC, AUPRC, and AURC we use class-stratified paired bootstrap intervals.
-Improvement deltas are oriented so positive values always favor the trajectory-augmented method.
-For cross-dataset summaries, metrics are computed per dataset and macro-averaged rather than pooling heterogeneous examples.
+The pre-specified primary RQ1 endpoint is equal-cell-weight macro AUROC improvement of the trajectory model over decision-time entropy.
+AUPRC and AURC improvements are secondary.
+Confidence intervals use a hierarchical paired bootstrap that resamples examples within each model--dataset cell before macro-averaging; heterogeneous benchmarks are never pooled.
+A positive RQ1 claim additionally requires positive point improvement in at least two of the three primary model families.
 ECE is reported with 15 bins plus 10- and 20-bin sensitivity.
 
 \subsection{Pre-Registered Ablations}

@@ -38,6 +38,16 @@ def load_cell(label: str, path: str) -> PredictionCell:
         raise SystemExit(f"{label}: duplicate example IDs")
 
     y = np.asarray([int(row["y_error"]) for row in rows], dtype=int)
+
+    adapters = {str(row.get("adapter")) for row in rows if row.get("adapter") is not None}
+    datasets = {str(row.get("dataset")) for row in rows if row.get("dataset") is not None}
+    if len(adapters) > 1:
+        raise SystemExit(f"{label}: prediction file mixes adapters: {sorted(adapters)}")
+    if len(datasets) > 1:
+        raise SystemExit(f"{label}: prediction file mixes datasets: {sorted(datasets)}")
+    model_family = next(iter(adapters)) if adapters else None
+    dataset = next(iter(datasets)) if datasets else None
+
     baseline = np.asarray(
         [float(row["p_error_decision_entropy"]) for row in rows],
         dtype=float,
@@ -51,6 +61,8 @@ def load_cell(label: str, path: str) -> PredictionCell:
         y_error=y,
         candidate_score=candidate,
         baseline_score=baseline,
+        model_family=model_family,
+        dataset=dataset,
     )
 
 
@@ -81,6 +93,8 @@ def main() -> None:
     per_cell: dict[str, dict] = {}
     for cell in cells:
         per_cell[cell.label] = {
+            "model_family": cell.model_family,
+            "dataset": cell.dataset,
             "n": len(cell.y_error),
             "error_rate": float(np.mean(cell.y_error)),
             "metrics": {

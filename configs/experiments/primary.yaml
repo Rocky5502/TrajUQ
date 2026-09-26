@@ -54,6 +54,13 @@ metrics:
   efficiency: [wall_time_seconds, peak_gpu_memory_bytes, denoising_steps]
 
 statistics:
+  primary_endpoint: hierarchical_macro_auroc_improvement
+  secondary_endpoints:
+    - hierarchical_macro_auprc_improvement
+    - hierarchical_macro_aurc_improvement
+  rq1_claim_gate:
+    macro_auroc_ci_low_gt_zero: true
+    min_positive_model_families: 2
   bootstrap:
     paired: true
     stratified_by_error: true

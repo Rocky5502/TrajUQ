@@ -318,6 +318,7 @@ def main() -> None:
         predictions = cell_root / "predictions.jsonl"
         nested = cell_root / "nested_bootstrap.json"
         ablations = cell_root / "feature_ablation.json"
+        ablation_predictions = cell_root / "feature_ablation_predictions.jsonl"
         raw_diag = cell_root / "raw_risk_diagnostic.json"
 
         evaluate = [
@@ -361,6 +362,8 @@ def main() -> None:
             str(seed),
             "--output",
             str(ablations),
+            "--predictions-output",
+            str(ablation_predictions),
         ]
         diagnostic = [
             "python",
@@ -392,13 +395,27 @@ def main() -> None:
                     "predictions": str(predictions),
                     "nested_bootstrap": str(nested),
                     "feature_ablation": str(ablations),
+                    "feature_ablation_predictions": str(ablation_predictions),
                     "raw_risk_diagnostic": str(raw_diag),
                 },
             }
         )
 
     macro_path = root / "macro_primary.json"
+    ablation_macro_path = root / "macro_feature_ablation.json"
     gate_path = root / "rq1_claim_gate.json"
+    ablation_macro_argv = [
+        "python",
+        "scripts/aggregate_feature_ablation.py",
+        "--plan",
+        args.output,
+        "--n-boot",
+        str(n_boot),
+        "--seed",
+        str(seed),
+        "--output",
+        str(ablation_macro_path),
+    ]
     gate_argv = [
         "python",
         "scripts/evaluate_rq1_claim_gate.py",
@@ -424,15 +441,17 @@ def main() -> None:
         "cell_count": len(analyses),
         "cell_analyses": analyses,
         "macro_aggregation_argv": aggregation_args,
+        "feature_ablation_macro_argv": ablation_macro_argv,
         "rq1_claim_gate_argv": gate_argv,
         "final_outputs": {
             "macro_primary": str(macro_path),
+            "macro_feature_ablation": str(ablation_macro_path),
             "rq1_claim_gate": str(gate_path),
         },
         "execution_order": (
-            "Run all cell analyses first, then macro aggregation, then the RQ1 "
-            "claim gate. Do not omit a weak cell or rerun with altered analysis "
-            "settings."
+            "Run all cell analyses first, then primary macro aggregation, then "
+            "the complete feature-ablation macro, then the RQ1 claim gate. Do "
+            "not omit a weak cell or rerun with altered analysis settings."
         ),
     }
 

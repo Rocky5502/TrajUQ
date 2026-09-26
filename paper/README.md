@@ -23,11 +23,11 @@ The official acl.sty should come from the current ACL template rather than being
 
 ## Result-population rule
 
-The committed `generated_results.tex` is a pre-results fallback containing TBD macros. Never manually type empirical values into `main.tex`. After the complete primary, repeated-sampling, RQ1 claim-gate, and 50% adaptive macro artifacts exist, run:
+The committed `generated_results.tex` is a pre-results fallback containing TBD macros. Never manually type empirical values into `main.tex`. After the complete primary, RQ1 claim-gate, 18-cell feature-ablation, repeated-sampling, and 50% adaptive macro artifacts exist, run:
 
     python scripts/render_results_tex.py
 
-The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost macros, and emits `paper/generated_results_manifest.json` with source SHA-256 hashes. A failed RQ1 gate produces narrow result language rather than a positive claim.
+The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation macro, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation macros, and emits `paper/generated_results_manifest.json` with SHA-256 bindings to six sources: primary, RQ1 gate, repeated sampling, feature ablations, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim.
 
 ## Main-page budget
 

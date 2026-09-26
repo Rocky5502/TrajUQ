@@ -167,29 +167,74 @@ def evaluate_readiness(
 
     try:
         quality = load_json(pilot_quality_path)
+        expected_llada_revision = ledger_models.get("llada", {}).get("resolved_sha")
+        raw_path = Path(str(quality.get("raw", "")))
+        scored_path = Path(str(quality.get("scored", "")))
+        raw_hash_ok = (
+            raw_path.exists()
+            and quality.get("raw_sha256") == sha256_file(raw_path)
+        )
+        scored_hash_ok = (
+            scored_path.exists()
+            and quality.get("scored_sha256") == sha256_file(scored_path)
+        )
         quality_pass = (
-            quality.get("status") == "PASS"
+            quality.get("protocol") == "trajuq_pilot_quality_gate_v2"
+            and quality.get("status") == "PASS"
+            and quality.get("git_commit") == experiment_commit
             and int(quality.get("raw_records", 0)) == 50
             and int(quality.get("scored_records", 0)) == 50
+            and quality.get("adapters") == ["llada"]
+            and quality.get("model_revisions") == [expected_llada_revision]
+            and raw_hash_ok
+            and scored_hash_ok
         )
         checks["pilot_quality"] = {
             "path": pilot_quality_path,
             "status": quality.get("status"),
+            "protocol": quality.get("protocol"),
+            "git_commit": quality.get("git_commit"),
             "records": quality.get("raw_records"),
             "scored_records": quality.get("scored_records"),
             "model_revisions": quality.get("model_revisions"),
+            "raw_hash_ok": raw_hash_ok,
+            "scored_hash_ok": scored_hash_ok,
         }
         if not quality_pass:
-            failures.append("50-example pilot quality gate is not PASS")
+            failures.append(
+                "50-example pilot quality gate is not a hash-bound PASS at the frozen commit/revision"
+            )
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"pilot quality artifact unavailable/invalid: {exc}")
 
     try:
         manual = load_json(manual_gate_path)
         manual_checks = manual.get("checks", {})
+        review_sheet = Path(str(manual.get("review_sheet", "")))
+        llada_parity_path = Path(str(parity_paths.get("llada", "")))
+        quality_artifact = Path(pilot_quality_path)
+        review_hash_ok = (
+            review_sheet.exists()
+            and manual.get("review_sheet_sha256") == sha256_file(review_sheet)
+        )
+        parity_hash_ok = (
+            llada_parity_path.exists()
+            and manual.get("parity_artifact_sha256")
+            == sha256_file(llada_parity_path)
+        )
+        quality_hash_ok = (
+            quality_artifact.exists()
+            and manual.get("pilot_quality_sha256")
+            == sha256_file(quality_artifact)
+        )
         required_manual = (
-            manual.get("status") == "PASS"
+            manual.get("protocol") == "trajuq_pilot_manual_gate_v2"
+            and manual.get("status") == "PASS"
+            and manual.get("git_commit") == experiment_commit
             and int(manual.get("reviewed_records", 0)) >= 10
+            and review_hash_ok
+            and parity_hash_ok
+            and quality_hash_ok
             and all(
                 manual_checks.get(name) is True
                 for name in (
@@ -203,35 +248,63 @@ def evaluate_readiness(
         checks["pilot_manual"] = {
             "path": manual_gate_path,
             "status": manual.get("status"),
+            "protocol": manual.get("protocol"),
+            "git_commit": manual.get("git_commit"),
             "reviewed_records": manual.get("reviewed_records"),
+            "review_sheet_hash_ok": review_hash_ok,
+            "parity_hash_ok": parity_hash_ok,
+            "pilot_quality_hash_ok": quality_hash_ok,
         }
         if not required_manual:
-            failures.append("human pilot-review gate is incomplete")
+            failures.append("human pilot-review gate is incomplete or stale")
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"manual pilot artifact unavailable/invalid: {exc}")
 
     try:
         math_audit = load_json(math500_audit_path)
         math_audit_pass = (
-            math_audit.get("status") == "PASS"
+            math_audit.get("protocol") == "trajuq_math500_scorer_audit_v2"
+            and math_audit.get("status") == "PASS"
+            and math_audit.get("git_commit") == experiment_commit
             and int(math_audit.get("failure_count", 1)) == 0
         )
         checks["math500_scorer"] = {
             "path": math500_audit_path,
             "status": math_audit.get("status"),
+            "protocol": math_audit.get("protocol"),
+            "git_commit": math_audit.get("git_commit"),
             "failure_count": math_audit.get("failure_count"),
         }
         if not math_audit_pass:
-            failures.append("MATH-500 automatic scorer audit is not PASS")
+            failures.append(
+                "MATH-500 automatic scorer audit is not a PASS at the frozen experiment commit"
+            )
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"MATH-500 scorer audit unavailable/invalid: {exc}")
 
     try:
         math_manual = load_json(math500_manual_path)
         math_checks = math_manual.get("checks", {})
+        math_review_sheet = Path(str(math_manual.get("review_sheet", "")))
+        math_audit_artifact = Path(math500_audit_path)
+        math_review_hash_ok = (
+            math_review_sheet.exists()
+            and math_manual.get("review_sheet_sha256")
+            == sha256_file(math_review_sheet)
+        )
+        math_audit_hash_ok = (
+            math_audit_artifact.exists()
+            and math_manual.get("automatic_audit_sha256")
+            == sha256_file(math_audit_artifact)
+        )
         math_manual_pass = (
-            math_manual.get("status") == "PASS"
+            math_manual.get("protocol") == "trajuq_math500_manual_scorer_gate_v2"
+            and math_manual.get("status") == "PASS"
+            and math_manual.get("git_commit") == experiment_commit
+            and math_manual.get("automatic_audit_git_commit") == experiment_commit
             and int(math_manual.get("reviewed_records", 0)) >= 25
+            and math_review_hash_ok
+            and math_audit_hash_ok
             and math_checks.get("answer_extraction") is True
             and math_checks.get("symbolic_equivalence") is True
             and math_checks.get("no_manual_label_flips") is True
@@ -239,10 +312,14 @@ def evaluate_readiness(
         checks["math500_manual_review"] = {
             "path": math500_manual_path,
             "status": math_manual.get("status"),
+            "protocol": math_manual.get("protocol"),
+            "git_commit": math_manual.get("git_commit"),
             "reviewed_records": math_manual.get("reviewed_records"),
+            "review_sheet_hash_ok": math_review_hash_ok,
+            "automatic_audit_hash_ok": math_audit_hash_ok,
         }
         if not math_manual_pass:
-            failures.append("MATH-500 manual scorer review is incomplete")
+            failures.append("MATH-500 manual scorer review is incomplete or stale")
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"MATH-500 manual scorer review unavailable/invalid: {exc}")
 

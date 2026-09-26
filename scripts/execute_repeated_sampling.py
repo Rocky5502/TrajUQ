@@ -86,6 +86,50 @@ def valid_jsonl(path: Path) -> bool:
     return bool(rows)
 
 
+def argv_value(argv: list[str], flag: str) -> str | None:
+    if flag not in argv:
+        return None
+    idx = argv.index(flag)
+    if idx + 1 >= len(argv):
+        return None
+    return str(argv[idx + 1])
+
+
+def expected_ids_from_generation_argv(argv: list[str]) -> list[str]:
+    input_text = argv_value(argv, "--input")
+    if not input_text:
+        raise ValueError("repeated generation argv has no --input")
+    rows = list(read_jsonl(Path(input_text)))
+    limit_text = argv_value(argv, "--limit")
+    if limit_text is not None:
+        rows = rows[: int(limit_text)]
+    ids = [str(row.get("id", "")) for row in rows]
+    if not rows or any(not item_id for item_id in ids):
+        raise ValueError(f"invalid repeated generation input IDs: {input_text}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"duplicate repeated generation input IDs: {input_text}")
+    return ids
+
+
+def artifact_example_ids(path: Path) -> list[str]:
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if not rows or any(not item_id for item_id in ids):
+        raise ValueError(f"invalid example IDs: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"duplicate example IDs: {path}")
+    return ids
+
+
+def exact_example_id_coverage(path: Path, expected_ids: list[str]) -> bool:
+    if not path.exists():
+        return False
+    try:
+        return artifact_example_ids(path) == expected_ids
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        return False
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -214,35 +258,83 @@ def generation_state(
     expected_commit: str | None = None,
 ) -> dict[str, Any]:
     root = generation_dir_from_argv(argv)
+    try:
+        expected_ids = expected_ids_from_generation_argv(argv)
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        expected_ids = []
+
     seed_state = {}
     for seed in seeds:
         path = root / f"seed-{seed}.raw.jsonl"
+        ids_complete = bool(expected_ids) and exact_example_id_coverage(
+            path,
+            expected_ids,
+        )
         seed_state[str(seed)] = {
             "path": str(path),
-            "complete": audit_passes(path, expected_commit),
+            "ids_complete": ids_complete,
+            "audit_pass": audit_passes(path, expected_commit),
+            "complete": bool(
+                ids_complete and audit_passes(path, expected_commit)
+            ),
         }
+
     manifest = root / "manifest.json"
+    manifest_ok = False
+    if valid_json(manifest):
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        input_text = argv_value(argv, "--input")
+        input_path = Path(input_text) if input_text else None
+        run_rows = list(payload.get("runs", []))
+        run_seeds = [int(item.get("seed")) for item in run_rows if item.get("seed") is not None]
+        manifest_ok = (
+            payload.get("protocol") == "repeated_sampling_v1"
+            and payload.get("git_clean") is True
+            and (
+                expected_commit is None
+                or payload.get("git_commit") == expected_commit
+            )
+            and input_path is not None
+            and input_path.exists()
+            and str(payload.get("input")) == str(input_path)
+            and str(payload.get("input_sha256", "")) == sha256_file(input_path)
+            and [int(seed) for seed in payload.get("seeds", [])] == seeds
+            and run_seeds == seeds
+        )
+
     complete = (
-        all(item["complete"] for item in seed_state.values())
-        and valid_json(manifest)
+        bool(expected_ids)
+        and all(item["complete"] for item in seed_state.values())
+        and manifest_ok
     )
     return {
         "output_dir": str(root),
         "manifest": str(manifest),
+        "manifest_valid": manifest_ok,
+        "expected_records": len(expected_ids),
         "seeds": seed_state,
         "complete": complete,
     }
 
 
-def pair_state(first: Path, second: Path) -> str:
+def pair_state(
+    first: Path,
+    second: Path,
+    expected_ids: list[str] | None = None,
+) -> str:
     exists = [first.exists(), second.exists()]
     if not any(exists):
         return "MISSING"
     if not all(exists):
         return "PARTIAL"
-    if valid_json(first) and valid_jsonl(second):
-        return "COMPLETE"
-    return "INVALID"
+    if not valid_json(first) or not valid_jsonl(second):
+        return "INVALID"
+    if expected_ids is not None and not exact_example_id_coverage(
+        second,
+        expected_ids,
+    ):
+        return "INVALID"
+    return "COMPLETE"
 
 
 def comparison_state(path: Path) -> str:
@@ -266,9 +358,16 @@ def cell_state(
         seeds,
         expected_commit,
     )
+    try:
+        expected_test_ids = artifact_example_ids(
+            Path(str(cell["provenance"]["test"]["scored_target"]))
+        )
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        expected_test_ids = []
     evaluation = pair_state(
         Path(str(cell["repeated_metrics"])),
         Path(str(cell["repeated_predictions"])),
+        expected_test_ids,
     )
     comparison = comparison_state(Path(str(cell["direct_comparison"])))
     return {

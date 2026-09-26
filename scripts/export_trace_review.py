@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,13 @@ def fmt(value) -> str:
     except Exception:
         return str(value)
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -26,7 +34,8 @@ def main() -> None:
     parser.add_argument("--count", type=int, default=10)
     args = parser.parse_args()
 
-    rows = list(read_jsonl(args.scored))
+    scored_path = Path(args.scored)
+    rows = list(read_jsonl(scored_path))
     if not rows:
         raise SystemExit("No scored rows")
 
@@ -48,6 +57,10 @@ def main() -> None:
         "",
         "Selected across the training-free trajectory-risk ranking.",
         "Review logging correctness; do not redesign frozen features because of these outcomes.",
+        "",
+        f"- scored artifact: {scored_path}",
+        f"- scored SHA-256: {sha256_file(scored_path)}",
+        f"- selected records: {len(selected)}",
         "",
         "| ID | Correct | Raw risk | Decision H | Entropy p90 | JS p90 | Late rev. | Commit | Steps |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",

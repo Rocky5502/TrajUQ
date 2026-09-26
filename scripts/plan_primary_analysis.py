@@ -44,7 +44,10 @@ def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
 
 
-def audit_passes(artifact: Path) -> bool:
+def audit_passes(
+    artifact: Path,
+    expected_commit: str | None,
+) -> bool:
     audit = audit_path(artifact)
     if not artifact.exists() or not audit.exists():
         return False
@@ -53,7 +56,11 @@ def audit_passes(artifact: Path) -> bool:
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("git_commit") == expected_commit
+        and payload.get("stage") == "scored"
         and str(payload.get("sha256", "")) == sha256_file(artifact)
     )
 
@@ -150,7 +157,7 @@ def main() -> None:
                     f"{adapter}:{dataset} {partition}: missing scored artifact {scored}"
                 )
                 continue
-            if not audit_passes(scored):
+            if not audit_passes(scored, experiment_commit):
                 failures.append(
                     f"{adapter}:{dataset} {partition}: scored audit is not PASS "
                     "or is stale"

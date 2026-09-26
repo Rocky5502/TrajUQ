@@ -129,3 +129,23 @@ Only after **all 18** cell analyses exist should the plan's macro aggregation
 command be executed. The macro command rejects selective cell omission. Run the
 RQ1 claim-gate command last; a negative gate is a valid result and must not be
 used as a reason to redesign the test analysis.
+
+
+## 8. Freeze the expensive repeated-sampling plan
+
+After the primary matrix and primary-analysis plans are frozen, create the
+five-sample baseline ledger:
+
+```bash
+python scripts/plan_repeated_sampling.py
+```
+
+The frozen subset contains 15 cells: three primary model families times GSM8K,
+GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA. MATH-500 is excluded
+until symbolic equivalence clustering is implemented. The plan fixes five seeds
+(2027--2031), temperature 0.2, model revision, prompt partitions, and all
+adapter-specific generation settings.
+
+Execute every planned auxiliary generation and cell evaluation before running
+the plan's `aggregate_repeated_baseline.py` command. This matched-subset macro
+result is reported separately from the complete 18-cell primary RQ1 endpoint.

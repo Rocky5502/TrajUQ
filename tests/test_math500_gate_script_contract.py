@@ -39,3 +39,18 @@ def test_math500_wrapper_preserves_manual_gate():
     assert "AUTOMATED MATH-500 SCORER PILOT COMPLETE." in text
     assert "Manual gate remains." in text
     assert "record_math500_scorer_review.py" in text
+
+
+def test_math500_wrapper_revalidates_hash_bound_split_and_parity_sources():
+    text = Path("scripts/math500_gate_windows.ps1").read_text(encoding="utf-8")
+
+    assert "function Get-FileSha256" in text
+    assert "reference_sha256" in text
+    assert "instrumented_sha256" in text
+    assert "$Parity.git_clean -eq $true" in text
+    assert "function Assert-Math500FrozenPair" in text
+    assert "trajuq_split_pair_audit_v1" in text
+    assert "calibration_sha256" in text
+    assert "test_sha256" in text
+    assert "$Audit.requested_revision -ne $DatasetSha" in text
+    assert text.count("Assert-Math500FrozenPair") == 3

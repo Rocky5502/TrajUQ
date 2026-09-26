@@ -62,6 +62,7 @@ def main() -> None:
     p_candidate = candidate.predict_error_probability(x_test_t)
 
     payload = {
+        "protocol": "trajuq_nested_calibrated_comparison_v1",
         "comparison": "trajectory_plus_decision_logistic_vs_decision_entropy_logistic",
         "delta_direction": "positive_means_trajectory_augmented_is_better",
         "n_calibration": len(cal_ids_b),

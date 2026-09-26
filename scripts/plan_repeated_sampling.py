@@ -40,7 +40,10 @@ def git_status_porcelain() -> str | None:
         return None
 
 
-def scored_audit_passes(path: Path) -> bool:
+def scored_audit_passes(
+    path: Path,
+    expected_commit: str | None,
+) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
         return False
@@ -49,7 +52,10 @@ def scored_audit_passes(path: Path) -> bool:
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("git_commit") == expected_commit
         and payload.get("stage") == "scored"
         and str(payload.get("sha256", "")) == sha256_file(path)
     )
@@ -308,7 +314,7 @@ def main() -> None:
                 )
 
             scored = Path(str(source["scored_output"]))
-            if not scored_audit_passes(scored):
+            if not scored_audit_passes(scored, experiment_commit):
                 raise SystemExit(
                     f"{cell_name} {partition}: scored target is missing, "
                     "invalid, or stale"

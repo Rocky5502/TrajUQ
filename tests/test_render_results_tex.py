@@ -26,6 +26,7 @@ def primary():
     metrics["auroc"]["positive_model_families"] = 3
     metrics["auroc"]["n_model_families"] = 3
     return {
+        "protocol": "hierarchical_within_cell_macro_bootstrap_v1",
         "cell_set_complete": True,
         "expected_cell_count": 18,
         "observed_cell_count": 18,
@@ -54,9 +55,20 @@ def claim(supported: bool = True):
 
 def repeated():
     return {
+        "protocol": "trajuq_vs_repeated_macro_v2",
+        "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
         "cell_set_complete": True,
         "expected_cells": 18,
         "observed_cells": 18,
+        "auxiliary_compute": {
+            "aggregation": "equal_cell_weight_macro",
+            "expected_cells": 18,
+            "observed_cells_with_complete_test_wall_time": 18,
+            "complete": True,
+            "sample_count": 5,
+            "mean_test_auxiliary_wall_time_seconds_per_example": 12.34,
+            "mean_test_p90_auxiliary_wall_time_seconds_per_example": 15.67,
+        },
         "macro": {
             name: {
                 "baseline_macro": baseline,
@@ -73,6 +85,9 @@ def repeated():
 
 def adaptive():
     return {
+        "protocol": "trajuq_adaptive_macro_v1",
+        "execution_semantics": "selective_second_pass_rerun",
+        "fraction_key": "cap_050",
         "cell_set_complete": True,
         "expected_cells": 18,
         "observed_cells": 18,
@@ -94,6 +109,7 @@ def test_result_macros_are_derived_from_complete_artifacts():
     macros = build_macros(primary(), claim(), repeated(), adaptive())
     assert macros["PrimaryTrajAUROC"] == "0.700"
     assert macros["RepeatedAUROC"] == "0.620"
+    assert macros["RepeatedAuxWallTime"] == "12.34"
     assert macros["AdaptiveDeltaRandom"] == "+0.040"
     assert "positive point improvement" in macros["AbstractResultSentence"]
 
@@ -115,3 +131,10 @@ def test_result_renderer_rejects_contradictory_claim_flag_and_decision():
     payload["decision"] = "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"
     with pytest.raises(ValueError, match="contradicts"):
         build_macros(primary(), payload, repeated(), adaptive())
+
+
+def test_result_renderer_rejects_incomplete_repeated_compute():
+    payload = repeated()
+    payload["auxiliary_compute"]["complete"] = False
+    with pytest.raises(ValueError, match="compute accounting is incomplete"):
+        build_macros(primary(), claim(), payload, adaptive())

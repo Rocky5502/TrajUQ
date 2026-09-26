@@ -196,7 +196,14 @@ class LLaDAAdapter(BaseAdapter):
                         ).logits
                         forward_evals += 1
 
-                    acc.observe(step=global_step, logits=logits, state_ids=x)
+                    active_positions = torch.zeros_like(x, dtype=torch.bool)
+                    active_positions[:, block_start:block_end] = True
+                    acc.observe(
+                        step=global_step,
+                        logits=logits,
+                        state_ids=x,
+                        active_position_mask=active_positions,
+                    )
                     global_step += 1
 
                     noisy_logits = self._add_gumbel_noise(
@@ -256,6 +263,7 @@ class LLaDAAdapter(BaseAdapter):
                 "temperature": float(temperature),
                 "cfg_scale": float(cfg_scale),
                 "remasking": remasking,
+                "trajectory_semantics": "active_unresolved_positions_v2",
                 "parity_status": "PENDING_GPU_AUDIT",
             },
         )

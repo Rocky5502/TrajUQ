@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-RAW_RISK_VERSION = "trajuq-raw-risk-v1"
+RAW_RISK_VERSION = "trajuq-raw-risk-v2"
 
 
 def raw_trajectory_risk(features: dict[str, float]) -> float:

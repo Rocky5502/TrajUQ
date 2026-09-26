@@ -16,11 +16,11 @@ TrajUQ studies whether the *denoising trajectory itself* can predict when a diff
 
 ## Core signal
 
-For each denoising trajectory, TrajUQ records compact pre-outcome statistics rather than full vocabulary tensors:
+For each denoising trajectory, TrajUQ records compact pre-outcome statistics rather than full vocabulary tensors. Schema v2 aggregates predictive statistics only over positions that are active and unresolved at that step; prompt tokens, future inactive blocks, and already committed tokens are excluded:
 
 - normalized predictive entropy;
 - top-1 confidence and top-2 margin;
-- top-1 revisions and late revisions;
+- top-1 proposal revisions and late revisions, counted only while a position remains unresolved;
 - mask persistence / commitment time;
 - early-to-late entropy and revision trends.
 

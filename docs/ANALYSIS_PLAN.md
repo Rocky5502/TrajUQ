@@ -2,6 +2,10 @@
 
 This file is a pre-results contract. Changes that affect primary claims must be committed before primary test outcomes are inspected.
 
+## Active-position semantics
+
+All entropy, confidence, and margin statistics are computed only on positions that are both **active for the current denoising block** and **still unresolved at the pre-transfer observation**. Logits on prompt tokens, future inactive blocks, or already committed tokens are excluded. Revision rate counts prediction changes only for positions unresolved in two consecutive observations. Commitment time is normalized within each position's active window. These schema-v2 semantics are frozen before primary outcomes are inspected.
+
 ## RQ1 — Does the trajectory add predictive information?
 
 The primary incremental-information test compares two calibration-fitted predictors on identical held-out examples: (i) a final-state entropy baseline and (ii) a nested logistic model containing the same final entropy plus the frozen trajectory feature vector. This directly tests whether the trajectory adds information beyond the final state. Primary discrimination metrics are AUROC and AUPRC; the primary selective metric is discrete AURC. Use paired, class-stratified bootstrap confidence intervals. All reported improvement deltas are oriented so positive means the trajectory-augmented method is better.

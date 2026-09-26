@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
-SCHEMA_VERSION = "trajuq-record-v1"
+SCHEMA_VERSION = "trajuq-record-v2"
 
 
 @dataclass
@@ -16,6 +16,8 @@ class StepSummary:
     margin_mean: float
     mask_fraction: float
     revision_fraction: float
+    active_fraction: float = 1.0
+    active_count: int = 0
 
 
 @dataclass

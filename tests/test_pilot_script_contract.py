@@ -91,3 +91,12 @@ def test_pilot_human_review_is_source_bound():
     assert "pilot scored audit is missing, stale, or not PASS" in record_text
     assert "pilot_raw_audit_ok" in record_text
     assert "pilot_scored_audit_ok" in record_text
+
+
+def test_human_pilot_gate_requires_parity_and_pilot_run_audits():
+    text = Path("scripts/record_manual_gate.py").read_text(encoding="utf-8")
+    assert "trajuq_run_audit_v1" in text
+    assert "parity_audit_ok" in text
+    assert "pilot raw audit is missing, stale, or not PASS" in text
+    assert "pilot scored audit is missing, stale, or not PASS" in text
+    assert "LLaDA parity instrumented run audit is missing, stale, or not PASS" in text

@@ -19,6 +19,22 @@ function Get-FileSha256 {
     param([string]$Path)
     return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
 }
+function Test-RunAuditPass {
+    param(
+        [string]$Artifact,
+        [string]$ExpectedStage
+    )
+    $AuditPath = "$Artifact.audit.json"
+    if (-not (Test-Path $Artifact) -or -not (Test-Path $AuditPath)) {
+        return $false
+    }
+    $Audit = Get-Content $AuditPath -Raw | ConvertFrom-Json
+    return (
+        $Audit.status -eq "PASS" -and
+        $Audit.stage -eq $ExpectedStage -and
+        $Audit.sha256 -eq (Get-FileSha256 $Artifact)
+    )
+}
 
 function Require-No-ExistingArtifacts {
     param([string[]]$Paths)
@@ -85,6 +101,8 @@ function Assert-PilotGatePass {
     }
     $Gate = Get-Content $Path -Raw | ConvertFrom-Json
     $Revisions = @($Gate.model_revisions)
+    $RawAuditOk = Test-RunAuditPass $Raw "raw"
+    $ScoredAuditOk = Test-RunAuditPass $Scored "scored"
     $Pass = (
         $Gate.protocol -eq "trajuq_pilot_quality_gate_v2" -and
         $Gate.status -eq "PASS" -and
@@ -94,6 +112,8 @@ function Assert-PilotGatePass {
         $Gate.scored -eq $Scored -and
         $Gate.raw_sha256 -eq (Get-FileSha256 $Raw) -and
         $Gate.scored_sha256 -eq (Get-FileSha256 $Scored) -and
+        $RawAuditOk -and
+        $ScoredAuditOk -and
         $Gate.raw_records -eq 50 -and
         $Gate.scored_records -eq 50 -and
         @($Gate.adapters).Count -eq 1 -and
@@ -102,7 +122,7 @@ function Assert-PilotGatePass {
         [string]$Revisions[0] -eq $ModelSha
     )
     if (-not $Pass) {
-        throw "Existing $Path is not a clean hash-bound frozen 50-example pilot PASS. Inspect it before rerunning."
+        throw "Existing $Path is not a clean hash/audit-bound frozen 50-example pilot PASS. Inspect it before rerunning."
     }
     return $true
 }

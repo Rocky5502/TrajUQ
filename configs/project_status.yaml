@@ -60,13 +60,13 @@ implementation:
       - scripts/execute_primary_plan.py
       - tests/test_execute_primary_plan.py
   - id: primary_analysis
-    label: "18-cell analysis ledger and hierarchical macro aggregation"
+    label: "Hash-bound 18-cell analysis ledger and hierarchical macro aggregation"
     state: DONE
     evidence:
       - scripts/plan_primary_analysis.py
       - scripts/aggregate_cells.py
   - id: resumable_primary_analysis_executor
-    label: "Resumable non-overwriting primary-analysis executor"
+    label: "Resumable provenance-checked primary-analysis executor"
     state: DONE
     evidence:
       - scripts/execute_primary_analysis.py
@@ -78,14 +78,14 @@ implementation:
       - scripts/evaluate_rq1_claim_gate.py
       - tests/test_rq1_claim_gate.py
   - id: repeated_sampling
-    label: "Five-sample baseline over the complete 18-cell matrix"
+    label: "Hash-bound five-sample baseline over the complete 18-cell matrix"
     state: DONE
     evidence:
       - scripts/run_repeated_samples.py
       - scripts/plan_repeated_sampling.py
       - scripts/aggregate_repeated_baseline.py
   - id: resumable_repeated_executor
-    label: "Resumable SHA-verified five-sample baseline executor"
+    label: "Resumable provenance-checked five-sample baseline executor"
     state: DONE
     evidence:
       - scripts/execute_repeated_sampling.py
@@ -99,7 +99,7 @@ implementation:
       - scripts/export_math500_scorer_review.py
       - docs/MATH500_SCORING.md
   - id: adaptive_rq3
-    label: "Second-pass adaptive compute with 50% primary and 25/75% sensitivities"
+    label: "Hash-bound second-pass adaptive compute with 50% primary and 25/75% sensitivities"
     state: DONE
     evidence:
       - scripts/evaluate_adaptive.py
@@ -107,7 +107,7 @@ implementation:
       - scripts/aggregate_adaptive.py
       - src/trajuq/adaptive_aggregation.py
   - id: resumable_adaptive_executor
-    label: "Resumable adaptive RQ3 executor with cap-specific macro gates"
+    label: "Resumable provenance-checked adaptive RQ3 executor with cap-specific macro gates"
     state: DONE
     evidence:
       - scripts/execute_adaptive_plan.py
@@ -236,35 +236,37 @@ execution_gates:
   - id: primary_analysis_plan
     label: "Frozen 18-cell analysis command ledger"
     stage: analysis
-    action: "Run python scripts/plan_primary_analysis.py after all 18 scored cells exist."
+    action: "Run python scripts/plan_primary_analysis.py after all 18 scored cells and scored audits exist. Plan protocol v2 SHA-binds those inputs, the primary plan/config, and the frozen experiment commit."
     artifact: results/primary_analysis_plan.json
     expect: {key: status, equals: PASS}
   - id: primary_analysis_execution_complete
     label: "All 18 primary cell analyses plus macro and RQ1 gate complete"
     stage: analysis
-    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, macro aggregation, and the frozen RQ1 gate."
+    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, macro aggregation, and the frozen RQ1 gate. Execution refuses any drift in the plan-bound scored inputs, audits, primary plan/config, or experiment commit."
     artifact: results/primary_analysis_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
     label: "Frozen five-sample 18-cell comparator plan"
     stage: analysis
+    action: "Run python scripts/plan_repeated_sampling.py only after primary analysis predictions exist. Protocol v2 binds upstream plans/config, prompt partitions, scored targets/audits, and TrajUQ predictions by SHA-256."
     artifact: results/repeated_sampling_plan.json
     expect: {key: status, equals: PASS}
   - id: repeated_execution_complete
     label: "All 18 five-sample cells plus macro complete"
     stage: analysis
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator safely."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator safely. Execution revalidates all plan-bound primary artifacts before auxiliary generation."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan
     label: "Frozen adaptive 18-cell plan"
     stage: analysis
+    action: "Run python scripts/plan_adaptive_runs.py after all refined primary scored artifacts exist. Protocol v3 binds the primary plan/config, prompt inputs, refined scored artifacts, and scored audits by SHA-256."
     artifact: results/adaptive_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: adaptive_execution_complete
     label: "All adaptive base runs, 25/50/75% evaluations, and macros complete"
     stage: analysis
-    action: "Use python scripts/execute_adaptive_plan.py --execute to resume the full RQ3 matrix safely."
+    action: "Use python scripts/execute_adaptive_plan.py --execute to resume the full RQ3 matrix safely. Execution revalidates all bound refined inputs/audits before low-budget generation."
     artifact: results/adaptive_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: primary_macro

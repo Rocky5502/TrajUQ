@@ -23,6 +23,7 @@ CONTEXT_FILES = [
     "docs/RESULT_ARTIFACT_MAP.md",
     "paper/generated_results.tex",
     "paper/generated_results_manifest.json",
+    "paper/figures/generated/result_figure_manifest.json",
 ]
 
 REQUIRED_CONTEXT_FILES = {

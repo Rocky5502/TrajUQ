@@ -64,6 +64,8 @@ def review_sheet_metadata(path: Path) -> dict[str, str]:
     prefixes = {
         "- scored artifact: ": "scored_artifact",
         "- scored SHA-256: ": "scored_sha256",
+        "- normalized input: ": "input",
+        "- input SHA-256: ": "input_sha256",
     }
     found: dict[str, str] = {}
     if not path.exists():
@@ -422,6 +424,30 @@ def evaluate_readiness(
             and math_manual.get("review_sheet_sha256")
             == sha256_file(math_review_sheet)
         )
+        math_review_meta = review_sheet_metadata(math_review_sheet)
+        math_scored_path = Path(str(math_manual.get("review_scored_artifact", "")))
+        math_input_path = Path(str(math_manual.get("review_input", "")))
+        math_scored_hash_ok = (
+            math_scored_path.exists()
+            and math_manual.get("review_scored_sha256") == sha256_file(math_scored_path)
+            and math_review_meta.get("scored_artifact") == str(math_scored_path)
+            and math_review_meta.get("scored_sha256") == math_manual.get("review_scored_sha256")
+        )
+        math_input_hash_ok = (
+            math_input_path.exists()
+            and math_manual.get("review_input_sha256") == sha256_file(math_input_path)
+            and math_review_meta.get("input") == str(math_input_path)
+            and math_review_meta.get("input_sha256") == math_manual.get("review_input_sha256")
+            and str(math_input_path).replace("\\", "/").endswith(
+                "data/processed/math500/calibration.jsonl"
+            )
+        )
+        math_scored_audit_path = math_scored_path.with_suffix(
+            math_scored_path.suffix + ".audit.json"
+        )
+        math_scored_audit_ok, math_scored_audit = run_audit_passes(
+            math_scored_audit_path, math_scored_path, "scored"
+        )
         math_audit_hash_ok = (
             math_audit_artifact.exists()
             and math_manual.get("automatic_audit_sha256")
@@ -435,6 +461,9 @@ def evaluate_readiness(
             and math_manual.get("automatic_audit_git_commit") == experiment_commit
             and int(math_manual.get("reviewed_records", 0)) >= 25
             and math_review_hash_ok
+            and math_scored_hash_ok
+            and math_input_hash_ok
+            and math_scored_audit_ok
             and math_audit_hash_ok
             and math_checks.get("answer_extraction") is True
             and math_checks.get("symbolic_equivalence") is True
@@ -448,6 +477,11 @@ def evaluate_readiness(
             "git_clean": math_manual.get("git_clean"),
             "reviewed_records": math_manual.get("reviewed_records"),
             "review_sheet_hash_ok": math_review_hash_ok,
+            "review_scored_hash_ok": math_scored_hash_ok,
+            "review_input_hash_ok": math_input_hash_ok,
+            "scored_audit": str(math_scored_audit_path),
+            "scored_audit_status": math_scored_audit.get("status"),
+            "scored_audit_ok": math_scored_audit_ok,
             "automatic_audit_hash_ok": math_audit_hash_ok,
         }
         if not math_manual_pass:

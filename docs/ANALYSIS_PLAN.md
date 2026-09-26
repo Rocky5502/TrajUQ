@@ -4,7 +4,7 @@ This file is a pre-results contract. Changes that affect primary claims must be 
 
 ## Active-position semantics
 
-All entropy, confidence, and margin statistics are computed only on positions that are both **active for the current denoising block** and **still unresolved at the pre-transfer observation**. Logits on prompt tokens, future inactive blocks, or already committed tokens are excluded. Revision rate counts prediction changes only for positions unresolved in two consecutive observations. Commitment time is normalized within each position's active window. These schema-v2 semantics are frozen before primary outcomes are inspected.
+All entropy, confidence, and margin statistics are computed only on positions that are both **active for the current denoising block** and **still unresolved at the pre-transfer observation**. Logits on prompt tokens, future inactive blocks, or already committed tokens are excluded. Revision rate counts prediction changes only for positions unresolved in two consecutive observations. Jensen-Shannon drift is computed exactly from consecutive full-vocabulary predictive distributions on those same eligible positions and normalized by \(\log 2\), so it lies in \([0,1]\). Only one previous probability tensor is retained, bounding logging memory to one extra generated-length-by-vocabulary distribution. Commitment time is normalized within each position's active window. These schema-v2 semantics are frozen before primary outcomes are inspected.
 
 ## RQ1 — Does the trajectory add predictive information?
 

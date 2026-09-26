@@ -14,6 +14,7 @@ def test_finalize_ignores_committed_and_inactive_logits():
             entropy=np.array([0.2, 0.99]),
             confidence=np.array([0.8, 0.01]),
             margin=np.array([0.6, 0.01]),
+            js_drift=np.array([np.nan, np.nan]),
             masked=np.array([True, True]),
             active=np.array([True, False]),
             prediction=np.array([1, 7]),
@@ -24,6 +25,7 @@ def test_finalize_ignores_committed_and_inactive_logits():
             entropy=np.array([0.4, 0.6]),
             confidence=np.array([0.6, 0.4]),
             margin=np.array([0.3, 0.2]),
+            js_drift=np.array([0.10, np.nan]),
             masked=np.array([True, True]),
             active=np.array([True, True]),
             prediction=np.array([2, 8]),
@@ -34,6 +36,7 @@ def test_finalize_ignores_committed_and_inactive_logits():
             entropy=np.array([0.95, 0.5]),
             confidence=np.array([0.02, 0.5]),
             margin=np.array([0.01, 0.25]),
+            js_drift=np.array([np.nan, 0.20]),
             masked=np.array([False, True]),
             active=np.array([True, True]),
             prediction=np.array([9, 8]),
@@ -50,3 +53,34 @@ def test_finalize_ignores_committed_and_inactive_logits():
     assert np.isclose(features["revision_rate"], 0.5)
     assert summaries[0].active_count == 1
     assert summaries[1].active_count == 2
+
+
+def test_js_drift_uses_only_consecutive_unresolved_positions():
+    acc = TrajectoryAccumulator(prompt_length=0, mask_id=99)
+    acc._steps = [
+        _ObservedStep(
+            step=0,
+            entropy=np.array([0.2]),
+            confidence=np.array([0.8]),
+            margin=np.array([0.6]),
+            js_drift=np.array([np.nan]),
+            masked=np.array([True]),
+            active=np.array([True]),
+            prediction=np.array([1]),
+            state=np.array([99]),
+        ),
+        _ObservedStep(
+            step=1,
+            entropy=np.array([0.3]),
+            confidence=np.array([0.7]),
+            margin=np.array([0.5]),
+            js_drift=np.array([0.25]),
+            masked=np.array([True]),
+            active=np.array([True]),
+            prediction=np.array([1]),
+            state=np.array([99]),
+        ),
+    ]
+    features, _ = acc.finalize()
+    assert np.isclose(features["js_mean"], 0.25)
+    assert np.isclose(features["js_p90"], 0.25)

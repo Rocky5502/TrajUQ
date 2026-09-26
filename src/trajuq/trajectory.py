@@ -19,6 +19,7 @@ class _ObservedStep:
     entropy: np.ndarray
     confidence: np.ndarray
     margin: np.ndarray
+    js_drift: np.ndarray
     masked: np.ndarray
     active: np.ndarray
     prediction: np.ndarray
@@ -72,6 +73,8 @@ class TrajectoryAccumulator:
         self.mask_id = mask_id
         self.late_fraction = float(late_fraction)
         self._steps: list[_ObservedStep] = []
+        self._previous_probabilities = None
+        self._previous_unresolved = None
 
     def observe(self, step: int, logits, state_ids, active_position_mask=None) -> None:
         if torch is None:
@@ -121,12 +124,46 @@ class TrajectoryAccumulator:
         else:
             masked = state.eq(int(self.mask_id))
 
+        unresolved = active & masked if self.mask_id is not None else active
+        js_drift = torch.full_like(entropy, float("nan"))
+        if (
+            self._previous_probabilities is not None
+            and self._previous_unresolved is not None
+            and self._previous_probabilities.shape == p.shape
+        ):
+            eligible = unresolved & self._previous_unresolved
+            if bool(eligible.any()):
+                current_p = p[eligible]
+                previous_p = self._previous_probabilities[eligible]
+                mixture = 0.5 * (current_p + previous_p)
+                eps = torch.finfo(current_p.dtype).tiny
+                current_kl = (
+                    current_p
+                    * (
+                        torch.log(current_p.clamp_min(eps))
+                        - torch.log(mixture.clamp_min(eps))
+                    )
+                ).sum(dim=-1)
+                previous_kl = (
+                    previous_p
+                    * (
+                        torch.log(previous_p.clamp_min(eps))
+                        - torch.log(mixture.clamp_min(eps))
+                    )
+                ).sum(dim=-1)
+                js_values = 0.5 * (current_kl + previous_kl) / math.log(2.0)
+                js_drift[eligible] = js_values
+
+        self._previous_probabilities = p.detach()
+        self._previous_unresolved = unresolved.detach()
+
         self._steps.append(
             _ObservedStep(
                 step=int(step),
                 entropy=entropy[0].cpu().numpy(),
                 confidence=confidence[0].cpu().numpy(),
                 margin=margin[0].cpu().numpy(),
+                js_drift=js_drift[0].cpu().numpy(),
                 masked=masked[0].cpu().numpy(),
                 active=active[0].cpu().numpy(),
                 prediction=prediction[0].cpu().numpy(),
@@ -148,6 +185,7 @@ class TrajectoryAccumulator:
         ent = np.stack([s.entropy for s in self._steps])
         conf = np.stack([s.confidence for s in self._steps])
         margin = np.stack([s.margin for s in self._steps])
+        js_drift = np.stack([s.js_drift for s in self._steps])
         masked = np.stack([s.masked for s in self._steps]).astype(bool)
         active = np.stack([s.active for s in self._steps]).astype(bool)
         pred = np.stack([s.prediction for s in self._steps])
@@ -169,10 +207,14 @@ class TrajectoryAccumulator:
             revision_events[1:] = revision_eligible[1:] & (pred[1:] != pred[:-1])
 
         step_entropy = np.full(n_steps, np.nan, dtype=float)
+        step_js = np.full(n_steps, np.nan, dtype=float)
         step_revision = np.full(n_steps, np.nan, dtype=float)
+        js_valid = np.isfinite(js_drift) & unresolved
         for i in range(n_steps):
             if unresolved[i].any():
                 step_entropy[i] = float(ent[i][unresolved[i]].mean())
+            if js_valid[i].any():
+                step_js[i] = float(js_drift[i][js_valid[i]].mean())
             if revision_eligible[i].any():
                 step_revision[i] = _safe_fraction(
                     revision_events[i],
@@ -186,6 +228,7 @@ class TrajectoryAccumulator:
         active_ent = _masked_values(ent, unresolved)
         active_conf = _masked_values(conf, unresolved)
         active_margin = _masked_values(margin, unresolved)
+        active_js = js_drift[js_valid].astype(float)
 
         late_unresolved = unresolved[late_start:]
         late_active = active[late_start:]
@@ -217,6 +260,14 @@ class TrajectoryAccumulator:
             raise ValueError("No active positions available for commitment-time features.")
         commitment = np.asarray(commitment_times, dtype=float)
 
+        js_final_steps = np.flatnonzero(js_valid.any(axis=1))
+        js_final = (
+            float(js_drift[js_final_steps[-1]][js_valid[js_final_steps[-1]]].mean())
+            if len(js_final_steps)
+            else 0.0
+        )
+        late_js_values = js_drift[late_start:][js_valid[late_start:]].astype(float)
+
         features = {
             "trajectory_steps": float(n_steps),
             "entropy_mean": float(active_ent.mean()),
@@ -229,6 +280,12 @@ class TrajectoryAccumulator:
             "margin_mean": float(active_margin.mean()),
             "margin_min": float(active_margin.min()),
             "margin_final": float(margin[final_i][final_mask].mean()),
+            "js_mean": float(active_js.mean()) if active_js.size else 0.0,
+            "js_p90": float(np.quantile(active_js, 0.90)) if active_js.size else 0.0,
+            "js_max": float(active_js.max()) if active_js.size else 0.0,
+            "js_final": js_final,
+            "js_slope": _linear_slope(step_js),
+            "late_js_mean": float(late_js_values.mean()) if late_js_values.size else 0.0,
             "revision_rate": _safe_fraction(revision_events, revision_eligible),
             "late_revision_rate": _safe_fraction(
                 revision_events[late_start:],
@@ -274,6 +331,11 @@ class TrajectoryAccumulator:
                     revision_fraction=_safe_fraction(
                         revision_events[i],
                         revision_eligible[i],
+                    ),
+                    js_mean=(
+                        float(js_drift[i][js_valid[i]].mean())
+                        if js_valid[i].any()
+                        else 0.0
                     ),
                     active_fraction=float(active_i.mean()),
                     active_count=int(active_i.sum()),

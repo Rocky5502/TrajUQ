@@ -21,6 +21,8 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
     margin_mean = 0.72 - 0.40 * e + jitter(0.04)
     revision = 0.04 + 0.42 * e + jitter(0.025)
     late_revision = 0.02 + 0.48 * e + jitter(0.02)
+    js_mean = 0.04 + 0.28 * e + jitter(0.015)
+    js_p90 = 0.06 + 0.34 * e + jitter(0.015)
     mask_auc = 0.20 + 0.42 * e + jitter(0.03)
     late_mask = 0.03 + 0.40 * e + jitter(0.02)
     commit = 0.18 + 0.58 * e + jitter(0.03)
@@ -40,6 +42,12 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
         "revision_rate": max(0.0, revision),
         "late_revision_rate": max(0.0, late_revision),
         "revision_slope": 0.18 * e + jitter(0.02),
+        "js_mean": max(0.0, js_mean),
+        "js_p90": max(0.0, js_p90),
+        "js_max": max(0.0, js_p90 + 0.04),
+        "js_final": max(0.0, js_mean + jitter(0.02)),
+        "js_slope": 0.12 * e + jitter(0.02),
+        "late_js_mean": max(0.0, js_mean + 0.08 * e + jitter(0.01)),
         "mask_auc": min(1.0, max(0.0, mask_auc)),
         "mask_fraction_final": 0.0,
         "late_mask_fraction": min(1.0, max(0.0, late_mask)),

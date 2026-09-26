@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 
@@ -26,6 +26,37 @@ class _ObservedStep:
     state: np.ndarray
 
 
+@dataclass
+class TrajectoryFeaturePayload:
+    """Mergeable sufficient statistics for an ordered denoising trajectory."""
+
+    entropy_samples: np.ndarray
+    confidence_samples: np.ndarray
+    margin_samples: np.ndarray
+    js_samples: np.ndarray
+
+    decision_entropy: np.ndarray
+    decision_confidence: np.ndarray
+    decision_margin: np.ndarray
+    commitment_time: np.ndarray
+
+    step_entropy: np.ndarray
+    step_confidence: np.ndarray
+    step_margin: np.ndarray
+    step_js: np.ndarray
+    step_revision_rate: np.ndarray
+
+    step_js_sum: np.ndarray
+    step_js_count: np.ndarray
+    step_revision_events: np.ndarray
+    step_revision_eligible: np.ndarray
+    step_active_count: np.ndarray
+    step_masked_active_count: np.ndarray
+    step_unresolved_count: np.ndarray
+
+    summaries: list[StepSummary]
+
+
 def _linear_slope(values: np.ndarray) -> float:
     values = np.asarray(values, dtype=float)
     values = values[np.isfinite(values)]
@@ -39,18 +70,154 @@ def _linear_slope(values: np.ndarray) -> float:
     return float(np.dot(x, values - values.mean()) / denom)
 
 
-def _masked_values(values: np.ndarray, mask: np.ndarray) -> np.ndarray:
-    selected = np.asarray(values)[np.asarray(mask, dtype=bool)]
-    if selected.size == 0:
-        raise ValueError("Trajectory summary has no active unresolved positions.")
-    return selected.astype(float)
-
-
-def _safe_fraction(numerator: np.ndarray, denominator: np.ndarray) -> float:
-    denom = int(np.asarray(denominator, dtype=bool).sum())
-    if denom == 0:
+def _ratio(numerator: float, denominator: float) -> float:
+    if denominator <= 0:
         return 0.0
-    return float(np.asarray(numerator, dtype=bool).sum() / denom)
+    return float(numerator / denominator)
+
+
+def _nonempty_concat(arrays: list[np.ndarray]) -> np.ndarray:
+    usable = [np.asarray(a) for a in arrays if np.asarray(a).size]
+    if not usable:
+        return np.asarray([], dtype=float)
+    return np.concatenate(usable).astype(float)
+
+
+def features_from_payloads(
+    payloads: list[TrajectoryFeaturePayload],
+    late_fraction: float = 0.25,
+) -> dict[str, float]:
+    """Compute exact example-level features from ordered mergeable payloads.
+
+    This is used both for whole-sequence diffusion and for blockwise SDAR.
+    Unlike averaging block-level percentiles or slopes, it concatenates the
+    underlying sufficient statistics before computing global upper tails,
+    temporal trends, late-stage statistics, and decision-time features.
+    """
+
+    if not payloads:
+        raise ValueError("No trajectory payloads to merge.")
+    if not 0.0 < late_fraction <= 1.0:
+        raise ValueError("late_fraction must be in (0, 1]")
+
+    entropy = _nonempty_concat([p.entropy_samples for p in payloads])
+    confidence = _nonempty_concat([p.confidence_samples for p in payloads])
+    margin = _nonempty_concat([p.margin_samples for p in payloads])
+    js = _nonempty_concat([p.js_samples for p in payloads])
+
+    decision_entropy = _nonempty_concat([p.decision_entropy for p in payloads])
+    decision_confidence = _nonempty_concat([p.decision_confidence for p in payloads])
+    decision_margin = _nonempty_concat([p.decision_margin for p in payloads])
+    commitment = _nonempty_concat([p.commitment_time for p in payloads])
+
+    if not entropy.size or not decision_entropy.size or not commitment.size:
+        raise ValueError("Trajectory payload is missing required predictive statistics.")
+
+    step_entropy = _nonempty_concat([p.step_entropy for p in payloads])
+    step_confidence = _nonempty_concat([p.step_confidence for p in payloads])
+    step_margin = _nonempty_concat([p.step_margin for p in payloads])
+    step_js = _nonempty_concat([p.step_js for p in payloads])
+    step_revision_rate = _nonempty_concat([p.step_revision_rate for p in payloads])
+
+    step_js_sum = _nonempty_concat([p.step_js_sum for p in payloads])
+    step_js_count = _nonempty_concat([p.step_js_count for p in payloads])
+    step_revision_events = _nonempty_concat([p.step_revision_events for p in payloads])
+    step_revision_eligible = _nonempty_concat([p.step_revision_eligible for p in payloads])
+    step_active_count = _nonempty_concat([p.step_active_count for p in payloads])
+    step_masked_active_count = _nonempty_concat(
+        [p.step_masked_active_count for p in payloads]
+    )
+    step_unresolved_count = _nonempty_concat([p.step_unresolved_count for p in payloads])
+
+    n_steps = len(step_active_count)
+    if n_steps == 0:
+        raise ValueError("Trajectory payload contains no step statistics.")
+
+    late_start = min(
+        n_steps - 1,
+        max(0, int(math.floor(n_steps * (1 - late_fraction)))),
+    )
+
+    valid_final = np.flatnonzero(step_unresolved_count > 0)
+    if len(valid_final) == 0:
+        raise ValueError("Trajectory payload has no unresolved observation.")
+    final_i = int(valid_final[-1])
+
+    valid_js_steps = np.flatnonzero(step_js_count > 0)
+    js_final = (
+        float(step_js[valid_js_steps[-1]])
+        if len(valid_js_steps)
+        else 0.0
+    )
+
+    late_js_count = float(step_js_count[late_start:].sum())
+    late_js_mean = _ratio(
+        float(step_js_sum[late_start:].sum()),
+        late_js_count,
+    )
+
+    return {
+        "trajectory_steps": float(n_steps),
+        "entropy_mean": float(entropy.mean()),
+        "entropy_p90": float(np.quantile(entropy, 0.90)),
+        "entropy_max": float(entropy.max()),
+        "entropy_final": float(step_entropy[final_i]),
+        "entropy_slope": _linear_slope(step_entropy),
+        "confidence_mean": float(confidence.mean()),
+        "confidence_final": float(step_confidence[final_i]),
+        "margin_mean": float(margin.mean()),
+        "margin_min": float(margin.min()),
+        "margin_final": float(step_margin[final_i]),
+        "decision_entropy_mean": float(decision_entropy.mean()),
+        "decision_entropy_p90": float(np.quantile(decision_entropy, 0.90)),
+        "decision_confidence_mean": float(decision_confidence.mean()),
+        "decision_margin_mean": float(decision_margin.mean()),
+        "js_mean": float(js.mean()) if js.size else 0.0,
+        "js_p90": float(np.quantile(js, 0.90)) if js.size else 0.0,
+        "js_max": float(js.max()) if js.size else 0.0,
+        "js_final": js_final,
+        "js_slope": _linear_slope(step_js),
+        "late_js_mean": late_js_mean,
+        "revision_rate": _ratio(
+            float(step_revision_events.sum()),
+            float(step_revision_eligible.sum()),
+        ),
+        "late_revision_rate": _ratio(
+            float(step_revision_events[late_start:].sum()),
+            float(step_revision_eligible[late_start:].sum()),
+        ),
+        "revision_slope": _linear_slope(step_revision_rate),
+        "mask_auc": _ratio(
+            float(step_masked_active_count.sum()),
+            float(step_active_count.sum()),
+        ),
+        "mask_fraction_final": _ratio(
+            float(step_masked_active_count[final_i]),
+            float(step_active_count[final_i]),
+        ),
+        "late_mask_fraction": _ratio(
+            float(step_masked_active_count[late_start:].sum()),
+            float(step_active_count[late_start:].sum()),
+        ),
+        "commitment_time_mean": float(commitment.mean()),
+        "commitment_time_p90": float(np.quantile(commitment, 0.90)),
+    }
+
+
+def merge_trajectory_payloads(
+    payloads: list[TrajectoryFeaturePayload],
+    late_fraction: float = 0.25,
+) -> tuple[dict[str, float], list[StepSummary]]:
+    """Merge ordered block-local trajectories with exact global aggregation."""
+
+    features = features_from_payloads(payloads, late_fraction=late_fraction)
+    summaries: list[StepSummary] = []
+    global_step = 0
+    for payload in payloads:
+        for summary in payload.summaries:
+            summaries.append(replace(summary, step=global_step))
+            global_step += 1
+    return features, summaries
 
 
 class TrajectoryAccumulator:
@@ -58,9 +225,8 @@ class TrajectoryAccumulator:
 
     Schema v4 excludes prompt tokens, inactive future blocks, and already
     committed tokens from entropy/confidence/margin aggregation. Revision churn
-    is counted only when the same position is unresolved in two consecutive
-    observations. This avoids treating irrelevant logits on committed tokens as
-    uncertainty evidence.
+    and JS drift are computed only when the same position is unresolved in two
+    consecutive observations.
 
     The pilot deliberately supports batch size 1 so the telemetry contract is
     easy to audit before batched serving is introduced.
@@ -171,7 +337,7 @@ class TrajectoryAccumulator:
             )
         )
 
-    def finalize(self) -> tuple[dict[str, float], list[StepSummary]]:
+    def feature_payload(self) -> TrajectoryFeaturePayload:
         if not self._steps:
             raise ValueError("No trajectory steps were observed.")
 
@@ -195,141 +361,26 @@ class TrajectoryAccumulator:
             raise ValueError("No active unresolved positions were observed.")
 
         n_steps = len(self._steps)
-        late_start = min(
-            n_steps - 1,
-            max(0, int(math.floor(n_steps * (1 - self.late_fraction)))),
-        )
-
         revision_events = np.zeros_like(unresolved, dtype=bool)
         revision_eligible = np.zeros_like(unresolved, dtype=bool)
         if n_steps > 1:
             revision_eligible[1:] = unresolved[1:] & unresolved[:-1]
             revision_events[1:] = revision_eligible[1:] & (pred[1:] != pred[:-1])
 
-        step_entropy = np.full(n_steps, np.nan, dtype=float)
-        step_js = np.full(n_steps, np.nan, dtype=float)
-        step_revision = np.full(n_steps, np.nan, dtype=float)
         js_valid = np.isfinite(js_drift) & unresolved
-        for i in range(n_steps):
-            if unresolved[i].any():
-                step_entropy[i] = float(ent[i][unresolved[i]].mean())
-            if js_valid[i].any():
-                step_js[i] = float(js_drift[i][js_valid[i]].mean())
-            if revision_eligible[i].any():
-                step_revision[i] = _safe_fraction(
-                    revision_events[i],
-                    revision_eligible[i],
-                )
 
-        valid_final_steps = np.flatnonzero(unresolved.any(axis=1))
-        final_i = int(valid_final_steps[-1])
-        final_mask = unresolved[final_i]
-
-        active_ent = _masked_values(ent, unresolved)
-        active_conf = _masked_values(conf, unresolved)
-        active_margin = _masked_values(margin, unresolved)
-        active_js = js_drift[js_valid].astype(float)
-
-        # Strong final-decision baseline: for each generated position, take the
-        # predictive distribution from the last observation at which that
-        # position was still unresolved. This is the information available
-        # immediately before its commitment decision, rather than logits from an
-        # arbitrary global last step that may contain only one remaining token.
-        decision_entropy: list[float] = []
-        decision_confidence: list[float] = []
-        decision_margin: list[float] = []
-        for j in range(unresolved.shape[1]):
-            unresolved_steps = np.flatnonzero(unresolved[:, j])
-            if len(unresolved_steps) == 0:
-                continue
-            last = int(unresolved_steps[-1])
-            decision_entropy.append(float(ent[last, j]))
-            decision_confidence.append(float(conf[last, j]))
-            decision_margin.append(float(margin[last, j]))
-
-        if not decision_entropy:
-            raise ValueError("No decision-time predictive statistics were available.")
-        decision_entropy_arr = np.asarray(decision_entropy, dtype=float)
-        decision_confidence_arr = np.asarray(decision_confidence, dtype=float)
-        decision_margin_arr = np.asarray(decision_margin, dtype=float)
-
-        late_unresolved = unresolved[late_start:]
-        late_active = active[late_start:]
-        late_masked = active[late_start:] & masked[late_start:]
-
-        commitment_times: list[float] = []
-        for j in range(active.shape[1]):
-            active_steps = np.flatnonzero(active[:, j])
-            if len(active_steps) == 0:
-                continue
-            unresolved_on_active = masked[active_steps, j] if self.mask_id is not None else np.ones(
-                len(active_steps),
-                dtype=bool,
-            )
-            committed = np.flatnonzero(~unresolved_on_active)
-            if len(committed):
-                # If a token first appears committed at observation k, the
-                # transfer decision happened after observation k-1.
-                local_index = max(0, int(committed[0]) - 1)
-            else:
-                # The last transfer happens after the last pre-transfer
-                # observation, so an unresolved final observation means
-                # commitment at the end of the active window.
-                local_index = len(active_steps) - 1
-            if len(active_steps) == 1:
-                commitment_times.append(1.0)
-            else:
-                commitment_times.append(local_index / float(len(active_steps) - 1))
-
-        if not commitment_times:
-            raise ValueError("No active positions available for commitment-time features.")
-        commitment = np.asarray(commitment_times, dtype=float)
-
-        js_final_steps = np.flatnonzero(js_valid.any(axis=1))
-        js_final = (
-            float(js_drift[js_final_steps[-1]][js_valid[js_final_steps[-1]]].mean())
-            if len(js_final_steps)
-            else 0.0
-        )
-        late_js_values = js_drift[late_start:][js_valid[late_start:]].astype(float)
-
-        features = {
-            "trajectory_steps": float(n_steps),
-            "entropy_mean": float(active_ent.mean()),
-            "entropy_p90": float(np.quantile(active_ent, 0.90)),
-            "entropy_max": float(active_ent.max()),
-            "entropy_final": float(ent[final_i][final_mask].mean()),
-            "entropy_slope": _linear_slope(step_entropy),
-            "confidence_mean": float(active_conf.mean()),
-            "confidence_final": float(conf[final_i][final_mask].mean()),
-            "margin_mean": float(active_margin.mean()),
-            "margin_min": float(active_margin.min()),
-            "margin_final": float(margin[final_i][final_mask].mean()),
-            "decision_entropy_mean": float(decision_entropy_arr.mean()),
-            "decision_entropy_p90": float(np.quantile(decision_entropy_arr, 0.90)),
-            "decision_confidence_mean": float(decision_confidence_arr.mean()),
-            "decision_margin_mean": float(decision_margin_arr.mean()),
-            "js_mean": float(active_js.mean()) if active_js.size else 0.0,
-            "js_p90": float(np.quantile(active_js, 0.90)) if active_js.size else 0.0,
-            "js_max": float(active_js.max()) if active_js.size else 0.0,
-            "js_final": js_final,
-            "js_slope": _linear_slope(step_js),
-            "late_js_mean": float(late_js_values.mean()) if late_js_values.size else 0.0,
-            "revision_rate": _safe_fraction(revision_events, revision_eligible),
-            "late_revision_rate": _safe_fraction(
-                revision_events[late_start:],
-                revision_eligible[late_start:],
-            ),
-            "revision_slope": _linear_slope(step_revision),
-            "mask_auc": _safe_fraction(active & masked, active),
-            "mask_fraction_final": _safe_fraction(
-                active[final_i] & masked[final_i],
-                active[final_i],
-            ),
-            "late_mask_fraction": _safe_fraction(late_masked, late_active),
-            "commitment_time_mean": float(commitment.mean()),
-            "commitment_time_p90": float(np.quantile(commitment, 0.90)),
-        }
+        step_entropy = np.full(n_steps, np.nan, dtype=float)
+        step_confidence = np.full(n_steps, np.nan, dtype=float)
+        step_margin = np.full(n_steps, np.nan, dtype=float)
+        step_js = np.full(n_steps, np.nan, dtype=float)
+        step_revision_rate = np.full(n_steps, np.nan, dtype=float)
+        step_js_sum = np.zeros(n_steps, dtype=float)
+        step_js_count = np.zeros(n_steps, dtype=float)
+        step_revision_events = revision_events.sum(axis=1).astype(float)
+        step_revision_eligible = revision_eligible.sum(axis=1).astype(float)
+        step_active_count = active.sum(axis=1).astype(float)
+        step_masked_active_count = (active & masked).sum(axis=1).astype(float)
+        step_unresolved_count = unresolved.sum(axis=1).astype(float)
 
         summaries: list[StepSummary] = []
         for i, s in enumerate(self._steps):
@@ -339,35 +390,123 @@ class TrajectoryAccumulator:
                 ent_i = ent[i][unresolved_i]
                 conf_i = conf[i][unresolved_i]
                 margin_i = margin[i][unresolved_i]
-                entropy_mean = float(ent_i.mean())
+                step_entropy[i] = float(ent_i.mean())
+                step_confidence[i] = float(conf_i.mean())
+                step_margin[i] = float(margin_i.mean())
                 entropy_p90 = float(np.quantile(ent_i, 0.90))
-                confidence_mean = float(conf_i.mean())
-                margin_mean = float(margin_i.mean())
             else:
-                entropy_mean = 0.0
                 entropy_p90 = 0.0
-                confidence_mean = 0.0
-                margin_mean = 0.0
+
+            if js_valid[i].any():
+                js_values = js_drift[i][js_valid[i]].astype(float)
+                step_js[i] = float(js_values.mean())
+                step_js_sum[i] = float(js_values.sum())
+                step_js_count[i] = float(len(js_values))
+
+            if step_revision_eligible[i] > 0:
+                step_revision_rate[i] = _ratio(
+                    step_revision_events[i],
+                    step_revision_eligible[i],
+                )
 
             summaries.append(
                 StepSummary(
                     step=s.step,
-                    entropy_mean=entropy_mean,
+                    entropy_mean=(
+                        float(step_entropy[i]) if np.isfinite(step_entropy[i]) else 0.0
+                    ),
                     entropy_p90=entropy_p90,
-                    confidence_mean=confidence_mean,
-                    margin_mean=margin_mean,
-                    mask_fraction=_safe_fraction(active_i & masked[i], active_i),
-                    revision_fraction=_safe_fraction(
-                        revision_events[i],
-                        revision_eligible[i],
+                    confidence_mean=(
+                        float(step_confidence[i])
+                        if np.isfinite(step_confidence[i])
+                        else 0.0
+                    ),
+                    margin_mean=(
+                        float(step_margin[i]) if np.isfinite(step_margin[i]) else 0.0
+                    ),
+                    mask_fraction=_ratio(
+                        float(step_masked_active_count[i]),
+                        float(step_active_count[i]),
+                    ),
+                    revision_fraction=(
+                        float(step_revision_rate[i])
+                        if np.isfinite(step_revision_rate[i])
+                        else 0.0
                     ),
                     js_mean=(
-                        float(js_drift[i][js_valid[i]].mean())
-                        if js_valid[i].any()
-                        else 0.0
+                        float(step_js[i]) if np.isfinite(step_js[i]) else 0.0
                     ),
                     active_fraction=float(active_i.mean()),
                     active_count=int(active_i.sum()),
                 )
             )
-        return features, summaries
+
+        entropy_samples = ent[unresolved].astype(float)
+        confidence_samples = conf[unresolved].astype(float)
+        margin_samples = margin[unresolved].astype(float)
+        js_samples = js_drift[js_valid].astype(float)
+
+        decision_entropy: list[float] = []
+        decision_confidence: list[float] = []
+        decision_margin: list[float] = []
+        commitment_time: list[float] = []
+
+        for j in range(unresolved.shape[1]):
+            unresolved_steps = np.flatnonzero(unresolved[:, j])
+            active_steps = np.flatnonzero(active[:, j])
+            if len(unresolved_steps):
+                last = int(unresolved_steps[-1])
+                decision_entropy.append(float(ent[last, j]))
+                decision_confidence.append(float(conf[last, j]))
+                decision_margin.append(float(margin[last, j]))
+
+            if len(active_steps) == 0:
+                continue
+            unresolved_on_active = (
+                masked[active_steps, j]
+                if self.mask_id is not None
+                else np.ones(len(active_steps), dtype=bool)
+            )
+            committed = np.flatnonzero(~unresolved_on_active)
+            if len(committed):
+                decision_index = max(0, int(committed[0]) - 1)
+            else:
+                decision_index = len(active_steps) - 1
+            if len(active_steps) == 1:
+                commitment_time.append(1.0)
+            else:
+                commitment_time.append(
+                    decision_index / float(len(active_steps) - 1)
+                )
+
+        return TrajectoryFeaturePayload(
+            entropy_samples=entropy_samples,
+            confidence_samples=confidence_samples,
+            margin_samples=margin_samples,
+            js_samples=js_samples,
+            decision_entropy=np.asarray(decision_entropy, dtype=float),
+            decision_confidence=np.asarray(decision_confidence, dtype=float),
+            decision_margin=np.asarray(decision_margin, dtype=float),
+            commitment_time=np.asarray(commitment_time, dtype=float),
+            step_entropy=step_entropy,
+            step_confidence=step_confidence,
+            step_margin=step_margin,
+            step_js=step_js,
+            step_revision_rate=step_revision_rate,
+            step_js_sum=step_js_sum,
+            step_js_count=step_js_count,
+            step_revision_events=step_revision_events,
+            step_revision_eligible=step_revision_eligible,
+            step_active_count=step_active_count,
+            step_masked_active_count=step_masked_active_count,
+            step_unresolved_count=step_unresolved_count,
+            summaries=summaries,
+        )
+
+    def finalize(self) -> tuple[dict[str, float], list[StepSummary]]:
+        payload = self.feature_payload()
+        features = features_from_payloads(
+            [payload],
+            late_fraction=self.late_fraction,
+        )
+        return features, payload.summaries

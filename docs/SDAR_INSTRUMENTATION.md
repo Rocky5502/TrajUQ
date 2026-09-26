@@ -81,3 +81,14 @@ python scripts/compare_run_parity.py \
 ```
 
 A hard parity gate requires `status=PASS`.
+
+
+## Blockwise feature aggregation
+
+TrajUQ does **not** average block-level percentiles or slopes. Each SDAR block exports
+mergeable sufficient statistics: unresolved-position entropy/margin/JS samples,
+per-step event/count statistics, per-token decision-time confidence, and
+commitment times. The example-level feature vector is then recomputed after
+concatenating blocks in generation order. This preserves exact global p90/max/min
+statistics, late-stage rates, temporal slopes, and decision-time means under the
+same semantics used by whole-sequence adapters.

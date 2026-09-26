@@ -1,60 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import replace
-
 from trajuq.adapters.base import BaseAdapter
-from trajuq.schema import GenerationResult, StepSummary
-from trajuq.trajectory import TrajectoryAccumulator
+from trajuq.schema import GenerationResult
+from trajuq.trajectory import (
+    TrajectoryAccumulator,
+    TrajectoryFeaturePayload,
+    merge_trajectory_payloads,
+)
 
 
 UPSTREAM_REPOSITORY = "JetAstra/SDAR"
 UPSTREAM_COMMIT = "4c2749ba103448f45520e8411533710a1e66574d"
-
-
-def _combine_block_features(
-    blocks: list[tuple[int, dict[str, float], list[StepSummary]]],
-) -> tuple[dict[str, float], list[StepSummary]]:
-    """Combine block-local trajectory summaries into one example record.
-
-    SDAR denoises one block at a time. We therefore compute the same feature
-    dictionary within each generated block and aggregate token-weighted values
-    across blocks. Extremal features preserve their max/min semantics.
-    """
-
-    if not blocks:
-        raise ValueError("No generated SDAR blocks were observed.")
-
-    total_tokens = sum(n for n, _, _ in blocks)
-    if total_tokens <= 0:
-        raise ValueError("Observed SDAR blocks contain no generated positions.")
-
-    feature_names = set(blocks[0][1])
-    if any(set(features) != feature_names for _, features, _ in blocks):
-        raise ValueError("SDAR block feature schemas do not match.")
-
-    max_features = {"entropy_max", "js_max"}
-    min_features = {"margin_min"}
-    sum_features = {"trajectory_steps"}
-    combined: dict[str, float] = {}
-
-    for name in sorted(feature_names):
-        values = [(n, float(features[name])) for n, features, _ in blocks]
-        if name in max_features:
-            combined[name] = max(v for _, v in values)
-        elif name in min_features:
-            combined[name] = min(v for _, v in values)
-        elif name in sum_features:
-            combined[name] = float(sum(v for _, v in values))
-        else:
-            combined[name] = float(sum(n * v for n, v in values) / total_tokens)
-
-    summaries: list[StepSummary] = []
-    global_step = 0
-    for _, _, local in blocks:
-        for summary in local:
-            summaries.append(replace(summary, step=global_step))
-            global_step += 1
-    return combined, summaries
 
 
 class SDARAdapter(BaseAdapter):
@@ -264,7 +220,7 @@ class SDARAdapter(BaseAdapter):
             denoising_steps,
             self.device,
         )
-        block_records: list[tuple[int, dict[str, float], list[StepSummary]]] = []
+        block_payloads: list[TrajectoryFeaturePayload] = []
         forward_evals = 0
 
         for block in range(prefill_blocks, num_blocks):
@@ -353,8 +309,7 @@ class SDARAdapter(BaseAdapter):
 
             x[:, block_start:block_end] = cur_x
             if local_acc is not None:
-                features, summaries = local_acc.finalize()
-                block_records.append((generated_count, features, summaries))
+                block_payloads.append(local_acc.feature_payload())
 
             generated_segment = x[:, prompt_length : prompt_length + gen_length]
             if self.stop_ids and any(bool(generated_segment.eq(stop).any()) for stop in self.stop_ids):
@@ -362,7 +317,7 @@ class SDARAdapter(BaseAdapter):
 
         generated_ids = x[0, prompt_length : prompt_length + gen_length]
         text = self.tokenizer.decode(generated_ids.tolist(), skip_special_tokens=True).strip()
-        features, summaries = _combine_block_features(block_records)
+        features, summaries = merge_trajectory_payloads(block_payloads)
 
         return GenerationResult(
             text=text,

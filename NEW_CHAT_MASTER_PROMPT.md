@@ -248,7 +248,7 @@ After pre-primary readiness PASS:
 9. execute the hash-bound 18-cell five-sample comparator;
 10. execute the hash-bound RQ3 25/50/75% adaptive matrix;
 11. optionally execute RQ4 only after the primary path is healthy;
-12. render manuscript results only from frozen primary, RQ1, ablation, repeated, and adaptive artifacts.
+12. render manuscript results only from frozen primary, RQ1, ablation, repeated, and adaptive artifacts, then render the SHA-bound aggregate result figures from the primary and 25/50/75% adaptive macros.
 
 Execution scripts are designed to be resumable and non-overwriting. Existing PARTIAL/INVALID artifacts must be inspected, not silently replaced.
 
@@ -267,10 +267,13 @@ Never manually type invented numerical results into `paper/main.tex`.
 Use:
 ```bash
 python scripts/render_results_tex.py
+python scripts/render_paper_result_figures.py
 python scripts/audit_paper.py --submission-ready
 python scripts/submission_readiness.py
 ```
-only when the required frozen result artifacts exist.
+only when the required frozen result artifacts exist. The final figure manifest
+must be protocol `trajuq_paper_result_figures_v2` and bind the primary/config,
+all three adaptive-cap sources, and all three generated PDF hashes.
 
 Do not regress these corrections:
 - the repeated-generation table says **“TrajUQ (single trajectory)”**;

@@ -44,6 +44,7 @@ TrajUQ/
 │   ├── samples/synthetic_smoke.jsonl
 │   └── README.md
 ├── docs/
+│   ├── A100_EXECUTION.md
 │   ├── ANALYSIS_PLAN.md
 │   ├── DATA_SPLITS.md
 │   ├── GPU_PILOT.md
@@ -172,6 +173,20 @@ parity-v3 artifacts to match this ledger git commit and their ledger-resolved
 model SHA. CPU verification covers compile checks, Ruff, pytest, metric smoke,
 the leak-safe synthetic end-to-end pipeline, the pinned MATH-500 scorer audit,
 and the paper anonymity audit. It does not replace GPU model parity.
+
+### NVIDIA A100 80GB Linux path
+
+For the server run, use the canonical end-to-end checklist in
+`docs/A100_EXECUTION.md`. It covers environment validation, the immutable
+pre-primary freeze, LLaDA parity + 50-example GSM8K pilot, the human pilot
+attestation, SDAR/Dream parity, the MATH-500 automatic/manual scorer gates,
+primary readiness, safe preparation of only missing dataset pairs, the frozen
+18-cell matrix, primary analysis, the five-seed RQ2 comparator, RQ3 adaptive
+compute, and final artifact-derived paper rendering.
+
+The key rule is simple: after `freeze_preprimary.sh` passes, do not edit tracked
+experiment code on that run. A required code repair means a new commit and a new
+freeze; never repair code underneath already-produced frozen evidence.
 
 ## Prepare a frozen benchmark pair
 

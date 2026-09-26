@@ -91,3 +91,20 @@ def test_run_provenance_requires_revision_when_requested():
     assert any("model revision is not pinned" in item for item in failures)
     assert any("requires exactly one pinned model revision" in item for item in failures)
     assert provenance["model_revisions"] == []
+
+
+def test_run_provenance_requires_adapter_reported_revision():
+    row = base_row(
+        metadata={"model_revision": "model-sha"},
+        generation={"metadata": {}},
+    )
+
+    failures, _ = audit_run_provenance(
+        [row],
+        require_revision=True,
+    )
+
+    assert any(
+        "generation metadata model revision is not pinned" in item
+        for item in failures
+    )

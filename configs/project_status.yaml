@@ -1,0 +1,231 @@
+project:
+  name: TrajUQ
+  target: NAACL 2027 via ARR
+  paper_title: "When Diffusion Language Models Are Unsure: Trajectory-Aware Uncertainty for Selective and Adaptive Generation"
+  primary_models: [llada, sdar, dream]
+  primary_datasets:
+    - gsm8k
+    - math500
+    - gpqa_diamond
+    - arc_challenge
+    - mmlu_pro
+    - truthfulqa
+  primary_cells: 18
+  repeated_sampling_seeds: [2027, 2028, 2029, 2030, 2031]
+  adaptive_primary_cap: 0.50
+  adaptive_sensitivity_caps: [0.25, 0.75]
+
+implementation:
+  - id: trajectory_schema
+    label: "Schema-v4 active/unresolved trajectory instrumentation"
+    state: DONE
+    evidence:
+      - src/trajuq/schema.py
+      - src/trajuq/trajectory.py
+      - src/trajuq/statistics.py
+  - id: primary_features
+    label: "Frozen primary trajectory and decision-time feature sets"
+    state: DONE
+    evidence:
+      - src/trajuq/features.py
+      - configs/experiments/primary.yaml
+  - id: calibration
+    label: "Held-out logistic/isotonic calibration and error probabilities"
+    state: DONE
+    evidence:
+      - src/trajuq/calibration.py
+      - scripts/evaluate_run.py
+  - id: selective_risk
+    label: "Tie-aware AURC and risk-at-coverage metrics"
+    state: DONE
+    evidence:
+      - src/trajuq/evaluation.py
+      - tests/test_evaluation.py
+  - id: outcome_isolation
+    label: "Raw/scored separation, prompt-hash checks, and run auditing"
+    state: DONE
+    evidence:
+      - scripts/audit_run.py
+      - scripts/score_outputs.py
+  - id: primary_planner
+    label: "Frozen 3x6 primary-matrix planner"
+    state: DONE
+    evidence:
+      - scripts/plan_primary_matrix.py
+      - docs/PRIMARY_MATRIX_RUNBOOK.md
+  - id: primary_analysis
+    label: "18-cell analysis ledger and hierarchical macro aggregation"
+    state: DONE
+    evidence:
+      - scripts/plan_primary_analysis.py
+      - scripts/aggregate_cells.py
+  - id: rq1_gate
+    label: "Pre-registered positive-claim gate for RQ1"
+    state: DONE
+    evidence:
+      - scripts/evaluate_rq1_claim_gate.py
+      - tests/test_rq1_claim_gate.py
+  - id: repeated_sampling
+    label: "Five-sample baseline over the complete 18-cell matrix"
+    state: DONE
+    evidence:
+      - scripts/run_repeated_samples.py
+      - scripts/plan_repeated_sampling.py
+      - scripts/aggregate_repeated_baseline.py
+  - id: math500_symbolic
+    label: "Pinned MATH-500 scoring and reference-free symbolic vote clustering"
+    state: DONE
+    evidence:
+      - src/trajuq/scoring.py
+      - scripts/audit_math500_scorer.py
+      - scripts/export_math500_scorer_review.py
+      - docs/MATH500_SCORING.md
+  - id: adaptive_rq3
+    label: "Second-pass adaptive compute with 50% primary and 25/75% sensitivities"
+    state: DONE
+    evidence:
+      - scripts/evaluate_adaptive.py
+      - scripts/plan_adaptive_runs.py
+      - scripts/aggregate_adaptive.py
+      - src/trajuq/adaptive_aggregation.py
+  - id: hybrid_rq4
+    label: "Same-checkpoint AR/diffusion RQ4 diagnostic pipeline"
+    state: DONE
+    evidence:
+      - scripts/join_hybrid_paths.py
+      - scripts/evaluate_hybrid_diagnostic.py
+      - docs/FLARE_INSTRUMENTATION.md
+  - id: revision_ledger
+    label: "One-command immutable model/dataset revision ledger"
+    state: DONE
+    evidence:
+      - scripts/resolve_experiment_revisions.py
+      - scripts/resolve_hf_revision.py
+  - id: artifact_derived_paper
+    label: "Claim-gated manuscript result renderer"
+    state: DONE
+    evidence:
+      - scripts/render_results_tex.py
+      - paper/generated_results.tex
+      - paper/main.tex
+  - id: anonymous_supplement
+    label: "Anonymous ARR software-supplement builder"
+    state: DONE
+    evidence:
+      - scripts/build_anonymous_supplement.py
+  - id: cpu_verification
+    label: "Cross-platform CPU verification scripts"
+    state: DONE
+    evidence:
+      - scripts/verify_cpu.ps1
+      - scripts/verify_cpu.sh
+      - .github/workflows/ci.yml
+
+execution_gates:
+  - id: llada_parity
+    label: "LLaDA 20-prompt exact parity"
+    stage: pre_primary
+    issue: 7
+    artifact: results/llada_parity.json
+    expect: {key: status, equals: PASS}
+  - id: pilot_quality
+    label: "LLaDA + GSM8K 50-example pilot quality"
+    stage: pre_primary
+    issue: 1
+    artifact: results/llada_gsm8k_pilot50_gate.json
+    expect: {key: status, equals: PASS}
+  - id: pilot_manual
+    label: "10-trace human pilot review"
+    stage: pre_primary
+    issue: 1
+    artifact: results/llada_gsm8k_pilot50_manual_review.json
+    expect: {key: status, equals: PASS}
+  - id: sdar_parity
+    label: "SDAR exact parity"
+    stage: pre_primary
+    issue: 2
+    artifact: results/sdar_parity.json
+    expect: {key: status, equals: PASS}
+  - id: dream_parity
+    label: "Dream exact parity"
+    stage: pre_primary
+    issue: 5
+    artifact: results/dream_parity.json
+    expect: {key: status, equals: PASS}
+  - id: math500_auto
+    label: "Automatic MATH-500 scorer audit"
+    stage: pre_primary
+    issue: 4
+    artifact: results/math500_scorer_audit.json
+    expect: {key: status, equals: PASS}
+  - id: math500_manual
+    label: "25-example MATH-500 calibration scorer review"
+    stage: pre_primary
+    issue: 4
+    artifact: results/math500_scorer_manual_review.json
+    expect: {key: status, equals: PASS}
+  - id: revision_ledger
+    label: "Immutable model/dataset revision ledger"
+    stage: pre_primary
+    artifact: results/revision_ledger.json
+    expect: {key: status, equals: PASS}
+  - id: primary_readiness
+    label: "Primary readiness hard gate"
+    stage: pre_primary
+    artifact: results/primary_readiness.json
+    expect: {key: status, equals: PASS}
+  - id: primary_matrix_plan
+    label: "Frozen 18-cell execution plan"
+    stage: primary_execution
+    artifact: results/primary_matrix_plan.json
+    expect: {key: status, equals: PASS}
+  - id: primary_analysis_plan
+    label: "Frozen 18-cell analysis command ledger"
+    stage: analysis
+    artifact: results/primary_analysis_plan.json
+    expect: {key: status, equals: PASS}
+  - id: repeated_sampling_plan
+    label: "Frozen five-sample 18-cell comparator plan"
+    stage: analysis
+    artifact: results/repeated_sampling_plan.json
+    expect: {key: status, equals: PASS}
+  - id: adaptive_matrix_plan
+    label: "Frozen adaptive 18-cell plan"
+    stage: analysis
+    artifact: results/adaptive_matrix_plan.json
+    expect: {key: status, equals: PASS}
+  - id: primary_macro
+    label: "Complete primary 18-cell macro result"
+    stage: analysis
+    artifact: results/primary_analysis/macro_primary.json
+    expect: {key: cell_set_complete, equals: true}
+  - id: rq1_claim_gate
+    label: "RQ1 claim decision frozen"
+    stage: analysis
+    artifact: results/primary_analysis/rq1_claim_gate.json
+    expect:
+      key: decision
+      in:
+        - SUPPORT_POSITIVE_RQ1_CLAIM
+        - DO_NOT_MAKE_POSITIVE_RQ1_CLAIM
+  - id: repeated_macro
+    label: "Complete repeated-sampling 18-cell macro result"
+    stage: analysis
+    artifact: results/repeated_sampling/macro_trajuq_vs_repeated.json
+    expect: {key: cell_set_complete, equals: true}
+  - id: adaptive_macro
+    label: "Complete adaptive primary-cap 18-cell macro result"
+    stage: analysis
+    artifact: results/adaptive/macro_cap_050.json
+    expect: {key: cell_set_complete, equals: true}
+  - id: hybrid_rq4_result
+    label: "Held-out FLARE same-checkpoint RQ4 diagnostic"
+    stage: diagnostic
+    issue: 3
+    artifact: results/flare_rq4_hybrid.json
+    expect: {key: role, equals: RQ4_DIAGNOSTIC_NOT_PRIMARY_ENDPOINT}
+  - id: rendered_results
+    label: "Artifact-derived paper result manifest"
+    stage: submission
+    artifact: paper/generated_results_manifest.json
+    expect: {key: protocol, equals: trajuq_paper_results_render_v1}

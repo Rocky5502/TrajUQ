@@ -1,5 +1,8 @@
 # Experiment freeze checklist
 
+For the repository-wide continuation state and unmet execution gates, read
+`PROJECT_STATUS.md` first and run `python scripts/project_status.py`.
+
 Do not start the full primary matrix until every required item is checked.
 
 ## Scientific definition

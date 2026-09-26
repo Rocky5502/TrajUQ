@@ -2,6 +2,10 @@
 
 **Trajectory-Aware Uncertainty for Diffusion Language Models**
 
+> **Continuation / handoff:** read `PROJECT_STATUS.md` first. It tracks the
+> frozen design, what is implemented, the exact execution gates still pending,
+> and the safest next action if work resumes in another chat.
+
 TrajUQ studies whether the *denoising trajectory itself* can predict when a diffusion language model is likely to be wrong, and whether that uncertainty can support calibrated selective generation and adaptive inference-time compute.
 
 > **Status (2026-09-26): pre-experiment research implementation.**  
@@ -125,6 +129,19 @@ pip install -e ".[dev]"
 pytest -q
 python scripts/smoke_metrics.py
 ```
+
+## Project status dashboard
+
+Run:
+
+```bash
+python scripts/project_status.py
+```
+
+This verifies declared implementation evidence and inspects local experiment
+artifacts without pretending that implemented code means completed experiments.
+The canonical handoff is `PROJECT_STATUS.md`; the machine-readable gate
+specification is `configs/project_status.yaml`.
 
 ## Local verification while GitHub Actions is unavailable
 

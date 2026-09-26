@@ -167,7 +167,7 @@ The threshold is chosen under the frozen 50\% primary selection cap (25\% and 75
 A final calibrator is then trained on all calibration examples and applied to test.
 The threshold is not retuned on test.
 
-The primary execution is a selective second-pass rerun: selected examples launch a separate refined-budget generation from scratch. Therefore the nominal mean compute is $B_0+fB_1$. We do not use the cheaper $B_0+f(B_1-B_0)$ continuation formula unless a model-specific runtime actually resumes the same trajectory. We report policy accuracy, selection fraction, mean compute, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random second-pass refinement.
+The primary execution is a selective second-pass rerun: selected examples launch a separate refined-budget generation from scratch. Therefore the nominal mean compute is $B_0+fB_1$. We do not use the cheaper $B_0+f(B_1-B_0)$ continuation formula unless a model-specific runtime actually resumes the same trajectory. We report policy accuracy, selection fraction, normalized cost relative to $B_0$, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random second-pass refinement. The primary 50\% cap and the frozen 25\%/75\% sensitivities are each aggregated over the complete 18-cell matrix with equal cell weight and a paired within-cell hierarchical bootstrap.
 
 \section{Run Provenance}
 

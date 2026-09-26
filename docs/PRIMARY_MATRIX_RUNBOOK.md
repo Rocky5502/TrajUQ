@@ -104,11 +104,21 @@ The frozen budgets are:
 | Dream | 32 steps | 128 steps |
 | SDAR | 2 denoising steps/block | 4 denoising steps/block |
 
-The primary selection cap is 50%; 25% and 75% are sensitivity settings. Selected
-examples are evaluated under the conservative **second-pass rerun** semantics:
-the base run is always paid and the refined run is an additional complete
-generation. The planner never uses the cheaper continuation cost formula unless
-a future runtime genuinely resumes the same denoising trajectory.
+The primary selection cap is 50%; 25% and 75% are pre-registered sensitivity
+settings. The v2 planner emits all three evaluation commands for every one of
+the 18 model--dataset cells and exports per-example adaptive decisions. After
+all cells are complete, run the plan's `aggregate_adaptive.py` command for
+`cap_050`, then the two sensitivity commands for `cap_025` and `cap_075`.
+Each macro result uses equal cell weight and a paired within-cell hierarchical
+bootstrap.
+
+Selected examples use the conservative **second-pass rerun** semantics: the base
+run is always paid and the refined run is an additional complete generation.
+The primary macro report includes the adaptive accuracy delta versus base,
+fully refined, and expected random second-pass selection, plus a nominal cost
+ratio relative to the base budget. The planner never uses the cheaper
+continuation cost formula unless a future runtime genuinely resumes the same
+denoising trajectory.
 
 
 ## 7. Freeze the primary analysis plan

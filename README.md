@@ -335,8 +335,15 @@ python scripts/evaluate_adaptive.py \
   --base-compute 32 \
   --refined-compute 128 \
   --n-boot 2000 \
-  --output results/llada_gsm8k_adaptive.json
+  --output results/llada_gsm8k_adaptive.json \
+  --predictions-output results/llada_gsm8k_adaptive.predictions.jsonl
 ```
+
+For the full experiment, do not hand-build these commands. Run
+`scripts/plan_adaptive_runs.py`; it derives the base runs from the frozen
+18-cell primary plan and emits evaluations for the 50% primary cap plus the
+25%/75% sensitivities. Its `aggregate_adaptive.py` commands produce
+equal-cell-weight hierarchical macro summaries.
 
 ## SDAR pilot
 

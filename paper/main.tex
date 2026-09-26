@@ -274,7 +274,7 @@ Repeated sampling & \tbd & \tbd & \tbd\\
 \small
 \begin{tabular}{lccc}
 \toprule
-Policy & Accuracy $\uparrow$ & Mean compute $\downarrow$ & $\Delta$ vs.\ random\\
+Policy & Accuracy $\uparrow$ & Cost/base $\downarrow$ & $\Delta$ vs.\ random\\
 \midrule
 Base budget & \tbd & \tbd & --\\
 Fixed refined & \tbd & \tbd & --\\
@@ -282,7 +282,7 @@ Random matched & \tbd & \tbd & 0\\
 \method adaptive & \tbd & \tbd & \tbd\\
 \bottomrule
 \end{tabular}
-\caption{Adaptive second-pass evaluation. The random comparator is matched to the same selected fraction; measured wall time is reported when complete.}
+\caption{Primary adaptive second-pass evaluation at the frozen 50\% selection cap, macro-averaged over all 18 cells. Cost is normalized to the complete base-generation budget; 25\% and 75\% caps are sensitivity analyses.}
 \label{tab:adaptive}
 \end{table}
 

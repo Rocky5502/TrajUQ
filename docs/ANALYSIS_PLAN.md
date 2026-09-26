@@ -59,7 +59,9 @@ The primary execution semantics are a **selective second-pass rerun**: every exa
 
 For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined generation, and versus the expected random second-pass policy at the same selected fraction. The threshold remains fixed from calibration during all test resamples. Base/refined artifacts must match in dataset, prompt hash, model, adapter, seed, revision, scorer, and all generation settings except the compute budget. In addition to nominal denoising budget, report measured wall time and model-forward evaluations under the same second-pass accounting whenever those metadata are complete.
 
-The repository's `evaluate_adaptive.py` implements the two-budget TrajUQ-versus-random comparison. Model-native schedulers remain model-specific.
+The primary RQ3 summary macro-averages all 18 model--dataset cells with equal cell weight. Its confidence intervals use a paired within-cell bootstrap followed by macro-averaging on each replicate. Report adaptive accuracy, deltas versus base/refined/random, selected fraction, and nominal cost ratio to the base budget. The 50\% cap is primary; the 25\% and 75\% caps are reported as frozen sensitivity analyses rather than alternative thresholds chosen after test inspection.
+
+The repository's `evaluate_adaptive.py` implements the per-cell policy and exports per-example decisions; `aggregate_adaptive.py` implements the full-matrix hierarchical summary. Model-native schedulers remain model-specific.
 
 ## RQ4 — Sampler/denoiser diagnostics
 

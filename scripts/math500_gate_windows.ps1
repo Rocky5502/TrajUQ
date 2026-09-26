@@ -18,6 +18,20 @@ function Get-FileSha256 {
     param([string]$Path)
     return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
 }
+function Test-RunAuditPass {
+    param(
+        [string]$Artifact,
+        [string]$ExpectedStage
+    )
+    $AuditPath = "$Artifact.audit.json"
+    if (-not (Test-Path $Artifact) -or -not (Test-Path $AuditPath)) { return $false }
+    $Audit = Get-Content $AuditPath -Raw | ConvertFrom-Json
+    return (
+        $Audit.status -eq "PASS" -and
+        $Audit.stage -eq $ExpectedStage -and
+        $Audit.sha256 -eq (Get-FileSha256 $Artifact)
+    )
+}
 
 function Read-FrozenState {
     $LedgerPath = "results/revision_ledger.json"
@@ -82,6 +96,7 @@ function Require-LLaDAParity {
         (Test-Path $Instrumented) -and
         $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
     )
+    $InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
@@ -95,7 +110,8 @@ function Require-LLaDAParity {
         $Parity.run_provenance.adapter -eq "llada" -and
         $Parity.run_provenance.model_revision -eq $Revision -and
         $ReferenceHashOk -and
-        $InstrumentedHashOk
+        $InstrumentedHashOk -and
+        $InstrumentedAuditOk
     )
     if (-not $Pass) {
         throw "LLaDA parity is not an exact 20-prompt PASS at the frozen commit/revision."

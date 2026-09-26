@@ -4,7 +4,7 @@ from trajuq.datasets import NORMALIZER_VERSION
 
 
 def test_prompt_normalizer_version_is_frozen():
-    assert NORMALIZER_VERSION == "trajuq-prompts-v1"
+    assert NORMALIZER_VERSION == "trajuq-prompts-v2"
 
 
 def test_prepare_eval_pair_requires_explicit_overwrite_flag():

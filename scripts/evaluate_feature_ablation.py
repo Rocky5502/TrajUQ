@@ -52,6 +52,7 @@ def main() -> None:
     parser.add_argument("--n-boot", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--predictions-output", default=None)
     args = parser.parse_args()
 
     cal_rows = load_rows(args.calibration)
@@ -111,6 +112,7 @@ def main() -> None:
         "protocol": "frozen_feature_family_ablation_v1",
         "baseline": "decision_only",
         "delta_direction": "positive_means_group_is_better_than_decision_only",
+        "group_order": list(FROZEN_FEATURE_GROUPS),
         "n_calibration": len(cal_rows),
         "n_test": len(test_rows),
         "groups": results,
@@ -120,6 +122,28 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(payload, indent=2, sort_keys=True))
+
+    if args.predictions_output:
+        pred_out = Path(args.predictions_output)
+        pred_out.parent.mkdir(parents=True, exist_ok=True)
+        with pred_out.open("w", encoding="utf-8") as handle:
+            for idx, row in enumerate(test_rows):
+                handle.write(
+                    json.dumps(
+                        {
+                            "example_id": str(row["example_id"]),
+                            "y_error": int(y_test[idx]),
+                            "correct": bool(row["correct"]),
+                            "p_error_by_group": {
+                                name: float(probabilities[name][idx])
+                                for name in FROZEN_FEATURE_GROUPS
+                            },
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+        print(f"[TrajUQ] ablation predictions -> {pred_out}")
 
 
 if __name__ == "__main__":

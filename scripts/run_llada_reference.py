@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from pathlib import Path
 
 from trajuq.io import read_jsonl
@@ -194,6 +195,11 @@ def main() -> None:
             input_ids = encoded.input_ids.to(args.device)
             attention_mask = encoded.attention_mask.to(args.device)
 
+            if torch.cuda.is_available():
+                torch.cuda.reset_peak_memory_stats()
+                torch.cuda.synchronize()
+            start = time.perf_counter()
+
             with torch.no_grad():
                 output = native_generate(
                     model,
@@ -210,6 +216,15 @@ def main() -> None:
                     args.remasking,
                 )
 
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+            wall_time = time.perf_counter() - start
+            peak_memory = (
+                int(torch.cuda.max_memory_allocated())
+                if torch.cuda.is_available()
+                else None
+            )
+
             generated = output[0, input_ids.shape[1] :]
             payload = {
                 "example_id": str(row["id"]),
@@ -225,6 +240,14 @@ def main() -> None:
                         "native_reference": True,
                         "mask_id": int(mask_id),
                         "steps_requested": args.steps,
+                        "wall_time_seconds": wall_time,
+                        "peak_gpu_memory_bytes": peak_memory,
+                        "gpu_name": (
+                            torch.cuda.get_device_name()
+                            if torch.cuda.is_available()
+                            else None
+                        ),
+                        "torch_version": torch.__version__,
                     },
                 },
             }

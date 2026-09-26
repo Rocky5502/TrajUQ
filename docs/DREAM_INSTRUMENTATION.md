@@ -70,3 +70,17 @@ For at least ten prompts, verify:
 - wall time and peak GPU memory are recorded.
 
 Only after exact parity + manual audit may Dream be used for the 50-example pilot and then primary numbers.
+
+
+## Instrumentation overhead
+
+Native and hook-instrumented runs record synchronized wall time and peak allocated GPU memory. After exact token parity passes:
+
+```bash
+python scripts/compare_instrumentation_overhead.py \
+  --reference runs/dream_native_reference.jsonl \
+  --instrumented runs/dream_trajuq.raw.jsonl \
+  --output results/dream_instrumentation_overhead.json
+```
+
+Keep logger overhead separate from the underlying model's decoding latency.

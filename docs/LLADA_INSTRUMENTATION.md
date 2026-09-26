@@ -71,3 +71,17 @@ The deterministic hard gate is exact token-ID equality on all 20 prompts.
 - repeat a stochastic seed sensitivity check only after the deterministic gate passes.
 
 No LLaDA-MoE result enters the paper before this gate passes.
+
+
+## Instrumentation overhead
+
+Both native and instrumented parity runners record synchronized per-example wall time and peak allocated GPU memory. After exact token parity passes, quantify telemetry overhead:
+
+```bash
+python scripts/compare_instrumentation_overhead.py \
+  --reference runs/llada_native_reference.jsonl \
+  --instrumented runs/llada_trajuq.raw.jsonl \
+  --output results/llada_instrumentation_overhead.json
+```
+
+Report this overhead separately from model-generation throughput. A parity-safe logger can still be too expensive to justify at serving time.

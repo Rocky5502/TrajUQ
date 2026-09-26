@@ -341,6 +341,8 @@ def pair_state(
         return "INVALID"
     if metrics.get("protocol") != "trajuq_repeated_sampling_baseline_v2":
         return "INVALID"
+    if int(metrics.get("sample_count", -1)) != 5:
+        return "INVALID"
     if expected_ids is not None and int(metrics.get("n_test", -1)) != len(expected_ids):
         return "INVALID"
 

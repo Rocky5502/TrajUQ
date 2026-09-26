@@ -150,6 +150,7 @@ implementation:
       - scripts/verify_cpu.ps1
       - scripts/verify_cpu.sh
       - scripts/freeze_preprimary_windows.ps1
+      - scripts/freeze_preprimary.sh
       - .github/workflows/ci.yml
   - id: clean_checkout_provenance
     label: "Clean-checkout provenance guards from pre-primary freeze through frozen execution"
@@ -184,7 +185,7 @@ execution_gates:
     label: "Clean-commit CPU verification suite"
     stage: pre_primary
     issue: 6
-    action: "On Windows, run scripts/freeze_preprimary_windows.ps1 from a clean commit; it runs CPU verification, writes the commit-bound revision ledger, re-checks worktree cleanliness, refreshes project status, and exports dist/trajuq_preprimary_handoff.zip. On Linux/macOS, run scripts/verify_cpu.sh and then scripts/resolve_experiment_revisions.py without changing commits."
+    action: "Run scripts/freeze_preprimary_windows.ps1 on Windows or bash scripts/freeze_preprimary.sh on Linux/macOS from a clean commit. Both run CPU verification, write the commit-bound revision ledger, re-check worktree cleanliness, refresh project status, and export dist/trajuq_preprimary_handoff.zip."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
   - id: revision_ledger

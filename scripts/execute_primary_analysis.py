@@ -217,6 +217,54 @@ def validate_plan_provenance(
         inputs = cell.get("inputs", {})
         for partition in ("calibration", "test"):
             spec = inputs.get(partition, {})
+
+            source_input = Path(str(spec.get("source_input", "")))
+            expected_source_hash = str(spec.get("source_input_sha256", ""))
+            raw = Path(str(spec.get("raw_path", "")))
+            expected_raw_hash = str(spec.get("raw_sha256", ""))
+            raw_audit = Path(str(spec.get("raw_audit_path", "")))
+            expected_raw_audit_hash = str(spec.get("raw_audit_sha256", ""))
+
+            for bound_name, path, expected_hash in (
+                ("source input", source_input, expected_source_hash),
+                ("raw input", raw, expected_raw_hash),
+                ("raw audit", raw_audit, expected_raw_audit_hash),
+            ):
+                if not path.exists() or not expected_hash:
+                    failures.append(
+                        f"{label} {partition}: bound {bound_name} missing"
+                    )
+                    continue
+                if sha256_file(path) != expected_hash:
+                    failures.append(
+                        f"{label} {partition}: {bound_name} hash differs from plan"
+                    )
+
+            if raw_audit.exists():
+                try:
+                    raw_audit_payload = json.loads(
+                        raw_audit.read_text(encoding="utf-8")
+                    )
+                except (OSError, json.JSONDecodeError):
+                    failures.append(
+                        f"{label} {partition}: raw audit is invalid JSON"
+                    )
+                else:
+                    if (
+                        raw_audit_payload.get("protocol")
+                        != "trajuq_run_audit_v1"
+                        or raw_audit_payload.get("status") != "PASS"
+                        or raw_audit_payload.get("git_clean") is not True
+                        or raw_audit_payload.get("git_commit") != expected_commit
+                        or raw_audit_payload.get("stage") != "raw"
+                        or str(raw_audit_payload.get("sha256", ""))
+                        != expected_raw_hash
+                    ):
+                        failures.append(
+                            f"{label} {partition}: raw audit is not a "
+                            "clean frozen hash-bound PASS"
+                        )
+
             scored = Path(str(spec.get("path", "")))
             expected_scored_hash = str(spec.get("sha256", ""))
             audit = Path(str(spec.get("audit_path", "")))

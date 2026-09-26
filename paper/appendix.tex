@@ -232,6 +232,38 @@ report the number of cells with positive, zero, and negative point improvement
 so that a macro gain cannot hide systematic regressions.
 
 
+\section{Additional Aggregate Result Figures}
+
+The following figures are generated only from complete frozen aggregate artifacts.
+They are conditionally included so the pre-results manuscript remains compilable before the experiment artifacts exist.
+
+\IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}
+\caption{Held-out AUROC improvement of \method over the decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty.}
+\label{fig:primary-auroc-matrix}
+\end{figure*}
+}{}
+
+\IfFileExists{figures/generated/family_macro_auroc_improvement.pdf}{
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{figures/generated/family_macro_auroc_improvement.pdf}
+\caption{Equal-dataset-weight macro AUROC improvement within each primary diffusion-model family.}
+\label{fig:family-macro-auroc}
+\end{figure}
+}{}
+
+\IfFileExists{figures/generated/adaptive_accuracy_cost_tradeoff.pdf}{
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/generated/adaptive_accuracy_cost_tradeoff.pdf}
+\caption{Adaptive accuracy--cost trade-off for the frozen 25\%, 50\%, and 75\% second-pass selection caps, with fixed base and refined budgets shown for context.}
+\label{fig:adaptive-tradeoff}
+\end{figure}
+}{}
+
 \section{Hybrid AR/Diffusion Diagnostic}
 
 For the FLARE/HybridDiffusion extension, AR and diffusion outputs must originate

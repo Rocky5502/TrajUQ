@@ -81,6 +81,7 @@ def sha256_file(path: Path) -> str:
             h.update(block)
     return h.hexdigest()
 
+
 def git_head() -> str | None:
     try:
         return subprocess.check_output(

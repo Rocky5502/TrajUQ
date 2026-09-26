@@ -134,6 +134,11 @@ def test_analysis_provenance_rejects_scored_input_drift(
         ],
     }
     monkeypatch.setattr(execute_primary_analysis, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_primary_analysis,
+        "git_status_porcelain",
+        lambda: "",
+    )
 
     assert validate_plan_provenance(plan) == []
 

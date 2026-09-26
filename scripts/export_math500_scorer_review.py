@@ -113,7 +113,10 @@ def main() -> None:
     lines = [
         "# MATH-500 scorer manual review",
         "",
-        "Calibration/development review only. Do not use this sheet to hand-edit final test labels.",
+        (
+            "Calibration/development review only. Do not use this sheet to "
+            "hand-edit final test labels."
+        ),
         "",
         f"- scored artifact: {scored_path}",
         f"- scored SHA-256: {sha256_file(scored_path)}",

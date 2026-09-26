@@ -134,7 +134,16 @@ def main() -> None:
                 raise RuntimeError("Hugging Face returned no SHA")
             model_results.append(
                 {
-                    **{k: spec[k] for k in ("group", "adapter", "model_id", "requested_revision", "template")},
+                    **{
+                        key: spec[key]
+                        for key in (
+                            "group",
+                            "adapter",
+                            "model_id",
+                            "requested_revision",
+                            "template",
+                        )
+                    },
                     "resolved_sha": str(sha),
                 }
             )

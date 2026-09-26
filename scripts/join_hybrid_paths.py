@@ -68,7 +68,10 @@ def generation(row: dict) -> tuple[str, list[int] | None]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Join frozen AR and diffusion outputs into pre-outcome disagreement diagnostics."
+        description=(
+            "Join frozen AR and diffusion outputs into pre-outcome "
+            "disagreement diagnostics."
+        )
     )
     parser.add_argument("--ar", required=True)
     parser.add_argument("--diffusion", required=True)

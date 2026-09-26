@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import math
+import subprocess
 from pathlib import Path
 
 from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
@@ -79,6 +80,28 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: f.read(1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
 
 
 def main() -> None:
@@ -252,7 +275,13 @@ def main() -> None:
             if not revision:
                 failures.append(f"row {i}: model revision is not pinned")
 
+    commit = git_head()
+    clean = git_clean()
+
     audit = {
+        "protocol": "trajuq_run_audit_v1",
+        "git_commit": commit,
+        "git_clean": clean,
         "file": str(path),
         "stage": stage,
         "sha256": sha256_file(path),

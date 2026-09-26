@@ -10,9 +10,25 @@ from scripts.submission_readiness import (
 )
 
 
+def make_render_sources(tmp_path):
+    sources = {}
+    for name in ("primary", "claim_gate", "repeated", "adaptive"):
+        path = tmp_path / f"{name}.json"
+        path.write_text('{"ok": true}', encoding="utf-8")
+        sources[name] = {
+            "path": str(path),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+    config = tmp_path / "primary.yaml"
+    config.write_text("experiment: {}\n", encoding="utf-8")
+    sources["primary_config"] = {
+        "path": str(config),
+        "sha256": hashlib.sha256(config.read_bytes()).hexdigest(),
+    }
+    return sources
+
+
 def test_generated_results_hash_gate_passes(tmp_path):
-    source = tmp_path / "macro.json"
-    source.write_text('{"ok": true}', encoding="utf-8")
     generated = tmp_path / "generated_results.tex"
     generated.write_text(
         "\\newcommand{\\PrimaryTrajAUROC}{0.700}\n",
@@ -26,14 +42,9 @@ def test_generated_results_hash_gate_passes(tmp_path):
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),
-                "sources": {
-                    "primary": {
-                        "path": str(source),
-                        "sha256": hashlib.sha256(
-                            source.read_bytes()
-                        ).hexdigest(),
-                    }
-                },
+                "sources": make_render_sources(tmp_path),
+                "macro_count": 1,
+                "rq1_claim_decision": "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
             }
         ),
         encoding="utf-8",
@@ -44,13 +55,12 @@ def test_generated_results_hash_gate_passes(tmp_path):
 
 
 def test_generated_results_hash_gate_rejects_changed_source(tmp_path):
-    source = tmp_path / "macro.json"
-    source.write_text('{"ok": true}', encoding="utf-8")
     generated = tmp_path / "generated_results.tex"
     generated.write_text(
         "\\newcommand{\\PrimaryTrajAUROC}{0.700}\n",
         encoding="utf-8",
     )
+    sources = make_render_sources(tmp_path)
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
         json.dumps(
@@ -59,18 +69,14 @@ def test_generated_results_hash_gate_rejects_changed_source(tmp_path):
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),
-                "sources": {
-                    "primary": {
-                        "path": str(source),
-                        "sha256": hashlib.sha256(
-                            source.read_bytes()
-                        ).hexdigest(),
-                    }
-                },
+                "sources": sources,
+                "macro_count": 1,
+                "rq1_claim_decision": "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
             }
         ),
         encoding="utf-8",
     )
+    source = tmp_path / "primary.json"
     source.write_text('{"ok": false}', encoding="utf-8")
 
     result = verify_generated_results(manifest, generated)
@@ -247,3 +253,30 @@ def test_submission_checkout_rejects_dirty_worktree(monkeypatch):
     assert result["status"] == "FAIL"
     assert result["git_clean"] is False
     assert any("worktree is dirty" in item for item in result["failures"])
+
+
+def test_generated_results_gate_rejects_missing_required_sources(tmp_path):
+    generated = tmp_path / "generated_results.tex"
+    generated.write_text(
+        "\\newcommand{\\PrimaryTrajAUROC}{0.700}\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_paper_results_render_v1",
+                "output_sha256": hashlib.sha256(
+                    generated.read_bytes()
+                ).hexdigest(),
+                "sources": {},
+                "macro_count": 1,
+                "rq1_claim_decision": "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = verify_generated_results(manifest, generated)
+    assert result["status"] == "FAIL"
+    assert any("missing required sources" in item for item in result["failures"])

@@ -30,6 +30,14 @@ def make_root(tmp_path: Path) -> Path:
         "primary runbook\n",
         encoding="utf-8",
     )
+    (root / "docs" / "A100_EXECUTION.md").write_text(
+        "a100 runbook\n",
+        encoding="utf-8",
+    )
+    (root / "docs" / "RESULT_ARTIFACT_MAP.md").write_text(
+        "result artifact map\n",
+        encoding="utf-8",
+    )
     (root / "paper" / "generated_results.tex").write_text(
         "% generated results placeholder\n",
         encoding="utf-8",
@@ -80,6 +88,8 @@ def test_bundle_excludes_raw_jsonl_runs_and_processed_data(tmp_path, monkeypatch
     assert "runs/raw.json" not in names
     assert "data/processed/dataset.json" not in names
     assert "NEW_CHAT_MASTER_PROMPT.md" in names
+    assert "docs/A100_EXECUTION.md" in names
+    assert "docs/RESULT_ARTIFACT_MAP.md" in names
     assert "MANIFEST.json" in names
 
 

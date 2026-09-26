@@ -6,13 +6,16 @@ tracked experiment code, switch commits, regenerate frozen data after observing
 model outcomes, or weaken a failed gate.
 
 The target machine for this path is a Linux server with an NVIDIA A100 80GB.
-Python >=3.10 is required; Python 3.11 is recommended when available.
+Python >=3.10 is required; Python 3.11 is recommended when available. Always
+replace `<EXACT_FREEZE_SHA_FROM_HANDOFF>` with the exact commit nominated in
+the current project handoff; do not run the experiment from a moving branch.
 
 ## 0. Fresh checkout and Python environment
 
 ```bash
 git clone https://github.com/Rocky5502/TrajUQ.git
 cd TrajUQ
+git checkout <EXACT_FREEZE_SHA_FROM_HANDOFF>
 git status --porcelain
 git rev-parse HEAD
 

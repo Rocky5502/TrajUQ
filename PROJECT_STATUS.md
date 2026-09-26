@@ -85,10 +85,14 @@ particular, the following are implemented and versioned:
   remaining SDAR/Dream parity gates, and the MATH-500 scorer pilot, so the full
   pre-primary GPU path can run on one frozen Linux checkout without weakening
   the Windows evidence contract;
-- a canonical `docs/A100_EXECUTION.md` runbook that carries the A100 server
-  from environment validation through the immutable freeze, pre-primary gates,
-  18-cell execution, RQ2/RQ3 follow-ons, and artifact-derived paper rendering
-  without regenerating already-observed frozen data.
+- a canonical `docs/A100_EXECUTION.md` runbook plus
+  `scripts/a100_campaign_linux.sh`, which preserves both human-review stop
+  points and can resumably execute primary -> analysis -> RQ2 -> RQ3 -> paper
+  after primary readiness PASS;
+- a deterministic anonymous Overleaf packager pinned to the official ACL style
+  commit, with identity/path scanning and an internal SHA-256 source manifest;
+- artifact-derived paper-state language so pre-experiment disclaimers disappear
+  automatically only after complete frozen results are rendered.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:
@@ -297,10 +301,11 @@ bash scripts/freeze_preprimary.sh
 ~~~
 
 For the NVIDIA A100 80GB server, follow `docs/A100_EXECUTION.md` as the
-canonical copy/paste path. Both freeze wrappers enforce one clean experiment
-commit and export the private pre-primary handoff. Then follow
-docs/PILOT_RUNBOOK.md for detailed first-gate rationale and
-docs/PRIMARY_MATRIX_RUNBOOK.md after readiness passes.
+canonical copy/paste path. The guarded campaign shortcut is
+`scripts/a100_campaign_linux.sh`: use `pilot`, complete the human pilot
+attestation, use `parity-math`, complete the MATH-500 attestation, require
+`readiness` PASS, then use `all-after-readiness`. Both freeze wrappers
+enforce one clean experiment commit and export the private pre-primary handoff.
 
 ## New-chat continuation prompt
 

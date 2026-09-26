@@ -134,7 +134,15 @@ The hosted Actions job is currently failing before runner allocation, so Windows
 PowerShell -ExecutionPolicy Bypass -File scripts/verify_cpu.ps1
 ```
 
-This runs compile checks, Ruff, pytest, metric smoke, and the leak-safe synthetic end-to-end pipeline. It does not replace GPU model parity.
+Linux/macOS:
+
+```bash
+bash scripts/verify_cpu.sh
+```
+
+Both local verification paths run compile checks, Ruff, pytest, metric smoke,
+the leak-safe synthetic end-to-end pipeline, the pinned MATH-500 scorer audit,
+and the paper anonymity audit. They do not replace GPU model parity.
 
 ## Prepare a frozen benchmark pair
 

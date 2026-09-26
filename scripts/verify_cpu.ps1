@@ -23,6 +23,7 @@ Run-Step "Ruff" { & $Python -m ruff check src tests scripts }
 Run-Step "Pytest" { & $Python -m pytest -q }
 Run-Step "Metric smoke" { & $Python scripts/smoke_metrics.py }
 Run-Step "End-to-end leak-safe smoke" { & $Python scripts/smoke_end_to_end.py --output-dir results/smoke_e2e_local }
+Run-Step "MATH-500 scorer audit" { & $Python scripts/audit_math500_scorer.py --output results/math500_scorer_audit.json }
 Run-Step "Paper anonymity audit" { & $Python scripts/audit_paper.py }
 
 Write-Host ""

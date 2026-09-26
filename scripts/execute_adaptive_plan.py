@@ -95,6 +95,58 @@ def valid_jsonl(path: Path) -> bool:
     return bool(rows)
 
 
+def expected_input_ids(spec: dict[str, Any]) -> list[str]:
+    path = Path(str(spec["input"]))
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("id", "")) for row in rows]
+    if not rows:
+        raise ValueError(f"adaptive input is empty: {path}")
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"adaptive input contains a row without id: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"adaptive input contains duplicate ids: {path}")
+    return ids
+
+
+def artifact_example_ids(path: Path) -> list[str]:
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if not rows:
+        raise ValueError(f"adaptive artifact is empty: {path}")
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"adaptive artifact has a row without example_id: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"adaptive artifact has duplicate example_ids: {path}")
+    return ids
+
+
+def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
+    if not path.exists():
+        return "MISSING"
+    expected = expected_input_ids(spec)
+    try:
+        observed = artifact_example_ids(path)
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        return "INVALID"
+    if observed == expected:
+        return "COMPLETE"
+    if len(observed) < len(expected) and observed == expected[: len(observed)]:
+        return "PREFIX"
+    return "INVALID"
+
+
+def exact_prediction_coverage(
+    path: Path,
+    expected_ids: list[str],
+) -> bool:
+    if not path.exists():
+        return False
+    try:
+        return artifact_example_ids(path) == expected_ids
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        return False
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -135,6 +187,22 @@ def validate_plan_provenance(
     for cell in plan.get("cells", []):
         label = str(cell.get("cell", "<unknown>"))
         provenance = cell.get("provenance", {})
+        for partition_name, spec_key in (
+            ("calibration", "calibration_base"),
+            ("test", "test_base"),
+        ):
+            base_spec = cell.get(spec_key, {})
+            base_input = Path(str(base_spec.get("input", "")))
+            base_input_hash = str(base_spec.get("input_sha256", ""))
+            if not base_input.exists() or not base_input_hash:
+                failures.append(
+                    f"{label} {partition_name}: adaptive base input is missing"
+                )
+            elif sha256_file(base_input) != base_input_hash:
+                failures.append(
+                    f"{label} {partition_name}: adaptive base input hash drifted"
+                )
+
         for partition in ("calibration", "test"):
             spec = provenance.get(partition, {})
             generation_input = Path(str(spec.get("generation_input", "")))
@@ -205,20 +273,32 @@ def base_partition_state(
 ) -> dict[str, Any]:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
+    raw_state = artifact_id_state(raw, spec)
+    scored_state = artifact_id_state(scored, spec)
     raw_ok = audit_passes(raw, "raw", expected_commit)
     scored_ok = audit_passes(scored, "scored", expected_commit)
     return {
         "raw_output": str(raw),
         "scored_output": str(scored),
         "raw_exists": raw.exists(),
+        "raw_id_state": raw_state,
         "raw_audit_pass": raw_ok,
         "scored_exists": scored.exists(),
+        "scored_id_state": scored_state,
         "scored_audit_pass": scored_ok,
-        "complete": bool(raw_ok and scored_ok),
+        "complete": bool(
+            raw_state == "COMPLETE"
+            and raw_ok
+            and scored_state == "COMPLETE"
+            and scored_ok
+        ),
     }
 
 
-def evaluation_state(spec: dict[str, Any]) -> str:
+def evaluation_state(
+    spec: dict[str, Any],
+    expected_ids: list[str] | None = None,
+) -> str:
     result = Path(str(spec["result"]))
     predictions = Path(str(spec["predictions"]))
     exists = [result.exists(), predictions.exists()]
@@ -226,9 +306,14 @@ def evaluation_state(spec: dict[str, Any]) -> str:
         return "MISSING"
     if not all(exists):
         return "PARTIAL"
-    if valid_json(result) and valid_jsonl(predictions):
-        return "COMPLETE"
-    return "INVALID"
+    if not valid_json(result) or not valid_jsonl(predictions):
+        return "INVALID"
+    if (
+        expected_ids is not None
+        and not exact_prediction_coverage(predictions, expected_ids)
+    ):
+        return "INVALID"
+    return "COMPLETE"
 
 
 def macro_state(spec: dict[str, Any], expected_cells: int) -> str:
@@ -256,8 +341,15 @@ def cell_state(
         cell["calibration_base"], expected_commit
     )
     test = base_partition_state(cell["test_base"], expected_commit)
+    try:
+        expected_test_ids = expected_input_ids(cell["test_base"])
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        expected_test_ids = []
     evaluations = {
-        key: evaluation_state(cell["evaluations"][key])
+        key: evaluation_state(
+            cell["evaluations"][key],
+            expected_test_ids,
+        )
         for key in fraction_keys
     }
     return {
@@ -389,11 +481,21 @@ def command_needed(
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
-        return not raw.exists()
+        state = artifact_id_state(raw, spec)
+        if state == "INVALID":
+            raise ValueError(
+                f"adaptive raw artifact is not an exact prefix of the frozen input: {raw}"
+            )
+        return state != "COMPLETE"
     if step == "audit_raw":
         return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
-        return not scored.exists()
+        state = artifact_id_state(scored, spec)
+        if state in {"PREFIX", "INVALID"}:
+            raise ValueError(
+                f"partial/invalid adaptive scored artifact requires inspection: {scored}"
+            )
+        return state == "MISSING"
     if step == "audit_scored":
         return not audit_passes(scored, "scored", expected_commit)
     raise ValueError(step)

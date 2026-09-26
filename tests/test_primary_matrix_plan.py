@@ -52,3 +52,14 @@ def test_primary_config_is_three_by_six():
     cfg = yaml.safe_load(Path("configs/experiments/primary.yaml").read_text(encoding="utf-8"))
     assert len(cfg["models"]["primary"]) == 3
     assert len(cfg["datasets"]) == 6
+
+
+def test_primary_planner_revalidates_split_and_revision_provenance():
+    text = Path("scripts/plan_primary_matrix.py").read_text(encoding="utf-8")
+
+    assert "audit_split_pair(cal, test, manifest)" in text
+    assert "saved split audit is stale" in text
+    assert "prepared split revision differs from revision ledger" in text
+    assert '"revision_ledger_sha256"' in text
+    assert '"split_manifest_sha256"' in text
+    assert '"split_audit_sha256"' in text

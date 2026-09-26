@@ -191,6 +191,14 @@ def main() -> None:
                 or parity.get(hash_key) != sha256_file(bound_path)
             ):
                 failures.append(f"LLaDA parity {label} source hash is stale")
+        parity_instrumented = Path(str(parity.get("instrumented", "")))
+        parity_audit_ok, _ = run_audit_passes(
+            parity_instrumented, "raw", commit
+        )
+        if not parity_audit_ok:
+            failures.append(
+                "LLaDA parity instrumented run audit is missing, stale, or not PASS"
+            )
 
     if quality:
         if quality.get("git_clean") is not True:

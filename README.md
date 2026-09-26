@@ -289,9 +289,22 @@ python scripts/evaluate_repeated_sampling.py \
   --test-target runs/llada_gsm8k_test.scored.jsonl \
   --test-sample runs/repeated/llada_gsm8k_test/seed-2027.raw.jsonl \
   --test-sample runs/repeated/llada_gsm8k_test/seed-2028.raw.jsonl \
-  --output results/llada_gsm8k_repeated_sampling.json
+  --output results/llada_gsm8k_repeated_sampling.json \
+  --predictions-output results/llada_gsm8k_repeated_predictions.jsonl
 
-The frozen primary repeated-sampling baseline uses five seeds (2027--2031); the shortened command above only illustrates the repeated flag syntax.
+The frozen primary repeated-sampling baseline requires exactly five seeds
+(2027--2031) by default. The evaluator verifies unique/matched seeds, identical
+generation settings between calibration and test, raw outcome isolation, model
+identity, prompt hashes, and reports the auxiliary repeated-generation wall
+time. After both prediction artifacts exist, compare the expensive baseline
+directly with TrajUQ using:
+
+```bash
+python scripts/compare_repeated_to_trajuq.py \
+  --trajuq-predictions results/llada_gsm8k_predictions.jsonl \
+  --repeated-predictions results/llada_gsm8k_repeated_predictions.jsonl \
+  --output results/llada_gsm8k_trajuq_vs_repeated.json
+```
 
 # Training-free raw-risk sensitivity:
 python scripts/compare_methods.py \

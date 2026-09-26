@@ -84,7 +84,11 @@ particular, the following are implemented and versioned:
 - guarded Linux/A100 wrappers for the LLaDA prepare/parity/pilot path,
   remaining SDAR/Dream parity gates, and the MATH-500 scorer pilot, so the full
   pre-primary GPU path can run on one frozen Linux checkout without weakening
-  the Windows evidence contract.
+  the Windows evidence contract;
+- a canonical `docs/A100_EXECUTION.md` runbook that carries the A100 server
+  from environment validation through the immutable freeze, pre-primary gates,
+  18-cell execution, RQ2/RQ3 follow-ons, and artifact-derived paper rendering
+  without regenerating already-observed frozen data.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:
@@ -252,9 +256,10 @@ Linux/macOS:
 bash scripts/freeze_preprimary.sh
 ~~~
 
-Both freeze wrappers enforce one clean experiment commit and export the private
-pre-primary handoff. Then follow
-docs/PILOT_RUNBOOK.md for the first GPU gate and
+For the NVIDIA A100 80GB server, follow `docs/A100_EXECUTION.md` as the
+canonical copy/paste path. Both freeze wrappers enforce one clean experiment
+commit and export the private pre-primary handoff. Then follow
+docs/PILOT_RUNBOOK.md for detailed first-gate rationale and
 docs/PRIMARY_MATRIX_RUNBOOK.md after readiness passes.
 
 ## New-chat continuation prompt

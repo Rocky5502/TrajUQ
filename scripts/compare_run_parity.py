@@ -100,6 +100,18 @@ def git_head() -> str | None:
         return None
 
 
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
 def token_ids(row: dict) -> list[int] | None:
     generation = row.get("generation", {})
     ids = generation.get("token_ids")
@@ -335,6 +347,18 @@ def main() -> None:
     )
     provenance_errors.extend(run_provenance_errors)
 
+    commit = git_head()
+    clean = git_clean()
+    environment_errors: list[dict] = []
+    if args.require_provenance and not commit:
+        environment_errors.append(
+            {"reason": "git_commit_unavailable"}
+        )
+    if args.require_provenance and clean is not True:
+        environment_errors.append(
+            {"reason": "git_worktree_not_clean", "git_clean": clean}
+        )
+
     status = (
         "PASS"
         if shared
@@ -342,11 +366,13 @@ def main() -> None:
         and not missing_instrumented
         and not output_mismatches
         and not provenance_errors
+        and not environment_errors
         else "FAIL"
     )
     payload = {
         "protocol": "trajuq_exact_parity_v3",
-        "git_commit": git_head(),
+        "git_commit": commit,
+        "git_clean": clean,
         "reference": args.reference,
         "reference_sha256": sha256_file(args.reference),
         "instrumented": args.instrumented,
@@ -361,6 +387,7 @@ def main() -> None:
         "mismatches": output_mismatches[:50],
         "provenance_mismatch_count": len(provenance_errors),
         "provenance_mismatches": provenance_errors[:100],
+        "environment_errors": environment_errors,
         "status": status,
     }
 

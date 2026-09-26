@@ -186,6 +186,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--n-boot", type=int, default=2000)
     parser.add_argument("--output", default=None)
+    parser.add_argument("--predictions-output", default=None)
     parser.add_argument(
         "--cost-mode",
         choices=["selective_second_pass_rerun"],
@@ -263,7 +264,9 @@ def main() -> None:
     }
 
     payload = {
+        "protocol": "trajuq_adaptive_evaluation_v2",
         "risk_source": "trajectory_plus_decision_logistic",
+        "max_refine_fraction": float(args.max_refine_fraction),
         "execution_semantics": args.cost_mode,
         "policy_threshold_source": "out_of_fold_calibration_predictions",
         "crossfit_folds_used": folds_used,
@@ -290,6 +293,48 @@ def main() -> None:
         out = Path(args.output)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(rendered + "\n", encoding="utf-8")
+
+    if args.predictions_output:
+        from pathlib import Path
+
+        pred_out = Path(args.predictions_output)
+        pred_out.parent.mkdir(parents=True, exist_ok=True)
+        selected_mask = test_risk > float(selected.threshold)
+        chosen = np.where(selected_mask, test_refined, test_base)
+
+        wall_base, wall_refined = test_costs["wall_time_seconds"]
+        fwd_base, fwd_refined = test_costs["model_forward_evaluations"]
+
+        with pred_out.open("w", encoding="utf-8") as handle:
+            for idx, item_id in enumerate(test_ids):
+                row = {
+                    "example_id": item_id,
+                    "y_error_base": int(y_test[idx]),
+                    "base_correct": bool(test_base[idx]),
+                    "refined_correct": bool(test_refined[idx]),
+                    "risk": float(test_risk[idx]),
+                    "threshold": float(selected.threshold),
+                    "max_refine_fraction": float(args.max_refine_fraction),
+                    "selected": bool(selected_mask[idx]),
+                    "chosen_correct": bool(chosen[idx]),
+                    "base_compute": float(args.base_compute),
+                    "refined_compute": float(args.refined_compute),
+                    "execution_semantics": args.cost_mode,
+                    "base_wall_time_seconds": (
+                        float(wall_base[idx]) if wall_base is not None else None
+                    ),
+                    "refined_wall_time_seconds": (
+                        float(wall_refined[idx]) if wall_refined is not None else None
+                    ),
+                    "base_model_forward_evaluations": (
+                        float(fwd_base[idx]) if fwd_base is not None else None
+                    ),
+                    "refined_model_forward_evaluations": (
+                        float(fwd_refined[idx]) if fwd_refined is not None else None
+                    ),
+                }
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+        print(f"[TrajUQ] adaptive predictions -> {pred_out}")
 
 
 if __name__ == "__main__":

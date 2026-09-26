@@ -78,6 +78,103 @@ def output_valid(path: Path) -> bool:
     return path.exists() and path.stat().st_size > 0
 
 
+def artifact_example_ids(path: Path) -> list[str]:
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if not rows:
+        raise ValueError(f"artifact is empty: {path}")
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"artifact has a row without example_id: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"artifact has duplicate example_ids: {path}")
+    return ids
+
+
+def expected_partition_ids(cell: dict[str, Any], partition: str) -> list[str]:
+    path = Path(str(cell["inputs"][partition]["path"]))
+    return artifact_example_ids(path)
+
+
+def semantic_output_valid(
+    cell: dict[str, Any],
+    key: str,
+    path: Path,
+) -> bool:
+    if not output_valid(path):
+        return False
+
+    try:
+        n_cal = len(expected_partition_ids(cell, "calibration"))
+        test_ids = expected_partition_ids(cell, "test")
+    except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError):
+        return False
+    n_test = len(test_ids)
+
+    if key == "predictions":
+        try:
+            return artifact_example_ids(path) == test_ids
+        except (OSError, json.JSONDecodeError, ValueError, TypeError):
+            return False
+
+    if path.suffix != ".json":
+        return output_valid(path)
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    if key == "metrics":
+        return (
+            payload.get("protocol") == "trajuq_heldout_evaluation_v1"
+            and int(
+                payload.get("decision_entropy_baseline", {}).get("n_calibration", -1)
+            )
+            == n_cal
+            and int(
+                payload.get("decision_entropy_baseline", {}).get("n_test", -1)
+            )
+            == n_test
+            and int(
+                payload.get("trajectory_plus_decision_logistic", {}).get(
+                    "n_calibration",
+                    -1,
+                )
+            )
+            == n_cal
+            and int(
+                payload.get("trajectory_plus_decision_logistic", {}).get(
+                    "n_test",
+                    -1,
+                )
+            )
+            == n_test
+        )
+    if key == "nested_bootstrap":
+        return (
+            payload.get("protocol")
+            == "trajuq_nested_calibrated_comparison_v1"
+            and int(payload.get("n_calibration", -1)) == n_cal
+            and int(payload.get("n_test", -1)) == n_test
+            and set(payload.get("metrics", {})) >= {"auroc", "auprc", "aurc"}
+        )
+    if key == "feature_ablation":
+        return (
+            payload.get("protocol") == "frozen_feature_family_ablation_v1"
+            and int(payload.get("n_calibration", -1)) == n_cal
+            and int(payload.get("n_test", -1)) == n_test
+            and payload.get("baseline") == "decision_only"
+            and bool(payload.get("groups"))
+        )
+    if key == "raw_risk_diagnostic":
+        return (
+            payload.get("protocol") == "trajuq_raw_risk_diagnostic_v1"
+            and int(payload.get("n", -1)) == n_test
+            and set(payload.get("metrics", {})) >= {"auroc", "auprc", "aurc"}
+        )
+    return True
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -173,7 +270,10 @@ def step_state(cell: dict[str, Any], output_keys: tuple[str, ...]) -> str:
         return "MISSING"
     if not all(exists):
         return "PARTIAL"
-    if all(output_valid(path) for path in paths):
+    if all(
+        semantic_output_valid(cell, key, path)
+        for key, path in zip(output_keys, paths)
+    ):
         return "COMPLETE"
     return "INVALID"
 
@@ -195,6 +295,7 @@ def cell_state(cell: dict[str, Any]) -> dict[str, Any]:
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
     claim = Path(str(plan["final_outputs"]["rq1_claim_gate"]))
+    expected_cells = int(plan.get("cell_count", 0))
 
     macro_status = "MISSING"
     if macro.exists():
@@ -204,7 +305,25 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
             payload = json.loads(macro.read_text(encoding="utf-8"))
             macro_status = (
                 "COMPLETE"
-                if payload.get("cell_set_complete") is True
+                if (
+                    payload.get("protocol")
+                    == "hierarchical_within_cell_macro_bootstrap_v1"
+                    and payload.get("cell_set_complete") is True
+                    and int(payload.get("observed_cell_count", -1))
+                    == expected_cells
+                    and int(payload.get("expected_cell_count", -1))
+                    == expected_cells
+                    and set(payload.get("macro", {})) >= {
+                        "auroc",
+                        "auprc",
+                        "brier",
+                        "nll",
+                        "ece15",
+                        "aurc",
+                        "risk50",
+                        "risk80",
+                    }
+                )
                 else "INVALID"
             )
 
@@ -216,11 +335,16 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
             payload = json.loads(claim.read_text(encoding="utf-8"))
             claim_status = (
                 "COMPLETE"
-                if payload.get("decision")
-                in {
-                    "SUPPORT_POSITIVE_RQ1_CLAIM",
-                    "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
-                }
+                if (
+                    payload.get("protocol") == "trajuq_rq1_claim_gate_v1"
+                    and payload.get("decision")
+                    in {
+                        "SUPPORT_POSITIVE_RQ1_CLAIM",
+                        "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
+                    }
+                    and isinstance(payload.get("claim_supported"), bool)
+                    and isinstance(payload.get("conditions"), dict)
+                )
                 else "INVALID"
             )
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -13,8 +14,12 @@ from trajuq.aggregation import (
     metric_value,
     oriented_improvement,
 )
-from scripts.execute_repeated_sampling import validate_plan_provenance
 from trajuq.io import read_jsonl
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_repeated_sampling import validate_plan_provenance  # noqa: E402
 
 
 AGGREGATE_METRICS = (

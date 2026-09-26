@@ -66,8 +66,9 @@ particular, the following are implemented and versioned:
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;
 - primary-readiness v2 additionally revalidates the revision-ledger dataset
-  manifest hash, the exact CPU-verification protocol/step sequence, frozen
-  MATH-500 dependency versions, and clean-checkout human attestations;
+  manifest hash, the exact CPU-verification protocol/step sequence, clean
+  pilot-quality and MATH-500 automatic-audit provenance, frozen MATH dependency
+  versions, clean-checkout human attestations, and hash-bound parity sources;
 - a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
   handoff exporter that refuses to omit required continuation context.
 
@@ -105,7 +106,8 @@ The remaining work is primarily **execution**, not paper-number invention.
    preserves a valid PASS and refuses partial/stale evidence instead of deleting
    artifacts. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
-   binds raw/scored files by SHA-256 and the frozen git commit/model SHA. Inspect
+   binds raw/scored files by SHA-256, records a clean checkout, and binds the
+   frozen git commit/model SHA. Inspect
    at least 10 exported trajectories and record the protocol-v2 human attestation
    from the same frozen clean checkout; it binds the review sheet, parity
    artifact, and pilot-quality artifact by SHA-256. See issue #1.
@@ -116,7 +118,8 @@ The remaining work is primarily **execution**, not paper-number invention.
 6. Run Dream exact parity protocol v3 at the same frozen commit/revision. On
    Windows, use `scripts/parity_remaining_windows.ps1 -Model dream` with the
    same frozen-state and non-overwrite safeguards. See issue #5.
-7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen commit,
+7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen clean
+   commit,
    then a >=25-example calibration-only MATH-500 scoring pilot, deterministic
    review sheet, and protocol-v2 human attestation bound to the audit/sheet
    hashes. On Windows, `scripts/math500_gate_windows.ps1 -Stage all` performs

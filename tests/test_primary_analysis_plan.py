@@ -1,5 +1,37 @@
-from scripts.plan_primary_analysis import main as analysis_main
+import hashlib
+import json
+from pathlib import Path
+
+from scripts.plan_primary_analysis import audit_passes, main as analysis_main
 
 
 def test_primary_analysis_planner_imports():
     assert callable(analysis_main)
+
+
+def test_primary_analysis_requires_frozen_scored_audit(tmp_path):
+    scored = tmp_path / "cell.scored.jsonl"
+    scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    digest = hashlib.sha256(scored.read_bytes()).hexdigest()
+    audit = scored.with_suffix(scored.suffix + ".audit.json")
+    audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": "frozen-commit",
+                "git_clean": True,
+                "stage": "scored",
+                "sha256": digest,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert audit_passes(scored, "frozen-commit")
+    assert not audit_passes(scored, "other-commit")
+
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    payload["git_clean"] = False
+    audit.write_text(json.dumps(payload), encoding="utf-8")
+    assert not audit_passes(scored, "frozen-commit")

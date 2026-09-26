@@ -54,6 +54,20 @@ hf auth login
 GPQA-Diamond is gated. The account used on the server must already have access
 under the upstream dataset terms.
 
+For long executions, run inside `tmux` or an equivalent persistent shell so a
+network disconnect does not terminate the campaign. The guarded convenience
+runner is:
+
+```bash
+bash scripts/a100_campaign_linux.sh status
+```
+
+It never bypasses human-review gates. The `pilot` stage stops for the manual
+10-trace review; `parity-math` requires that pilot attestation and then stops
+again for the 25-example MATH-500 review. Only after
+`results/primary_readiness.json` is protocol-v2 PASS may
+`all-after-readiness` launch the full frozen campaign.
+
 ## 1. Freeze one immutable experiment commit
 
 From a clean checkout:
@@ -77,6 +91,12 @@ repair, freeze a new commit, and regenerate affected evidence.
 ## 2. LLaDA hard parity and 50-example GSM8K pilot
 
 Run the guarded stages separately so a failed parity gate cannot be skipped:
+
+```bash
+bash scripts/a100_campaign_linux.sh pilot
+```
+
+This is equivalent to the three explicit wrapper stages:
 
 ```bash
 bash scripts/pilot_linux.sh prepare
@@ -112,7 +132,15 @@ Do not pass a flag that was not actually checked.
 
 ## 3. SDAR and Dream exact parity
 
-Still on the same clean frozen checkout:
+After the pilot manual attestation is recorded, continue on the same clean
+frozen checkout:
+
+```bash
+bash scripts/a100_campaign_linux.sh parity-math
+```
+
+This runs the remaining SDAR/Dream parity gates and the automated MATH-500
+prepare/pilot work. The underlying parity-only command remains:
 
 ```bash
 bash scripts/parity_remaining_linux.sh all
@@ -155,6 +183,12 @@ The frozen dependency gate requires `math-verify==0.9.0` and
 ## 5. Primary readiness hard gate
 
 ```bash
+bash scripts/a100_campaign_linux.sh readiness
+```
+
+The explicit commands are still:
+
+```bash
 python scripts/primary_readiness.py
 python scripts/project_status.py
 ```
@@ -163,7 +197,32 @@ Do not start the 18-cell primary matrix unless
 `results/primary_readiness.json` uses protocol
 `trajuq_primary_readiness_v2` and reports `status=PASS`.
 
-## 6. Prepare only missing primary dataset pairs
+## 6. Full post-readiness campaign
+
+Once both human attestations exist and primary readiness is PASS, the complete
+remaining frozen campaign can be resumed stage-by-stage:
+
+```bash
+bash scripts/a100_campaign_linux.sh primary
+bash scripts/a100_campaign_linux.sh analysis
+bash scripts/a100_campaign_linux.sh rq2
+bash scripts/a100_campaign_linux.sh rq3
+bash scripts/a100_campaign_linux.sh paper
+```
+
+Or run the same sequence in one guarded invocation:
+
+```bash
+bash scripts/a100_campaign_linux.sh all-after-readiness
+```
+
+The runner re-checks the clean frozen checkout and readiness before GPU stages,
+preserves already-complete audited artifacts, and aborts on any planner/executor
+failure. It does not run the optional FLARE/RQ4 diagnostic. After the final
+paper-render stage, commit the artifact-derived paper changes as a later clean
+submission commit before running `scripts/submission_readiness.py`.
+
+## 7. Prepare only missing primary dataset pairs
 
 GSM8K is already frozen by the pilot path and MATH-500 by its scorer gate. Do
 not regenerate them after seeing outcomes. Prepare only dataset pairs that are
@@ -210,7 +269,7 @@ for name in datasets:
 PY
 ```
 
-## 7. Freeze and execute the 18-cell primary matrix
+## 8. Freeze and execute the 18-cell primary matrix
 
 ```bash
 python scripts/plan_primary_matrix.py
@@ -237,7 +296,7 @@ macro, the complete 18-cell hierarchical feature-ablation macro, and the
 pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
 and must not trigger post-hoc analysis redesign.
 
-## 8. RQ2 expensive five-sample comparator
+## 9. RQ2 expensive five-sample comparator
 
 Only after primary analysis predictions exist:
 
@@ -253,7 +312,7 @@ retain valid test-time auxiliary wall-clock metadata, and the final artifact
 reports the equal-cell-weight mean extra seconds per example with target
 generation excluded. Do not report the comparator as a free baseline.
 
-## 9. RQ3 adaptive compute
+## 10. RQ3 adaptive compute
 
 After the refined primary artifacts and their audits are complete:
 
@@ -267,7 +326,7 @@ The primary selection cap is 50%; 25% and 75% are frozen sensitivities. The
 policy is selective second-pass rerun, not continuation from the base
 trajectory.
 
-## 10. Paper rendering and submission checks
+## 11. Paper rendering and submission checks
 
 Empirical values must enter the manuscript only through artifact-derived
 rendering. The renderer requires the complete primary, RQ1 gate, feature

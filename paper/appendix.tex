@@ -149,6 +149,27 @@ We freeze:
 \item full minus persistence.
 \end{enumerate}
 Every ablation is calibrated on the same calibration partition and evaluated on the same test examples.
+The table below is populated only from the complete 18-cell hierarchical ablation artifact; positive deltas always favor the listed feature view over decision-only.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Feature view & $\Delta$ AUROC & 95\% CI & $\Delta$ AUPRC & $\Delta$ AURC\\
+\midrule
+Decision + distribution & \AblationDistributionAUROCDelta & [\AblationDistributionAUROCLow, \AblationDistributionAUROCHigh] & \AblationDistributionAUPRCDelta & \AblationDistributionAURCDelta\\
+Decision + stability & \AblationStabilityAUROCDelta & [\AblationStabilityAUROCLow, \AblationStabilityAUROCHigh] & \AblationStabilityAUPRCDelta & \AblationStabilityAURCDelta\\
+Decision + persistence & \AblationPersistenceAUROCDelta & [\AblationPersistenceAUROCLow, \AblationPersistenceAUROCHigh] & \AblationPersistenceAUPRCDelta & \AblationPersistenceAURCDelta\\
+Full trajectory model & \AblationFullAUROCDelta & [\AblationFullAUROCLow, \AblationFullAUROCHigh] & \AblationFullAUPRCDelta & \AblationFullAURCDelta\\
+Full minus JS drift & \AblationNoJSAUROCDelta & [\AblationNoJSAUROCLow, \AblationNoJSAUROCHigh] & \AblationNoJSAUPRCDelta & \AblationNoJSAURCDelta\\
+Full minus revisions & \AblationNoRevisionsAUROCDelta & [\AblationNoRevisionsAUROCLow, \AblationNoRevisionsAUROCHigh] & \AblationNoRevisionsAUPRCDelta & \AblationNoRevisionsAURCDelta\\
+Full minus persistence & \AblationNoPersistenceAUROCDelta & [\AblationNoPersistenceAUROCLow, \AblationNoPersistenceAUROCHigh] & \AblationNoPersistenceAUPRCDelta & \AblationNoPersistenceAURCDelta\\
+\bottomrule
+\end{tabular}
+\caption{Frozen feature-family ablations relative to the decision-only baseline. Each value is macro-averaged with equal weight over all 18 model--dataset cells; AUROC confidence intervals use the same paired within-cell hierarchical bootstrap as the primary comparison.}
+\label{tab:feature-ablation}
+\end{table*}
 
 \section{Repeated-Sampling Baseline}
 

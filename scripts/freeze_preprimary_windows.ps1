@@ -61,12 +61,17 @@ Run-Step "Refresh project status" {
     & $Python scripts/project_status.py
 }
 
+Run-Step "Export private pre-primary handoff" {
+    & $Python scripts/export_research_handoff.py --output dist/trajuq_preprimary_handoff.zip --skip-status-refresh
+}
+
 Write-Host ""
 Write-Host "PRE-PRIMARY FREEZE PASS" -ForegroundColor Green
 Write-Host "Frozen commit: $Head"
 Write-Host "CPU artifact: results/cpu_verification.json"
 Write-Host "Revision ledger: results/revision_ledger.json"
 Write-Host "Frozen model configs: results/frozen_models/"
+Write-Host "Private handoff: dist/trajuq_preprimary_handoff.zip"
 Write-Host ""
 Write-Host "Next: do not edit tracked experiment code. Run LLaDA parity from this same commit:"
 Write-Host "  PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare"

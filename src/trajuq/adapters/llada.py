@@ -70,7 +70,7 @@ class LLaDAAdapter(BaseAdapter):
         seed: int = 2027,
         gen_length: int = 128,
         steps: int = 128,
-        block_length: int = 32,
+        block_length: int = 128,
         temperature: float = 0.0,
         cfg_scale: float = 0.0,
         remasking: str = "low_confidence",

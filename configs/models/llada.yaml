@@ -7,7 +7,7 @@ device: cuda
 generation:
   gen_length: 128
   steps: 128
-  block_length: 32
+  block_length: 128
   temperature: 0.0
   cfg_scale: 0.0
   remasking: low_confidence

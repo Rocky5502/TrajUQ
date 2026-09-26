@@ -38,7 +38,7 @@ def main() -> None:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--dtype", default="bfloat16")
     parser.add_argument("--steps", type=int, default=128)
-    parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument("--max-new-tokens", type=int, default=128)\n    parser.add_argument("--block-length", type=int, default=128)
     parser.add_argument("--mask-id", type=int, default=None)
     args = parser.parse_args()
 
@@ -49,6 +49,13 @@ def main() -> None:
     done = existing_ids(args.output)
     adapter = build_adapter(args.adapter, args.model, args.device, args.dtype, args.mask_id)
 
+    torch = None
+    try:
+        import torch as _torch
+        torch = _torch
+    except ImportError:
+        pass
+
     for i, row in enumerate(rows):
         example_id = str(row["id"])
         if example_id in done:
@@ -56,6 +63,9 @@ def main() -> None:
             continue
 
         prompt = row["prompt"]
+        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+            torch.cuda.synchronize()
         start = time.perf_counter()
         if args.adapter == "dream":
             result = adapter.generate(
@@ -71,7 +81,13 @@ def main() -> None:
                 steps=args.steps,
                 gen_length=args.max_new_tokens,
             )
+        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+            torch.cuda.synchronize()
         result.metadata["wall_time_seconds"] = time.perf_counter() - start
+        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+            result.metadata["peak_gpu_memory_bytes"] = int(torch.cuda.max_memory_allocated())
+            result.metadata["gpu_name"] = torch.cuda.get_device_name()
+            result.metadata["torch_version"] = torch.__version__
         result.metadata["pid"] = os.getpid()
 
         record = ExampleRecord(

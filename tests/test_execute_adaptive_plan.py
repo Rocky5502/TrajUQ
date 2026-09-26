@@ -129,7 +129,11 @@ def test_adaptive_evaluation_rejects_incomplete_prediction_coverage(tmp_path):
     result.write_text("{}", encoding="utf-8")
     predictions.write_text('{"example_id":"a"}\n', encoding="utf-8")
 
-    spec = {"result": str(result), "predictions": str(predictions)}
+    spec = {
+        "result": str(result),
+        "predictions": str(predictions),
+        "max_refine_fraction": 0.5,
+    }
     assert evaluation_state(spec, ["a", "b"]) == "INVALID"
 
 
@@ -158,7 +162,17 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
 
     result = tmp_path / "cap.json"
     predictions = tmp_path / "cap.predictions.jsonl"
-    result.write_text("{}", encoding="utf-8")
+    result.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_adaptive_evaluation_v2",
+                "execution_semantics": "selective_second_pass_rerun",
+                "max_refine_fraction": 0.5,
+                "n_test": 1,
+            }
+        ),
+        encoding="utf-8",
+    )
     predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
 
     macro = tmp_path / "macro.json"
@@ -169,6 +183,8 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
             "cap_050": {
                 "output": str(macro),
                 "argv": ["python", "aggregate.py"],
+                "max_refine_fraction": 0.5,
+                "primary": True,
             }
         },
         "cells": [
@@ -190,6 +206,7 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
                     "cap_050": {
                         "result": str(result),
                         "predictions": str(predictions),
+                        "max_refine_fraction": 0.5,
                     }
                 },
             }
@@ -203,9 +220,14 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
     macro.write_text(
         json.dumps(
             {
+                "protocol": "trajuq_adaptive_macro_v1",
+                "execution_semantics": "selective_second_pass_rerun",
                 "cell_set_complete": True,
+                "expected_cells": 1,
                 "observed_cells": 1,
                 "fraction_key": "cap_050",
+                "max_refine_fraction": 0.5,
+                "is_primary_fraction": True,
             }
         ),
         encoding="utf-8",

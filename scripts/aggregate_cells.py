@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+from scripts.execute_primary_analysis import validate_plan_provenance
 from trajuq.aggregation import (
     PredictionCell,
     hierarchical_macro_bootstrap,
@@ -40,6 +41,18 @@ def parse_cell(value: str) -> tuple[str, str]:
     if not label or not path:
         raise argparse.ArgumentTypeError("--cell label and path must be non-empty")
     return label, path
+
+
+def jsonl_example_ids(path: Path) -> list[str]:
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if not rows:
+        raise ValueError(f"empty JSONL artifact: {path}")
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"missing example_id in JSONL artifact: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"duplicate example IDs in JSONL artifact: {path}")
+    return ids
 
 
 def load_cell(label: str, path: str) -> PredictionCell:
@@ -101,6 +114,14 @@ def main() -> None:
         help="Frozen primary matrix used to reject selective cell omission.",
     )
     parser.add_argument(
+        "--analysis-plan",
+        default="results/primary_analysis_plan.json",
+        help=(
+            "Frozen primary-analysis plan used to bind prediction artifacts "
+            "to exact scored test targets."
+        ),
+    )
+    parser.add_argument(
         "--allow-partial",
         action="store_true",
         help="Exploratory only: allow aggregating fewer than the frozen primary cells.",
@@ -111,6 +132,53 @@ def main() -> None:
     labels = [label for label, _ in args.cell]
     if len(labels) != len(set(labels)):
         raise SystemExit("Duplicate cell labels")
+
+    if not args.allow_partial:
+        analysis_plan_path = Path(args.analysis_plan)
+        if not analysis_plan_path.exists():
+            raise SystemExit(
+                f"Missing frozen primary analysis plan: {analysis_plan_path}"
+            )
+        analysis_plan = json.loads(
+            analysis_plan_path.read_text(encoding="utf-8")
+        )
+        provenance_failures = validate_plan_provenance(analysis_plan)
+        if provenance_failures:
+            raise SystemExit(
+                "Primary analysis plan provenance check failed:\n- "
+                + "\n- ".join(provenance_failures)
+            )
+        expected_outputs = {
+            f"{item['adapter']}_{item['dataset']}": {
+                "predictions": str(item["outputs"]["predictions"]),
+                "test": str(item["inputs"]["test"]["path"]),
+            }
+            for item in analysis_plan.get("cell_analyses", [])
+        }
+        supplied = {label: path for label, path in args.cell}
+        if set(supplied) != set(expected_outputs):
+            missing = sorted(set(expected_outputs) - set(supplied))
+            extra = sorted(set(supplied) - set(expected_outputs))
+            raise SystemExit(
+                "Primary aggregation labels differ from frozen analysis plan: "
+                f"missing={missing} extra={extra}"
+            )
+        for label, path_text in supplied.items():
+            expected = expected_outputs[label]
+            if str(Path(path_text)) != str(Path(expected["predictions"])):
+                raise SystemExit(
+                    f"{label}: prediction path differs from frozen analysis plan"
+                )
+            try:
+                observed_ids = jsonl_example_ids(Path(path_text))
+                expected_ids = jsonl_example_ids(Path(expected["test"]))
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
+                raise SystemExit(f"{label}: {exc}") from exc
+            if observed_ids != expected_ids:
+                raise SystemExit(
+                    f"{label}: predictions do not exactly cover the frozen "
+                    "scored test target"
+                )
 
     cells = [load_cell(label, path) for label, path in args.cell]
 
@@ -194,6 +262,9 @@ def main() -> None:
         "resampling": "class_stratified_within_each_cell_paired",
         "seed": args.seed,
         "primary_config": str(primary_cfg),
+        "analysis_plan": (
+            None if args.allow_partial else str(Path(args.analysis_plan))
+        ),
         "allow_partial": bool(args.allow_partial),
         "expected_cell_count": len(expected_pairs) if expected_pairs else None,
         "observed_cell_count": len(cells),

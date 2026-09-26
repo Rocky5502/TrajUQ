@@ -22,7 +22,7 @@ def test_adaptive_policy_refines_high_risk_cases():
     )
     assert result.accuracy == 1.0
     assert result.refine_fraction == 0.5
-    assert result.mean_compute == 6.0
+    assert result.mean_compute == 8.0
 
 
 def test_threshold_selection_respects_budget():

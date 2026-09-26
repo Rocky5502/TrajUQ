@@ -13,8 +13,9 @@ class AdaptivePolicyResult:
     accuracy: float
     random_refine_expected_accuracy: float
     delta_vs_random: float
+    cost_mode: str = "selective_second_pass_rerun"
 
-    def to_dict(self) -> dict[str, float]:
+    def to_dict(self) -> dict[str, float | str]:
         return self.__dict__.copy()
 
 
@@ -25,6 +26,7 @@ def evaluate_two_budget_policy(
     threshold: float,
     base_compute: float,
     refined_compute: float,
+    cost_mode: str = "selective_second_pass_rerun",
 ) -> AdaptivePolicyResult:
     risk = np.asarray(risk, dtype=float)
     base = np.asarray(base_correct, dtype=float)
@@ -33,13 +35,27 @@ def evaluate_two_budget_policy(
         raise ValueError("risk and correctness arrays must have equal length")
     if len(risk) == 0:
         raise ValueError("empty inputs")
-    if refined_compute < base_compute:
-        raise ValueError("refined_compute must be >= base_compute")
+    if refined_compute <= 0 or base_compute <= 0:
+        raise ValueError("compute values must be positive")
+    if cost_mode not in {"selective_second_pass_rerun", "continuation"}:
+        raise ValueError(f"unsupported cost_mode={cost_mode!r}")
+    if cost_mode == "continuation" and refined_compute < base_compute:
+        raise ValueError("continuation requires refined_compute >= base_compute")
 
     use_refined = risk > float(threshold)
     chosen = np.where(use_refined, refined, base)
     fraction = float(use_refined.mean())
-    mean_compute = float(base_compute + fraction * (refined_compute - base_compute))
+    if cost_mode == "selective_second_pass_rerun":
+        # The measured base output already exists before risk is known. If risk
+        # triggers, a second high-budget generation is launched from scratch.
+        # This is directly realizable with the paired frozen artifacts.
+        mean_compute = float(base_compute + fraction * refined_compute)
+    else:
+        # Reserved for a runtime that truly continues the same trajectory from
+        # the base state. Independent base/refined runs must not use this mode.
+        mean_compute = float(
+            base_compute + fraction * (refined_compute - base_compute)
+        )
     random_expected = float(np.mean((1.0 - fraction) * base + fraction * refined))
     accuracy = float(chosen.mean())
     return AdaptivePolicyResult(
@@ -49,6 +65,7 @@ def evaluate_two_budget_policy(
         accuracy=accuracy,
         random_refine_expected_accuracy=random_expected,
         delta_vs_random=accuracy - random_expected,
+        cost_mode=cost_mode,
     )
 
 
@@ -59,6 +76,7 @@ def select_threshold_under_budget(
     max_refine_fraction: float,
     base_compute: float,
     refined_compute: float,
+    cost_mode: str = "selective_second_pass_rerun",
 ) -> AdaptivePolicyResult:
     """Select a threshold using calibration data only under a refinement cap."""
 
@@ -75,6 +93,7 @@ def select_threshold_under_budget(
             threshold=float(threshold),
             base_compute=base_compute,
             refined_compute=refined_compute,
+            cost_mode=cost_mode,
         )
         if result.refine_fraction <= max_refine_fraction + 1e-12:
             feasible.append(result)
@@ -112,6 +131,7 @@ def bootstrap_two_budget_policy(
     n_boot: int = 2000,
     seed: int = 2027,
     alpha: float = 0.05,
+    cost_mode: str = "selective_second_pass_rerun",
 ) -> AdaptiveBootstrapResult:
     """Paired bootstrap for a frozen two-budget policy on held-out examples."""
 
@@ -132,6 +152,7 @@ def bootstrap_two_budget_policy(
         threshold=threshold,
         base_compute=base_compute,
         refined_compute=refined_compute,
+        cost_mode=cost_mode,
     )
     rng = np.random.default_rng(seed)
     vs_random: list[float] = []
@@ -148,6 +169,7 @@ def bootstrap_two_budget_policy(
             threshold=threshold,
             base_compute=base_compute,
             refined_compute=refined_compute,
+            cost_mode=cost_mode,
         )
         vs_random.append(float(boot.delta_vs_random))
         vs_base.append(float(boot.accuracy - base[idx].mean()))

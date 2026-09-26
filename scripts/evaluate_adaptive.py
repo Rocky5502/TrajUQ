@@ -63,7 +63,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Calibration-selected two-budget adaptive-compute evaluation using "
-            "trajectory+final calibrated error probability."
+            "trajectory+decision calibrated error probability with a selective second-pass rerun."
         )
     )
     parser.add_argument("--cal-base", required=True)
@@ -76,6 +76,15 @@ def main() -> None:
     parser.add_argument("--crossfit-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--n-boot", type=int, default=2000)
+    parser.add_argument(
+        "--cost-mode",
+        choices=["selective_second_pass_rerun"],
+        default="selective_second_pass_rerun",
+        help=(
+            "Primary protocol: base generation is always paid; selected examples "
+            "launch a separate full refined-budget generation."
+        ),
+    )
     args = parser.parse_args()
 
     cal_ids, x_cal, y_cal, cal_base, cal_refined = aligned(
@@ -95,6 +104,7 @@ def main() -> None:
         max_refine_fraction=args.max_refine_fraction,
         base_compute=args.base_compute,
         refined_compute=args.refined_compute,
+        cost_mode=args.cost_mode,
     )
 
     test_ids, x_test, y_test, test_base, test_refined = aligned(
@@ -117,6 +127,7 @@ def main() -> None:
         threshold=selected.threshold,
         base_compute=args.base_compute,
         refined_compute=args.refined_compute,
+        cost_mode=args.cost_mode,
     )
 
     bootstrap = bootstrap_two_budget_policy(
@@ -128,10 +139,12 @@ def main() -> None:
         refined_compute=args.refined_compute,
         n_boot=args.n_boot,
         seed=args.seed,
+        cost_mode=args.cost_mode,
     )
 
     payload = {
         "risk_source": "trajectory_plus_decision_logistic",
+        "execution_semantics": args.cost_mode,
         "policy_threshold_source": "out_of_fold_calibration_predictions",
         "crossfit_folds_used": folds_used,
         "selected_on_calibration": selected.to_dict(),

@@ -68,14 +68,26 @@ statistics:
     confidence_level: 0.95
 
 adaptive_compute:
+  execution_semantics: selective_second_pass_rerun
   risk_model: trajectory_plus_decision_logistic
   crossfit_policy_selection: true
   crossfit_folds: 5
   threshold_selection: out_of_fold_calibration_only
   matched_compute: true
-  max_refine_fraction_grid: [0.25, 0.50, 0.75]
+  primary_max_refine_fraction: 0.50
+  sensitivity_max_refine_fraction: [0.25, 0.75]
   paired_bootstrap_n: 2000
   report_deltas_vs: [base, fixed_refined, random_refinement]
+  budgets:
+    llada:
+      base_steps: 32
+      refined_steps: 128
+    dream:
+      base_steps: 32
+      refined_steps: 128
+    sdar:
+      base_denoising_steps: 2
+      refined_denoising_steps: 4
 
 integrity:
   outcome_isolation: true

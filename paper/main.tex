@@ -55,7 +55,7 @@ Our evaluation is organized around four questions:
 \begin{description}[leftmargin=0.8cm,labelwidth=0.65cm]
 \item[RQ1:] Does the denoising trajectory predict answer failure beyond a strong per-token decision-time confidence baseline?
 \item[RQ2:] Does trajectory-aware calibration improve selective generation across model families and tasks?
-\item[RQ3:] Can calibrated trajectory risk allocate additional denoising compute more effectively than fixed or random refinement?
+\item[RQ3:] Can calibrated trajectory risk decide which answers merit a second higher-budget generation more effectively than random refinement?
 \item[RQ4:] Which failure modes are associated with distributional instability, revision churn, late commitment, and---where available---same-checkpoint AR/diffusion disagreement?
 \end{description}
 
@@ -179,7 +179,7 @@ We report AUROC, AUPRC, Brier score, negative log-likelihood, expected calibrati
 
 \subsection{Adaptive Compute}
 
-For RQ3, each model has a base budget $B_0$ and a refined budget $B_1>B_0$.
+For RQ3, each model has a complete base-generation budget $B_0$ and a separate refined-generation budget $B_1>B_0$.
 A refinement threshold is selected using \emph{out-of-fold} error probabilities on the calibration partition.
 The final calibrator is then fit on all calibration data and applied unchanged to test.
 The policy is
@@ -190,7 +190,7 @@ a(x)=
 \textsc{Accept}, & \text{otherwise}.
 \end{cases}
 \end{equation}
-We compare to fixed $B_0$, fixed $B_1$, and random refinement at the same expected refinement fraction.
+Every example first incurs $B_0$; selected examples then launch a second $B_1$ run from scratch, giving mean nominal cost $B_0+fB_1$ at selected fraction $f$. This conservative accounting matches the artifacts we actually execute and does not assume resumable denoising. We compare to fixed $B_0$, fixed $B_1$, and random second-pass refinement at the same selected fraction.
 
 \section{Experimental Design}
 

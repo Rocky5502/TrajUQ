@@ -45,7 +45,7 @@ Raw TrajUQ risk must not be described as an error probability.
 
 ## RQ3 — Adaptive compute
 
-Freeze at least two compute budgets per model. Compute risk at the base budget. On calibration data, select a refinement threshold under a preregistered maximum refinement fraction. Apply the threshold unchanged to test.
+Freeze two complete-generation budgets per model: LLaDA and Dream use 32 versus 128 denoising steps, while SDAR uses 2 versus 4 denoising steps per block. The primary policy cap is 50\% selected examples; 25\% and 75\% are sensitivity settings. Compute risk from the completed base-budget answer. On calibration data, select a refinement threshold under the frozen cap and apply it unchanged to test.
 
 Compare against:
 1. fixed base compute;
@@ -53,7 +53,9 @@ Compare against:
 3. random refinement at the same expected fraction;
 4. native confidence/remasking scheduling where the model exposes it.
 
-For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined compute, and versus the expected random-refinement policy at the same selected refinement fraction. The threshold remains fixed from calibration during all test resamples.
+The primary execution semantics are a **selective second-pass rerun**: every example pays the complete base generation, and a selected high-risk example launches a separate full refined-budget generation from scratch. Thus mean nominal compute is $B_0 + fB_1$, not $B_0+f(B_1-B_0)$, where $f$ is the selected fraction. This is directly realizable from paired frozen artifacts and does not pretend that an independently generated refined answer is a continuation of the base trajectory. A true continuation policy is reserved for future model-specific runtime support.
+
+For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined generation, and versus the expected random second-pass policy at the same selected fraction. The threshold remains fixed from calibration during all test resamples.
 
 The repository's `evaluate_adaptive.py` implements the two-budget TrajUQ-versus-random comparison. Model-native schedulers remain model-specific.
 

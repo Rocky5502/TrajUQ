@@ -127,12 +127,14 @@ implementation:
       - scripts/resolve_experiment_revisions.py
       - scripts/resolve_hf_revision.py
   - id: artifact_derived_paper
-    label: "Config-revalidated claim-gated manuscript renderer with six-source SHA manifest"
+    label: "Config-revalidated claim-gated manuscript and result-figure renderers"
     state: DONE
     evidence:
       - scripts/render_results_tex.py
+      - scripts/render_paper_result_figures.py
       - paper/generated_results.tex
       - paper/main.tex
+      - paper/appendix.tex
   - id: anonymous_supplement
     label: "Anonymous ARR software-supplement builder"
     state: DONE
@@ -352,11 +354,18 @@ execution_gates:
     action: "Optional diagnostic: run same-checkpoint AR/diffusion RQ4 only after FLARE parity/trace gates pass."
     artifact: results/flare_rq4_hybrid.json
     expect: {key: role, equals: RQ4_DIAGNOSTIC_NOT_PRIMARY_ENDPOINT}
+  - id: result_figures
+    label: "Artifact-derived aggregate result figure manifest"
+    stage: submission
+    issue: 11
+    action: "Run python scripts/render_paper_result_figures.py after the complete primary and all three adaptive-cap macros exist. Require protocol v2 with SHA-bound primary/config/cap sources and all three PDF outputs."
+    artifact: paper/figures/generated/result_figure_manifest.json
+    expect: {key: protocol, equals: trajuq_paper_result_figures_v2}
   - id: rendered_results
     label: "Artifact-derived paper result manifest"
     stage: submission
     issue: 11
-    action: "Run python scripts/render_results_tex.py. It re-evaluates the frozen RQ1 gate and SHA-binds primary, claim-gate, repeated, feature-ablation, adaptive, and primary-config sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
+    action: "Run python scripts/render_results_tex.py and python scripts/render_paper_result_figures.py. The text renderer SHA-binds primary, claim-gate, repeated, feature-ablation, adaptive, and primary-config sources; the figure renderer binds primary/config plus all three adaptive-cap sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
     artifact: paper/generated_results_manifest.json
     expect: {key: protocol, equals: trajuq_paper_results_render_v1}
   - id: submission_readiness

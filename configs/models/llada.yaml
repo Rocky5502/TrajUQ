@@ -1,6 +1,7 @@
-name: llada_instruct
+name: llada_moe_7b_a1b_instruct
 adapter: llada
-model_id: GSAI-ML/LLaDA-8B-Instruct
+model_id: inclusionAI/LLaDA-MoE-7B-A1B-Instruct
+revision: null
 trust_remote_code: true
 dtype: bfloat16
 device: cuda
@@ -12,5 +13,6 @@ generation:
   cfg_scale: 0.0
   remasking: low_confidence
 notes:
-  - Pilot adapter follows the public masked-diffusion decoding structure with added trajectory observation.
-  - LLaDA-MoE-7B-A1B-Instruct is the preferred primary checkpoint once its exact generation interface/revision is frozen.
+  - Freeze an exact Hugging Face model/tokenizer revision before primary runs.
+  - Pilot adapter must pass parity/instrumentation audit for the selected checkpoint.
+  - If the MoE runtime API differs from the adapter, do not silently substitute another checkpoint.

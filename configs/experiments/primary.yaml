@@ -1,0 +1,66 @@
+experiment:
+  name: trajuq_primary_naacl2027
+  status: PRE_EXPERIMENT_DO_NOT_REPORT_NUMBERS
+  seed: 2027
+
+models:
+  primary:
+    - configs/models/llada.yaml
+    - configs/models/sdar.yaml
+    - configs/models/dream.yaml
+  diagnostic:
+    - configs/models/flare.yaml
+
+datasets:
+  - gsm8k
+  - math500
+  - gpqa_diamond
+  - arc_challenge
+  - mmlu_pro
+  - truthfulqa
+
+splits:
+  calibration_fraction: 0.30
+  split_seed: 2027
+  freeze_before_generation: true
+
+trajectory:
+  primary_features:
+    - entropy_mean
+    - entropy_p90
+    - entropy_slope
+    - margin_mean
+    - margin_min
+    - revision_rate
+    - late_revision_rate
+    - mask_auc
+    - late_mask_fraction
+    - commitment_time_mean
+
+calibration:
+  primary: logistic
+  sensitivity: [isotonic]
+  fit_on: calibration_only
+
+metrics:
+  discrimination: [auroc, auprc]
+  calibration: [brier, nll, ece]
+  selective: [aurc, risk_at_50_coverage, risk_at_80_coverage]
+  efficiency: [wall_time_seconds, peak_gpu_memory_bytes, denoising_steps]
+
+statistics:
+  bootstrap:
+    paired: true
+    stratified_by_error: true
+    n_boot: 2000
+    confidence_level: 0.95
+
+adaptive_compute:
+  threshold_selection: calibration_only
+  matched_compute: true
+  max_refine_fraction_grid: [0.25, 0.50, 0.75]
+
+integrity:
+  outcome_isolation: true
+  no_test_tuning: true
+  no_overwrite_completed_runs: true

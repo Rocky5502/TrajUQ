@@ -1,6 +1,7 @@
 name: dream_v0_instruct_7b
 adapter: dream
 model_id: Dream-org/Dream-v0-Instruct-7B
+revision: null
 trust_remote_code: true
 dtype: bfloat16
 device: cuda
@@ -12,5 +13,5 @@ generation:
   alg: entropy
   alg_temp: 0.1
 notes:
-  - Uses Dream's generation_tokens_hook_func to observe state and logits.
-  - Freeze the exact model revision before the main run.
+  - Uses Dream's documented generation hook to observe state and logits.
+  - Freeze the exact model/tokenizer revision before primary runs.

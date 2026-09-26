@@ -1,13 +1,15 @@
-name: flare_2b
+name: hybrid_diffusion_2b_flare
 adapter: flare
-model_id: PLACEHOLDER_FREEZE_FROM_UPSTREAM
+model_id: yuchen-zhu-zyc/HybridDiffusion-2B
+revision: null
 device: cuda
 dtype: bfloat16
 upstream:
   repository: yuchen-zhu-zyc/HybridDiffusion
   commit: 6ca547aebb72bfe897e80e0a683c776789e5f38c
+license_note: PolyForm Noncommercial 1.0.0 for HybridDiffusion-authored code/checkpoints at the inspected release
 status: integration_boundary
 notes:
-  - FLARE is primarily used for same-checkpoint AR versus diffusion diagnostics.
-  - Upstream code/checkpoints have PolyForm Noncommercial terms; review them before use/redistribution.
-  - Do not vendor upstream runtime code here.
+  - Used primarily for the same-checkpoint AR versus diffusion diagnostic.
+  - Keep the specialized upstream runtime external; do not vendor it into TrajUQ.
+  - Do not report FLARE/HybridDiffusion results until AR and diffusion telemetry are parity-validated.

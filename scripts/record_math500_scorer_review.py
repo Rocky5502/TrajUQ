@@ -49,6 +49,21 @@ def review_sheet_metadata(path: Path) -> dict[str, str]:
                 found[key] = line[len(prefix):].strip()
     return found
 
+def scored_audit_passes(path: Path) -> tuple[bool, dict]:
+    audit_path = path.with_suffix(path.suffix + ".audit.json")
+    if not path.exists() or not audit_path.exists():
+        return False, {}
+    try:
+        payload = json.loads(audit_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, {}
+    passed = (
+        payload.get("status") == "PASS"
+        and payload.get("stage") == "scored"
+        and str(payload.get("sha256", "")) == sha256_file(path)
+    )
+    return passed, payload
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -109,6 +124,10 @@ def main() -> None:
         failures.append(f"missing reviewed calibration input: {input_path}")
     else:
         input_sha256 = sha256_file(input_path)
+
+    scored_audit_ok, scored_audit = scored_audit_passes(scored_path)
+    if not scored_audit_ok:
+        failures.append("reviewed MATH-500 scored artifact has no current PASS audit")
 
     if review_meta:
         if review_meta.get("scored_artifact") != str(scored_path):
@@ -194,6 +213,7 @@ def main() -> None:
         "review_scored_sha256": scored_sha256,
         "review_input": str(input_path),
         "review_input_sha256": input_sha256,
+        "review_scored_audit_ok": scored_audit_ok,
         "reviewed_records": int(args.reviewed_records),
         "checks": {
             "answer_extraction": bool(args.answer_extraction_pass),

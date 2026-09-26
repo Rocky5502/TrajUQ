@@ -48,6 +48,9 @@ def test_math500_wrapper_revalidates_hash_bound_split_and_parity_sources():
     assert "reference_sha256" in text
     assert "instrumented_sha256" in text
     assert "$Parity.git_clean -eq $true" in text
+    assert "function Test-RunAuditPass" in text
+    assert '$InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"' in text
+    assert "$InstrumentedAuditOk" in text
     assert "function Assert-Math500FrozenPair" in text
     assert "trajuq_split_pair_audit_v1" in text
     assert "calibration_sha256" in text

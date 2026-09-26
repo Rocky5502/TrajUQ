@@ -185,6 +185,12 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
             {
                 "protocol": "trajuq_repeated_sampling_baseline_v2",
                 "n_test": 1,
+                "auxiliary_compute": {
+                    "test": {
+                        "mean_auxiliary_wall_time_seconds_per_example": 5.0,
+                        "p90_auxiliary_wall_time_seconds_per_example": 6.0,
+                    }
+                },
             }
         ),
         encoding="utf-8",
@@ -246,11 +252,20 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
     macro.write_text(
         json.dumps(
             {
-                "protocol": "trajuq_vs_repeated_macro_v1",
+                "protocol": "trajuq_vs_repeated_macro_v2",
                 "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
                 "cell_set_complete": True,
                 "expected_cells": 1,
                 "observed_cells": 1,
+                "auxiliary_compute": {
+                    "aggregation": "equal_cell_weight_macro",
+                    "expected_cells": 1,
+                    "observed_cells_with_complete_test_wall_time": 1,
+                    "complete": True,
+                    "sample_count": 5,
+                    "mean_test_auxiliary_wall_time_seconds_per_example": 5.0,
+                    "mean_test_p90_auxiliary_wall_time_seconds_per_example": 6.0,
+                },
                 "macro": {
                     key: {}
                     for key in (
@@ -359,3 +374,19 @@ def test_repeated_raw_audit_rejects_other_commit(tmp_path):
     path = tmp_path / "seed.raw.jsonl"
     write_raw(path, commit="other-commit")
     assert not audit_passes(path, "frozen-commit")
+
+
+def test_pair_state_rejects_missing_compute_accounting(tmp_path):
+    metrics = tmp_path / "metrics.json"
+    predictions = tmp_path / "predictions.jsonl"
+    metrics.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_repeated_sampling_baseline_v2",
+                "n_test": 1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    assert pair_state(metrics, predictions, ["x"]) == "INVALID"

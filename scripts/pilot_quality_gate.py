@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +34,25 @@ def finite_float(value) -> bool:
         return math.isfinite(float(value))
     except (TypeError, ValueError):
         return False
+
+
+def sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def main() -> None:
@@ -187,14 +208,22 @@ def main() -> None:
     if any(count <= 0 for count in step_counts):
         failures.append("one or more pilot records has zero trajectory step summaries")
 
+    commit = git_head()
+    if not commit:
+        failures.append("git commit could not be resolved")
+
     payload = {
+        "protocol": "trajuq_pilot_quality_gate_v2",
         "status": "PASS" if not failures else "FAIL",
+        "git_commit": commit,
         "schema_version": SCHEMA_VERSION,
         "model_ids": sorted(observed_models),
         "adapters": sorted(observed_adapters),
         "model_revisions": sorted(observed_revisions),
         "raw": args.raw,
+        "raw_sha256": sha256_file(args.raw),
         "scored": args.scored,
+        "scored_sha256": sha256_file(args.scored),
         "expected_records": args.expected_records,
         "raw_records": len(raw_rows),
         "scored_records": len(scored_rows),

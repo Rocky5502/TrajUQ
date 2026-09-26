@@ -134,7 +134,10 @@ python scripts/run_generation.py   --adapter llada   --model inclusionAI/LLaDA-M
 The raw generation file must contain **no outcomes**:
 
 ```bash
-python scripts/audit_run.py --run runs/llada_gsm8k_cal.raw.jsonl --stage raw
+python scripts/audit_run.py \
+  --run runs/llada_gsm8k_cal.raw.jsonl \
+  --stage raw \
+  --require-revision
 
 python scripts/score_outputs.py   --run runs/llada_gsm8k_cal.raw.jsonl   --input data/processed/gsm8k_frozen/calibration.jsonl   --output runs/llada_gsm8k_cal.scored.jsonl
 
@@ -161,7 +164,7 @@ python scripts/evaluate_adaptive.py   --cal-base runs/cal_base.scored.jsonl   --
 2. **Outcome isolation:** raw generation artifacts contain no references/correctness.
 3. **Freeze before scale:** one model × 50 examples before the full matrix.
 4. **No test-label tuning:** features, calibrators, thresholds, and adaptive policies are selected on calibration data only.
-5. **Matched compute for RQ3:** adaptive policies are compared at the same expected refinement fraction/mean compute.
+6. **Matched compute for RQ3:** adaptive policies are compared at the same expected refinement fraction/mean compute.
 6. **Paired statistics:** method comparisons use identical examples and paired stratified bootstrap intervals.
 7. **Pin revisions:** model, tokenizer, upstream runtime, data, prompts, and code commit are part of the experimental specification.
 8. **Do not redistribute gated data or model weights.**

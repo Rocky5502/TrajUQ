@@ -126,3 +126,40 @@ def test_linux_a100_pilot_wrapper_matches_frozen_contract():
     assert "scripts/export_trace_review.py" in text
     assert "will not delete or overwrite evidence" in text
     assert "rm -f" not in text
+
+
+def test_linux_remaining_parity_wrapper_is_guarded():
+    text = Path("scripts/parity_remaining_linux.sh").read_text(encoding="utf-8")
+
+    assert "results/cpu_verification.json" in text
+    assert "results/revision_ledger.json" in text
+    assert "git status --porcelain" in text
+    assert "scripts/run_sdar_reference.py" in text
+    assert "scripts/run_dream_reference.py" in text
+    assert "scripts/compare_run_parity.py" in text
+    assert "--require-token-ids" in text
+    assert "--require-provenance" in text
+    assert "trajuq_exact_parity_v3" in text
+    assert "shared_records" in text
+    assert "mismatch_count" in text
+    assert "provenance_mismatch_count" in text
+    assert "will not delete or overwrite evidence" in text
+    assert "rm -f" not in text
+
+
+def test_linux_math500_wrapper_is_guarded():
+    text = Path("scripts/math500_gate_linux.sh").read_text(encoding="utf-8")
+
+    assert "results/cpu_verification.json" in text
+    assert "results/revision_ledger.json" in text
+    assert "results/llada_parity.json" in text
+    assert "trajuq_math500_scorer_audit_v2" in text
+    assert "math-verify" in text
+    assert "0.9.0" in text
+    assert "antlr4-python3-runtime" in text
+    assert "4.13.2" in text
+    assert "scripts/prepare_eval_pair.py" in text
+    assert "scripts/export_math500_scorer_review.py" in text
+    assert "review %s" in text
+    assert "will not overwrite evidence" in text
+    assert "rm -f" not in text

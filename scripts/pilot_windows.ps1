@@ -66,6 +66,7 @@ function Assert-ParityPass {
         (Test-Path $Instrumented) -and
         $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
     )
+    $InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
@@ -79,10 +80,11 @@ function Assert-ParityPass {
         $Parity.run_provenance.adapter -eq "llada" -and
         $Parity.run_provenance.model_revision -eq $ModelSha -and
         $ReferenceHashOk -and
-        $InstrumentedHashOk
+        $InstrumentedHashOk -and
+        $InstrumentedAuditOk
     )
     if (-not $Pass) {
-        throw "Existing $Path is not a clean hash-bound frozen parity-v3 PASS. Inspect it before rerunning."
+        throw "Existing $Path is not a clean hash/audit-bound frozen parity-v3 PASS. Inspect it before rerunning."
     }
     return $true
 }

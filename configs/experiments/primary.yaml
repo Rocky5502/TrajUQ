@@ -26,6 +26,7 @@ splits:
 
 trajectory:
   primary_features:
+    - entropy_final
     - entropy_mean
     - entropy_p90
     - entropy_slope
@@ -45,7 +46,7 @@ calibration:
 metrics:
   discrimination: [auroc, auprc]
   calibration: [brier, nll, ece]
-  selective: [aurc, risk_at_50_coverage, risk_at_80_coverage]
+  selective: [aurc_discrete, risk_at_50_coverage, risk_at_80_coverage]
   efficiency: [wall_time_seconds, peak_gpu_memory_bytes, denoising_steps]
 
 statistics:

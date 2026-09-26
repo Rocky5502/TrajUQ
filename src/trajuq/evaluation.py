@@ -76,7 +76,9 @@ def selective_curve(y_error: np.ndarray, risk_score: np.ndarray) -> SelectiveCur
     counts = np.arange(1, len(y) + 1)
     coverage = counts / len(y)
     risk = cumulative_errors / counts
-    aurc = float(np.trapz(risk, coverage))
+    # Discrete AURC: average selective risk over attainable coverages k/n.
+    # This is invariant to an arbitrary zero-coverage interpolation convention.
+    aurc = float(np.mean(risk))
     return SelectiveCurve(coverage=coverage, risk=risk, aurc=aurc)
 
 

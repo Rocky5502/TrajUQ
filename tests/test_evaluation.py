@@ -24,3 +24,11 @@ def test_calibration_metrics_finite():
     p = np.array([0.1, 0.8, 0.2, 0.7])
     metrics = calibration_metrics(y, p)
     assert all(np.isfinite(list(metrics.values())))
+
+
+
+def test_aurc_is_discrete_mean_risk():
+    y = np.array([0, 1, 0, 1])
+    s = np.array([0.1, 0.9, 0.2, 0.8])
+    curve = selective_curve(y, s)
+    assert np.isclose(curve.aurc, curve.risk.mean())

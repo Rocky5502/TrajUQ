@@ -222,12 +222,19 @@ python scripts/evaluate_run.py \
   --test runs/llada_gsm8k_test.scored.jsonl \
   --output results/llada_gsm8k_metrics.json
 
+python scripts/compare_calibrated.py \
+  --calibration runs/llada_gsm8k_cal.scored.jsonl \
+  --test runs/llada_gsm8k_test.scored.jsonl \
+  --n-boot 2000 \
+  --output results/llada_gsm8k_nested_bootstrap.json
+
+# Training-free raw-risk sensitivity:
 python scripts/compare_methods.py \
   --input runs/llada_gsm8k_test.scored.jsonl \
   --n-boot 2000
 ```
 
-The comparison utility uses paired class-stratified bootstrap intervals on identical examples.
+The primary nested comparison uses paired class-stratified bootstrap intervals on identical examples. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
 
 ## RQ3: adaptive compute
 

@@ -89,3 +89,41 @@ def paired_bootstrap_difference(
         raise ValueError("no valid bootstrap replicates")
     low, high = np.quantile(np.asarray(diffs), [alpha / 2, 1 - alpha / 2])
     return BootstrapResult(point, float(low), float(high), int(n_boot), len(diffs))
+
+
+
+def paired_bootstrap_improvement(
+    y_error: np.ndarray,
+    candidate_score: np.ndarray,
+    baseline_score: np.ndarray,
+    metric: str,
+    n_boot: int = 2000,
+    seed: int = 2027,
+    alpha: float = 0.05,
+) -> BootstrapResult:
+    """Paired bootstrap with a common direction: positive means candidate is better.
+
+    AUROC/AUPRC are higher-is-better, so improvement is candidate - baseline.
+    AURC is lower-is-better, so improvement is baseline - candidate.
+    """
+
+    raw = paired_bootstrap_difference(
+        y_error,
+        candidate_score,
+        baseline_score,
+        metric=metric,
+        n_boot=n_boot,
+        seed=seed,
+        alpha=alpha,
+    )
+    if metric in {"auroc", "auprc"}:
+        return raw
+    if metric == "aurc":
+        return BootstrapResult(
+            point=-raw.point,
+            ci_low=-raw.ci_high,
+            ci_high=-raw.ci_low,
+            n_boot=raw.n_boot,
+            valid_boot=raw.valid_boot,
+        )
+    raise ValueError(f"unsupported metric {metric!r}")

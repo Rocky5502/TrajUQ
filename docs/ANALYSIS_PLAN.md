@@ -4,7 +4,9 @@ This file is a pre-results contract. Changes that affect primary claims must be 
 
 ## RQ1 — Does the trajectory add predictive information?
 
-Compare the transparent TrajUQ raw risk against final-state entropy on identical examples. Primary discrimination metrics are AUROC and AUPRC; primary selective metric is AURC. Use paired, class-stratified bootstrap confidence intervals for the difference.
+The primary incremental-information test compares two calibration-fitted predictors on identical held-out examples: (i) a final-state entropy baseline and (ii) a nested logistic model containing the same final entropy plus the frozen trajectory feature vector. This directly tests whether the trajectory adds information beyond the final state. Primary discrimination metrics are AUROC and AUPRC; the primary selective metric is discrete AURC. Use paired, class-stratified bootstrap confidence intervals. All reported improvement deltas are oriented so positive means the trajectory-augmented method is better.
+
+The transparent training-free TrajUQ raw-risk score is retained as a diagnostic/sensitivity baseline, not the primary RQ1 test.
 
 A claim that the trajectory adds information requires a meaningful held-out improvement that is not confined to a single dataset/model family.
 
@@ -15,7 +17,7 @@ Fit probability calibrators on the frozen calibration partition only. Primary ca
 Report:
 - Brier score;
 - NLL;
-- ECE plus bin-count sensitivity;
+- ECE at 15 bins plus 10-bin and 20-bin sensitivity;
 - risk–coverage and AURC;
 - risk at frozen coverage points.
 
@@ -36,6 +38,10 @@ The repository's `evaluate_adaptive.py` implements the two-budget TrajUQ-versus-
 ## RQ4 — Sampler/denoiser diagnostics
 
 Vary denoising budgets/remasking settings and measure calibration transfer. For FLARE/HybridDiffusion, if both paths are instrumented, treat AR/diffusion disagreement as a diagnostic feature only. AR output is not ground truth.
+
+## Selective-risk convention
+
+Discrete AURC is the mean selective risk over the attainable empirical coverage levels \(k/n\), \(k=1,\ldots,n\). Lower is better. Fixed-coverage risk uses the smallest attainable coverage at or above the target. This definition is frozen before primary outcomes are inspected.
 
 ## Confidence intervals and aggregation
 

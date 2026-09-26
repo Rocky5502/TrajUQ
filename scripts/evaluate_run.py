@@ -8,11 +8,18 @@ from pathlib import Path
 import numpy as np
 
 from trajuq.calibration import RiskCalibrator
-from trajuq.evaluation import calibration_metrics, error_detection_metrics, risk_at_coverage, selective_curve
+from trajuq.evaluation import (
+    calibration_metrics,
+    error_detection_metrics,
+    expected_calibration_error,
+    risk_at_coverage,
+    selective_curve,
+)
 from trajuq.io import read_jsonl
 
 
 TRAJECTORY_FEATURES = [
+    "entropy_final",
     "entropy_mean",
     "entropy_p90",
     "entropy_slope",
@@ -64,7 +71,10 @@ def evaluate(cal_path: str, test_path: str, features: list[str]) -> dict:
         "error_rate_test": float(y_test.mean()),
         **det,
         **cal,
+        "ece_10": expected_calibration_error(y_test, p_test, n_bins=10),
+        "ece_20": expected_calibration_error(y_test, p_test, n_bins=20),
         "aurc": curve.aurc,
+        "aurc_definition": "mean_selective_risk_over_k_over_n",
         "risk_at_50_coverage": risk_at_coverage(y_test, p_test, 0.50),
         "risk_at_80_coverage": risk_at_coverage(y_test, p_test, 0.80),
     }
@@ -83,7 +93,7 @@ def main() -> None:
             args.test,
             FINAL_BASELINE_FEATURES,
         ),
-        "trajectory_logistic": evaluate(
+        "trajectory_plus_final_logistic": evaluate(
             args.calibration,
             args.test,
             TRAJECTORY_FEATURES,

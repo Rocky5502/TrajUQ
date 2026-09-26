@@ -51,6 +51,10 @@ def test_finalize_ignores_committed_and_inactive_logits():
     # Revision at position 0 from step 0->1 counts; step 1->2 does not because
     # position 0 is already committed at the step-2 observation.
     assert np.isclose(features["revision_rate"], 0.5)
+    # Position 0 commits after step 1 (entropy 0.4); position 1 commits after
+    # the final observed step (entropy 0.5).
+    assert np.isclose(features["decision_entropy_mean"], 0.45)
+    assert np.isclose(features["commitment_time_mean"], 0.75)
     assert summaries[0].active_count == 1
     assert summaries[1].active_count == 2
 

@@ -26,7 +26,7 @@ splits:
 
 trajectory:
   primary_features:
-    - entropy_final
+    - decision_entropy_mean
     - entropy_mean
     - entropy_p90
     - entropy_slope

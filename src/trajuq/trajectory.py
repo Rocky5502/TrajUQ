@@ -56,7 +56,7 @@ def _safe_fraction(numerator: np.ndarray, denominator: np.ndarray) -> float:
 class TrajectoryAccumulator:
     """Collect uncertainty from positions that are actually being denoised.
 
-    Schema v2 excludes prompt tokens, inactive future blocks, and already
+    Schema v4 excludes prompt tokens, inactive future blocks, and already
     committed tokens from entropy/confidence/margin aggregation. Revision churn
     is counted only when the same position is unresolved in two consecutive
     observations. This avoids treating irrelevant logits on committed tokens as
@@ -82,7 +82,7 @@ class TrajectoryAccumulator:
         if logits.ndim != 3 or state_ids.ndim != 2:
             raise ValueError("Expected logits [B,L,V] and state_ids [B,L].")
         if logits.shape[0] != 1 or state_ids.shape[0] != 1:
-            raise ValueError("Schema v2 pilot supports batch size 1 only.")
+            raise ValueError("Schema v4 pilot supports batch size 1 only.")
 
         logits = logits[:, self.prompt_length :, :].detach()
         state = state_ids[:, self.prompt_length :].detach()
@@ -230,6 +230,29 @@ class TrajectoryAccumulator:
         active_margin = _masked_values(margin, unresolved)
         active_js = js_drift[js_valid].astype(float)
 
+        # Strong final-decision baseline: for each generated position, take the
+        # predictive distribution from the last observation at which that
+        # position was still unresolved. This is the information available
+        # immediately before its commitment decision, rather than logits from an
+        # arbitrary global last step that may contain only one remaining token.
+        decision_entropy: list[float] = []
+        decision_confidence: list[float] = []
+        decision_margin: list[float] = []
+        for j in range(unresolved.shape[1]):
+            unresolved_steps = np.flatnonzero(unresolved[:, j])
+            if len(unresolved_steps) == 0:
+                continue
+            last = int(unresolved_steps[-1])
+            decision_entropy.append(float(ent[last, j]))
+            decision_confidence.append(float(conf[last, j]))
+            decision_margin.append(float(margin[last, j]))
+
+        if not decision_entropy:
+            raise ValueError("No decision-time predictive statistics were available.")
+        decision_entropy_arr = np.asarray(decision_entropy, dtype=float)
+        decision_confidence_arr = np.asarray(decision_confidence, dtype=float)
+        decision_margin_arr = np.asarray(decision_margin, dtype=float)
+
         late_unresolved = unresolved[late_start:]
         late_active = active[late_start:]
         late_masked = active[late_start:] & masked[late_start:]
@@ -245,7 +268,9 @@ class TrajectoryAccumulator:
             )
             committed = np.flatnonzero(~unresolved_on_active)
             if len(committed):
-                local_index = int(committed[0])
+                # If a token first appears committed at observation k, the
+                # transfer decision happened after observation k-1.
+                local_index = max(0, int(committed[0]) - 1)
             else:
                 # The last transfer happens after the last pre-transfer
                 # observation, so an unresolved final observation means
@@ -280,6 +305,10 @@ class TrajectoryAccumulator:
             "margin_mean": float(active_margin.mean()),
             "margin_min": float(active_margin.min()),
             "margin_final": float(margin[final_i][final_mask].mean()),
+            "decision_entropy_mean": float(decision_entropy_arr.mean()),
+            "decision_entropy_p90": float(np.quantile(decision_entropy_arr, 0.90)),
+            "decision_confidence_mean": float(decision_confidence_arr.mean()),
+            "decision_margin_mean": float(decision_margin_arr.mean()),
             "js_mean": float(active_js.mean()) if active_js.size else 0.0,
             "js_p90": float(np.quantile(active_js, 0.90)) if active_js.size else 0.0,
             "js_max": float(active_js.max()) if active_js.size else 0.0,

@@ -13,7 +13,7 @@ from trajuq.statistics import paired_bootstrap_difference
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Paired bootstrap comparison of training-free TrajUQ risk vs final entropy."
+        description="Paired bootstrap comparison of training-free TrajUQ risk vs decision-time entropy."
     )
     parser.add_argument("--input", required=True, help="Scored test JSONL")
     parser.add_argument("--n-boot", type=int, default=2000)
@@ -29,22 +29,22 @@ def main() -> None:
         [raw_trajectory_risk(r["generation"]["features"]) for r in rows],
         dtype=float,
     )
-    final_entropy = np.asarray(
-        [float(r["generation"]["features"]["entropy_final"]) for r in rows],
+    decision_entropy = np.asarray(
+        [float(r["generation"]["features"]["decision_entropy_mean"]) for r in rows],
         dtype=float,
     )
 
     payload = {
         "risk_version": RAW_RISK_VERSION,
         "n": len(rows),
-        "comparison": "raw_trajectory_risk_minus_final_entropy",
+        "comparison": "raw_trajectory_risk_minus_decision_entropy",
         "metrics": {},
     }
     for metric in ["auroc", "auprc", "aurc"]:
         payload["metrics"][metric] = paired_bootstrap_difference(
             y,
             trajectory,
-            final_entropy,
+            decision_entropy,
             metric=metric,
             n_boot=args.n_boot,
             seed=args.seed,

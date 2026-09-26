@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
-SCHEMA_VERSION = "trajuq-record-v3"
+SCHEMA_VERSION = "trajuq-record-v4"
 
 
 @dataclass

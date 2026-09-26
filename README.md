@@ -9,21 +9,22 @@ TrajUQ studies whether the *denoising trajectory itself* can predict when a diff
 
 ## Research questions
 
-- **RQ1 — Predictive signal:** Which denoising-trajectory signals predict incorrect answers beyond final-step confidence?
+- **RQ1 — Predictive signal:** Which denoising-trajectory signals predict incorrect answers beyond per-token decision-time confidence?
 - **RQ2 — Selective generation:** Does trajectory-aware uncertainty improve calibration and risk–coverage behavior across model families/tasks?
 - **RQ3 — Adaptive compute:** Can calibrated risk allocate extra denoising/remasking steps more effectively than fixed schedules or raw-confidence heuristics?
 - **RQ4 — Failure source:** How much risk is associated with denoiser ambiguity versus sampler instability, and when available, does AR/diffusion disagreement reveal failures missed by a single path?
 
 ## Core signal
 
-For each denoising trajectory, TrajUQ records compact pre-outcome statistics rather than full vocabulary tensors. Schema v3 aggregates predictive statistics only over positions that are active and unresolved at that step; prompt tokens, future inactive blocks, and already committed tokens are excluded:
+For each denoising trajectory, TrajUQ records compact pre-outcome statistics rather than full vocabulary tensors. Schema v4 aggregates predictive statistics only over positions that are active and unresolved at that step; prompt tokens, future inactive blocks, and already committed tokens are excluded:
 
 - normalized predictive entropy;
 - top-1 confidence and top-2 margin;
 - exact consecutive-step Jensen-Shannon drift on eligible positions;
 - top-1 proposal revisions and late revisions, counted only while a position remains unresolved;
 - mask persistence / commitment time;
-- early-to-late entropy and revision trends.
+- early-to-late entropy and revision trends;
+- per-token decision-time entropy/confidence/margin at the last unresolved observation before commitment.
 
 The transparent training-free score in `src/trajuq/risk.py` is a **ranking statistic**, not an error probability. Probability estimates must be fitted on a held-out calibration partition with `RiskCalibrator`.
 
@@ -235,7 +236,7 @@ python scripts/compare_methods.py \
   --n-boot 2000
 ```
 
-The primary nested comparison uses paired class-stratified bootstrap intervals on identical examples. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
+The primary nested comparison uses a strong per-token decision-time entropy baseline and paired class-stratified bootstrap intervals on identical examples. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
 
 ## RQ3: adaptive compute
 

@@ -63,7 +63,7 @@ def main() -> None:
     p_candidate = candidate.predict_error_probability(x_test_t)
 
     payload = {
-        "comparison": "trajectory_plus_final_logistic_vs_final_entropy_logistic",
+        "comparison": "trajectory_plus_decision_logistic_vs_decision_entropy_logistic",
         "delta_direction": "positive_means_trajectory_augmented_is_better",
         "n_calibration": len(cal_ids_b),
         "n_test": len(test_ids_b),

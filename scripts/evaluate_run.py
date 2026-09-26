@@ -72,12 +72,12 @@ def main() -> None:
     args = parser.parse_args()
 
     results = {
-        "final_entropy_baseline": evaluate(
+        "decision_entropy_baseline": evaluate(
             args.calibration,
             args.test,
             FINAL_BASELINE_FEATURES,
         ),
-        "trajectory_plus_final_logistic": evaluate(
+        "trajectory_plus_decision_logistic": evaluate(
             args.calibration,
             args.test,
             PRIMARY_TRAJECTORY_FEATURES,

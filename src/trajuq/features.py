@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 
-FINAL_BASELINE_FEATURES = ["entropy_final"]
+# Fair final-decision baseline: mean normalized entropy immediately before each
+# generated token's commitment decision.
+FINAL_BASELINE_FEATURES = ["decision_entropy_mean"]
 
+# Nested primary model: it contains the exact baseline feature plus frozen
+# trajectory-level information. Any held-out gain therefore tests incremental
+# information beyond the final per-token commitment confidence.
 PRIMARY_TRAJECTORY_FEATURES = [
-    "entropy_final",
+    "decision_entropy_mean",
     "entropy_mean",
     "entropy_p90",
     "entropy_slope",

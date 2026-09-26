@@ -110,9 +110,22 @@ def math500_equivalent(left: str, right: str) -> bool:
 
 
 def score_math500(output_text: str, reference: str) -> bool:
-    """Judge-free symbolic equivalence for the frozen MATH-500 protocol."""
+    """Judge-free symbolic equivalence for the frozen MATH-500 protocol.
 
-    return math500_equivalent(output_text, reference)
+    The benchmark reference is always treated as an answer expression and
+    boxed before parsing. A model prediction uses its explicit FINAL field when
+    available; otherwise Math-Verify sees the complete output so its normal
+    extraction rules can operate.
+    """
+
+    metric = _math500_metric()
+    gold = _boxed_math(reference)
+    prediction = _math500_prediction_text(output_text)
+    try:
+        grade, _ = metric([gold], [prediction])
+    except Exception:
+        return False
+    return bool(grade == 1 or grade == 1.0)
 
 
 def score_record(dataset: str, output_text: str, reference: str) -> tuple[bool, str]:
@@ -146,9 +159,9 @@ def score_record(dataset: str, output_text: str, reference: str) -> tuple[bool, 
 def canonical_prediction(dataset: str, output_text: str) -> str | None:
     """Canonical prediction used only for label-free repeated-sampling agreement.
 
-    This deliberately avoids reference answers. MATH-500 is excluded because
-    clustering algebraically equivalent free-form expressions requires the
-    symbolic equivalence layer rather than unsafe string normalization.
+    This deliberately avoids reference answers. MATH-500 is handled by the
+    separate pairwise symbolic-equivalence clustering path because unsafe
+    string normalization would split mathematically equivalent answers.
     """
 
     name = dataset.lower()

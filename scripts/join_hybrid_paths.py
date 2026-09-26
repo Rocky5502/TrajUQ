@@ -30,6 +30,20 @@ def index(path: str) -> dict[str, dict]:
     return result
 
 
+def assert_pre_outcome(row: dict, path: str, item_id: str) -> None:
+    if row.get("correct") is not None:
+        raise SystemExit(f"{path}: correctness leaked into raw path artifact for {item_id}")
+    if row.get("reference") is not None:
+        raise SystemExit(f"{path}: reference leaked into raw path artifact for {item_id}")
+    metadata = row.get("metadata", {})
+    forbidden = {"correct", "reference", "label", "y_error", "is_correct"}
+    leaked = sorted(forbidden.intersection(metadata))
+    if leaked:
+        raise SystemExit(
+            f"{path}: outcome-like metadata fields for {item_id}: {leaked}"
+        )
+
+
 def checkpoint_identity(row: dict) -> tuple[str | None, str | None]:
     generation_meta = row.get("generation", {}).get("metadata", {})
     row_meta = row.get("metadata", {})
@@ -90,6 +104,8 @@ def main() -> None:
         for item_id in sorted(ar):
             ar_row = ar[item_id]
             diff_row = diff[item_id]
+            assert_pre_outcome(ar_row, args.ar, item_id)
+            assert_pre_outcome(diff_row, args.diffusion, item_id)
 
             ar_prompt_hash = ar_row.get("prompt_sha256")
             diff_prompt_hash = diff_row.get("prompt_sha256")

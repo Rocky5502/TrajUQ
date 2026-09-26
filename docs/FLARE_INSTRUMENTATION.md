@@ -81,7 +81,7 @@ python scripts/join_hybrid_paths.py \
   --require-checkpoint-metadata
 ```
 
-The joiner refuses ID mismatches and prompt-hash mismatches (when hashes are available). It computes exact-text disagreement, parsed-answer disagreement where a conservative parser exists, normalized token edit distance, common-prefix fraction, and length difference. It writes **no correctness labels**.
+The joiner refuses ID mismatches and prompt-hash mismatches (when hashes are available). With `--require-checkpoint-metadata`, it also requires the same model ID and immutable revision on both paths. The joiner rejects scored AR/diffusion inputs or outcome-like metadata, computes exact-text disagreement, parsed-answer disagreement, normalized token edit distance, common-prefix fraction, and length difference, and writes **no correctness labels**. MATH-500 answer disagreement uses the pinned symbolic-equivalence scorer.
 
 
 ## Held-out RQ4 evaluation

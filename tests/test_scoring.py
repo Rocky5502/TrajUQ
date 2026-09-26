@@ -36,3 +36,17 @@ def test_math500_symbolic_equivalence_for_repeated_sampling():
     pytest.importorskip("math_verify")
     assert math500_equivalent(r"FINAL: \frac{2}{4}", r"FINAL: 0.5")
     assert not math500_equivalent(r"FINAL: \frac{1}{2}", r"FINAL: \frac{3}{4}")
+
+
+
+def test_math500_reference_is_boxed_independently_of_prediction_path():
+    pytest.importorskip("math_verify")
+    # The prediction includes surrounding text and an explicit FINAL field while
+    # the benchmark reference is a bare expression. This guards the scorer's
+    # asymmetric extraction contract.
+    ok, _ = score_record(
+        "math500",
+        r"Reasoning that should not be graded. FINAL: \frac{2}{4}",
+        r"\frac{1}{2}",
+    )
+    assert ok

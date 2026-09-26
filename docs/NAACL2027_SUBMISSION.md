@@ -99,6 +99,8 @@ python scripts/audit_paper.py --submission-ready
 
 Then separately run the official ACL pubcheck on the compiled PDF.
 
+Build the anonymous software archive with `python scripts/build_anonymous_supplement.py` and inspect its MANIFEST.json before upload.
+
 Before upload verify:
 
 - no TBD placeholders;

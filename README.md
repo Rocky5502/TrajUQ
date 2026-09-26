@@ -406,3 +406,18 @@ python scripts/aggregate_cells.py \
 The bootstrap resamples examples within every cell, preserves pairing between
 TrajUQ and the decision-entropy baseline, then macro-averages cells. It does not
 pool examples from differently sized datasets.
+
+
+## Anonymous ARR software supplement
+
+Do not submit or link the public development repository during anonymized review.
+Build a deterministic software ZIP instead:
+
+```bash
+python scripts/build_anonymous_supplement.py
+```
+
+The builder excludes paper source, author metadata, raw/gated data, model weights,
+run outputs, and the public development-repository identity. It scans selected
+text files for identity/tracking-path leaks and writes a SHA-256 manifest inside
+the archive.

@@ -44,3 +44,5 @@ mlruns/
 *.fdb_latexmk
 *.fls
 *.synctex.gz
+
+dist/

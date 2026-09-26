@@ -134,6 +134,12 @@ def main() -> None:
         "--output",
         default="dist/trajuq_anonymous_software.zip",
     )
+    parser.add_argument(
+        "--max-bytes",
+        type=int,
+        default=200 * 1024 * 1024,
+        help="Maximum archive size; ARR software uploads are capped at 200 MB.",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -209,13 +215,22 @@ def main() -> None:
             zip_write_bytes(zf, rel.as_posix(), (root / rel).read_bytes())
         zip_write_bytes(zf, "MANIFEST.json", manifest_bytes)
 
+    archive_size = output.stat().st_size
+    if archive_size > args.max_bytes:
+        output.unlink()
+        raise SystemExit(
+            f"Anonymous software archive exceeds size limit: "
+            f"{archive_size} > {args.max_bytes} bytes"
+        )
+
     archive_sha = sha256_bytes(output.read_bytes())
     payload = {
         "status": "PASS",
         "output": str(output.relative_to(root)),
         "archive_sha256": archive_sha,
         "file_count": len(entries) + 2,
-        "archive_bytes": output.stat().st_size,
+        "archive_bytes": archive_size,
+        "max_bytes": args.max_bytes,
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
 

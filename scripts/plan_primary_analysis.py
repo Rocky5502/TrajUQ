@@ -66,8 +66,10 @@ def exact_id_coverage(input_path: Path, artifact_path: Path) -> bool:
     return artifact_ids == input_ids
 
 
-def audit_passes(
+def run_audit_passes(
     artifact: Path,
+    *,
+    stage: str,
     expected_commit: str | None,
 ) -> bool:
     audit = audit_path(artifact)
@@ -82,8 +84,59 @@ def audit_passes(
         and payload.get("status") == "PASS"
         and payload.get("git_clean") is True
         and payload.get("git_commit") == expected_commit
-        and payload.get("stage") == "scored"
+        and payload.get("stage") == stage
         and str(payload.get("sha256", "")) == sha256_file(artifact)
+    )
+
+
+def scored_source_chain_passes(
+    source_input: Path,
+    raw: Path,
+    scored: Path,
+    expected_commit: str | None,
+) -> bool:
+    if not exact_id_coverage(source_input, raw):
+        return False
+    if not exact_id_coverage(source_input, scored):
+        return False
+    if not run_audit_passes(
+        raw,
+        stage="raw",
+        expected_commit=expected_commit,
+    ):
+        return False
+
+    raw_audit = audit_path(raw)
+    expected = {
+        "raw_run_sha256": sha256_file(raw),
+        "raw_audit_sha256": sha256_file(raw_audit),
+        "raw_audit_git_commit": expected_commit,
+        "scoring_input_sha256": sha256_file(source_input),
+    }
+    try:
+        rows = list(read_jsonl(scored))
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        return False
+    if not rows:
+        return False
+
+    for row in rows:
+        metadata = row.get("metadata", {})
+        if any(metadata.get(key) != value for key, value in expected.items()):
+            return False
+        if not metadata.get("scorer"):
+            return False
+    return True
+
+
+def audit_passes(
+    artifact: Path,
+    expected_commit: str | None,
+) -> bool:
+    return run_audit_passes(
+        artifact,
+        stage="scored",
+        expected_commit=expected_commit,
     )
 
 

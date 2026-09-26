@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 
 from trajuq.scoring import math500_equivalent, score_math500
@@ -15,6 +16,17 @@ EQUIVALENT_CASES = [
     (r"FINAL: 2", r"2"),
     (r"FINAL: -3", r"-3"),
 ]
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
 
 NON_EQUIVALENT_CASES = [
     (r"FINAL: \frac{1}{2}", r"\frac{2}{3}"),
@@ -89,8 +101,13 @@ def main() -> None:
         for item in results + pairwise_checks
         if bool(item["observed"]) != bool(item["expected"])
     ]
+    commit = git_head()
+    if not commit:
+        failures.append({"kind": "environment", "reason": "git_commit_unavailable"})
+
     payload = {
-        "protocol": "trajuq_math500_scorer_audit_v1",
+        "protocol": "trajuq_math500_scorer_audit_v2",
+        "git_commit": commit,
         "dependency": "math-verify[antlr4_13_2]==0.9.0",
         "status": "PASS" if not failures else "FAIL",
         "scorer_cases": results,

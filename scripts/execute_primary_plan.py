@@ -287,10 +287,7 @@ def command_needed(
             )
         return state != "COMPLETE"
     if step == "audit_raw":
-        return (
-            artifact_id_state(raw, spec) == "COMPLETE"
-            and not audit_passes(raw, "raw", expected_commit)
-        )
+        return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
         state = artifact_id_state(scored, spec)
         if state in {"PREFIX", "INVALID"}:
@@ -299,10 +296,7 @@ def command_needed(
             )
         return state == "MISSING"
     if step == "audit_scored":
-        return (
-            artifact_id_state(scored, spec) == "COMPLETE"
-            and not audit_passes(scored, "scored", expected_commit)
-        )
+        return not audit_passes(scored, "scored", expected_commit)
     raise ValueError(step)
 
 

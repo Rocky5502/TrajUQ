@@ -101,7 +101,11 @@ def test_analysis_provenance_rejects_scored_input_drift(
     audit.write_text(
         json.dumps(
             {
+                "protocol": "trajuq_run_audit_v1",
                 "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": "scored",
                 "sha256": _sha256(scored),
             }
         )
@@ -146,3 +150,58 @@ def test_analysis_provenance_rejects_scored_input_drift(
     failures = validate_plan_provenance(plan)
     assert any("scored input hash differs" in item for item in failures)
     assert any("audit no longer binds scored input" in item for item in failures)
+
+
+def test_analysis_provenance_rejects_audit_from_other_commit(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "a" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    scored = tmp_path / "test.scored.jsonl"
+    audit = tmp_path / "test.scored.jsonl.audit.json"
+
+    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": "other-commit",
+                "git_clean": True,
+                "stage": "scored",
+                "sha256": _sha256(scored),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spec = {
+        "path": str(scored),
+        "sha256": _sha256(scored),
+        "audit_path": str(audit),
+        "audit_sha256": _sha256(audit),
+    }
+    plan = {
+        "protocol": "trajuq_primary_analysis_plan_v2",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cell_analyses": [
+            {
+                "cell": "llada:gsm8k",
+                "inputs": {"calibration": dict(spec), "test": dict(spec)},
+            }
+        ],
+    }
+    monkeypatch.setattr(execute_primary_analysis, "git_head", lambda: commit)
+    monkeypatch.setattr(execute_primary_analysis, "git_status_porcelain", lambda: "")
+
+    failures = validate_plan_provenance(plan)
+    assert any("clean frozen scored PASS" in item for item in failures)

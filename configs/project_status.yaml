@@ -60,11 +60,12 @@ implementation:
       - scripts/execute_primary_plan.py
       - tests/test_execute_primary_plan.py
   - id: primary_analysis
-    label: "Frozen-audit-bound 18-cell analysis ledger and hierarchical macro aggregation"
+    label: "Frozen-audit-bound 18-cell analysis ledger with primary and feature-ablation hierarchical macros"
     state: DONE
     evidence:
       - scripts/plan_primary_analysis.py
       - scripts/aggregate_cells.py
+      - scripts/aggregate_feature_ablation.py
   - id: resumable_primary_analysis_executor
     label: "Resumable provenance-checked primary-analysis executor"
     state: DONE
@@ -126,7 +127,7 @@ implementation:
       - scripts/resolve_experiment_revisions.py
       - scripts/resolve_hf_revision.py
   - id: artifact_derived_paper
-    label: "Config-revalidated claim-gated manuscript renderer with five-source SHA manifest"
+    label: "Config-revalidated claim-gated manuscript renderer with six-source SHA manifest"
     state: DONE
     evidence:
       - scripts/render_results_tex.py
@@ -278,7 +279,7 @@ execution_gates:
     label: "All 18 primary cell analyses plus macro and RQ1 gate complete"
     stage: analysis
     issue: 8
-    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, macro aggregation, and the frozen RQ1 gate. Execution refuses any drift in the plan-bound scored inputs, audits, primary plan/config, or experiment commit."
+    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, the primary macro, complete 18-cell feature-ablation macro, and frozen RQ1 gate. Execution refuses drift in plan-bound scored inputs, audits, primary plan/config, or experiment commit."
     artifact: results/primary_analysis_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
@@ -315,6 +316,12 @@ execution_gates:
     issue: 8
     artifact: results/primary_analysis/macro_primary.json
     expect: {key: cell_set_complete, equals: true}
+  - id: feature_ablation_macro
+    label: "Complete frozen 18-cell feature-ablation macro result"
+    stage: analysis
+    issue: 8
+    artifact: results/primary_analysis/macro_feature_ablation.json
+    expect: {key: cell_set_complete, equals: true}
   - id: rq1_claim_gate
     label: "RQ1 claim decision frozen"
     stage: analysis
@@ -349,7 +356,7 @@ execution_gates:
     label: "Artifact-derived paper result manifest"
     stage: submission
     issue: 11
-    action: "Run python scripts/render_results_tex.py. It re-evaluates the frozen RQ1 gate and SHA-binds primary, claim-gate, repeated, adaptive, and primary-config sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
+    action: "Run python scripts/render_results_tex.py. It re-evaluates the frozen RQ1 gate and SHA-binds primary, claim-gate, repeated, feature-ablation, adaptive, and primary-config sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
     artifact: paper/generated_results_manifest.json
     expect: {key: protocol, equals: trajuq_paper_results_render_v1}
   - id: submission_readiness

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -17,6 +18,25 @@ CELL_STEPS = (
     ("feature_ablation", "feature_ablation_argv", ("feature_ablation",)),
     ("raw_risk_diagnostic", "raw_risk_diagnostic_argv", ("raw_risk_diagnostic",)),
 )
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def valid_json(path: Path) -> bool:
@@ -45,6 +65,73 @@ def output_valid(path: Path) -> bool:
     if path.suffix == ".jsonl":
         return valid_jsonl(path)
     return path.exists() and path.stat().st_size > 0
+
+
+def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    if plan.get("protocol") != "trajuq_primary_analysis_plan_v2":
+        failures.append("primary analysis plan protocol is not v2")
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != expected_commit:
+        failures.append(
+            "current git commit differs from the frozen experiment commit"
+        )
+
+    for key, hash_key in (
+        ("primary_plan", "primary_plan_sha256"),
+        ("primary_config", "primary_config_sha256"),
+    ):
+        path = Path(str(plan.get(key, "")))
+        expected_hash = str(plan.get(hash_key, ""))
+        if not path.exists() or not expected_hash:
+            failures.append(f"analysis plan missing bound {key} artifact")
+        elif sha256_file(path) != expected_hash:
+            failures.append(f"{key} hash differs from analysis plan")
+
+    for cell in plan.get("cell_analyses", []):
+        label = str(cell.get("cell", "<unknown>"))
+        inputs = cell.get("inputs", {})
+        for partition in ("calibration", "test"):
+            spec = inputs.get(partition, {})
+            scored = Path(str(spec.get("path", "")))
+            expected_scored_hash = str(spec.get("sha256", ""))
+            audit = Path(str(spec.get("audit_path", "")))
+            expected_audit_hash = str(spec.get("audit_sha256", ""))
+
+            if not scored.exists() or not expected_scored_hash:
+                failures.append(f"{label} {partition}: bound scored input missing")
+                continue
+            observed_scored_hash = sha256_file(scored)
+            if observed_scored_hash != expected_scored_hash:
+                failures.append(
+                    f"{label} {partition}: scored input hash differs from plan"
+                )
+
+            if not audit.exists() or not expected_audit_hash:
+                failures.append(f"{label} {partition}: bound audit missing")
+                continue
+            if sha256_file(audit) != expected_audit_hash:
+                failures.append(
+                    f"{label} {partition}: audit hash differs from plan"
+                )
+                continue
+            try:
+                audit_payload = json.loads(audit.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                failures.append(f"{label} {partition}: audit is invalid JSON")
+                continue
+            if audit_payload.get("status") != "PASS":
+                failures.append(f"{label} {partition}: audit is not PASS")
+            if str(audit_payload.get("sha256", "")) != observed_scored_hash:
+                failures.append(
+                    f"{label} {partition}: audit no longer binds scored input"
+                )
+
+    return failures
 
 
 def step_state(cell: dict[str, Any], output_keys: tuple[str, ...]) -> str:
@@ -126,8 +213,10 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         else "IN_PROGRESS"
     )
     return {
-        "protocol": "trajuq_primary_analysis_execution_state_v1",
+        "protocol": "trajuq_primary_analysis_execution_state_v2",
         "status": status,
+        "plan_protocol": plan.get("protocol"),
+        "experiment_git_commit": plan.get("experiment_git_commit"),
         "expected_cells": expected,
         "observed_cells": len(cells),
         "complete_cells": complete_cells,
@@ -246,6 +335,13 @@ def main() -> None:
     if plan.get("status") != "PASS":
         raise SystemExit("Primary analysis plan is not PASS.")
 
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Primary analysis provenance validation failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
+
     cells = list(plan.get("cell_analyses", []))
     expected = int(plan.get("cell_count", 0))
     if expected <= 0 or len(cells) != expected:
@@ -325,12 +421,18 @@ def main() -> None:
                 step="macro_aggregation",
                 event_log=event_path,
             )
-            if args.execute and macro_state(plan)["macro_primary"] != "COMPLETE":
+            if (
+                args.execute
+                and macro_state(plan)["macro_primary"] != "COMPLETE"
+            ):
                 write_snapshot(plan, state_path)
-                raise SystemExit("Primary macro command did not produce a complete macro.")
+                raise SystemExit(
+                    "Primary macro command did not produce a complete macro."
+                )
         elif final["macro_primary"] == "INVALID":
             raise SystemExit(
-                "Existing primary macro is invalid; do not overwrite it automatically."
+                "Existing primary macro is invalid; "
+                "do not overwrite it automatically."
             )
         else:
             print("[SKIP] primary macro_aggregation: complete")
@@ -356,7 +458,8 @@ def main() -> None:
     final_snapshot = write_snapshot(plan, state_path)
     print(
         "[TrajUQ] final analysis progress: "
-        f"{final_snapshot['complete_cells']}/{final_snapshot['expected_cells']} cells; "
+        f"{final_snapshot['complete_cells']}/"
+        f"{final_snapshot['expected_cells']} cells; "
         f"macro={final_snapshot['final']['macro_primary']}; "
         f"claim_gate={final_snapshot['final']['rq1_claim_gate']}"
     )

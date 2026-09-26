@@ -231,10 +231,11 @@ python scripts/execute_primary_analysis.py --execute
 ```
 
 This produces cell-level held-out metrics, nested calibrated comparison,
-feature-family ablations, the training-free raw-risk diagnostic, the complete
-equal-cell-weight macro result, and the pre-registered RQ1 claim gate. A
-negative RQ1 gate is a valid scientific result and must not trigger post-hoc
-analysis redesign.
+feature-family ablations plus exact per-example group probabilities, the
+training-free raw-risk diagnostic, the complete equal-cell-weight primary
+macro, the complete 18-cell hierarchical feature-ablation macro, and the
+pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
+and must not trigger post-hoc analysis redesign.
 
 ## 8. RQ2 expensive five-sample comparator
 
@@ -269,7 +270,9 @@ trajectory.
 ## 10. Paper rendering and submission checks
 
 Empirical values must enter the manuscript only through artifact-derived
-rendering:
+rendering. The renderer requires the complete primary, RQ1 gate, feature
+ablation, repeated-sampling, and adaptive artifacts before replacing any TBD
+macro:
 
 ```bash
 python scripts/render_results_tex.py

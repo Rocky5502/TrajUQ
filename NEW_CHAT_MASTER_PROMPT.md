@@ -243,12 +243,12 @@ After pre-primary readiness PASS:
 4. complete all 18 generation/audit/scoring cells;
 5. create `results/primary_analysis_plan.json` only after scored artifacts and audits exist;
 6. dry-run then execute `scripts/execute_primary_analysis.py`;
-7. aggregate the complete 18-cell primary endpoint;
+7. aggregate the complete 18-cell primary endpoint and the complete frozen feature-ablation macro;
 8. execute the frozen RQ1 claim gate unchanged;
 9. execute the hash-bound 18-cell five-sample comparator;
 10. execute the hash-bound RQ3 25/50/75% adaptive matrix;
 11. optionally execute RQ4 only after the primary path is healthy;
-12. render manuscript results only from frozen artifacts.
+12. render manuscript results only from frozen primary, RQ1, ablation, repeated, and adaptive artifacts.
 
 Execution scripts are designed to be resumable and non-overwriting. Existing PARTIAL/INVALID artifacts must be inspected, not silently replaced.
 

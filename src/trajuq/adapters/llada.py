@@ -263,7 +263,7 @@ class LLaDAAdapter(BaseAdapter):
                 "temperature": float(temperature),
                 "cfg_scale": float(cfg_scale),
                 "remasking": remasking,
-                "trajectory_semantics": "active_unresolved_positions_v2",
+                "trajectory_semantics": "active_unresolved_positions_v4",
                 "parity_status": "PENDING_GPU_AUDIT",
             },
         )

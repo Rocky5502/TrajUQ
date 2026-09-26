@@ -247,7 +247,16 @@ python scripts/evaluate_feature_ablation.py \
   --test runs/llada_gsm8k_test.scored.jsonl \
   --output results/llada_gsm8k_feature_ablation.json
 
-# Expensive five-sample uncertainty baseline (example; repeat --cal-sample/--test-sample):
+# Generate the frozen five-sample baseline with nonzero sampling temperature:
+python scripts/run_repeated_samples.py \
+  --adapter llada \
+  --model inclusionAI/LLaDA-MoE-7B-A1B-Instruct \
+  --revision <EXACT_MODEL_SHA> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output-dir runs/repeated/llada_gsm8k_cal \
+  --temperature 0.2
+
+# Evaluate repeated-sampling uncertainty (repeat --cal-sample/--test-sample):
 python scripts/evaluate_repeated_sampling.py \
   --cal-target runs/llada_gsm8k_cal.scored.jsonl \
   --cal-sample runs/cal_seed1.raw.jsonl \

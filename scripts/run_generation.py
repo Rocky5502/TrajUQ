@@ -65,10 +65,24 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--block-length", type=int, default=128)
     parser.add_argument("--mask-id", type=int, default=None)
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--top-p", type=float, default=1.0)
+    parser.add_argument("--llada-cfg-scale", type=float, default=0.0)
+    parser.add_argument(
+        "--llada-remasking",
+        choices=["low_confidence", "random"],
+        default="low_confidence",
+    )
+    parser.add_argument(
+        "--dream-alg",
+        choices=["origin", "maskgit_plus", "topk_margin", "entropy"],
+        default="entropy",
+    )
+    parser.add_argument("--dream-alg-temp", type=float, default=0.1)
     parser.add_argument("--sdar-denoising-steps", type=int, default=4)
-    parser.add_argument("--sdar-temperature", type=float, default=0.0)
+    parser.add_argument("--sdar-temperature", type=float, default=None)
     parser.add_argument("--sdar-top-k", type=int, default=0)
-    parser.add_argument("--sdar-top-p", type=float, default=1.0)
+    parser.add_argument("--sdar-top-p", type=float, default=None)
     parser.add_argument(
         "--sdar-remasking-strategy",
         choices=["sequential", "low_confidence_static", "low_confidence_dynamic"],
@@ -117,6 +131,10 @@ def main() -> None:
                 seed=args.seed,
                 steps=args.steps,
                 max_new_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                alg=args.dream_alg,
+                alg_temp=args.dream_alg_temp,
             )
         elif args.adapter == "sdar":
             result = adapter.generate(
@@ -125,9 +143,13 @@ def main() -> None:
                 gen_length=args.max_new_tokens,
                 block_length=args.block_length,
                 denoising_steps=args.sdar_denoising_steps,
-                temperature=args.sdar_temperature,
+                temperature=(
+                    args.temperature
+                    if args.sdar_temperature is None
+                    else args.sdar_temperature
+                ),
                 top_k=args.sdar_top_k,
-                top_p=args.sdar_top_p,
+                top_p=args.top_p if args.sdar_top_p is None else args.sdar_top_p,
                 remasking_strategy=args.sdar_remasking_strategy,
                 confidence_threshold=args.sdar_confidence_threshold,
             )
@@ -138,6 +160,9 @@ def main() -> None:
                 steps=args.steps,
                 gen_length=args.max_new_tokens,
                 block_length=args.block_length,
+                temperature=args.temperature,
+                cfg_scale=args.llada_cfg_scale,
+                remasking=args.llada_remasking,
             )
 
         if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():

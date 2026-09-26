@@ -376,7 +376,7 @@ class SDARAdapter(BaseAdapter):
                 "upstream_repository": UPSTREAM_REPOSITORY,
                 "upstream_commit": UPSTREAM_COMMIT,
                 "telemetry_scope": "generated positions within each active SDAR block",
-                "trajectory_semantics": "active_unresolved_positions_v2",
+                "trajectory_semantics": "active_unresolved_positions_v4",
                 "gen_length": int(gen_length),
                 "block_length": int(block_length),
                 "denoising_steps": int(denoising_steps),

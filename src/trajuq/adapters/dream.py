@@ -109,6 +109,6 @@ class DreamAdapter(BaseAdapter):
                 "top_p": float(top_p),
                 "algorithm": alg,
                 "algorithm_temperature": float(alg_temp),
-                "trajectory_semantics": "active_unresolved_positions_v2",
+                "trajectory_semantics": "active_unresolved_positions_v4",
             },
         )

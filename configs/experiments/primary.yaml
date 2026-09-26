@@ -61,7 +61,7 @@ statistics:
     confidence_level: 0.95
 
 adaptive_compute:
-  risk_model: trajectory_plus_final_logistic
+  risk_model: trajectory_plus_decision_logistic
   crossfit_policy_selection: true
   crossfit_folds: 5
   threshold_selection: out_of_fold_calibration_only
@@ -96,6 +96,9 @@ baselines:
   expensive:
     repeated_sampling:
       samples: 5
+      seeds: [2027, 2028, 2029, 2030, 2031]
+      temperature: 0.2
+      top_p: 1.0
       features: [sample_disagreement, sample_vote_entropy, sample_unique_fraction]
       calibration: logistic
       compute_report_required: true

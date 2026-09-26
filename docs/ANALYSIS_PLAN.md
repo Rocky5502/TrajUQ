@@ -20,7 +20,7 @@ Before primary outcomes are inspected, the following ablations are frozen: decis
 
 ## Expensive repeated-sampling baseline
 
-As a stronger but more expensive uncertainty comparator, freeze a five-sample final-answer disagreement baseline. For each example, independently generated label-free samples are canonicalized without consulting the reference answer; variation ratio, normalized vote entropy, and unique-answer fraction are calibrated on the calibration partition and evaluated on the same held-out target labels. Its extra inference cost must be reported explicitly. MATH-500 is excluded from this baseline until algebraic-equivalence clustering is implemented; string matching is not permitted as a substitute.
+As a stronger but more expensive uncertainty comparator, freeze a five-sample final-answer disagreement baseline using seeds 2027--2031, native sampling temperature 0.2, and top-$p=1.0$. For each example, independently generated label-free samples are canonicalized without consulting the reference answer; variation ratio, normalized vote entropy, and unique-answer fraction are calibrated on the calibration partition and evaluated on the same held-out target labels. Its extra inference cost must be reported explicitly. MATH-500 is excluded from this baseline until algebraic-equivalence clustering is implemented; string matching is not permitted as a substitute.
 
 ## RQ2 — Calibration and selective generation
 

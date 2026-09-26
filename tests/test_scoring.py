@@ -19,6 +19,8 @@ def test_mc_scoring():
     assert not score_record("mmlu_pro", "FINAL: C", "B")[0]
 
 
-def test_math500_not_silently_approximated():
-    with pytest.raises(ValueError):
-        score_record("math500", "FINAL: 1/2", r"\frac{1}{2}")
+def test_math500_uses_symbolic_scorer_when_dependency_is_installed():
+    pytest.importorskip("math_verify")
+    ok, name = score_record("math500", r"FINAL: \frac{1}{2}", r"\frac{1}{2}")
+    assert ok
+    assert name == "math_verify_0.9.0_precision6"

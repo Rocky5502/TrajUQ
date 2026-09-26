@@ -169,7 +169,13 @@ The processed benchmark directory is gitignored. The split manifest records requ
 
 ## Preflight and freeze
 
-Keep the tracked model YAML as a generic template. Resolve an immutable model SHA and create an artifact-local frozen config with `scripts/freeze_model_config.py`; use that frozen config for preflight and manifests:
+Keep the tracked model/data configs as generic templates. Before the primary
+matrix, `python scripts/resolve_experiment_revisions.py` resolves all three
+primary models and all six datasets to immutable Hugging Face SHAs and writes
+artifact-local frozen model configs. The lower-level
+`scripts/resolve_hf_revision.py` and `scripts/freeze_model_config.py` remain
+available for individual debugging. Use the frozen config for preflight and
+manifests:
 
 ```bash
 python scripts/preflight.py \

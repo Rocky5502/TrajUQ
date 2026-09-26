@@ -21,10 +21,22 @@ python scripts/primary_readiness.py
 
 Do not continue unless `results/primary_readiness.json` says `PASS`.
 
-## 2. Freeze exact model revisions without editing tracked templates
+## 2. Freeze exact model and dataset revisions without editing tracked templates
 
-For each primary model, resolve an immutable Hugging Face SHA, then create an
-artifact-local config.
+Preferred one-command resolver:
+
+```bash
+python scripts/resolve_experiment_revisions.py
+```
+
+This resolves all three primary model repositories and all six dataset
+repositories to immutable Hugging Face SHAs, writes
+`results/revision_ledger.json`, and creates artifact-local model configs under
+`results/frozen_models/`. It writes no frozen configs if any repository fails
+to resolve. GPQA is gated, so authenticate to Hugging Face before running this
+command.
+
+The lower-level per-model route remains available when debugging:
 
 Example:
 
@@ -42,10 +54,10 @@ python scripts/freeze_model_config.py \
 
 Repeat for `sdar` and `dream`.
 
-## 3. Freeze all dataset snapshots
+## 3. Prepare all dataset snapshots
 
-Run `resolve_hf_revision.py --repo-type dataset` for every primary dataset and
-prepare its pair with the exact SHA:
+Use the exact dataset SHAs from `results/revision_ledger.json` and prepare each
+pair:
 
 ```bash
 python scripts/prepare_eval_pair.py \

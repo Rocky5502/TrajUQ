@@ -120,7 +120,7 @@ implementation:
       - scripts/evaluate_hybrid_diagnostic.py
       - docs/FLARE_INSTRUMENTATION.md
   - id: revision_ledger
-    label: "One-command immutable model/dataset revision ledger"
+    label: "Commit-bound immutable model/dataset revision ledger"
     state: DONE
     evidence:
       - scripts/resolve_experiment_revisions.py
@@ -149,6 +149,7 @@ implementation:
     evidence:
       - scripts/verify_cpu.ps1
       - scripts/verify_cpu.sh
+      - scripts/freeze_preprimary_windows.ps1
       - .github/workflows/ci.yml
 
 execution_gates:
@@ -183,7 +184,7 @@ execution_gates:
     label: "10-trace human pilot review"
     stage: pre_primary
     issue: 1
-    action: "Inspect the exported 10-trace sheet and record the attestation with scripts/record_manual_gate.py."
+    action: "Inspect the exported 10-trace sheet and record the protocol-v2 attestation with scripts/record_manual_gate.py; it binds the review sheet, LLaDA parity, and pilot-quality artifacts by SHA-256."
     artifact: results/llada_gsm8k_pilot50_manual_review.json
     expect: {key: status, equals: PASS}
   - id: sdar_parity
@@ -204,20 +205,20 @@ execution_gates:
     label: "Automatic MATH-500 scorer audit"
     stage: pre_primary
     issue: 4
-    action: "Run python scripts/audit_math500_scorer.py."
+    action: "Run python scripts/audit_math500_scorer.py at the frozen experiment commit; protocol v2 records that git commit."
     artifact: results/math500_scorer_audit.json
     expect: {key: status, equals: PASS}
   - id: math500_manual
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
-    action: "Export and inspect the calibration-only scorer review sheet, then record the manual attestation."
+    action: "Export and inspect the calibration-only scorer review sheet, then record the protocol-v2 manual attestation; it binds the sheet and automatic scorer audit by SHA-256 at the frozen commit."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires CPU verification and all three exact-parity artifacts to match the revision-ledger git commit and model SHAs."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires CPU verification, pilot quality/manual review, MATH-500 scorer audit/manual review, and all three exact-parity artifacts to be commit/hash-bound to the revision ledger."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

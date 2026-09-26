@@ -21,6 +21,7 @@ models = [
   "datasets>=3.0",
   "accelerate>=0.34",
   "sentencepiece>=0.2",
+  "huggingface_hub>=0.24",
 ]
 dev = [
   "pytest>=8.0",

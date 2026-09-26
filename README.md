@@ -169,6 +169,10 @@ python scripts/freeze_manifest.py \
 
 A primary experiment should not use an unpinned model revision.
 
+## First pilot choice
+
+The first GPU pilot is frozen to **LLaDA-MoE-7B-A1B-Instruct on GSM8K calibration data**. Resolve immutable Hugging Face SHAs with `scripts/resolve_hf_revision.py`, pass the 20-prompt exact parity gate, and only then run the 50-example pilot. Full commands are in `docs/PILOT_RUNBOOK.md`.
+
 ## 50-example GPU pilot
 
 ```bash

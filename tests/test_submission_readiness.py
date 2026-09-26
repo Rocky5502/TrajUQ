@@ -4,7 +4,7 @@ import json
 import yaml
 
 import scripts.submission_readiness as submission_readiness
-from scripts.render_results_tex import build_macros, render_tex
+from scripts.render_results_tex import ABLATION_SUFFIXES, build_macros, render_tex
 from scripts.submission_readiness import (
     prerequisite_gate_failures,
     preprimary_revalidation_argv,
@@ -81,6 +81,28 @@ def make_render_sources(tmp_path):
             "aurc": {"baseline_macro": 0.32, "candidate_macro": 0.29},
         },
     }
+    ablation = {
+        "protocol": "trajuq_feature_ablation_macro_v1",
+        "baseline": "decision_only",
+        "cell_set_complete": True,
+        "expected_cells": 18,
+        "observed_cells": 18,
+        "groups": {
+            name: {
+                "metrics": {
+                    metric: {
+                        "baseline_macro": 0.60,
+                        "candidate_macro": 0.61,
+                        "improvement_macro": 0.01,
+                        "improvement_ci_low": -0.01,
+                        "improvement_ci_high": 0.03,
+                    }
+                    for metric in ("auroc", "auprc", "aurc")
+                }
+            }
+            for name in ABLATION_SUFFIXES
+        },
+    }
     adaptive = {
         "protocol": "trajuq_adaptive_macro_v1",
         "execution_semantics": "selective_second_pass_rerun",
@@ -114,6 +136,7 @@ def make_render_sources(tmp_path):
         "primary": primary,
         "claim_gate": claim,
         "repeated": repeated,
+        "ablation": ablation,
         "adaptive": adaptive,
     }
     sources = {}
@@ -139,6 +162,7 @@ def write_valid_render_bundle(tmp_path):
         payloads["primary"],
         payloads["claim_gate"],
         payloads["repeated"],
+        payloads["ablation"],
         payloads["adaptive"],
         primary_cfg,
     )

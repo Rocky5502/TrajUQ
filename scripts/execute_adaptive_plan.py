@@ -313,6 +313,21 @@ def evaluation_state(
         and not exact_prediction_coverage(predictions, expected_ids)
     ):
         return "INVALID"
+    try:
+        payload = json.loads(result.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "INVALID"
+    if payload.get("protocol") != "trajuq_adaptive_evaluation_v2":
+        return "INVALID"
+    if payload.get("execution_semantics") != "selective_second_pass_rerun":
+        return "INVALID"
+    if (
+        float(payload.get("max_refine_fraction", -1.0))
+        != float(spec.get("max_refine_fraction", -2.0))
+    ):
+        return "INVALID"
+    if expected_ids is not None and int(payload.get("n_test", -1)) != len(expected_ids):
+        return "INVALID"
     return "COMPLETE"
 
 
@@ -325,9 +340,16 @@ def macro_state(spec: dict[str, Any], expected_cells: int) -> str:
     except (OSError, json.JSONDecodeError):
         return "INVALID"
     complete = (
-        payload.get("cell_set_complete") is True
+        payload.get("protocol") == "trajuq_adaptive_macro_v1"
+        and payload.get("execution_semantics") == "selective_second_pass_rerun"
+        and payload.get("cell_set_complete") is True
+        and int(payload.get("expected_cells", -1)) == expected_cells
         and int(payload.get("observed_cells", -1)) == expected_cells
         and str(payload.get("fraction_key")) == str(spec.get("fraction_key"))
+        and float(payload.get("max_refine_fraction", -1.0))
+        == float(spec.get("max_refine_fraction", -2.0))
+        and bool(payload.get("is_primary_fraction"))
+        == bool(spec.get("primary"))
     )
     return "COMPLETE" if complete else "INVALID"
 
@@ -628,9 +650,16 @@ def main() -> None:
                     "did not validate."
                 )
 
+        try:
+            expected_test_ids = expected_input_ids(cell["test_base"])
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            raise SystemExit(
+                f"{scope}: cannot resolve frozen adaptive test IDs: {exc}"
+            ) from exc
+
         for key in selected_fraction_keys:
             evaluation = cell["evaluations"][key]
-            state = evaluation_state(evaluation)
+            state = evaluation_state(evaluation, expected_test_ids)
             if state == "COMPLETE":
                 print(f"[SKIP] {scope} {key}: evaluation complete")
                 continue
@@ -646,7 +675,10 @@ def main() -> None:
                 step=f"evaluate_{key}",
                 event_log=event_path,
             )
-            if args.execute and evaluation_state(evaluation) != "COMPLETE":
+            if args.execute and evaluation_state(
+                evaluation,
+                expected_test_ids,
+            ) != "COMPLETE":
                 write_snapshot(plan, state_path)
                 raise SystemExit(
                     f"{scope} {key}: evaluation outputs incomplete."

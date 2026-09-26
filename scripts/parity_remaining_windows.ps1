@@ -15,6 +15,11 @@ function Run-Step {
     if ($LASTEXITCODE -ne 0) { throw "$Name failed with exit code $LASTEXITCODE" }
 }
 
+function Get-FileSha256 {
+    param([string]$Path)
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
+
 function Read-FrozenState {
     $LedgerPath = "results/revision_ledger.json"
     $CpuPath = "results/cpu_verification.json"
@@ -62,9 +67,20 @@ function Require-ExistingParity {
     )
     if (-not (Test-Path $Path)) { return $false }
     $Parity = Get-Content $Path -Raw | ConvertFrom-Json
+    $Reference = [string]$Parity.reference
+    $Instrumented = [string]$Parity.instrumented
+    $ReferenceHashOk = (
+        (Test-Path $Reference) -and
+        $Parity.reference_sha256 -eq (Get-FileSha256 $Reference)
+    )
+    $InstrumentedHashOk = (
+        (Test-Path $Instrumented) -and
+        $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
+    )
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
+        $Parity.git_clean -eq $true -and
         $Parity.require_token_ids -eq $true -and
         $Parity.require_provenance -eq $true -and
         $Parity.git_commit -eq $Head -and
@@ -72,10 +88,12 @@ function Require-ExistingParity {
         $Parity.mismatch_count -eq 0 -and
         $Parity.provenance_mismatch_count -eq 0 -and
         $Parity.run_provenance.adapter -eq $Adapter -and
-        $Parity.run_provenance.model_revision -eq $Revision
+        $Parity.run_provenance.model_revision -eq $Revision -and
+        $ReferenceHashOk -and
+        $InstrumentedHashOk
     )
     if (-not $Pass) {
-        throw "Existing $Path is not a valid frozen parity PASS. Inspect it before rerunning."
+        throw "Existing $Path is not a clean hash-bound frozen parity PASS. Inspect it before rerunning."
     }
     return $true
 }
@@ -197,10 +215,44 @@ $DatasetSha = [string]$DatasetEntry[0].resolved_sha
 if (-not $DatasetSha -or $DatasetSha -eq "null") { throw "Ledger has no frozen GSM8K SHA." }
 
 $CalData = "data/processed/gsm8k/calibration.jsonl"
-if (-not (Test-Path $CalData)) {
+$TestData = "data/processed/gsm8k/test.jsonl"
+$SplitManifest = "data/processed/gsm8k/split_manifest.json"
+$SplitAudit = "data/processed/gsm8k/split_audit.json"
+$SplitArtifacts = @($CalData, $TestData, $SplitManifest, $SplitAudit)
+$ExistingSplitArtifacts = @($SplitArtifacts | Where-Object { Test-Path $_ })
+
+if ($ExistingSplitArtifacts.Count -eq 0) {
     Run-Step "Prepare frozen GSM8K pair" {
         & $Python scripts/prepare_eval_pair.py --dataset gsm8k --revision $DatasetSha
     }
+}
+elseif ($ExistingSplitArtifacts.Count -ne $SplitArtifacts.Count) {
+    throw (
+        "Partial GSM8K split artifacts exist: " +
+        ($ExistingSplitArtifacts -join ", ") +
+        ". Inspect them before parity; this wrapper will not overwrite frozen data."
+    )
+}
+else {
+    $Split = Get-Content $SplitManifest -Raw | ConvertFrom-Json
+    $Audit = Get-Content $SplitAudit -Raw | ConvertFrom-Json
+    if ($Split.requested_revision -ne $DatasetSha) {
+        throw "Existing GSM8K split revision differs from the frozen revision ledger."
+    }
+    if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalData)) {
+        throw "Existing GSM8K calibration hash differs from its split manifest."
+    }
+    if ($Split.test_sha256 -ne (Get-FileSha256 $TestData)) {
+        throw "Existing GSM8K test hash differs from its split manifest."
+    }
+    if (
+        $Audit.status -ne "PASS" -or
+        $Audit.id_overlap_count -ne 0 -or
+        $Audit.exact_prompt_overlap_count -ne 0
+    ) {
+        throw "Existing GSM8K split audit is not a zero-overlap PASS."
+    }
+    Write-Host "Frozen GSM8K pair already present and hash-valid; preserving it." -ForegroundColor Green
 }
 
 if ($Model -in @("sdar", "all")) {

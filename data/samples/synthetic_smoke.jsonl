@@ -1,0 +1,3 @@
+{"id":"syn-001","dataset":"synthetic","prompt":"If a box has 3 red balls and 2 blue balls, how many balls are there in total?","reference":"5","metadata":{"purpose":"pipeline smoke test"}}
+{"id":"syn-002","dataset":"synthetic","prompt":"Which is larger: 12 or 21? Answer with the larger integer.","reference":"21","metadata":{"purpose":"pipeline smoke test"}}
+{"id":"syn-003","dataset":"synthetic","prompt":"Compute 7 + 8. Give only the final integer.","reference":"15","metadata":{"purpose":"pipeline smoke test"}}

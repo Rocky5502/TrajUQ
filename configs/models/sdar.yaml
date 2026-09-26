@@ -1,0 +1,12 @@
+name: sdar_1_7b
+adapter: sdar
+model_id: PLACEHOLDER_FREEZE_FROM_UPSTREAM
+device: cuda
+dtype: bfloat16
+upstream:
+  repository: JetAstra/SDAR
+  commit: 4c2749ba103448f45520e8411533710a1e66574d
+status: integration_boundary
+notes:
+  - Do not claim SDAR results until the upstream block-diffusion loop is instrumented and parity-tested.
+  - Capture logits immediately before transfer/remasking and state immediately after each denoising step.

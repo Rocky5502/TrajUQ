@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "datasets": {
+    "gsm8k": {
+      "hf_id": "openai/gsm8k",
+      "config": "main",
+      "split": "test",
+      "license": "MIT",
+      "gated": false
+    },
+    "math500": {
+      "hf_id": "HuggingFaceH4/MATH-500",
+      "config": null,
+      "split": "test",
+      "license": "see upstream dataset card",
+      "gated": false
+    },
+    "gpqa_diamond": {
+      "hf_id": "Idavidrein/gpqa",
+      "config": "gpqa_diamond",
+      "split": "train",
+      "license": "CC-BY-4.0; gated terms also apply",
+      "gated": true
+    },
+    "arc_challenge": {
+      "hf_id": "allenai/ai2_arc",
+      "config": "ARC-Challenge",
+      "split": "test",
+      "license": "CC-BY-SA-4.0",
+      "gated": false
+    },
+    "mmlu_pro": {
+      "hf_id": "TIGER-Lab/MMLU-Pro",
+      "config": null,
+      "split": "test",
+      "license": "MIT",
+      "gated": false
+    },
+    "truthfulqa": {
+      "hf_id": "truthfulqa/truthful_qa",
+      "config": "multiple_choice",
+      "split": "validation",
+      "license": "Apache-2.0",
+      "gated": false
+    }
+  }
+}

@@ -1,0 +1,30 @@
+experiment:
+  name: pilot_50
+  seed: 2027
+  limit: 50
+  output_dir: runs/pilot
+
+generation:
+  max_new_tokens: 128
+  steps: 128
+  temperature: 0.0
+  top_p: 1.0
+  top_k: 0
+
+trajectory:
+  topk_distribution: 16
+  keep_step_token_ids: true
+  late_fraction: 0.25
+
+calibration:
+  method: logistic
+  random_state: 2027
+
+decision:
+  accept_max_error_prob: 0.20
+  abstain_min_error_prob: 0.70
+
+guardrails:
+  labels_available_to_generator: false
+  fit_thresholds_on_test: false
+  matched_mean_compute_for_adaptive_policy: true

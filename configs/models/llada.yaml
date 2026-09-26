@@ -1,0 +1,16 @@
+name: llada_instruct
+adapter: llada
+model_id: GSAI-ML/LLaDA-8B-Instruct
+trust_remote_code: true
+dtype: bfloat16
+device: cuda
+generation:
+  gen_length: 128
+  steps: 128
+  block_length: 32
+  temperature: 0.0
+  cfg_scale: 0.0
+  remasking: low_confidence
+notes:
+  - Pilot adapter follows the public masked-diffusion decoding structure with added trajectory observation.
+  - LLaDA-MoE-7B-A1B-Instruct is the preferred primary checkpoint once its exact generation interface/revision is frozen.

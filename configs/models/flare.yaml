@@ -1,0 +1,13 @@
+name: flare_2b
+adapter: flare
+model_id: PLACEHOLDER_FREEZE_FROM_UPSTREAM
+device: cuda
+dtype: bfloat16
+upstream:
+  repository: yuchen-zhu-zyc/HybridDiffusion
+  commit: 6ca547aebb72bfe897e80e0a683c776789e5f38c
+status: integration_boundary
+notes:
+  - FLARE is primarily used for same-checkpoint AR versus diffusion diagnostics.
+  - Upstream code/checkpoints have PolyForm Noncommercial terms; review them before use/redistribution.
+  - Do not vendor upstream runtime code here.

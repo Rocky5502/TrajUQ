@@ -55,7 +55,14 @@ particular, the following are implemented and versioned:
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus a one-command Windows
-  pre-primary freeze wrapper.
+  pre-primary freeze wrapper;
+- clean-checkout provenance guards across the pilot wrapper, primary readiness,
+  all frozen planners, and all primary/repeated/adaptive executors, so an
+  uncommitted source edit cannot masquerade under the frozen git SHA;
+- primary-readiness v2 additionally revalidates the revision-ledger dataset
+  manifest hash and the exact CPU-verification protocol/step sequence;
+- a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
+  handoff exporter that refuses to omit required continuation context.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:
@@ -102,7 +109,8 @@ The remaining work is primarily **execution**, not paper-number invention.
    hashes. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
-   CPU, parity, pilot, human-review, and MATH-500 scorer artifacts.
+   CPU, parity, pilot, human-review, MATH-500 scorer, dataset-manifest, commit,
+   and dirty-worktree state.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 

@@ -393,7 +393,7 @@ The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vo
 
 ## MATH-500 scorer
 
-MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass.
+MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass. Use `scripts/export_math500_scorer_review.py` to create the deterministic subject/level-diverse review sheet from a scored calibration-only pilot; the attestation records that sheet's SHA-256.
 
 ## Scientific guardrails
 

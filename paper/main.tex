@@ -289,7 +289,7 @@ Random matched & \AdaptiveRandomAccuracy & \AdaptiveRandomCost & 0\\
 \section{Analysis Plan}
 
 We will first test whether trajectory information improves the nested decision-entropy baseline.
-We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases.
+We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired hierarchical bootstrap and are reported in Appendix~\ref{tab:feature-ablation}.
 For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
 Negative results do not trigger post-hoc feature redesign on final test labels.
 

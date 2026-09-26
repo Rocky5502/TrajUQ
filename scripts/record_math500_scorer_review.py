@@ -24,6 +24,18 @@ def git_head() -> str | None:
         return None
 
 
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -78,8 +90,13 @@ def main() -> None:
             failures.append(f"invalid automatic audit JSON: {exc}")
 
     commit = git_head()
+    clean = git_clean()
     if not commit:
         failures.append("git commit could not be resolved")
+    if clean is not True:
+        failures.append(
+            "git worktree must be clean when recording the human attestation"
+        )
     if audit_commit is not None and commit is not None and audit_commit != commit:
         failures.append(
             f"automatic scorer audit commit {audit_commit} differs from current commit {commit}"
@@ -101,6 +118,7 @@ def main() -> None:
         "status": "PASS" if not failures else "FAIL",
         "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": commit,
+        "git_clean": clean,
         "automatic_audit": str(audit_path),
         "automatic_audit_sha256": audit_sha256,
         "automatic_audit_status": audit_status,

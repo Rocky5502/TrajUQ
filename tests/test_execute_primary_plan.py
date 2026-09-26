@@ -173,13 +173,19 @@ def test_partial_scored_artifact_is_rejected_before_overwrite(tmp_path):
 def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
     primary = tmp_path / "primary.yaml"
     readiness = tmp_path / "readiness.json"
+    ledger = tmp_path / "revision_ledger.json"
     model = tmp_path / "llada.yaml"
+    split_manifest = tmp_path / "split_manifest.json"
+    split_audit = tmp_path / "split_audit.json"
     cal = tmp_path / "cal.jsonl"
     test = tmp_path / "test.jsonl"
     for path, text in (
         (primary, "experiment: {}\n"),
         (readiness, '{"status":"PASS"}\n'),
+        (ledger, '{"status":"PASS"}\n'),
         (model, "revision: abc\n"),
+        (split_manifest, '{"dataset":"gsm8k"}\n'),
+        (split_audit, '{"status":"PASS"}\n'),
         (cal, '{"id":"c"}\n'),
         (test, '{"id":"t"}\n'),
     ):
@@ -200,6 +206,8 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
         "primary_config_sha256": hashlib.sha256(primary.read_bytes()).hexdigest(),
         "readiness": str(readiness),
         "readiness_sha256": hashlib.sha256(readiness.read_bytes()).hexdigest(),
+        "revision_ledger": str(ledger),
+        "revision_ledger_sha256": hashlib.sha256(ledger.read_bytes()).hexdigest(),
         "model_configs": {
             "llada": {
                 "path": str(model),
@@ -209,6 +217,14 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
         "cells": [
             {
                 "cell": "llada:gsm8k",
+                "split_manifest": str(split_manifest),
+                "split_manifest_sha256": hashlib.sha256(
+                    split_manifest.read_bytes()
+                ).hexdigest(),
+                "split_audit": str(split_audit),
+                "split_audit_sha256": hashlib.sha256(
+                    split_audit.read_bytes()
+                ).hexdigest(),
                 "calibration": {
                     "input": str(cal),
                     "input_sha256": hashlib.sha256(cal.read_bytes()).hexdigest(),
@@ -234,10 +250,22 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
 def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
     primary = tmp_path / "primary.yaml"
     readiness = tmp_path / "readiness.json"
+    ledger = tmp_path / "revision_ledger.json"
     model = tmp_path / "llada.yaml"
+    split_manifest = tmp_path / "split_manifest.json"
+    split_audit = tmp_path / "split_audit.json"
     cal = tmp_path / "cal.jsonl"
     test = tmp_path / "test.jsonl"
-    for path in (primary, readiness, model, cal, test):
+    for path in (
+        primary,
+        readiness,
+        ledger,
+        model,
+        split_manifest,
+        split_audit,
+        cal,
+        test,
+    ):
         path.write_text("frozen\n", encoding="utf-8")
 
     monkeypatch.setattr(
@@ -252,6 +280,8 @@ def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
         "primary_config_sha256": hashlib.sha256(primary.read_bytes()).hexdigest(),
         "readiness": str(readiness),
         "readiness_sha256": hashlib.sha256(readiness.read_bytes()).hexdigest(),
+        "revision_ledger": str(ledger),
+        "revision_ledger_sha256": hashlib.sha256(ledger.read_bytes()).hexdigest(),
         "model_configs": {
             "llada": {
                 "path": str(model),
@@ -261,6 +291,14 @@ def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
         "cells": [
             {
                 "cell": "llada:gsm8k",
+                "split_manifest": str(split_manifest),
+                "split_manifest_sha256": hashlib.sha256(
+                    split_manifest.read_bytes()
+                ).hexdigest(),
+                "split_audit": str(split_audit),
+                "split_audit_sha256": hashlib.sha256(
+                    split_audit.read_bytes()
+                ).hexdigest(),
                 "calibration": {
                     "input": str(cal),
                     "input_sha256": cal_hash,

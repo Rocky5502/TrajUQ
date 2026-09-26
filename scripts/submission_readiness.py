@@ -10,6 +10,18 @@ from pathlib import Path
 
 import yaml
 
+from scripts.execute_adaptive_plan import (
+    validate_plan_provenance as validate_adaptive_provenance,
+)
+from scripts.execute_primary_analysis import (
+    validate_plan_provenance as validate_analysis_provenance,
+)
+from scripts.execute_primary_plan import (
+    validate_plan_provenance as validate_primary_provenance,
+)
+from scripts.execute_repeated_sampling import (
+    validate_plan_provenance as validate_repeated_provenance,
+)
 from scripts.project_status import build_snapshot
 
 
@@ -28,6 +40,56 @@ def load_json(path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ValueError(f"invalid JSON artifact {path}: {exc}") from exc
+
+
+def verify_downstream_provenance(
+    primary_plan_path: Path,
+    analysis_plan_path: Path,
+    repeated_plan_path: Path,
+    adaptive_plan_path: Path,
+) -> dict:
+    validators = (
+        ("primary", primary_plan_path, validate_primary_provenance),
+        ("analysis", analysis_plan_path, validate_analysis_provenance),
+        ("repeated", repeated_plan_path, validate_repeated_provenance),
+        ("adaptive", adaptive_plan_path, validate_adaptive_provenance),
+    )
+    checks: dict[str, dict] = {}
+    failures: list[str] = []
+
+    for label, path, validator in validators:
+        try:
+            payload = load_json(path)
+        except ValueError as exc:
+            checks[label] = {
+                "path": str(path),
+                "status": "FAIL",
+                "failures": [str(exc)],
+            }
+            failures.append(f"{label} plan unavailable/invalid: {exc}")
+            continue
+
+        plan_failures = validator(
+            payload,
+            require_current_commit=False,
+        )
+        checks[label] = {
+            "path": str(path),
+            "protocol": payload.get("protocol"),
+            "status": "PASS" if not plan_failures else "FAIL",
+            "experiment_git_commit": payload.get("experiment_git_commit"),
+            "failures": plan_failures,
+        }
+        failures.extend(
+            f"{label}: {failure}"
+            for failure in plan_failures
+        )
+
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "checks": checks,
+        "failures": failures,
+    }
 
 
 def verify_generated_results(
@@ -119,6 +181,22 @@ def main() -> None:
         default="configs/project_status.yaml",
     )
     parser.add_argument(
+        "--primary-plan",
+        default="results/primary_matrix_plan.json",
+    )
+    parser.add_argument(
+        "--primary-analysis-plan",
+        default="results/primary_analysis_plan.json",
+    )
+    parser.add_argument(
+        "--repeated-plan",
+        default="results/repeated_sampling_plan.json",
+    )
+    parser.add_argument(
+        "--adaptive-plan",
+        default="results/adaptive_matrix_plan.json",
+    )
+    parser.add_argument(
         "--results-manifest",
         default="paper/generated_results_manifest.json",
     )
@@ -167,6 +245,17 @@ def main() -> None:
                 f"{gate['id']}={gate['state']}"
                 for gate in required_not_pass
             )
+        )
+
+    downstream_provenance = verify_downstream_provenance(
+        Path(args.primary_plan),
+        Path(args.primary_analysis_plan),
+        Path(args.repeated_plan),
+        Path(args.adaptive_plan),
+    )
+    if downstream_provenance["status"] != "PASS":
+        failures.append(
+            "downstream experiment-plan provenance revalidation failed"
         )
 
     rendered = verify_generated_results(
@@ -218,6 +307,7 @@ def main() -> None:
         "project_gate_summary": snapshot["summary"],
         "required_gate_failures": required_not_pass,
         "preprimary_readiness_revalidation": preprimary_readiness,
+        "downstream_provenance_revalidation": downstream_provenance,
         "generated_results": rendered,
         "paper_audit": paper_audit,
         "supplement_build": supplement_build,

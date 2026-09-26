@@ -46,6 +46,7 @@ def run_audit_passes(
     audit_path: Path,
     artifact_path: Path,
     expected_stage: str,
+    expected_commit: str | None = None,
 ) -> tuple[bool, dict]:
     if not audit_path.exists() or not artifact_path.exists():
         return False, {}
@@ -54,9 +55,15 @@ def run_audit_passes(
     except (OSError, json.JSONDecodeError):
         return False, {}
     passed = (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
         and payload.get("stage") == expected_stage
         and str(payload.get("sha256", "")) == sha256_file(artifact_path)
+        and (
+            expected_commit is None
+            or payload.get("git_commit") == expected_commit
+        )
     )
     return passed, payload
 
@@ -271,10 +278,10 @@ def evaluate_readiness(
         raw_audit_path = raw_path.with_suffix(raw_path.suffix + ".audit.json")
         scored_audit_path = scored_path.with_suffix(scored_path.suffix + ".audit.json")
         raw_audit_ok, raw_audit = run_audit_passes(
-            raw_audit_path, raw_path, "raw"
+            raw_audit_path, raw_path, "raw", experiment_commit
         )
         scored_audit_ok, scored_audit = run_audit_passes(
-            scored_audit_path, scored_path, "scored"
+            scored_audit_path, scored_path, "scored", experiment_commit
         )
         quality_pass = (
             quality.get("protocol") == "trajuq_pilot_quality_gate_v2"
@@ -446,7 +453,7 @@ def evaluate_readiness(
             math_scored_path.suffix + ".audit.json"
         )
         math_scored_audit_ok, math_scored_audit = run_audit_passes(
-            math_scored_audit_path, math_scored_path, "scored"
+            math_scored_audit_path, math_scored_path, "scored", experiment_commit
         )
         math_audit_hash_ok = (
             math_audit_artifact.exists()
@@ -520,7 +527,7 @@ def evaluate_readiness(
                 instrumented_path.suffix + ".audit.json"
             )
             instrumented_audit_ok, instrumented_audit = run_audit_passes(
-                instrumented_audit_path, instrumented_path, "raw"
+                instrumented_audit_path, instrumented_path, "raw", experiment_commit
             )
 
             passed = (

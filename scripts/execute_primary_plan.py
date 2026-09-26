@@ -37,19 +37,24 @@ def git_head() -> str | None:
         return None
 
 
-def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+def validate_plan_provenance(
+    plan: dict[str, Any],
+    *,
+    require_current_commit: bool = True,
+) -> list[str]:
     failures: list[str] = []
     if plan.get("protocol") != "trajuq_primary_matrix_plan_v2":
         failures.append("primary plan protocol is not v2")
 
     expected_commit = plan.get("experiment_git_commit")
-    current_head = git_head()
-    if not current_head:
-        failures.append("current git commit could not be resolved")
-    elif current_head != expected_commit:
-        failures.append(
-            "current git commit differs from the primary plan experiment commit"
-        )
+    if require_current_commit:
+        current_head = git_head()
+        if not current_head:
+            failures.append("current git commit could not be resolved")
+        elif current_head != expected_commit:
+            failures.append(
+                "current git commit differs from the primary plan experiment commit"
+            )
 
     for key, hash_key in (
         ("primary_config", "primary_config_sha256"),

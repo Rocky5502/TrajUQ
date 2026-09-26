@@ -227,16 +227,27 @@ def main() -> None:
         partitions: dict[str, dict[str, str]] = {}
         for partition in ("calibration", "test"):
             source_input = Path(str(cell[partition]["input"]))
+            raw = Path(str(cell[partition]["raw_output"]))
             scored = Path(str(cell[partition]["scored_output"]))
+            if not raw.exists():
+                failures.append(
+                    f"{adapter}:{dataset} {partition}: missing raw artifact {raw}"
+                )
+                continue
             if not scored.exists():
                 failures.append(
                     f"{adapter}:{dataset} {partition}: missing scored artifact {scored}"
                 )
                 continue
-            if not exact_id_coverage(source_input, scored):
+            if not scored_source_chain_passes(
+                source_input,
+                raw,
+                scored,
+                experiment_commit,
+            ):
                 failures.append(
-                    f"{adapter}:{dataset} {partition}: scored artifact does not "
-                    "exactly cover the frozen input IDs"
+                    f"{adapter}:{dataset} {partition}: raw/scored source chain "
+                    "is incomplete, stale, or not hash-bound"
                 )
                 continue
             if not audit_passes(scored, experiment_commit):
@@ -246,6 +257,12 @@ def main() -> None:
                 )
                 continue
             partitions[partition] = {
+                "source_input": str(source_input),
+                "source_input_sha256": sha256_file(source_input),
+                "raw_path": str(raw),
+                "raw_sha256": sha256_file(raw),
+                "raw_audit_path": str(audit_path(raw)),
+                "raw_audit_sha256": sha256_file(audit_path(raw)),
                 "path": str(scored),
                 "sha256": sha256_file(scored),
                 "audit_path": str(audit_path(scored)),

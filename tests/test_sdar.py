@@ -27,6 +27,16 @@ def test_combine_sdar_block_features_weighted_and_extremal():
         "margin_mean": 0.7,
         "margin_min": 0.5,
         "margin_final": 0.8,
+        "decision_entropy_mean": 0.25,
+        "decision_entropy_p90": 0.35,
+        "decision_confidence_mean": 0.75,
+        "decision_margin_mean": 0.65,
+        "js_mean": 0.10,
+        "js_p90": 0.15,
+        "js_max": 0.20,
+        "js_final": 0.08,
+        "js_slope": -0.01,
+        "late_js_mean": 0.05,
         "revision_rate": 0.1,
         "late_revision_rate": 0.05,
         "revision_slope": -0.02,
@@ -37,12 +47,20 @@ def test_combine_sdar_block_features_weighted_and_extremal():
         "commitment_time_p90": 0.5,
     }
     b = dict(a)
-    b.update({"entropy_mean": 0.8, "entropy_max": 0.9, "margin_min": 0.2})
+    b.update({
+        "entropy_mean": 0.8,
+        "entropy_max": 0.9,
+        "margin_min": 0.2,
+        "js_max": 0.7,
+        "decision_entropy_mean": 0.55,
+    })
     features, summaries = _combine_block_features(
         [(1, a, [_summary(0)]), (3, b, [_summary(0), _summary(1)])]
     )
     assert abs(features["entropy_mean"] - 0.65) < 1e-12
     assert features["entropy_max"] == 0.9
     assert features["margin_min"] == 0.2
+    assert features["js_max"] == 0.7
+    assert abs(features["decision_entropy_mean"] - 0.475) < 1e-12
     assert features["trajectory_steps"] == 8.0
     assert [s.step for s in summaries] == [0, 1, 2]

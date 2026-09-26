@@ -5,7 +5,7 @@
 TrajUQ studies whether the *denoising trajectory itself* can predict when a diffusion language model is likely to be wrong, and whether that uncertainty can support calibrated selective generation and adaptive inference-time compute.
 
 > **Status (2026-09-26): pre-experiment research implementation.**  
-> The repository contains the trajectory schema/features, calibration and selective-generation metrics, leak-safe data/scoring pipeline, Dream and LLaDA pilot adapters, upstream boundaries for SDAR/FLARE, run audits, paired bootstrap utilities, and a two-budget adaptive-compute evaluator. **No paper result is claimed yet.**
+> The repository contains schema-v4 trajectory features, calibration and selective-generation metrics, leak-safe data/scoring, Dream/LLaDA/SDAR pilot adapters with parity gates, FLARE diagnostic bridging, run audits, paired bootstrap utilities, and a two-budget adaptive-compute evaluator. **No paper result is claimed yet.**
 
 ## Research questions
 

@@ -17,7 +17,8 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
     jitter = lambda scale: rng.uniform(-scale, scale)
     entropy_mean = 0.28 + 0.28 * e + jitter(0.04)
     entropy_p90 = 0.34 + 0.35 * e + jitter(0.04)
-    entropy_final = 0.32 + 0.12 * e + jitter(0.08)  # intentionally weaker baseline
+    entropy_final = 0.32 + 0.12 * e + jitter(0.08)
+    decision_entropy = 0.30 + 0.16 * e + jitter(0.07)  # intentionally weaker baseline
     margin_mean = 0.72 - 0.40 * e + jitter(0.04)
     revision = 0.04 + 0.42 * e + jitter(0.025)
     late_revision = 0.02 + 0.48 * e + jitter(0.02)
@@ -39,6 +40,10 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
         "margin_mean": min(1.0, max(0.0, margin_mean)),
         "margin_min": min(1.0, max(0.0, margin_mean - 0.12)),
         "margin_final": min(1.0, max(0.0, margin_mean + jitter(0.05))),
+        "decision_entropy_mean": min(1.0, max(0.0, decision_entropy)),
+        "decision_entropy_p90": min(1.0, max(0.0, decision_entropy + 0.08)),
+        "decision_confidence_mean": min(1.0, max(0.0, 1.0 - decision_entropy)),
+        "decision_margin_mean": min(1.0, max(0.0, margin_mean + jitter(0.03))),
         "revision_rate": max(0.0, revision),
         "late_revision_rate": max(0.0, late_revision),
         "revision_slope": 0.18 * e + jitter(0.02),
@@ -173,7 +178,7 @@ def main() -> None:
     )
 
     result = json.loads(metrics.read_text(encoding="utf-8"))
-    trajectory_auroc = float(result["trajectory_logistic"]["auroc"])
+    trajectory_auroc = float(result["trajectory_plus_decision_logistic"]["auroc"])
     if trajectory_auroc < 0.90:
         raise SystemExit(f"synthetic smoke regression: trajectory AUROC={trajectory_auroc:.3f}")
 

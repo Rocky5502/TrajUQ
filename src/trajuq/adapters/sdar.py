@@ -32,7 +32,7 @@ def _combine_block_features(
     if any(set(features) != feature_names for _, features, _ in blocks):
         raise ValueError("SDAR block feature schemas do not match.")
 
-    max_features = {"entropy_max"}
+    max_features = {"entropy_max", "js_max"}
     min_features = {"margin_min"}
     sum_features = {"trajectory_steps"}
     combined: dict[str, float] = {}

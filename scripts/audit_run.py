@@ -7,6 +7,7 @@ import json
 import math
 from pathlib import Path
 
+from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
 from trajuq.schema import SCHEMA_VERSION
 
@@ -72,6 +73,13 @@ def main() -> None:
         names = set(feats)
         if not feats:
             failures.append(f"row {i}: missing trajectory features")
+        else:
+            required = set(FINAL_BASELINE_FEATURES) | set(PRIMARY_TRAJECTORY_FEATURES)
+            missing_required = sorted(required - set(feats))
+            if missing_required:
+                failures.append(
+                    f"row {i}: missing frozen primary features={missing_required}"
+                )
         if feature_names is None:
             feature_names = names
         elif names != feature_names:

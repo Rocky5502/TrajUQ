@@ -422,13 +422,43 @@ def macro_state(plan: dict[str, Any]) -> str:
     except (OSError, json.JSONDecodeError):
         return "INVALID"
     expected_cells = int(plan.get("expected_cells", 0))
+    compute = payload.get("auxiliary_compute", {})
+    try:
+        mean_compute = float(
+            compute.get(
+                "mean_test_auxiliary_wall_time_seconds_per_example",
+                "nan",
+            )
+        )
+        mean_p90 = float(
+            compute.get(
+                "mean_test_p90_auxiliary_wall_time_seconds_per_example",
+                "nan",
+            )
+        )
+    except (TypeError, ValueError):
+        mean_compute = float("nan")
+        mean_p90 = float("nan")
+
     complete = (
-        payload.get("protocol") == "trajuq_vs_repeated_macro_v1"
+        payload.get("protocol") == "trajuq_vs_repeated_macro_v2"
         and payload.get("comparison")
         == "single_trajectory_trajuq_vs_five_sample_baseline"
         and payload.get("cell_set_complete") is True
         and int(payload.get("expected_cells", -1)) == expected_cells
         and int(payload.get("observed_cells", -1)) == expected_cells
+        and compute.get("aggregation") == "equal_cell_weight_macro"
+        and compute.get("complete") is True
+        and int(compute.get("expected_cells", -1)) == expected_cells
+        and int(
+            compute.get("observed_cells_with_complete_test_wall_time", -1)
+        )
+        == expected_cells
+        and int(compute.get("sample_count", -1)) == 5
+        and mean_compute >= 0.0
+        and mean_compute < float("inf")
+        and mean_p90 >= 0.0
+        and mean_p90 < float("inf")
         and set(payload.get("macro", {})) >= {
             "auroc",
             "auprc",

@@ -3,8 +3,10 @@ import json
 
 import scripts.submission_readiness as submission_readiness
 from scripts.submission_readiness import (
+    preprimary_revalidation_argv,
     verify_downstream_provenance,
     verify_generated_results,
+    verify_submission_checkout,
 )
 
 
@@ -207,3 +209,41 @@ def test_downstream_provenance_revalidation_surfaces_drift(
         "repeated: TrajUQ predictions hash drifted" in failure
         for failure in result["failures"]
     )
+
+
+def test_submission_revalidation_uses_historical_mode_and_separate_output():
+    argv = preprimary_revalidation_argv()
+    assert "scripts/primary_readiness.py" in argv
+    assert "--historical-provenance-only" in argv
+    assert "results/submission_preprimary_revalidation.json" in argv
+    assert "results/primary_readiness.json" not in argv
+
+
+def test_submission_checkout_allows_later_clean_commit(monkeypatch):
+    def fake_git_text(*args):
+        if args == ("rev-parse", "HEAD"):
+            return "submission-commit"
+        if args == ("status", "--porcelain"):
+            return ""
+        return None
+
+    monkeypatch.setattr(submission_readiness, "git_text", fake_git_text)
+    result = verify_submission_checkout()
+    assert result["status"] == "PASS"
+    assert result["git_commit"] == "submission-commit"
+    assert result["git_clean"] is True
+
+
+def test_submission_checkout_rejects_dirty_worktree(monkeypatch):
+    def fake_git_text(*args):
+        if args == ("rev-parse", "HEAD"):
+            return "submission-commit"
+        if args == ("status", "--porcelain"):
+            return " M paper/main.tex"
+        return None
+
+    monkeypatch.setattr(submission_readiness, "git_text", fake_git_text)
+    result = verify_submission_checkout()
+    assert result["status"] == "FAIL"
+    assert result["git_clean"] is False
+    assert any("worktree is dirty" in item for item in result["failures"])

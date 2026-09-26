@@ -126,6 +126,14 @@ def audit_run_provenance(
             .get("metadata", {})
             .get("model_revision")
         )
+        if require_revision and not record_revision:
+            failures.append(
+                f"row {i}: record metadata model revision is not pinned"
+            )
+        if require_revision and not generation_revision:
+            failures.append(
+                f"row {i}: generation metadata model revision is not pinned"
+            )
         if (
             record_revision
             and generation_revision
@@ -134,11 +142,9 @@ def audit_run_provenance(
             failures.append(
                 f"row {i}: record/generation model revisions disagree"
             )
-        revision = record_revision or generation_revision
+        revision = generation_revision or record_revision
         if revision:
             revisions.add(str(revision))
-        elif require_revision:
-            failures.append(f"row {i}: model revision is not pinned")
 
     for label, values in (
         ("dataset", datasets),

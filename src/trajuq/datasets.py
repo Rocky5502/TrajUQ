@@ -4,7 +4,7 @@ import hashlib
 from typing import Any
 
 
-NORMALIZER_VERSION = "trajuq-prompts-v1"
+NORMALIZER_VERSION = "trajuq-prompts-v2"
 
 
 def mc_prompt(question: str, choices: list[str], labels: list[str] | None = None) -> str:
@@ -41,11 +41,38 @@ def normalize_row(name: str, row: dict[str, Any], idx: int) -> dict[str, Any]:
 
     if name == "arc_challenge":
         choices = row["choices"]
+        texts = [str(value) for value in choices["text"]]
+        source_labels = [
+            str(value).strip()
+            for value in choices.get("label", [])
+        ]
+        canonical_labels = [
+            chr(ord("A") + i)
+            for i in range(len(texts))
+        ]
+        raw_answer = str(row["answerKey"]).strip()
+
+        if source_labels and raw_answer in source_labels:
+            answer_index = source_labels.index(raw_answer)
+        elif raw_answer.upper() in canonical_labels:
+            answer_index = canonical_labels.index(raw_answer.upper())
+        elif raw_answer.isdigit() and 1 <= int(raw_answer) <= len(texts):
+            answer_index = int(raw_answer) - 1
+        else:
+            raise ValueError(
+                "ARC answerKey does not match the available choice labels: "
+                f"answerKey={raw_answer!r}, labels={source_labels!r}"
+            )
+
         return {
             "id": str(row.get("id", idx)),
             "dataset": name,
-            "prompt": mc_prompt(row["question"], choices["text"], choices.get("label")),
-            "reference": row["answerKey"],
+            "prompt": mc_prompt(
+                row["question"],
+                texts,
+                canonical_labels,
+            ),
+            "reference": canonical_labels[answer_index],
             "metadata": {},
         }
 

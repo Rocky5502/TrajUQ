@@ -126,6 +126,16 @@ pytest -q
 python scripts/smoke_metrics.py
 ```
 
+## Local verification while GitHub Actions is unavailable
+
+The hosted Actions job is currently failing before runner allocation, so Windows users can validate the repository locally:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/verify_cpu.ps1
+```
+
+This runs compile checks, Ruff, pytest, metric smoke, and the leak-safe synthetic end-to-end pipeline. It does not replace GPU model parity.
+
 ## Prepare a frozen benchmark pair
 
 Install model/data extras, then pin an exact dataset revision:

@@ -22,6 +22,7 @@ def write_cpu_pass(path: Path, commit: str = EXPERIMENT_COMMIT) -> None:
     write_json(
         path,
         {
+            "protocol": "trajuq_cpu_verification_v1",
             "status": "PASS",
             "git_commit": commit,
             "git_clean": True,
@@ -59,6 +60,11 @@ def write_revision_ledger(
     *,
     commit: str = EXPERIMENT_COMMIT,
 ) -> dict[str, str]:
+    manifest = path.parent / "evaluation_splits.json"
+    manifest.write_text(
+        json.dumps({"datasets": {"gsm8k": {"hf_id": "openai/gsm8k"}}}),
+        encoding="utf-8",
+    )
     frozen_configs: dict[str, str] = {}
     frozen_hashes: dict[str, str] = {}
     model_rows: list[dict] = []
@@ -92,8 +98,8 @@ def write_revision_ledger(
             "git_commit": commit,
             "primary_config": str(config),
             "primary_config_sha256": sha256_file(config),
-            "dataset_manifest": "data/manifests/evaluation_splits.json",
-            "dataset_manifest_sha256": "unused-in-unit-test",
+            "dataset_manifest": str(manifest),
+            "dataset_manifest_sha256": sha256_file(manifest),
             "models": model_rows,
             "datasets": [
                 {
@@ -331,3 +337,43 @@ def test_primary_readiness_rejects_math_audit_from_other_commit(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("automatic scorer audit" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_mutated_dataset_manifest(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    ledger = json.loads(case["ledger"].read_text(encoding="utf-8"))
+    Path(ledger["dataset_manifest"]).write_text(
+        json.dumps({"datasets": {"gsm8k": {"hf_id": "changed/repo"}}}),
+        encoding="utf-8",
+    )
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("dataset manifest hash differs" in item for item in result["failures"])
+
+
+def test_primary_readiness_can_enforce_current_clean_checkout(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    result = evaluate_readiness(
+        str(case["config"]),
+        str(case["quality"]),
+        str(case["manual"]),
+        case["parity"],
+        str(case["math_audit"]),
+        str(case["math_manual"]),
+        str(case["cpu"]),
+        str(case["ledger"]),
+        enforce_current_git=True,
+        current_git_commit="different-commit",
+        current_git_clean=False,
+    )
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "current git commit differs from frozen experiment commit" in item
+        for item in result["failures"]
+    )
+    assert any(
+        "current git worktree is not clean" in item
+        for item in result["failures"]
+    )

@@ -16,7 +16,7 @@ TrajUQ studies whether the *denoising trajectory itself* can predict when a diff
 
 ## Core signal
 
-TrajUQ records compact pre-outcome trajectory statistics rather than full logits:
+For each denoising trajectory, TrajUQ records compact pre-outcome statistics rather than full vocabulary tensors:
 
 - normalized predictive entropy;
 - top-1 confidence and top-2 margin;
@@ -24,7 +24,7 @@ TrajUQ records compact pre-outcome trajectory statistics rather than full logits
 - mask persistence / commitment time;
 - early-to-late entropy and revision trends.
 
-The transparent training-free score in `src/trajuq/risk.py` is a ranking statistic, not an error probability. Probability estimates must be fitted on a held-out calibration split with `RiskCalibrator`.
+The transparent training-free score in `src/trajuq/risk.py` is a **ranking statistic**, not an error probability. Probability estimates must be fitted on a held-out calibration partition with `RiskCalibrator`.
 
 ## Repository layout
 
@@ -34,18 +34,19 @@ TrajUQ/
 │   ├── experiments/{pilot,primary}.yaml
 │   └── models/{dream,llada,sdar,flare}.yaml
 ├── data/
-│   ├── manifests/benchmarks.json
+│   ├── manifests/{benchmarks,evaluation_splits}.json
 │   ├── samples/synthetic_smoke.jsonl
 │   └── README.md
 ├── docs/
 │   ├── ANALYSIS_PLAN.md
+│   ├── DATA_SPLITS.md
+│   ├── GPU_PILOT.md
 │   ├── PROTOCOL.md
 │   ├── REPRODUCIBILITY.md
+│   ├── SDAR_INSTRUMENTATION.md
 │   └── UPSTREAMS.md
 ├── scripts/
-│   ├── download_data.py
-│   ├── prepare_benchmarks.py
-│   ├── split_inputs.py
+│   ├── prepare_eval_pair.py
 │   ├── run_generation.py
 │   ├── audit_run.py
 │   ├── score_outputs.py
@@ -53,11 +54,13 @@ TrajUQ/
 │   ├── compare_methods.py
 │   ├── evaluate_adaptive.py
 │   ├── freeze_manifest.py
+│   ├── preflight.py
 │   └── environment_snapshot.py
 ├── src/trajuq/
 │   ├── adapters/
 │   ├── adaptive.py
 │   ├── calibration.py
+│   ├── datasets.py
 │   ├── decision.py
 │   ├── evaluation.py
 │   ├── risk.py
@@ -65,8 +68,8 @@ TrajUQ/
 │   ├── statistics.py
 │   └── trajectory.py
 ├── tests/
-├── THIRD_PARTY.md
 ├── EXPERIMENT_FREEZE_CHECKLIST.md
+├── THIRD_PARTY.md
 ├── CITATION.cff
 ├── LICENSE
 └── pyproject.toml
@@ -74,30 +77,43 @@ TrajUQ/
 
 ## Model matrix
 
-| Family | Public checkpoint | Role | Current integration state |
+| Family | Public checkpoint | Role | Integration state |
 |---|---|---|---|
 | LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | pilot adapter; GPU parity audit required |
 | SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | pinned upstream boundary; telemetry integration next |
 | Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | hook-based pilot adapter; GPU audit required |
 | FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | upstream boundary; noncommercial upstream terms |
 
-Exact model revisions must be pinned before primary experiments. A model name alone is not a reproducible experimental specification.
+Exact model/tokenizer revisions must be pinned before primary experiments. A model name alone is not a reproducible experimental specification.
 
-## Data policy
+## Data and split policy
 
-Primary manifest: GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
+Primary suite: GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
 
-Raw benchmark snapshots are **not committed**. GPQA is gated, and dataset licenses/terms differ. The repository commits dataset identifiers/configs/splits plus deterministic preparation code. Calibration/test partitions must be frozen **before model calls**.
+Raw benchmark snapshots are **not committed**. GPQA is gated, dataset licenses/terms differ, and local caches are not reliable provenance records. TrajUQ commits identifiers, split policy, and deterministic preparation code.
 
-MATH-500 symbolic correctness is intentionally blocked until an audited symbolic-equivalence scorer is frozen; TrajUQ will not silently approximate symbolic correctness with string matching.
+Preferred split policy:
+
+| Dataset | Calibration | Final evaluation |
+|---|---|---|
+| GSM8K | official train | official test |
+| ARC-Challenge | official validation | official test |
+| MMLU-Pro | official validation | official test |
+| GPQA-Diamond | frozen internal holdout | frozen internal holdout |
+| TruthfulQA | frozen internal holdout of validation | frozen internal holdout of validation |
+| MATH-500 | frozen internal holdout only | frozen internal holdout only |
+
+For one-split datasets, results are explicitly described as **internal held-out evaluation**, not a standard full-benchmark score. MATH-500 is additionally blocked until an audited symbolic-equivalence scorer is frozen.
+
+See `docs/DATA_SPLITS.md`.
 
 ## Quick start
 
 ```bash
 git clone https://github.com/Rocky5502/TrajUQ.git
 cd TrajUQ
-python -m venv .venv
 
+python -m venv .venv
 # Windows:
 # .venv\Scripts\activate
 # Linux/macOS:
@@ -108,66 +124,146 @@ pytest -q
 python scripts/smoke_metrics.py
 ```
 
-For GPU/data work:
+## Prepare a frozen benchmark pair
+
+Install model/data extras, then pin an exact dataset revision:
 
 ```bash
 pip install -e ".[models]"
 
-python scripts/download_data.py --dataset gsm8k arc_challenge mmlu_pro truthfulqa
-python scripts/prepare_benchmarks.py --dataset gsm8k
-python scripts/split_inputs.py   --input data/processed/gsm8k.jsonl   --output-dir data/processed/gsm8k_frozen   --calibration-fraction 0.30
+python scripts/prepare_eval_pair.py \
+  --dataset gsm8k \
+  --revision <EXACT_DATASET_REVISION>
 ```
 
-Freeze the environment/config/data before the first real run:
+This writes:
+
+```text
+data/processed/gsm8k/
+├── calibration.jsonl
+├── test.jsonl
+└── split_manifest.json
+```
+
+The processed benchmark directory is gitignored. The split manifest records requested revision, dataset fingerprints, counts, and SHA-256 hashes.
+
+## Preflight and freeze
+
+Set an exact `revision` in the selected model YAML, then:
 
 ```bash
-python scripts/environment_snapshot.py --output results/environment.json
-python scripts/freeze_manifest.py   --model-config configs/models/llada.yaml   --dataset data/processed/gsm8k_frozen/calibration.jsonl   --dataset data/processed/gsm8k_frozen/test.jsonl   --output results/llada_gsm8k_freeze.json
+python scripts/preflight.py \
+  --model-config configs/models/llada.yaml \
+  --data data/processed/gsm8k/calibration.jsonl \
+  --require-cuda
+
+python scripts/environment_snapshot.py \
+  --output results/environment.json
+
+python scripts/freeze_manifest.py \
+  --model-config configs/models/llada.yaml \
+  --dataset data/processed/gsm8k/calibration.jsonl \
+  --dataset data/processed/gsm8k/test.jsonl \
+  --output results/llada_gsm8k_freeze.json
 ```
 
-Pilot generation:
+A primary experiment should not use an unpinned model revision.
+
+## 50-example GPU pilot
 
 ```bash
-python scripts/run_generation.py   --adapter llada   --model inclusionAI/LLaDA-MoE-7B-A1B-Instruct   --revision <EXACT_MODEL_COMMIT>   --input data/processed/gsm8k_frozen/calibration.jsonl   --output runs/llada_gsm8k_cal.raw.jsonl   --limit 50   --steps 128   --block-length 128
+python scripts/run_generation.py \
+  --adapter llada \
+  --model inclusionAI/LLaDA-MoE-7B-A1B-Instruct \
+  --revision <EXACT_MODEL_COMMIT> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/llada_gsm8k_cal.raw.jsonl \
+  --limit 50 \
+  --steps 128 \
+  --block-length 128
 ```
 
-The raw generation file must contain **no outcomes**:
+Audit the **raw** artifact before it can see outcomes:
 
 ```bash
 python scripts/audit_run.py \
   --run runs/llada_gsm8k_cal.raw.jsonl \
   --stage raw \
   --require-revision
-
-python scripts/score_outputs.py   --run runs/llada_gsm8k_cal.raw.jsonl   --input data/processed/gsm8k_frozen/calibration.jsonl   --output runs/llada_gsm8k_cal.scored.jsonl
-
-python scripts/audit_run.py --run runs/llada_gsm8k_cal.scored.jsonl --stage scored
 ```
 
-After calibration/test runs are both scored:
+Then score into a separate immutable artifact:
 
 ```bash
-python scripts/evaluate_run.py   --calibration runs/llada_gsm8k_cal.scored.jsonl   --test runs/llada_gsm8k_test.scored.jsonl   --output results/llada_gsm8k_metrics.json
+python scripts/score_outputs.py \
+  --run runs/llada_gsm8k_cal.raw.jsonl \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/llada_gsm8k_cal.scored.jsonl
 
-python scripts/compare_methods.py   --input runs/llada_gsm8k_test.scored.jsonl   --n-boot 2000
+python scripts/audit_run.py \
+  --run runs/llada_gsm8k_cal.scored.jsonl \
+  --stage scored \
+  --require-revision
 ```
 
-RQ3 uses frozen base/refined compute runs. Select the threshold on calibration only, then apply it unchanged to test:
+`score_outputs.py` verifies the prompt hash before joining the external correctness label, so a modified scoring input cannot silently relabel a generation.
+
+## Held-out evaluation
+
+After calibration and test runs are frozen and scored:
 
 ```bash
-python scripts/evaluate_adaptive.py   --cal-base runs/cal_base.scored.jsonl   --cal-refined runs/cal_refined.scored.jsonl   --test-base runs/test_base.scored.jsonl   --test-refined runs/test_refined.scored.jsonl   --max-refine-fraction 0.50   --base-compute 64   --refined-compute 128
+python scripts/evaluate_run.py \
+  --calibration runs/llada_gsm8k_cal.scored.jsonl \
+  --test runs/llada_gsm8k_test.scored.jsonl \
+  --output results/llada_gsm8k_metrics.json
+
+python scripts/compare_methods.py \
+  --input runs/llada_gsm8k_test.scored.jsonl \
+  --n-boot 2000
+```
+
+The comparison utility uses paired class-stratified bootstrap intervals on identical examples.
+
+## RQ3: adaptive compute
+
+Generate frozen base-budget and refined-budget artifacts first. Select the refinement threshold on calibration only, then apply it unchanged to test:
+
+```bash
+python scripts/evaluate_adaptive.py \
+  --cal-base runs/cal_base.scored.jsonl \
+  --cal-refined runs/cal_refined.scored.jsonl \
+  --test-base runs/test_base.scored.jsonl \
+  --test-refined runs/test_refined.scored.jsonl \
+  --max-refine-fraction 0.50 \
+  --base-compute 64 \
+  --refined-compute 128
 ```
 
 ## Scientific guardrails
 
 1. **No invented results.**
-2. **Outcome isolation:** raw generation artifacts contain no references/correctness.
+2. **Outcome isolation:** raw generation contains neither references nor correctness.
 3. **Freeze before scale:** one model × 50 examples before the full matrix.
-4. **No test-label tuning:** features, calibrators, thresholds, and adaptive policies are selected on calibration data only.
-6. **Matched compute for RQ3:** adaptive policies are compared at the same expected refinement fraction/mean compute.
-6. **Paired statistics:** method comparisons use identical examples and paired stratified bootstrap intervals.
-7. **Pin revisions:** model, tokenizer, upstream runtime, data, prompts, and code commit are part of the experimental specification.
-8. **Do not redistribute gated data or model weights.**
+4. **Freeze data roles before generation:** use official calibration/test separation when available.
+5. **No test-label tuning:** features, calibrators, thresholds, and adaptive policies are selected on calibration data only.
+6. **Matched compute for RQ3:** adaptive policies are compared at the same expected refinement fraction / mean compute.
+7. **Paired statistics:** method comparisons use identical examples and paired stratified bootstrap intervals.
+8. **Pin revisions:** model, tokenizer, upstream runtime, data, prompts, and code commit are part of the experimental specification.
+9. **Do not redistribute gated data, third-party model weights, or caches.**
+
+## Experiment gates
+
+The repository tracks the remaining gates as GitHub issues:
+
+- GPU pilot / 50-item gate;
+- SDAR telemetry parity;
+- FLARE/HybridDiffusion diagnostic parity;
+- Dream hook parity;
+- MATH-500 symbolic scorer;
+- CI runner allocation.
+
+Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass.
 
 ## Paper
 
@@ -175,4 +271,4 @@ Working title:
 
 > **When Diffusion Language Models Are Unsure: Trajectory-Aware Uncertainty for Selective and Adaptive Generation**
 
-The immediate experimental gate is a 50-example GPU pilot with a clean raw audit, manual trace inspection, deterministic feature recomputation, stable model/data revisions, and enough risk variation to justify scaling.
+The current manuscript is intentionally pre-experiment: numerical result cells remain TBD until traceable artifacts exist.

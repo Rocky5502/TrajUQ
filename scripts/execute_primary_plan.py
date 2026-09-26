@@ -113,7 +113,11 @@ def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
 
 
-def audit_passes(artifact: Path) -> bool:
+def audit_passes(
+    artifact: Path,
+    expected_stage: str,
+    expected_commit: str | None = None,
+) -> bool:
     audit = audit_path(artifact)
     if not artifact.exists() or not audit.exists():
         return False
@@ -121,19 +125,29 @@ def audit_passes(artifact: Path) -> bool:
         payload = json.loads(audit.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
-    if payload.get("status") != "PASS":
-        return False
-    observed = payload.get("sha256")
-    return bool(observed) and str(observed) == sha256_file(artifact)
+    return (
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("stage") == expected_stage
+        and str(payload.get("sha256", "")) == sha256_file(artifact)
+        and (
+            expected_commit is None
+            or payload.get("git_commit") == expected_commit
+        )
+    )
 
 
-def partition_state(spec: dict[str, Any]) -> dict[str, Any]:
+def partition_state(
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> dict[str, Any]:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     raw_exists = raw.exists()
     scored_exists = scored.exists()
-    raw_audit_pass = audit_passes(raw)
-    scored_audit_pass = audit_passes(scored)
+    raw_audit_pass = audit_passes(raw, "raw", expected_commit)
+    scored_audit_pass = audit_passes(scored, "scored", expected_commit)
     return {
         "raw_output": str(raw),
         "scored_output": str(scored),
@@ -155,11 +169,12 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
     completed_partitions = 0
     total_partitions = 0
 
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
     for cell in plan.get("cells", []):
         partitions: dict[str, Any] = {}
         for name in ("calibration", "test"):
             total_partitions += 1
-            state = partition_state(cell[name])
+            state = partition_state(cell[name], expected_commit)
             completed_partitions += int(state["complete"])
             partitions[name] = state
         cells.append(
@@ -213,17 +228,21 @@ def write_snapshot(plan: dict[str, Any], path: Path) -> dict[str, Any]:
     return snapshot
 
 
-def command_needed(step: str, spec: dict[str, Any]) -> bool:
+def command_needed(
+    step: str,
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> bool:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
         return not raw.exists()
     if step == "audit_raw":
-        return not audit_passes(raw)
+        return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
         return not scored.exists()
     if step == "audit_scored":
-        return not audit_passes(scored)
+        return not audit_passes(scored, "scored", expected_commit)
     raise ValueError(step)
 
 
@@ -317,6 +336,7 @@ def main() -> None:
         cell for cell in cells
         if not requested or str(cell["cell"]) in requested
     ]
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
     partitions = (
         ("calibration", "test")
         if args.partition == "both"
@@ -338,7 +358,7 @@ def main() -> None:
             spec = cell[partition]
             for step, key in STEP_KEYS:
                 argv = [str(value) for value in spec[key]]
-                needed = command_needed(step, spec)
+                needed = command_needed(step, spec, expected_commit)
                 if not needed:
                     print(
                         f"[SKIP] {cell_name} {partition} {step}: "

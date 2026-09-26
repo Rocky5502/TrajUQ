@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -22,6 +23,14 @@ def load_json(path: str) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def parse_override(value: str) -> tuple[str, str]:
     if "=" not in value:
         raise argparse.ArgumentTypeError("--parity must use MODEL=PATH")
@@ -40,22 +49,96 @@ def evaluate_readiness(
     math500_audit_path: str = "results/math500_scorer_audit.json",
     math500_manual_path: str = "results/math500_scorer_manual_review.json",
     cpu_verification_path: str = "results/cpu_verification.json",
+    revision_ledger_path: str = "results/revision_ledger.json",
 ) -> dict:
     failures: list[str] = []
     checks: dict[str, dict] = {}
 
     cfg_path = Path(primary_config)
+    primary_models: list[str] = []
+    primary_datasets: list[str] = []
+    cfg: dict = {}
     if not cfg_path.exists():
         failures.append(f"missing primary config: {primary_config}")
-        primary_models: list[str] = []
     else:
         cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
         primary_models = [
             Path(path).stem
             for path in cfg.get("models", {}).get("primary", [])
         ]
+        primary_datasets = [str(name) for name in cfg.get("datasets", [])]
         if not primary_models:
             failures.append("primary config contains no primary models")
+        if not primary_datasets:
+            failures.append("primary config contains no primary datasets")
+
+    experiment_commit: str | None = None
+    ledger_models: dict[str, dict] = {}
+    try:
+        ledger = load_json(revision_ledger_path)
+        experiment_commit = ledger.get("git_commit")
+        ledger_models = {
+            str(item.get("adapter")): item
+            for item in ledger.get("models", [])
+            if item.get("adapter")
+        }
+        ledger_datasets = {
+            str(item.get("name")): item
+            for item in ledger.get("datasets", [])
+            if item.get("name")
+        }
+        ledger_pass = (
+            ledger.get("protocol") == "trajuq_revision_ledger_v2"
+            and ledger.get("status") == "PASS"
+            and isinstance(experiment_commit, str)
+            and bool(experiment_commit)
+            and set(ledger_models) == set(primary_models)
+            and set(ledger_datasets) == set(primary_datasets)
+        )
+
+        observed_primary_sha = sha256_file(cfg_path) if cfg_path.exists() else None
+        if observed_primary_sha != ledger.get("primary_config_sha256"):
+            ledger_pass = False
+            failures.append("primary config hash differs from revision ledger")
+
+        frozen_configs = ledger.get("frozen_model_configs", {})
+        frozen_hashes = ledger.get("frozen_model_config_sha256", {})
+        for model in primary_models:
+            frozen_path = Path(str(frozen_configs.get(model, "")))
+            expected_hash = frozen_hashes.get(model)
+            if not frozen_path.exists() or not expected_hash:
+                ledger_pass = False
+                failures.append(f"{model}: frozen model config missing from revision ledger")
+                continue
+            if sha256_file(frozen_path) != expected_hash:
+                ledger_pass = False
+                failures.append(f"{model}: frozen model config hash differs from revision ledger")
+            try:
+                frozen = yaml.safe_load(frozen_path.read_text(encoding="utf-8"))
+                if str(frozen.get("revision")) != str(
+                    ledger_models.get(model, {}).get("resolved_sha")
+                ):
+                    ledger_pass = False
+                    failures.append(
+                        f"{model}: frozen config revision differs from revision ledger"
+                    )
+            except (OSError, yaml.YAMLError, TypeError) as exc:
+                ledger_pass = False
+                failures.append(f"{model}: frozen config invalid: {exc}")
+
+        checks["revision_ledger"] = {
+            "path": revision_ledger_path,
+            "status": ledger.get("status"),
+            "protocol": ledger.get("protocol"),
+            "git_commit": experiment_commit,
+            "primary_config_sha256": ledger.get("primary_config_sha256"),
+            "model_adapters": sorted(ledger_models),
+            "datasets": sorted(ledger_datasets),
+        }
+        if not ledger_pass:
+            failures.append("immutable revision ledger is not a valid frozen PASS")
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"revision ledger unavailable/invalid: {exc}")
 
     try:
         cpu = load_json(cpu_verification_path)
@@ -65,6 +148,8 @@ def evaluate_readiness(
             and cpu.get("git_clean") is True
             and len(cpu_steps) == len(cpu.get("expected_steps", []))
             and all(step.get("status") == "PASS" for step in cpu_steps)
+            and experiment_commit is not None
+            and cpu.get("git_commit") == experiment_commit
         )
         checks["cpu_verification"] = {
             "path": cpu_verification_path,
@@ -74,21 +159,29 @@ def evaluate_readiness(
             "completed_steps": cpu.get("completed_steps"),
         }
         if not cpu_pass:
-            failures.append("CPU repository verification is not a clean PASS")
+            failures.append(
+                "CPU repository verification is not a clean PASS at the frozen experiment commit"
+            )
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"CPU verification artifact unavailable/invalid: {exc}")
 
     try:
         quality = load_json(pilot_quality_path)
-        quality_pass = quality.get("status") == "PASS"
+        quality_pass = (
+            quality.get("status") == "PASS"
+            and int(quality.get("raw_records", 0)) == 50
+            and int(quality.get("scored_records", 0)) == 50
+        )
         checks["pilot_quality"] = {
             "path": pilot_quality_path,
             "status": quality.get("status"),
             "records": quality.get("raw_records"),
+            "scored_records": quality.get("scored_records"),
+            "model_revisions": quality.get("model_revisions"),
         }
         if not quality_pass:
             failures.append("50-example pilot quality gate is not PASS")
-    except (FileNotFoundError, json.JSONDecodeError) as exc:
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"pilot quality artifact unavailable/invalid: {exc}")
 
     try:
@@ -165,20 +258,21 @@ def evaluate_readiness(
             mismatch_count = payload.get("mismatch_count")
             provenance_mismatch_count = payload.get("provenance_mismatch_count")
             shared = payload.get("shared_records")
+            run_provenance = payload.get("run_provenance", {})
+            expected_revision = ledger_models.get(model, {}).get("resolved_sha")
             passed = (
                 status == "PASS"
-                and payload.get("protocol") == "trajuq_exact_parity_v2"
+                and payload.get("protocol") == "trajuq_exact_parity_v3"
                 and payload.get("require_token_ids") is True
                 and payload.get("require_provenance") is True
+                and experiment_commit is not None
+                and payload.get("git_commit") == experiment_commit
+                and run_provenance.get("adapter") == model
+                and str(run_provenance.get("model_revision")) == str(expected_revision)
+                and int(shared or 0) == 20
+                and int(mismatch_count or 0) == 0
+                and int(provenance_mismatch_count or 0) == 0
             )
-            if mismatch_count is not None:
-                passed = passed and int(mismatch_count) == 0
-            if provenance_mismatch_count is not None:
-                passed = passed and int(provenance_mismatch_count) == 0
-            else:
-                passed = False
-            if shared is not None:
-                passed = passed and int(shared) > 0
             parity_checks[model] = {
                 "path": path,
                 "status": status,
@@ -189,18 +283,24 @@ def evaluate_readiness(
                 "provenance_mismatch_count": provenance_mismatch_count,
                 "shared_records": shared,
                 "git_commit": payload.get("git_commit"),
+                "run_provenance": run_provenance,
+                "expected_model_revision": expected_revision,
             }
             if not passed:
-                failures.append(f"{model} parity gate is not PASS")
+                failures.append(
+                    f"{model} parity gate is not an exact 20-prompt PASS at the frozen revision/commit"
+                )
         except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")
 
     checks["model_parity"] = parity_checks
     return {
-        "protocol": "trajuq_primary_readiness_v1",
+        "protocol": "trajuq_primary_readiness_v2",
         "status": "PASS" if not failures else "FAIL",
         "primary_config": primary_config,
         "primary_models": primary_models,
+        "primary_datasets": primary_datasets,
+        "experiment_git_commit": experiment_commit,
         "checks": checks,
         "failures": failures,
         "next_step": (
@@ -222,6 +322,10 @@ def main() -> None:
     parser.add_argument(
         "--cpu-verification",
         default="results/cpu_verification.json",
+    )
+    parser.add_argument(
+        "--revision-ledger",
+        default="results/revision_ledger.json",
     )
     parser.add_argument(
         "--pilot-quality",
@@ -262,6 +366,7 @@ def main() -> None:
         args.math500_scorer_audit,
         args.math500_manual_review,
         args.cpu_verification,
+        args.revision_ledger,
     )
 
     out = Path(args.output)

@@ -23,10 +23,11 @@ def main() -> None:
     main_path = root / "main.tex"
     appendix_path = root / "appendix.tex"
     bib_path = root / "references.bib"
+    generated_path = root / "generated_results.tex"
 
     failures: list[str] = []
     warnings: list[str] = []
-    for path in (main_path, appendix_path, bib_path):
+    for path in (main_path, appendix_path, bib_path, generated_path):
         if not path.exists():
             failures.append(f"missing required manuscript file: {path}")
 
@@ -37,7 +38,8 @@ def main() -> None:
     main = main_path.read_text(encoding="utf-8")
     appendix = appendix_path.read_text(encoding="utf-8")
     bib = bib_path.read_text(encoding="utf-8")
-    all_text = "\n".join([main, appendix, bib])
+    generated = generated_path.read_text(encoding="utf-8")
+    all_text = "\n".join([main, appendix, bib, generated])
 
     if r"\usepackage[review]{acl}" not in main:
         failures.append("main.tex must use the official ACL style in review mode")
@@ -136,8 +138,28 @@ def main() -> None:
         else:
             warnings.append(message)
 
-    if "Empirical results are intentionally omitted" not in main and tbd_count:
+    if (
+        "Empirical results are intentionally omitted" not in all_text
+        and "PRE-RESULTS FALLBACK" not in generated
+        and tbd_count
+    ):
         warnings.append("TBD values exist without explicit pre-results disclosure")
+
+    if args.submission_ready:
+        pre_results_markers = [
+            "PRE-RESULTS FALLBACK",
+            "pre-experiment manuscript",
+            "This manuscript is currently pre-experiment",
+        ]
+        remaining = [
+            marker
+            for marker in pre_results_markers
+            if marker in all_text
+        ]
+        if remaining:
+            failures.append(
+                f"pre-results language remains in submission-ready manuscript: {remaining}"
+            )
 
     payload = {
         "status": "PASS" if not failures else "FAIL",

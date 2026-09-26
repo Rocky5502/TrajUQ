@@ -17,12 +17,17 @@ Do not add author names, acknowledgements, the public GitHub URL, institution-re
 Start from the current official ACL Overleaf template and replace its main.tex with this file, then add:
 - appendix.tex
 - references.bib
+- generated_results.tex
 
 The official acl.sty should come from the current ACL template rather than being vendored here.
 
 ## Result-population rule
 
-The TBD cells are development placeholders only. Before submission, every placeholder must be replaced by a number generated from a frozen artifact, or the corresponding row/table must be removed. Never manually type an empirical value that cannot be regenerated from the repository pipeline.
+The committed `generated_results.tex` is a pre-results fallback containing TBD macros. Never manually type empirical values into `main.tex`. After the complete primary, repeated-sampling, RQ1 claim-gate, and 50% adaptive macro artifacts exist, run:
+
+    python scripts/render_results_tex.py
+
+The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, writes all table macros, and emits `paper/generated_results_manifest.json` with source SHA-256 hashes. A failed RQ1 gate produces narrow result language rather than a positive claim.
 
 ## Main-page budget
 

@@ -170,9 +170,10 @@ implementation:
       - scripts/export_research_handoff.py
       - tests/test_export_research_handoff.py
   - id: guarded_preprimary_wrappers
-    label: "Frozen-state guarded SDAR/Dream parity and MATH-500 scorer-pilot wrappers"
+    label: "Frozen-state guarded LLaDA/SDAR/Dream parity, pilot, and MATH-500 wrappers"
     state: DONE
     evidence:
+      - scripts/pilot_windows.ps1
       - scripts/parity_remaining_windows.ps1
       - scripts/math500_gate_windows.ps1
       - tests/test_remaining_parity_script_contract.py
@@ -196,7 +197,7 @@ execution_gates:
     label: "LLaDA 20-prompt exact parity"
     stage: pre_primary
     issue: 7
-    action: "Run scripts/pilot_windows.ps1 -Stage prepare, then -Stage parity."
+    action: "Run scripts/pilot_windows.ps1 -Stage prepare, then -Stage parity. The wrapper is non-overwriting, reuses only a clean hash-bound parity-v3 PASS, and stops on partial/stale evidence."
     artifact: results/llada_parity.json
     expect: {key: status, equals: PASS}
   - id: pilot_quality
@@ -217,14 +218,14 @@ execution_gates:
     label: "SDAR exact parity"
     stage: pre_primary
     issue: 2
-    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model sdar; otherwise follow docs/SDAR_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality and matching frozen provenance."
+    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model sdar; otherwise follow docs/SDAR_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
     artifact: results/sdar_parity.json
     expect: {key: status, equals: PASS}
   - id: dream_parity
     label: "Dream exact parity"
     stage: pre_primary
     issue: 5
-    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model dream; otherwise follow docs/DREAM_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality and matching frozen provenance."
+    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model dream; otherwise follow docs/DREAM_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
     artifact: results/dream_parity.json
     expect: {key: status, equals: PASS}
   - id: math500_auto
@@ -244,7 +245,7 @@ execution_gates:
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, clean-checkout pilot/MATH human attestations, the frozen MATH dependency versions, and all three exact-parity artifacts."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, clean-checkout pilot/MATH human attestations, the frozen MATH dependency versions, and all three clean hash-bound exact-parity artifacts with source SHA revalidation."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

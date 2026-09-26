@@ -1,0 +1,198 @@
+\section{Appendix Overview}
+
+The appendix contains the complete pre-results experimental contract.
+It is intentionally detailed so that model-specific implementation choices cannot be changed silently after test outcomes are observed.
+
+\section{Trajectory Telemetry Contract}
+
+\paragraph{Eligibility.}
+At every observation, predictive statistics are pooled only over positions that are active for the current block and unresolved.
+Prompt tokens, inactive future blocks, and committed tokens are excluded.
+
+\paragraph{Observation time.}
+Telemetry is captured after the model produces logits and before the sampler commits/remasks tokens.
+This makes every uncertainty feature pre-decision with respect to that denoising step.
+
+\paragraph{JS drift.}
+Exact Jensen--Shannon drift is calculated from consecutive full-vocabulary distributions only when a position is unresolved in both observations.
+One previous probability tensor is retained; no full trajectory of vocabulary distributions is stored.
+
+\paragraph{Decision-time features.}
+For each generated position, decision-time entropy, confidence, and margin use its last unresolved observation.
+The baseline uses mean decision-time entropy.
+
+\paragraph{Commitment time.}
+If a token first appears committed at observation $k$, the decision is assigned to observation $k-1$.
+A token still unresolved in the final pre-transfer observation is assigned the final active decision index.
+
+\section{Frozen Feature Definitions}
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Family & Feature & Definition\\
+\midrule
+Decision & decision\_entropy\_mean & mean normalized entropy immediately before each token commitment\\
+Distribution & entropy\_mean & mean normalized entropy over active unresolved positions\\
+Distribution & entropy\_p90 & 90th percentile of normalized entropy\\
+Distribution & entropy\_slope & linear early-to-late trend of step-level entropy\\
+Distribution & margin\_mean / margin\_min & top-1 minus top-2 probability margin\\
+Stability & js\_mean / js\_p90 & consecutive-step normalized JS drift\\
+Stability & js\_slope / late\_js\_mean & temporal and late-stage JS behavior\\
+Stability & revision\_rate & top-1 proposal changes while unresolved\\
+Stability & late\_revision\_rate & revision rate in the final quarter of observations\\
+Persistence & mask\_auc & unresolved fraction integrated over active observations\\
+Persistence & late\_mask\_fraction & unresolved fraction in late observations\\
+Persistence & commitment\_time\_mean & normalized mean decision index\\
+\bottomrule
+\end{tabular}
+\caption{Frozen primary feature dictionary.}
+\end{table*}
+
+\section{Calibration and Leakage Firewall}
+
+Generation and scoring are two separate stages.
+The raw JSONL record stores prompt hash, model/runtime revision, seed, generated text/token IDs, trajectory features, step summaries, and runtime metadata.
+It must store neither the reference answer nor correctness.
+The scorer later joins correctness only after verifying example identity and prompt hash.
+Calibration and test IDs are disjoint and namespaced by dataset and immutable source split.
+
+Feature selection, calibrator family, adaptive thresholds, and ablation definitions are frozen before final test evaluation.
+The primary calibrator is standardized logistic regression.
+Isotonic regression is a sensitivity analysis only when the calibration partition is large enough to support it.
+
+\section{Model-Specific Parity Gates}
+
+\subsection{LLaDA-MoE}
+
+The instrumented sampler mirrors the public LLaDA low-confidence masked-diffusion loop.
+A 20-prompt deterministic reference run without telemetry is compared against the instrumented run using exact generated token IDs.
+Mask token ID, attention mask, transfer counts, model/tokenizer revision, and seed must match.
+Primary results are blocked until exact parity passes.
+
+\subsection{Dream}
+
+Dream exposes a token-generation hook through its public diffusion interface.
+We compare a native no-hook reference against the hook-enabled telemetry path on identical prompts, revision, seed, and decoding parameters.
+Exact token-ID parity is required.
+
+\subsection{SDAR}
+
+SDAR operates blockwise.
+Telemetry is captured from the active generated positions of each block before token transfer.
+The adapter is compared against the pinned upstream block-diffusion runtime.
+The aggregate feature semantics and block boundaries are recorded in run metadata.
+Primary SDAR numbers are blocked until parity passes.
+
+\subsection{FLARE / HybridDiffusion}
+
+FLARE is used primarily for RQ4.
+The native runtime trace is parsed externally rather than modifying the serving engine.
+Top-$k$ trace entropy is treated only as a proxy and is never mislabeled as full-vocabulary entropy.
+Same-checkpoint AR/diffusion disagreement is a diagnostic, not a correctness label.
+
+\section{Dataset Split Policy}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Dataset & Calibration & Test\\
+\midrule
+GSM8K & official train & official test\\
+ARC-Challenge & official validation & official test\\
+MMLU-Pro & official validation & official test\\
+GPQA-Diamond & frozen internal holdout & frozen internal holdout\\
+TruthfulQA & frozen internal holdout & frozen internal holdout\\
+MATH-500 & frozen internal holdout & frozen internal holdout\\
+\bottomrule
+\end{tabular}
+\caption{Planned split roles. Internal holdouts are created before model calls.}
+\end{table}
+
+All prepared example IDs are namespaced as
+\texttt{dataset:source-split:item-id}
+to prevent false overlap when official splits reuse integer row indices.
+
+\section{Correctness Scoring}
+
+Multiple-choice tasks use exact option-letter matching after extracting the explicit final answer.
+GSM8K uses normalized numeric exact matching against the official answer field.
+MATH-500 uses a pinned symbolic equivalence verifier; parser failures are conservatively counted as incorrect.
+No LLM judge is used for the primary correctness labels.
+
+\section{Primary Statistical Tests}
+
+For each model--dataset cell, the primary nested comparison fits:
+\begin{align}
+\mathcal{M}_0 &: H^{\mathrm{dec}} \rightarrow P(\mathrm{error}),\\
+\mathcal{M}_1 &: [H^{\mathrm{dec}}, z_{\mathrm{traj}}] \rightarrow P(\mathrm{error}).
+\end{align}
+Both are fit only on calibration examples and evaluated on the same test examples.
+Paired class-stratified bootstrap resampling estimates confidence intervals for AUROC, AUPRC, and AURC differences.
+AURC improvements are sign-normalized so positive always means the trajectory model is better.
+
+\section{Feature-Family Ablations}
+
+We freeze:
+\begin{enumerate}
+\item decision only;
+\item decision + distribution features;
+\item decision + stability features;
+\item decision + persistence features;
+\item full model;
+\item full minus JS drift;
+\item full minus revisions;
+\item full minus persistence.
+\end{enumerate}
+Every ablation is calibrated on the same calibration partition and evaluated on the same test examples.
+
+\section{Repeated-Sampling Baseline}
+
+The expensive baseline draws five independent generations under a frozen sampling configuration.
+Without consulting labels, final answers are canonicalized and summarized by:
+variation ratio, normalized vote entropy, and unique-answer fraction.
+These features are calibrated on the calibration partition.
+All additional model calls are included in the compute report.
+For MATH-500, repeated-sampling voting remains disabled until algebraic-equivalence clustering is available.
+
+\section{Adaptive Compute}
+
+At the base budget, trajectory features are calibrated into error probability.
+To prevent optimistic threshold fitting, calibration-set policy scores are generated by stratified cross-fitting.
+The threshold is chosen under a frozen maximum refinement fraction.
+A final calibrator is then trained on all calibration examples and applied to test.
+The threshold is not retuned on test.
+
+We report policy accuracy, refinement fraction, mean compute, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random refinement.
+
+\section{Run Provenance}
+
+Every reported number must be associated with:
+\begin{itemize}
+\item repository commit;
+\item model and tokenizer repository plus immutable revision;
+\item upstream runtime commit where applicable;
+\item dataset repository/config/split and immutable revision/fingerprint;
+\item prompt-template version;
+\item seed and decoding configuration;
+\item Python, PyTorch, Transformers, CUDA, and GPU information;
+\item wall-clock time and peak allocated GPU memory;
+\item raw and scored artifact SHA-256 hashes.
+\end{itemize}
+
+\section{Planned Result Tables}
+
+The final appendix will contain:
+per-model/per-dataset uncertainty metrics;
+calibration sensitivity;
+feature-family ablations;
+denoising-budget sensitivity;
+adaptive-compute results;
+parity audits;
+runtime/memory overhead;
+and a failure taxonomy.
+No cell is populated without a corresponding immutable result artifact.

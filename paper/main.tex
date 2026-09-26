@@ -1,0 +1,312 @@
+\documentclass[11pt]{article}
+\usepackage[review]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{enumitem}
+
+\newcommand{\method}{\textsc{TrajUQ}\xspace}
+\newcommand{\tbd}{\textsc{TBD}}
+\newcommand{\calp}{\widehat{p}_{\mathrm{err}}}
+
+\title{When Diffusion Language Models Are Unsure:\\
+Trajectory-Aware Uncertainty for Selective and Adaptive Generation}
+\author{Anonymous ACL Submission}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Diffusion language models generate text by repeatedly revising partially masked sequences, exposing a temporal signal that autoregressive confidence estimators do not observe.
+We study whether this denoising trajectory can reveal answer-level failure \emph{before} benchmark correctness is known.
+We introduce \method, a training-free telemetry and calibration framework that measures uncertainty only on positions that are active and unresolved at each denoising step.
+Its features combine predictive entropy and margin, consecutive-step Jensen--Shannon drift, proposal revisions, mask persistence, and commitment timing.
+A held-out calibrator maps these pre-outcome signals to error probability, which supports selective generation and a two-budget adaptive-compute policy.
+The primary test is deliberately nested: a trajectory-augmented predictor must improve over a strong per-token decision-time entropy baseline evaluated on the same held-out examples.
+We further compare against repeated-sampling disagreement under explicit compute accounting and study three open diffusion families plus a hybrid AR/diffusion diagnostic.
+All model, data, feature, calibration, and statistical choices are frozen before primary test outcomes are inspected.
+Empirical results are intentionally omitted from this pre-experiment manuscript and will be populated only from traceable frozen artifacts.
+\end{abstract}
+
+\section{Introduction}
+Autoregressive language models expose a natural sequence of conditional next-token distributions, and prior work studies whether confidence, entropy, self-consistency, or semantic disagreement can predict when a generated answer is wrong \citep{jiang2021know,kuhn2023semantic}.
+Diffusion language models (dLLMs), however, generate through iterative denoising rather than a single left-to-right pass.
+Recent systems such as LLaDA \citep{nie2025llada}, Dream \citep{ye2025dream}, SDAR \citep{cheng2026sdar}, and FLARE \citep{zhu2026flare} make parallel or blockwise generation increasingly practical.
+Yet uncertainty estimation for these models is still typically reduced to a final confidence snapshot or repeated output sampling.
+
+We ask a different question: \emph{does the denoising process itself contain predictive evidence about eventual correctness?}
+A token can remain masked for many iterations, oscillate between competing proposals, experience substantial distributional drift, or stabilize only late in the trajectory.
+These behaviors are observable before the benchmark outcome is revealed.
+They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score.
+
+This paper introduces \method, a trajectory-aware uncertainty framework for open diffusion language models.
+The key design principle is strict \emph{pre-outcome isolation}: the generation record contains no reference answer and no correctness label.
+At step $t$, telemetry is computed only over positions that are both active for the current denoising block and still unresolved.
+Prompt tokens, inactive future blocks, and already committed tokens are excluded.
+We then aggregate a frozen feature vector and fit a post-hoc error calibrator using a disjoint calibration partition.
+
+Our evaluation is organized around four questions:
+\begin{description}[leftmargin=0.8cm,labelwidth=0.65cm]
+\item[RQ1:] Does the denoising trajectory predict answer failure beyond a strong per-token decision-time confidence baseline?
+\item[RQ2:] Does trajectory-aware calibration improve selective generation across model families and tasks?
+\item[RQ3:] Can calibrated trajectory risk allocate additional denoising compute more effectively than fixed or random refinement?
+\item[RQ4:] Which failure modes are associated with distributional instability, revision churn, late commitment, and---where available---same-checkpoint AR/diffusion disagreement?
+\end{description}
+
+The contributions are:
+(1) a model-agnostic telemetry schema for active unresolved positions;
+(2) a frozen set of entropy, drift, revision, persistence, and commitment signals;
+(3) a leak-safe calibration and selective-generation protocol with paired inference;
+(4) an adaptive-compute policy whose threshold is selected from out-of-fold calibration predictions; and
+(5) an open, reproducible evaluation design spanning masked, blockwise, and hybrid diffusion families.
+
+\section{Related Work}
+
+\paragraph{Diffusion language models.}
+LLaDA established masked diffusion as a scalable alternative to autoregressive factorization \citep{nie2025llada}.
+Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \citep{ye2025dream}.
+SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \citep{cheng2026sdar}.
+FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \citep{zhu2026flare}.
+These works primarily optimize modeling capability and inference efficiency; \method instead treats the intermediate denoising process as an uncertainty signal.
+
+\paragraph{Language-model uncertainty.}
+Calibration asks whether predicted confidence reflects empirical correctness \citep{jiang2021know}.
+Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}.
+These methods motivate our repeated-sampling baseline, but repeated generation incurs additional inference cost.
+\method asks whether a \emph{single} diffusion trajectory already exposes useful instability.
+
+\paragraph{Selective prediction.}
+A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.
+We therefore report both discrimination and calibration, together with risk--coverage behavior and compute-aware refinement.
+Our adaptive policy does not use test labels to choose a threshold.
+
+\section{Problem Setup}
+
+Let $x$ be an input and let a diffusion language model produce a sequence of latent token states
+$X^{(0)},\ldots,X^{(T)}$.
+At denoising step $t$, the model defines a categorical distribution
+$p_{t,j}$ over the vocabulary for token position $j$.
+Let $A_{t,j}\in\{0,1\}$ indicate that position $j$ belongs to the currently active generation block and
+$M_{t,j}\in\{0,1\}$ indicate that it is unresolved (masked).
+Telemetry is defined only on
+\begin{equation}
+\mathcal{U}_t = \{j: A_{t,j}=1 \land M_{t,j}=1\}.
+\end{equation}
+
+After generation, an external scorer supplies correctness
+$y\in\{0,1\}$, where $y=1$ denotes a correct answer.
+The raw generation artifact is immutable and does not contain $y$ or the reference answer.
+The uncertainty task is to estimate error probability
+$P(y=0\mid z)$ from a feature vector $z$ computed only from the pre-outcome trajectory.
+
+\section{\method}
+
+\subsection{Step-Level Signals}
+
+For each eligible position $j\in\mathcal{U}_t$, normalized entropy is
+\begin{equation}
+H_{t,j} =
+-\frac{1}{\log |\mathcal{V}|}
+\sum_{v\in\mathcal{V}} p_{t,j}(v)\log p_{t,j}(v).
+\end{equation}
+We also record top-1 confidence and top-2 margin,
+\begin{equation}
+m_{t,j}=p^{(1)}_{t,j}-p^{(2)}_{t,j}.
+\end{equation}
+
+To measure distributional instability, for positions unresolved at both $t-1$ and $t$, we compute normalized Jensen--Shannon drift
+\begin{equation}
+J_{t,j} =
+\frac{
+\frac{1}{2}D_{\mathrm{KL}}(p_{t,j}\Vert q_{t,j})+
+\frac{1}{2}D_{\mathrm{KL}}(p_{t-1,j}\Vert q_{t,j})
+}{\log 2},
+\end{equation}
+where $q_{t,j}=(p_{t,j}+p_{t-1,j})/2$.
+This keeps $J_{t,j}\in[0,1]$.
+
+Let $\hat{v}_{t,j}$ be the top-1 proposal.
+Revision churn is
+\begin{equation}
+R_{t,j}=\mathbb{1}[\hat{v}_{t,j}\neq\hat{v}_{t-1,j}],
+\end{equation}
+again only when the same position is unresolved in consecutive observations.
+
+\subsection{Persistence and Commitment}
+
+For each generated position, we measure how long it remains unresolved within its active window.
+If $c_j\in[0,1]$ is the normalized decision index immediately before commitment, then large $c_j$ denotes late commitment.
+We also measure mask persistence across the active trajectory and its late-stage fraction.
+
+\subsection{Decision-Time Baseline}
+
+Using only entropy from the last global denoising step can be unstable because that step may contain only a few unresolved tokens.
+We therefore define a stronger final-confidence baseline.
+For each generated position $j$, let $t_j^\star$ be the last observation at which it is unresolved.
+The decision-time entropy is
+\begin{equation}
+H^{\mathrm{dec}}_j = H_{t_j^\star,j}.
+\end{equation}
+The baseline score uses the mean of $H^{\mathrm{dec}}_j$ across generated positions.
+This is the information available immediately before each token's commitment decision.
+
+\subsection{Trajectory Feature Vector}
+
+The frozen primary feature vector contains:
+decision-time entropy; mean, 90th-percentile, and temporal slope of trajectory entropy; mean and minimum margin; mean, 90th-percentile, slope, and late mean of JS drift; overall and late revision rates; mask persistence; late mask fraction; and mean commitment time.
+Upper-tail statistics target localized instability while temporal slopes capture whether uncertainty is resolving or increasing.
+
+\subsection{Calibration}
+
+We fit a standardized logistic calibrator on a disjoint calibration partition:
+\begin{equation}
+\calp(z)=\sigma\!\left(w^\top \operatorname{std}(z)+b\right).
+\end{equation}
+The primary RQ1 comparison is nested.
+The baseline logistic model uses only mean decision-time entropy.
+The candidate uses that exact baseline feature plus the frozen trajectory vector.
+Thus, held-out improvement tests incremental trajectory information rather than comparing against an artificially weak baseline.
+
+\subsection{Selective Generation}
+
+Examples are sorted by predicted error probability.
+At coverage $c$, selective risk is the empirical error rate among the lowest-risk fraction $c$.
+We report AUROC, AUPRC, Brier score, negative log-likelihood, expected calibration error, discrete area under the risk--coverage curve (AURC), and risk at fixed coverage.
+
+\subsection{Adaptive Compute}
+
+For RQ3, each model has a base budget $B_0$ and a refined budget $B_1>B_0$.
+A refinement threshold is selected using \emph{out-of-fold} error probabilities on the calibration partition.
+The final calibrator is then fit on all calibration data and applied unchanged to test.
+The policy is
+\begin{equation}
+a(x)=
+\begin{cases}
+\textsc{Refine}, & \calp(z_{B_0})>\tau,\\
+\textsc{Accept}, & \text{otherwise}.
+\end{cases}
+\end{equation}
+We compare to fixed $B_0$, fixed $B_1$, and random refinement at the same expected refinement fraction.
+
+\section{Experimental Design}
+
+\subsection{Models}
+
+We use three open diffusion families as the primary matrix:
+LLaDA-MoE-7B-A1B-Instruct, SDAR-1.7B-Chat, and Dream-v0-Instruct-7B.
+FLARE/HybridDiffusion-2B is a diagnostic extension because one checkpoint supports both AR and diffusion inference \citep{zhu2026flare}.
+Exact checkpoint and runtime revisions are frozen before model calls.
+Each adapter must pass an exact token-level parity gate against an uninstrumented reference before its results enter the paper.
+
+\subsection{Tasks}
+
+The planned suite spans mathematical reasoning, science QA, multiple-choice knowledge, and truthfulness:
+GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
+Where official calibration/test splits exist, they are kept separate.
+Single-split datasets use a deterministic pre-generation internal holdout and are reported explicitly as such.
+MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.
+
+\subsection{Baselines}
+
+We compare against:
+(i) decision-time entropy with the same held-out logistic calibration;
+(ii) the transparent training-free \method risk score as a sensitivity analysis; and
+(iii) a five-sample final-answer disagreement baseline using variation ratio, normalized vote entropy, and unique-answer fraction.
+The repeated-sampling baseline is more expensive and its generation cost is reported separately.
+MATH-500 is excluded from repeated-sampling voting until symbolic answer clustering is implemented.
+
+\subsection{Statistics}
+
+All method comparisons are paired on identical examples.
+For AUROC, AUPRC, and AURC we use class-stratified paired bootstrap intervals.
+Improvement deltas are oriented so positive values always favor the trajectory-augmented method.
+For cross-dataset summaries, metrics are computed per dataset and macro-averaged rather than pooling heterogeneous examples.
+ECE is reported with 15 bins plus 10- and 20-bin sensitivity.
+
+\subsection{Pre-Registered Ablations}
+
+We freeze the following groups before primary outcomes are inspected:
+decision-only; decision plus distributional trajectory features; decision plus stability (JS drift and revisions); decision plus persistence/commitment; the full model; and leave-family-out variants removing JS, revisions, or persistence.
+
+\section{Results}
+\label{sec:results}
+
+This manuscript is currently pre-experiment.
+No numerical claim is populated until it can be traced to a frozen run artifact, code commit, model revision, dataset hash, and evaluation output.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
+\midrule
+Decision entropy & \tbd & \tbd & \tbd\\
+Repeated sampling & \tbd & \tbd & \tbd\\
+\method & \tbd & \tbd & \tbd\\
+\bottomrule
+\end{tabular}
+\caption{Primary held-out uncertainty results. Values remain blank until frozen experiments are complete.}
+\label{tab:main}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Policy & Accuracy $\uparrow$ & Mean compute $\downarrow$ & $\Delta$ vs.\ random\\
+\midrule
+Base budget & \tbd & \tbd & --\\
+Fixed refined & \tbd & \tbd & --\\
+Random matched & \tbd & \tbd & 0\\
+\method adaptive & \tbd & \tbd & \tbd\\
+\bottomrule
+\end{tabular}
+\caption{Adaptive-compute evaluation at matched refinement cost.}
+\label{tab:adaptive}
+\end{table}
+
+\section{Analysis Plan}
+
+We will first test whether trajectory information improves the nested decision-entropy baseline.
+We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases.
+For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
+Negative results do not trigger post-hoc feature redesign on final test labels.
+
+\section{Conclusion}
+
+\method treats iterative denoising as an observable uncertainty process rather than merely a decoding mechanism.
+Its central empirical question is deliberately falsifiable: if a carefully calibrated trajectory model cannot improve over a strong decision-time baseline on held-out examples and multiple model families, then the denoising trajectory should not be claimed as a useful uncertainty source.
+The accompanying protocol is designed so that this conclusion can be reached without outcome leakage or post-hoc test tuning.
+
+\section*{Limitations}
+
+The current manuscript is pre-experiment and therefore makes no empirical performance claim.
+The primary evaluation focuses on answer-level correctness for reasoning and QA tasks; it does not establish calibration for long-form factuality, safety, or human preference.
+Trajectory instrumentation is model-runtime dependent and must be parity-validated.
+Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.
+Post-hoc logistic calibration requires a representative calibration partition and can degrade under distribution shift.
+Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
+The repeated-sampling baseline has higher inference cost, and MATH-500 semantic voting is disabled until symbolic clustering is implemented.
+Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
+
+\section*{Ethical Considerations}
+
+Better uncertainty estimates can support abstention and compute allocation, but they do not make model outputs inherently safe or correct.
+A calibrated score is task- and distribution-dependent and should not be interpreted as a universal probability of truth.
+We avoid using correctness labels during generation and record provenance needed to audit reported numbers.
+No proprietary user data are required by the planned benchmark suite.
+Gated datasets are used according to their access conditions and are not redistributed.
+
+\bibliography{references}
+\appendix
+\input{appendix}
+
+\end{document}

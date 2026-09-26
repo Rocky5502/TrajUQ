@@ -1,5 +1,18 @@
 # First GPU pilot runbook
 
+## Windows staged wrapper
+
+From the repository root, the preferred execution path is:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
+```
+
+The wrapper hard-stops on failed exact parity and never writes paper numbers before the gate passes.
+
+
 The first pilot is frozen to the **LLaDA-MoE-7B-A1B-Instruct + GSM8K calibration** path. Do not scale to other models until the exact token-parity gate passes.
 
 ## A. Resolve immutable revisions
@@ -16,7 +29,7 @@ python scripts/resolve_hf_revision.py \
   --output results/gsm8k_dataset_revision.json
 ```
 
-Copy the returned model SHA into `configs/models/llada.yaml: revision`. Pass the resolved dataset SHA to `prepare_eval_pair.py --revision`.
+Create an artifact-local runtime config at `results/llada_pilot_model_config.yaml` by copying `configs/models/llada.yaml` and replacing only its `revision:` value with the resolved model SHA. Do **not** edit the tracked template. Pass the resolved dataset SHA to `prepare_eval_pair.py --revision`. The Windows wrapper performs this automatically.
 
 ## B. Prepare the frozen calibration/test pair
 
@@ -32,14 +45,14 @@ Do not regenerate these files after seeing model outcomes.
 
 ```bash
 python scripts/preflight.py \
-  --model-config configs/models/llada.yaml \
+  --model-config results/llada_pilot_model_config.yaml \
   --data data/processed/gsm8k/calibration.jsonl \
   --require-cuda
 
 python scripts/environment_snapshot.py --output results/pilot_environment.json
 
 python scripts/freeze_manifest.py \
-  --model-config configs/models/llada.yaml \
+  --model-config results/llada_pilot_model_config.yaml \
   --dataset data/processed/gsm8k/calibration.jsonl \
   --dataset data/processed/gsm8k/test.jsonl \
   --output results/pilot_freeze_manifest.json
@@ -156,3 +169,8 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 The wrapper resolves immutable model/data SHAs, writes a frozen runtime model config under `results/` (leaving the tracked YAML template unchanged), prepares the frozen GSM8K pair, snapshots the environment, runs 20-prompt native/instrumented parity, measures telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits raw/scored artifacts, checks feature variation/timing/schema integrity, and exports a 10-example manual review sheet.
 
 The automated gate does not replace the required human inspection of at least ten trajectories.
+
+
+## Reproducibility note
+
+The tracked model YAML remains a template with `revision: null`. The immutable revision used for a concrete run is stored in the artifact-local frozen model config and freeze manifest, preventing a pilot run from silently dirtying the repository's generic configuration.

@@ -33,6 +33,8 @@ def metric_pair(primary: dict, metric: str) -> tuple[float, float]:
 
 
 def require_primary(primary: dict) -> None:
+    if primary.get("protocol") != "hierarchical_within_cell_macro_bootstrap_v1":
+        raise ValueError("Primary macro protocol is not recognized.")
     if primary.get("cell_set_complete") is not True:
         raise ValueError("Primary macro does not contain the complete frozen cell set.")
     if int(primary.get("expected_cell_count", -1)) != 18:
@@ -110,6 +112,10 @@ def require_claim_gate(
 
 
 def require_repeated(repeated: dict) -> None:
+    if repeated.get("protocol") != "trajuq_vs_repeated_macro_v1":
+        raise ValueError("Repeated-sampling macro protocol is not recognized.")
+    if repeated.get("comparison") != "single_trajectory_trajuq_vs_five_sample_baseline":
+        raise ValueError("Repeated-sampling comparison contract is not recognized.")
     if repeated.get("cell_set_complete") is not True:
         raise ValueError("Repeated-sampling macro cell set is incomplete.")
     if int(repeated.get("expected_cells", -1)) != 18:
@@ -125,6 +131,12 @@ def require_repeated(repeated: dict) -> None:
 
 
 def require_adaptive(adaptive: dict) -> None:
+    if adaptive.get("protocol") != "trajuq_adaptive_macro_v1":
+        raise ValueError("Adaptive macro protocol is not recognized.")
+    if adaptive.get("execution_semantics") != "selective_second_pass_rerun":
+        raise ValueError("Adaptive execution semantics are not the frozen protocol.")
+    if adaptive.get("fraction_key") != "cap_050":
+        raise ValueError("Adaptive artifact is not the frozen primary cap key.")
     if adaptive.get("cell_set_complete") is not True:
         raise ValueError("Adaptive macro cell set is incomplete.")
     if int(adaptive.get("expected_cells", -1)) != 18:

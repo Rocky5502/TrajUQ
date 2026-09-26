@@ -2,11 +2,32 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def collect_model_specs(primary: dict, include_diagnostic: bool = False) -> list[dict]:
@@ -122,6 +143,9 @@ def main() -> None:
     failures: list[str] = []
     model_results: list[dict] = []
     dataset_results: list[dict] = []
+    commit = git_head()
+    if not commit:
+        failures.append("git commit could not be resolved")
 
     for spec in model_specs:
         try:
@@ -129,8 +153,8 @@ def main() -> None:
                 spec["model_id"],
                 revision=spec["requested_revision"],
             )
-            sha = getattr(info, "sha", None)
-            if not sha:
+            resolved_sha = getattr(info, "sha", None)
+            if not resolved_sha:
                 raise RuntimeError("Hugging Face returned no SHA")
             model_results.append(
                 {
@@ -144,7 +168,7 @@ def main() -> None:
                             "template",
                         )
                     },
-                    "resolved_sha": str(sha),
+                    "resolved_sha": str(resolved_sha),
                 }
             )
         except Exception as exc:
@@ -158,13 +182,13 @@ def main() -> None:
                 spec["repo_id"],
                 revision=spec["requested_revision"],
             )
-            sha = getattr(info, "sha", None)
-            if not sha:
+            resolved_sha = getattr(info, "sha", None)
+            if not resolved_sha:
                 raise RuntimeError("Hugging Face returned no SHA")
             dataset_results.append(
                 {
                     **spec,
-                    "resolved_sha": str(sha),
+                    "resolved_sha": str(resolved_sha),
                 }
             )
         except Exception as exc:
@@ -176,11 +200,14 @@ def main() -> None:
 
     status = "PASS" if not failures else "FAIL"
     payload = {
-        "protocol": "trajuq_revision_ledger_v1",
+        "protocol": "trajuq_revision_ledger_v2",
         "status": status,
         "resolved_at_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": commit,
         "primary_config": str(primary_path),
+        "primary_config_sha256": sha256_file(primary_path),
         "dataset_manifest": str(manifest_path),
+        "dataset_manifest_sha256": sha256_file(manifest_path),
         "include_diagnostic": bool(args.include_diagnostic),
         "models": model_results,
         "datasets": dataset_results,
@@ -203,16 +230,19 @@ def main() -> None:
     frozen_root = Path(args.frozen_model_dir)
     by_adapter = {spec["adapter"]: spec for spec in model_specs}
     frozen_configs: dict[str, str] = {}
+    frozen_hashes: dict[str, str] = {}
     for result in model_results:
         source = by_adapter[result["adapter"]]
-        path = write_frozen_model_config(
+        frozen_path = write_frozen_model_config(
             source,
             result["resolved_sha"],
             frozen_root,
         )
-        frozen_configs[result["adapter"]] = str(path)
+        frozen_configs[result["adapter"]] = str(frozen_path)
+        frozen_hashes[result["adapter"]] = sha256_file(frozen_path)
 
     payload["frozen_model_configs"] = frozen_configs
+    payload["frozen_model_config_sha256"] = frozen_hashes
     out.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

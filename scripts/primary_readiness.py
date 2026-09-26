@@ -42,6 +42,7 @@ def git_text(*args: str) -> str | None:
     except Exception:
         return None
 
+
 def run_audit_passes(
     audit_path: Path,
     artifact_path: Path,
@@ -66,6 +67,7 @@ def run_audit_passes(
         )
     )
     return passed, payload
+
 
 def review_sheet_metadata(path: Path) -> dict[str, str]:
     prefixes = {

@@ -43,12 +43,12 @@ particular, the following are implemented and versioned:
   checks; parity protocol v3 records uniform run-level provenance, and primary
   readiness accepts only exact 20-prompt parity artifacts bound to the frozen
   revision-ledger git commit and model SHA;
-- frozen 18-cell primary planning and hierarchical aggregation;
+- frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, configs, frozen model configs, and prepared dataset inputs;
 - pre-registered RQ1 positive-claim gate;
-- five-seed repeated-sampling baseline and full-matrix macro aggregation;
+- five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation;
 - pinned MATH-500 symbolic scoring, commit-bound automatic audit, deterministic
   calibration review-sheet export, and SHA-bound human attestation gate;
-- RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation;
+- RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation; adaptive plan protocol v3 binds the primary plan/config plus refined scored artifacts and their audits before low-budget execution;
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
 - revision-ledger protocol v2 binding the experiment git commit, primary/data
   config hashes, immutable model/data SHAs, and frozen model-config hashes;
@@ -116,15 +116,13 @@ After readiness passes:
    plan; the executor writes a resumable SHA-verified execution state;
 4. execute all 18 calibration/test cells exactly as planned;
 5. audit and score every cell without overwriting completed artifacts;
-6. create results/primary_analysis_plan.json;
+6. create results/primary_analysis_plan.json only after all 18 scored artifacts and their audits exist; analysis-plan protocol v2 SHA-binds those inputs, the primary plan, config, and frozen experiment commit;
 7. dry-run scripts/execute_primary_analysis.py and then use it to resume all
-   cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics;
+   cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics; the executor refuses upstream provenance drift before reading result values;
 8. aggregate the complete 18-cell primary endpoint;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
-10. run the complete 18-cell five-sample comparator with
-   scripts/execute_repeated_sampling.py; verified seed artifacts are resumable;
-11. run RQ3 base-budget generations and all frozen 25/50/75% cap analyses
-   with scripts/execute_adaptive_plan.py;
+10. freeze repeated-sampling plan protocol v2 after primary analysis predictions exist, then run the complete 18-cell five-sample comparator with scripts/execute_repeated_sampling.py; verified seed artifacts are resumable and the executor rejects drift in bound primary artifacts;
+11. freeze adaptive plan protocol v3 after all refined primary scored artifacts exist, then run RQ3 base-budget generations and all frozen 25/50/75% cap analyses with scripts/execute_adaptive_plan.py; the executor rejects drift in refined inputs/audits;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
 13. render paper numbers only through scripts/render_results_tex.py;
 14. run scripts/submission_readiness.py to re-check required project gates,

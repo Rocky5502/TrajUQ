@@ -63,6 +63,7 @@ def cell_statistics(
         "nominal_compute": nominal_compute,
         "nominal_cost_ratio_to_base": nominal_compute / cell.base_compute,
         "nominal_cost_ratio_to_refined": nominal_compute / cell.refined_compute,
+        "refined_cost_ratio_to_base": cell.refined_compute / cell.base_compute,
     }
 
 

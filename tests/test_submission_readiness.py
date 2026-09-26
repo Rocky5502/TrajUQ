@@ -1,7 +1,11 @@
 import hashlib
 import json
 
-from scripts.submission_readiness import verify_generated_results
+import scripts.submission_readiness as submission_readiness
+from scripts.submission_readiness import (
+    verify_downstream_provenance,
+    verify_generated_results,
+)
 
 
 def test_generated_results_hash_gate_passes(tmp_path):
@@ -93,3 +97,113 @@ def test_generated_results_gate_rejects_pre_results_placeholder(tmp_path):
     )
     result = verify_generated_results(manifest, generated)
     assert result["status"] == "FAIL"
+
+
+def test_downstream_provenance_revalidation_uses_historical_mode(
+    tmp_path,
+    monkeypatch,
+):
+    paths = []
+    for name in ("primary", "analysis", "repeated", "adaptive"):
+        path = tmp_path / f"{name}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "protocol": f"{name}_protocol",
+                    "experiment_git_commit": "a" * 40,
+                }
+            ),
+            encoding="utf-8",
+        )
+        paths.append(path)
+
+    calls = []
+
+    def validator(payload, *, require_current_commit=True):
+        calls.append(
+            {
+                "protocol": payload["protocol"],
+                "require_current_commit": require_current_commit,
+            }
+        )
+        return []
+
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_primary_provenance",
+        validator,
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_analysis_provenance",
+        validator,
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_repeated_provenance",
+        validator,
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_adaptive_provenance",
+        validator,
+    )
+
+    result = verify_downstream_provenance(*paths)
+    assert result["status"] == "PASS"
+    assert len(calls) == 4
+    assert all(
+        call["require_current_commit"] is False
+        for call in calls
+    )
+
+
+def test_downstream_provenance_revalidation_surfaces_drift(
+    tmp_path,
+    monkeypatch,
+):
+    paths = []
+    for name in ("primary", "analysis", "repeated", "adaptive"):
+        path = tmp_path / f"{name}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "protocol": f"{name}_protocol",
+                    "experiment_git_commit": "b" * 40,
+                }
+            ),
+            encoding="utf-8",
+        )
+        paths.append(path)
+
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_primary_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_analysis_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_repeated_provenance",
+        lambda payload, *, require_current_commit=True: [
+            "TrajUQ predictions hash drifted"
+        ],
+    )
+    monkeypatch.setattr(
+        submission_readiness,
+        "validate_adaptive_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
+
+    result = verify_downstream_provenance(*paths)
+    assert result["status"] == "FAIL"
+    assert any(
+        "repeated: TrajUQ predictions hash drifted" in failure
+        for failure in result["failures"]
+    )

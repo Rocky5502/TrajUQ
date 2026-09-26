@@ -334,13 +334,36 @@ def pair_state(
         expected_ids,
     ):
         return "INVALID"
+    try:
+        metrics = json.loads(first.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "INVALID"
+    if metrics.get("protocol") != "trajuq_repeated_sampling_baseline_v2":
+        return "INVALID"
+    if expected_ids is not None and int(metrics.get("n_test", -1)) != len(expected_ids):
+        return "INVALID"
     return "COMPLETE"
 
 
-def comparison_state(path: Path) -> str:
+def comparison_state(
+    path: Path,
+    expected_n: int | None = None,
+) -> str:
     if not path.exists():
         return "MISSING"
-    return "COMPLETE" if valid_json(path) else "INVALID"
+    if not valid_json(path):
+        return "INVALID"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "INVALID"
+    if payload.get("protocol") != "trajuq_vs_repeated_sampling_v1":
+        return "INVALID"
+    if expected_n is not None and int(payload.get("n", -1)) != expected_n:
+        return "INVALID"
+    if set(payload.get("metrics", {})) < {"auroc", "auprc", "aurc"}:
+        return "INVALID"
+    return "COMPLETE"
 
 
 def cell_state(
@@ -369,7 +392,10 @@ def cell_state(
         Path(str(cell["repeated_predictions"])),
         expected_test_ids,
     )
-    comparison = comparison_state(Path(str(cell["direct_comparison"])))
+    comparison = comparison_state(
+        Path(str(cell["direct_comparison"])),
+        len(expected_test_ids),
+    )
     return {
         "cell": cell["cell"],
         "adapter": cell["adapter"],
@@ -395,10 +421,24 @@ def macro_state(plan: dict[str, Any]) -> str:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return "INVALID"
+    expected_cells = int(plan.get("expected_cells", 0))
     complete = (
-        payload.get("cell_set_complete") is True
-        and int(payload.get("observed_cells", -1))
-        == int(plan.get("expected_cells", 0))
+        payload.get("protocol") == "trajuq_vs_repeated_macro_v1"
+        and payload.get("comparison")
+        == "single_trajectory_trajuq_vs_five_sample_baseline"
+        and payload.get("cell_set_complete") is True
+        and int(payload.get("expected_cells", -1)) == expected_cells
+        and int(payload.get("observed_cells", -1)) == expected_cells
+        and set(payload.get("macro", {})) >= {
+            "auroc",
+            "auprc",
+            "brier",
+            "nll",
+            "ece15",
+            "aurc",
+            "risk50",
+            "risk80",
+        }
     )
     return "COMPLETE" if complete else "INVALID"
 
@@ -603,9 +643,19 @@ def main() -> None:
             if args.execute:
                 write_snapshot(plan, state_path)
 
+        try:
+            expected_test_ids = artifact_example_ids(
+                Path(str(cell["provenance"]["test"]["scored_target"]))
+            )
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            raise SystemExit(
+                f"{scope}: cannot resolve frozen repeated test IDs: {exc}"
+            ) from exc
+
         evaluation = pair_state(
             Path(str(cell["repeated_metrics"])),
             Path(str(cell["repeated_predictions"])),
+            expected_test_ids,
         )
         if evaluation == "MISSING":
             run_command(
@@ -618,6 +668,7 @@ def main() -> None:
             if args.execute and pair_state(
                 Path(str(cell["repeated_metrics"])),
                 Path(str(cell["repeated_predictions"])),
+                expected_test_ids,
             ) != "COMPLETE":
                 write_snapshot(plan, state_path)
                 raise SystemExit(
@@ -633,7 +684,10 @@ def main() -> None:
                 "inspect them instead of overwriting."
             )
 
-        comparison = comparison_state(Path(str(cell["direct_comparison"])))
+        comparison = comparison_state(
+            Path(str(cell["direct_comparison"])),
+            len(expected_test_ids),
+        )
         if comparison == "MISSING":
             run_command(
                 [str(value) for value in cell["compare_to_trajuq_argv"]],
@@ -643,7 +697,8 @@ def main() -> None:
                 event_log=event_path,
             )
             if args.execute and comparison_state(
-                Path(str(cell["direct_comparison"]))
+                Path(str(cell["direct_comparison"])),
+                len(expected_test_ids),
             ) != "COMPLETE":
                 write_snapshot(plan, state_path)
                 raise SystemExit(

@@ -14,6 +14,10 @@ function Run-Step {
     & $Command
     if ($LASTEXITCODE -ne 0) { throw "$Name failed with exit code $LASTEXITCODE" }
 }
+function Get-FileSha256 {
+    param([string]$Path)
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
 
 function Read-FrozenState {
     $LedgerPath = "results/revision_ledger.json"
@@ -68,9 +72,20 @@ function Require-LLaDAParity {
         throw "Missing $ParityPath. LLaDA exact parity must PASS before the MATH-500 scorer pilot."
     }
     $Parity = Get-Content $ParityPath -Raw | ConvertFrom-Json
+    $Reference = [string]$Parity.reference
+    $Instrumented = [string]$Parity.instrumented
+    $ReferenceHashOk = (
+        (Test-Path $Reference) -and
+        $Parity.reference_sha256 -eq (Get-FileSha256 $Reference)
+    )
+    $InstrumentedHashOk = (
+        (Test-Path $Instrumented) -and
+        $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
+    )
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
+        $Parity.git_clean -eq $true -and
         $Parity.require_token_ids -eq $true -and
         $Parity.require_provenance -eq $true -and
         $Parity.git_commit -eq $Head -and
@@ -78,7 +93,9 @@ function Require-LLaDAParity {
         $Parity.mismatch_count -eq 0 -and
         $Parity.provenance_mismatch_count -eq 0 -and
         $Parity.run_provenance.adapter -eq "llada" -and
-        $Parity.run_provenance.model_revision -eq $Revision
+        $Parity.run_provenance.model_revision -eq $Revision -and
+        $ReferenceHashOk -and
+        $InstrumentedHashOk
     )
     if (-not $Pass) {
         throw "LLaDA parity is not an exact 20-prompt PASS at the frozen commit/revision."
@@ -106,6 +123,45 @@ function Require-ScorerAudit {
     )
     if (-not $Pass) {
         throw "MATH-500 automatic scorer audit is stale, dependency-drifted, or not PASS."
+    }
+}
+
+function Assert-Math500FrozenPair {
+    param(
+        [string]$CalibrationData,
+        [string]$TestData,
+        [string]$SplitManifestPath,
+        [string]$SplitAuditPath,
+        [string]$DatasetSha
+    )
+
+    foreach ($Path in @($CalibrationData, $TestData, $SplitManifestPath, $SplitAuditPath)) {
+        if (-not (Test-Path $Path)) {
+            throw "Missing frozen MATH-500 split artifact: $Path. Run -Stage prepare first."
+        }
+    }
+
+    $Split = Get-Content $SplitManifestPath -Raw | ConvertFrom-Json
+    $Audit = Get-Content $SplitAuditPath -Raw | ConvertFrom-Json
+    if ($Split.requested_revision -ne $DatasetSha) {
+        throw "Frozen MATH-500 split revision differs from the revision ledger."
+    }
+    if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalibrationData)) {
+        throw "Frozen MATH-500 calibration hash differs from its split manifest."
+    }
+    if ($Split.test_sha256 -ne (Get-FileSha256 $TestData)) {
+        throw "Frozen MATH-500 test hash differs from its split manifest."
+    }
+    if (
+        $Audit.protocol -ne "trajuq_split_pair_audit_v1" -or
+        $Audit.status -ne "PASS" -or
+        $Audit.requested_revision -ne $DatasetSha -or
+        $Audit.calibration_sha256 -ne (Get-FileSha256 $CalibrationData) -or
+        $Audit.test_sha256 -ne (Get-FileSha256 $TestData) -or
+        $Audit.id_overlap_count -ne 0 -or
+        $Audit.exact_prompt_overlap_count -ne 0
+    ) {
+        throw "Frozen MATH-500 split audit is stale or not a zero-overlap PASS."
     }
 }
 
@@ -143,6 +199,8 @@ if (-not $DatasetSha -or $DatasetSha -eq "null") { throw "Ledger has no frozen M
 
 $CalData = "data/processed/math500/calibration.jsonl"
 $TestData = "data/processed/math500/test.jsonl"
+$SplitManifest = "data/processed/math500/split_manifest.json"
+$SplitAudit = "data/processed/math500/split_audit.json"
 $Raw = "runs/llada_math500_scorer_pilot.raw.jsonl"
 $Scored = "runs/llada_math500_scorer_pilot.scored.jsonl"
 $Review = "results/math500_scorer_review.md"
@@ -150,11 +208,22 @@ $Review = "results/math500_scorer_review.md"
 if ($Stage -in @("prepare", "all")) {
     Require-ScorerAudit $Head
 
-    if (-not (Test-Path $CalData) -or -not (Test-Path $TestData)) {
+    $SplitArtifacts = @($CalData, $TestData, $SplitManifest, $SplitAudit)
+    $ExistingSplitArtifacts = @($SplitArtifacts | Where-Object { Test-Path $_ })
+    if ($ExistingSplitArtifacts.Count -eq 0) {
         Run-Step "Prepare frozen MATH-500 calibration/test pair" {
             & $Python scripts/prepare_eval_pair.py --dataset math500 --revision $DatasetSha
         }
     }
+    elseif ($ExistingSplitArtifacts.Count -ne $SplitArtifacts.Count) {
+        throw (
+            "Partial MATH-500 split artifacts exist: " +
+            ($ExistingSplitArtifacts -join ", ") +
+            ". Inspect them before scorer gating; this wrapper will not overwrite frozen data."
+        )
+    }
+
+    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha
 
     Run-Step "MATH-500 LLaDA CUDA preflight" {
         & $Python scripts/preflight.py --model-config results/frozen_models/llada.yaml --data $CalData --require-cuda
@@ -163,9 +232,7 @@ if ($Stage -in @("prepare", "all")) {
 
 if ($Stage -in @("pilot", "all")) {
     Require-ScorerAudit $Head
-    if (-not (Test-Path $CalData)) {
-        throw "Missing $CalData. Run this wrapper with -Stage prepare first."
-    }
+    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha
 
     Require-No-PilotArtifacts @(
         $Raw,

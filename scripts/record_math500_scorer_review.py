@@ -184,7 +184,7 @@ def main() -> None:
         failures.append(
             f"automatic scorer audit commit {audit_commit} differs from current commit {commit}"
         )
-    scored_audit_ok, scored_audit = scored_audit_passes(scored_path, commit)
+    scored_audit_ok, _ = scored_audit_passes(scored_path, commit)
     if not scored_audit_ok:
         failures.append(
             "reviewed MATH-500 scored artifact has no current clean PASS audit at this commit"

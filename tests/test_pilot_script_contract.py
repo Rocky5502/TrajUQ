@@ -100,3 +100,29 @@ def test_human_pilot_gate_requires_parity_and_pilot_run_audits():
     assert "pilot raw audit is missing, stale, or not PASS" in text
     assert "pilot scored audit is missing, stale, or not PASS" in text
     assert "LLaDA parity instrumented run audit is missing, stale, or not PASS" in text
+
+
+def test_linux_a100_pilot_wrapper_matches_frozen_contract():
+    text = Path("scripts/pilot_linux.sh").read_text(encoding="utf-8")
+
+    assert 'STAGE="${1:-all}"' in text
+    assert "results/revision_ledger.json" in text
+    assert "results/cpu_verification.json" in text
+    assert "trajuq_revision_ledger_v2" in text
+    assert "trajuq_cpu_verification_v1" in text
+    assert "git status --porcelain" in text
+    assert "results/frozen_models/llada.yaml" in text
+    assert "scripts/prepare_eval_pair.py" in text
+    assert "scripts/preflight.py" in text
+    assert "scripts/freeze_manifest.py" in text
+    assert "scripts/run_llada_reference.py" in text
+    assert "scripts/run_generation.py" in text
+    assert "scripts/compare_run_parity.py" in text
+    assert "--require-token-ids" in text
+    assert "--require-provenance" in text
+    assert "trajuq_exact_parity_v3" in text
+    assert "scripts/pilot_quality_gate.py" in text
+    assert "trajuq_pilot_quality_gate_v2" in text
+    assert "scripts/export_trace_review.py" in text
+    assert "will not delete or overwrite evidence" in text
+    assert "rm -f" not in text

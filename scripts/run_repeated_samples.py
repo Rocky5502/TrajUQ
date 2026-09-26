@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from trajuq.io import read_jsonl
+
 
 DEFAULT_SEEDS = [2027, 2028, 2029, 2030, 2031]
 
@@ -43,9 +45,38 @@ def git_clean() -> bool | None:
         return None
 
 
+def expected_input_ids(path: Path, limit: int | None = None) -> list[str]:
+    rows = list(read_jsonl(path))
+    if limit is not None:
+        rows = rows[:limit]
+    ids = [str(row.get("id", "")) for row in rows]
+    if not rows or any(not item_id for item_id in ids):
+        raise ValueError(f"invalid repeated-sampling input IDs: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"duplicate repeated-sampling input IDs: {path}")
+    return ids
+
+
+def artifact_ids_complete(path: Path, expected_ids: list[str]) -> bool:
+    if not path.exists():
+        return False
+    try:
+        rows = list(read_jsonl(path))
+    except Exception:
+        return False
+    ids = [str(row.get("example_id", "")) for row in rows]
+    return (
+        bool(ids)
+        and all(ids)
+        and len(ids) == len(set(ids))
+        and ids == expected_ids
+    )
+
+
 def verified_raw_artifact(
     path: Path,
     expected_commit: str | None,
+    expected_ids: list[str],
 ) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
@@ -55,7 +86,8 @@ def verified_raw_artifact(
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("protocol") == "trajuq_run_audit_v1"
+        artifact_ids_complete(path, expected_ids)
+        and payload.get("protocol") == "trajuq_run_audit_v1"
         and payload.get("status") == "PASS"
         and payload.get("git_clean") is True
         and payload.get("git_commit") == expected_commit
@@ -122,6 +154,10 @@ def main() -> None:
     input_path = Path(args.input)
     if not input_path.is_file():
         raise SystemExit(f"Repeated-sampling input is missing: {input_path}")
+    try:
+        expected_ids = expected_input_ids(input_path, args.limit)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -149,7 +185,7 @@ def main() -> None:
         if (
             output.exists()
             and args.resume_verified
-            and verified_raw_artifact(output, commit)
+            and verified_raw_artifact(output, commit, expected_ids)
         ):
             print(f"[TrajUQ repeated] verified seed already complete -> {output}")
             manifest["runs"].append(

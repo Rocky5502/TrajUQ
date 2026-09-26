@@ -59,7 +59,7 @@ python scripts/compare_run_parity.py \
   --output results/llada_parity.json
 ```
 
-The deterministic hard gate is exact token-ID equality on all 20 prompts.
+The deterministic hard gate is exact token-ID equality on all 20 prompts. The comparator emits `trajuq_exact_parity_v3`; primary readiness additionally requires exactly 20 shared records, uniform run provenance, the revision-ledger model SHA, and the same frozen experiment git commit.
 
 ## Additional audit
 

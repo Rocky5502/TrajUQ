@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
+import subprocess
 from pathlib import Path
 
 from trajuq.io import append_jsonl, read_jsonl, sha256_text
@@ -15,6 +17,43 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def verify_raw_audit(run_path: Path) -> tuple[Path, dict]:
+    audit_path = run_path.with_suffix(run_path.suffix + ".audit.json")
+    if not audit_path.exists():
+        raise ValueError(f"missing raw-run audit: {audit_path}")
+    try:
+        payload = json.loads(audit_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid raw-run audit {audit_path}: {exc}") from exc
+
+    commit = git_head()
+    if not commit:
+        raise ValueError("current git commit could not be resolved for scoring")
+    if (
+        payload.get("protocol") != "trajuq_run_audit_v1"
+        or payload.get("status") != "PASS"
+        or payload.get("stage") != "raw"
+        or payload.get("git_clean") is not True
+        or payload.get("git_commit") != commit
+        or str(payload.get("sha256", "")) != sha256_file(run_path)
+    ):
+        raise ValueError(
+            "raw-run audit is not a clean same-commit hash-bound PASS"
+        )
+    return audit_path, payload
 
 
 def reference_index(path: Path) -> dict[str, dict]:

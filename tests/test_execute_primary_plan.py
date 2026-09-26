@@ -6,6 +6,7 @@ from scripts.execute_primary_plan import (
     audit_passes,
     execution_snapshot,
     partition_state,
+    validate_plan_provenance,
 )
 
 
@@ -78,3 +79,100 @@ def test_execution_snapshot_counts_complete_partitions(tmp_path):
     assert snapshot["complete_partitions"] == 1
     assert snapshot["total_partitions"] == 2
     assert snapshot["status"] == "IN_PROGRESS"
+
+
+def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
+    primary = tmp_path / "primary.yaml"
+    readiness = tmp_path / "readiness.json"
+    model = tmp_path / "llada.yaml"
+    cal = tmp_path / "cal.jsonl"
+    test = tmp_path / "test.jsonl"
+    for path, text in (
+        (primary, "experiment: {}\n"),
+        (readiness, '{"status":"PASS"}\n'),
+        (model, "revision: abc\n"),
+        (cal, '{"id":"c"}\n'),
+        (test, '{"id":"t"}\n'),
+    ):
+        path.write_text(text, encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_head",
+        lambda: "frozen-commit",
+    )
+    plan = {
+        "protocol": "trajuq_primary_matrix_plan_v2",
+        "experiment_git_commit": "frozen-commit",
+        "primary_config": str(primary),
+        "primary_config_sha256": hashlib.sha256(primary.read_bytes()).hexdigest(),
+        "readiness": str(readiness),
+        "readiness_sha256": hashlib.sha256(readiness.read_bytes()).hexdigest(),
+        "model_configs": {
+            "llada": {
+                "path": str(model),
+                "sha256": hashlib.sha256(model.read_bytes()).hexdigest(),
+            }
+        },
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "calibration": {
+                    "input": str(cal),
+                    "input_sha256": hashlib.sha256(cal.read_bytes()).hexdigest(),
+                },
+                "test": {
+                    "input": str(test),
+                    "input_sha256": hashlib.sha256(test.read_bytes()).hexdigest(),
+                },
+            }
+        ],
+    }
+
+    assert validate_plan_provenance(plan) == []
+
+
+def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
+    primary = tmp_path / "primary.yaml"
+    readiness = tmp_path / "readiness.json"
+    model = tmp_path / "llada.yaml"
+    cal = tmp_path / "cal.jsonl"
+    test = tmp_path / "test.jsonl"
+    for path in (primary, readiness, model, cal, test):
+        path.write_text("frozen\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_head",
+        lambda: "frozen-commit",
+    )
+    cal_hash = hashlib.sha256(cal.read_bytes()).hexdigest()
+    plan = {
+        "protocol": "trajuq_primary_matrix_plan_v2",
+        "experiment_git_commit": "frozen-commit",
+        "primary_config": str(primary),
+        "primary_config_sha256": hashlib.sha256(primary.read_bytes()).hexdigest(),
+        "readiness": str(readiness),
+        "readiness_sha256": hashlib.sha256(readiness.read_bytes()).hexdigest(),
+        "model_configs": {
+            "llada": {
+                "path": str(model),
+                "sha256": hashlib.sha256(model.read_bytes()).hexdigest(),
+            }
+        },
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "calibration": {
+                    "input": str(cal),
+                    "input_sha256": cal_hash,
+                },
+                "test": {
+                    "input": str(test),
+                    "input_sha256": hashlib.sha256(test.read_bytes()).hexdigest(),
+                },
+            }
+        ],
+    }
+    cal.write_text("mutated\n", encoding="utf-8")
+
+    failures = validate_plan_provenance(plan)
+    assert any("input hash differs from plan" in item for item in failures)

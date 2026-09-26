@@ -171,7 +171,7 @@ implementation:
       - scripts/export_research_handoff.py
       - tests/test_export_research_handoff.py
   - id: guarded_preprimary_wrappers
-    label: "Frozen-state guarded LLaDA/SDAR/Dream parity, pilot, and MATH-500 wrappers"
+    label: "Frozen-state guarded parity/pilot/MATH wrappers with clean commit-bound run-audit and human-review source bindings"
     state: DONE
     evidence:
       - scripts/pilot_windows.ps1

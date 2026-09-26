@@ -159,7 +159,7 @@ A weak uncertainty signal is not a reason to redesign features using final test 
 
 ## Automated Windows wrapper
 
-The full first-pilot sequence is encoded in `scripts/pilot_windows.ps1`. Run each stage separately on the first pass:
+The first-pilot sequence is split into a one-time frozen-commit setup plus the staged LLaDA wrapper. Run them separately on the first pass:
 
 ```powershell
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
@@ -167,14 +167,14 @@ PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-The wrapper resolves immutable model/data SHAs, writes a frozen runtime model config under `results/` (leaving the tracked YAML template unchanged), prepares the frozen GSM8K pair, snapshots the environment, runs 20-prompt native/instrumented parity, measures telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits raw/scored artifacts, checks feature variation/timing/schema integrity, and exports a 10-example manual review sheet.
+The freeze wrapper records one clean experiment commit, runs CPU verification, resolves all primary model/data SHAs, and writes hash-bound frozen model configs. The pilot wrapper then prepares the frozen GSM8K pair, snapshots the environment, runs 20-prompt native/instrumented parity from those exact revisions, measures telemetry overhead, hard-stops on mismatch, runs the 50-example pilot, audits raw/scored artifacts, checks feature variation/timing/schema integrity, and exports a 10-example manual review sheet.
 
 The automated gate does not replace the required human inspection of at least ten trajectories.
 
 
 ## Reproducibility note
 
-The tracked model YAML remains a template with `revision: null`. The immutable revision used for a concrete run is stored in the artifact-local frozen model config and freeze manifest, preventing a pilot run from silently dirtying the repository's generic configuration.
+The tracked model YAML remains a template with `revision: null`. The immutable revisions used for a concrete run are stored in the v2 revision ledger and hash-bound frozen model configs, preventing a pilot run from silently dirtying the repository's generic configuration or re-resolving a moving model head.
 
 
 ## G. Record the human review

@@ -264,6 +264,8 @@ def main() -> None:
             sys.executable,
             "scripts/primary_readiness.py",
             "--historical-provenance-only",
+            "--output",
+            "results/submission_preprimary_revalidation.json",
         ]
     )
     if preprimary_readiness.get("status") != "PASS":

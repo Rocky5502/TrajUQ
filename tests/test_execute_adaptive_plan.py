@@ -16,13 +16,25 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def write_audited(path: Path, stage: str) -> None:
+def write_audited(
+    path: Path,
+    stage: str,
+    *,
+    commit: str = "frozen-commit",
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text('{"example_id":"x"}\n', encoding="utf-8")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     path.with_suffix(path.suffix + ".audit.json").write_text(
         json.dumps(
-            {"status": "PASS", "stage": stage, "sha256": digest}
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": stage,
+                "sha256": digest,
+            }
         ),
         encoding="utf-8",
     )
@@ -139,7 +151,10 @@ def test_adaptive_provenance_rejects_refined_input_drift(
     refined_audit.write_text(
         json.dumps(
             {
+                "protocol": "trajuq_run_audit_v1",
                 "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
                 "stage": "scored",
                 "sha256": _sha256(refined),
             }
@@ -187,3 +202,9 @@ def test_adaptive_provenance_rejects_refined_input_drift(
     failures = validate_plan_provenance(plan)
     assert any("refined scored input hash drifted" in item for item in failures)
     assert any("refined audit no longer binds input" in item for item in failures)
+
+
+def test_adaptive_audit_rejects_other_commit(tmp_path):
+    raw = tmp_path / "base.raw.jsonl"
+    write_audited(raw, "raw", commit="other-commit")
+    assert not audit_passes(raw, "raw", "frozen-commit")

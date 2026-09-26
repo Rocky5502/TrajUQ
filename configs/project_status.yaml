@@ -137,6 +137,12 @@ implementation:
     state: DONE
     evidence:
       - scripts/build_anonymous_supplement.py
+  - id: submission_readiness_gate
+    label: "Final ARR artifact-hash, anonymity, and supplement readiness gate"
+    state: DONE
+    evidence:
+      - scripts/submission_readiness.py
+      - tests/test_submission_readiness.py
   - id: cpu_verification
     label: "Cross-platform CPU verification scripts"
     state: DONE

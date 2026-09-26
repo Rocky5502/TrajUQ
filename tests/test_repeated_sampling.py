@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from scripts.aggregate_repeated_baseline import load_cell

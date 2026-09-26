@@ -26,6 +26,66 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def validate_plan_provenance(plan: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    if plan.get("protocol") != "trajuq_primary_matrix_plan_v2":
+        failures.append("primary plan protocol is not v2")
+
+    expected_commit = plan.get("experiment_git_commit")
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != expected_commit:
+        failures.append(
+            "current git commit differs from the primary plan experiment commit"
+        )
+
+    for key, hash_key in (
+        ("primary_config", "primary_config_sha256"),
+        ("readiness", "readiness_sha256"),
+    ):
+        path = Path(str(plan.get(key, "")))
+        expected_hash = plan.get(hash_key)
+        if not path.exists() or not expected_hash:
+            failures.append(f"primary plan missing bound {key} artifact")
+        elif sha256_file(path) != expected_hash:
+            failures.append(f"{key} hash differs from primary plan")
+
+    for adapter, spec in plan.get("model_configs", {}).items():
+        path = Path(str(spec.get("path", "")))
+        expected_hash = spec.get("sha256")
+        if not path.exists() or not expected_hash:
+            failures.append(f"{adapter}: bound frozen model config is missing")
+        elif sha256_file(path) != expected_hash:
+            failures.append(f"{adapter}: frozen model config hash differs from plan")
+
+    for cell in plan.get("cells", []):
+        for partition in ("calibration", "test"):
+            spec = cell.get(partition, {})
+            path = Path(str(spec.get("input", "")))
+            expected_hash = spec.get("input_sha256")
+            if not path.exists() or not expected_hash:
+                failures.append(
+                    f"{cell.get('cell')} {partition}: bound input is missing"
+                )
+            elif sha256_file(path) != expected_hash:
+                failures.append(
+                    f"{cell.get('cell')} {partition}: input hash differs from plan"
+                )
+    return failures
+
+
 def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
 
@@ -105,6 +165,7 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "protocol": "trajuq_primary_execution_state_v1",
         "status": status,
         "plan_protocol": plan.get("protocol"),
+        "experiment_git_commit": plan.get("experiment_git_commit"),
         "expected_cells": expected_cells,
         "observed_cells": len(cells),
         "complete_cells": complete_cells,
@@ -208,6 +269,13 @@ def main() -> None:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if plan.get("status") != "PASS":
         raise SystemExit("Primary matrix plan is not PASS.")
+
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Primary plan provenance check failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
 
     expected = int(plan.get("expected_cells", 0))
     cells = list(plan.get("cells", []))

@@ -1,6 +1,11 @@
 import pytest
 
-from trajuq.scoring import extract_choice, extract_number, score_record
+from trajuq.scoring import (
+    extract_choice,
+    extract_number,
+    math500_equivalent,
+    score_record,
+)
 
 
 def test_extractors():
@@ -24,3 +29,10 @@ def test_math500_uses_symbolic_scorer_when_dependency_is_installed():
     ok, name = score_record("math500", r"FINAL: \frac{1}{2}", r"\frac{1}{2}")
     assert ok
     assert name == "math_verify_0.9.0_precision6"
+
+
+
+def test_math500_symbolic_equivalence_for_repeated_sampling():
+    pytest.importorskip("math_verify")
+    assert math500_equivalent(r"FINAL: \frac{2}{4}", r"FINAL: 0.5")
+    assert not math500_equivalent(r"FINAL: \frac{1}{2}", r"FINAL: \frac{3}{4}")

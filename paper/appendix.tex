@@ -157,7 +157,7 @@ Without consulting labels, final answers are canonicalized and summarized by:
 variation ratio, normalized vote entropy, and unique-answer fraction.
 These features are calibrated on the calibration partition.
 All additional model calls are included in the compute report.
-For MATH-500, repeated-sampling voting remains disabled until algebraic-equivalence clustering is available.
+For MATH-500, repeated-sampling voting uses pairwise symbolic equivalence under the pinned Math-Verify scorer. With five samples, all ten pairs are compared; connected components form vote classes. This procedure is label-free and never accesses the benchmark reference answer.
 
 \section{Adaptive Compute}
 

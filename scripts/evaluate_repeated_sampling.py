@@ -17,8 +17,8 @@ from trajuq.evaluation import (
     selective_curve,
 )
 from trajuq.io import read_jsonl
-from trajuq.repeated_sampling import vote_uncertainty
-from trajuq.scoring import canonical_prediction
+from trajuq.repeated_sampling import equivalence_cluster_labels, vote_uncertainty
+from trajuq.scoring import canonical_prediction, math500_equivalent
 
 
 REPEATED_FEATURES = [
@@ -44,6 +44,22 @@ SIGNATURE_METADATA_KEYS = [
     "remasking_strategy",
     "confidence_threshold",
 ]
+
+
+def uncertainty_features_for_outputs(
+    dataset: str,
+    outputs: list[str],
+) -> dict[str, float]:
+    name = dataset.lower()
+    if name == "math500":
+        labels = equivalence_cluster_labels(outputs, math500_equivalent)
+        return vote_uncertainty(labels)
+
+    predictions = [
+        canonical_prediction(name, output)
+        for output in outputs
+    ]
+    return vote_uncertainty(predictions)
 
 
 def load_target(path: str) -> tuple[list[str], dict[str, dict], np.ndarray]:
@@ -133,7 +149,7 @@ def feature_matrix(
         dataset = str(target[item_id]["dataset"])
         target_prompt_hash = target[item_id].get("prompt_sha256")
         target_model = str(target[item_id].get("model"))
-        predictions: list[str | None] = []
+        outputs: list[str] = []
         total_seconds = 0.0
         seconds_complete = True
 
@@ -146,12 +162,7 @@ def feature_matrix(
             if target_prompt_hash and row.get("prompt_sha256") != target_prompt_hash:
                 raise SystemExit(f"Prompt hash mismatch for {item_id} in {path}")
 
-            predictions.append(
-                canonical_prediction(
-                    dataset,
-                    str(row["generation"]["text"]),
-                )
-            )
+            outputs.append(str(row["generation"]["text"]))
             wall = row.get("generation", {}).get("metadata", {}).get("wall_time_seconds")
             try:
                 wall_value = float(wall)
@@ -163,7 +174,7 @@ def feature_matrix(
                 else:
                     total_seconds += wall_value
 
-        features = vote_uncertainty(predictions)
+        features = uncertainty_features_for_outputs(dataset, outputs)
         rows.append([float(features[name]) for name in REPEATED_FEATURES])
         if seconds_complete:
             auxiliary_seconds_per_example.append(total_seconds)
@@ -252,7 +263,8 @@ def main() -> None:
     payload = {
         "protocol": "trajuq_repeated_sampling_baseline_v2",
         "selective_risk_version": SELECTIVE_RISK_VERSION,
-        "baseline": "repeated_sampling_vote_uncertainty",
+        "baseline": "repeated_sampling_symbolic_or_canonical_vote_uncertainty",
+        "math500_clustering": "pairwise_math_verify_connected_components_v1",
         "features": REPEATED_FEATURES,
         "sample_count": len(args.cal_sample),
         "sample_seeds": sorted(cal_by_seed),

@@ -1,4 +1,4 @@
-from trajuq.repeated_sampling import vote_uncertainty
+from trajuq.repeated_sampling import equivalence_cluster_labels, vote_uncertainty
 
 
 def test_vote_uncertainty_zero_when_all_samples_agree():
@@ -16,3 +16,20 @@ def test_vote_uncertainty_increases_with_disagreement():
     assert split["sample_disagreement"] < all_different["sample_disagreement"]
     assert agree["sample_vote_entropy"] < split["sample_vote_entropy"]
     assert split["sample_vote_entropy"] <= all_different["sample_vote_entropy"]
+
+
+
+def test_equivalence_cluster_labels_are_deterministic():
+    values = ["1/2", "0.5", "3/4", "0.500"]
+    equivalent_pairs = {
+        frozenset(("1/2", "0.5")),
+        frozenset(("1/2", "0.500")),
+        frozenset(("0.5", "0.500")),
+    }
+
+    def equivalent(left, right):
+        return left == right or frozenset((left, right)) in equivalent_pairs
+
+    labels = equivalence_cluster_labels(values, equivalent)
+    assert labels[0] == labels[1] == labels[3]
+    assert labels[2] != labels[0]

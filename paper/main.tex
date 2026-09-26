@@ -218,7 +218,7 @@ We compare against:
 (ii) the transparent training-free \method risk score as a sensitivity analysis; and
 (iii) a five-sample final-answer disagreement baseline using variation ratio, normalized vote entropy, and unique-answer fraction.
 The repeated-sampling baseline is more expensive and its generation cost is reported separately.
-MATH-500 is excluded from repeated-sampling voting until symbolic answer clustering is implemented.
+For MATH-500, sampled answers are clustered pairwise with the pinned symbolic equivalence scorer rather than string matching.
 
 \subsection{Statistics}
 
@@ -265,7 +265,7 @@ Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
 \method (matched subset) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
 \bottomrule
 \end{tabular}
-\caption{Expensive five-sample baseline on the frozen matched subset of 15 model--dataset cells. MATH-500 is excluded until symbolic sample clustering is available; this table is therefore separate from the primary RQ1 endpoint.}
+\caption{Expensive five-sample baseline on the complete frozen $3\times6$ model--dataset matrix. MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. This comparator remains secondary to the pre-registered RQ1 endpoint.}
 \label{tab:repeated}
 \end{table}
 

@@ -78,23 +78,41 @@ def _boxed_math(text: str) -> str:
     return "\\boxed{" + value + "}"
 
 
-def score_math500(output_text: str, reference: str) -> bool:
-    """Judge-free symbolic equivalence for the frozen MATH-500 protocol.
+def _math500_prediction_text(text: str) -> str:
+    final = extract_final_field(text)
+    return _boxed_math(final) if final is not None else str(text)
 
-    The dataset reference and the model's explicit FINAL field are wrapped in a
-    LaTeX boxed environment before parsing. If the model omitted FINAL, the full
-    output is passed to Math-Verify's normal extraction logic.
+
+def math500_equivalent(left: str, right: str) -> bool:
+    """Reference-free symbolic equivalence used for MATH-500 sample clustering.
+
+    Exact normalized text equality is accepted first. Otherwise the same pinned
+    Math-Verify metric used by the scorer is applied pairwise. No benchmark
+    reference answer or correctness label is needed.
     """
 
+    left_text = str(left).strip()
+    right_text = str(right).strip()
+    if not left_text or not right_text:
+        return False
+    if left_text == right_text:
+        return True
+
     metric = _math500_metric()
-    gold = _boxed_math(reference)
-    final = extract_final_field(output_text)
-    prediction = _boxed_math(final) if final is not None else output_text
     try:
-        grade, _ = metric([gold], [prediction])
+        grade, _ = metric(
+            [_math500_prediction_text(left_text)],
+            [_math500_prediction_text(right_text)],
+        )
     except Exception:
         return False
     return bool(grade == 1 or grade == 1.0)
+
+
+def score_math500(output_text: str, reference: str) -> bool:
+    """Judge-free symbolic equivalence for the frozen MATH-500 protocol."""
+
+    return math500_equivalent(output_text, reference)
 
 
 def score_record(dataset: str, output_text: str, reference: str) -> tuple[bool, str]:
@@ -145,7 +163,7 @@ def canonical_prediction(dataset: str, output_text: str) -> str | None:
         return format(float(value), ".12g")
     if name == "math500":
         raise ValueError(
-            "MATH-500 repeated-sampling clustering is not enabled: "
-            "use symbolic equivalence rather than string matching."
+            "MATH-500 requires pairwise symbolic clustering; use "
+            "math500_equivalent() rather than string canonicalization."
         )
     raise ValueError(f"No canonical prediction parser for dataset: {dataset}")

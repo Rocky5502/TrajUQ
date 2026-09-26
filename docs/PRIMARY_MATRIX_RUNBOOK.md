@@ -150,12 +150,12 @@ five-sample baseline ledger:
 python scripts/plan_repeated_sampling.py
 ```
 
-The frozen subset contains 15 cells: three primary model families times GSM8K,
-GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA. MATH-500 is excluded
-until symbolic equivalence clustering is implemented. The plan fixes five seeds
+The frozen comparator now covers all 18 cells. MATH-500 sample votes use
+reference-free pairwise Math-Verify equivalence clustering instead of string
+matching. The plan fixes five seeds
 (2027--2031), temperature 0.2, model revision, prompt partitions, and all
 adapter-specific generation settings.
 
 Execute every planned auxiliary generation and cell evaluation before running
-the plan's `aggregate_repeated_baseline.py` command. This matched-subset macro
-result is reported separately from the complete 18-cell primary RQ1 endpoint.
+the plan's `aggregate_repeated_baseline.py` command. This full-matrix comparator is reported separately because it is an expensive
+secondary baseline rather than the pre-registered RQ1 endpoint.

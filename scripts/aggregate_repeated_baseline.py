@@ -44,6 +44,57 @@ def index(path: str) -> dict[str, dict]:
     return out
 
 
+def load_auxiliary_compute(spec: dict, expected_n: int) -> dict[str, float | int | str]:
+    label = str(spec["cell"])
+    metrics_path = Path(str(spec["repeated_metrics"]))
+    try:
+        payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"{label}: cannot read repeated metrics for compute accounting: {exc}") from exc
+
+    if payload.get("protocol") != "trajuq_repeated_sampling_baseline_v2":
+        raise SystemExit(f"{label}: repeated metrics protocol is not v2")
+    if int(payload.get("n_test", -1)) != int(expected_n):
+        raise SystemExit(f"{label}: repeated metrics test count is incomplete")
+
+    expected_samples = len([int(seed) for seed in spec.get("seeds", [])])
+    if expected_samples <= 0:
+        raise SystemExit(f"{label}: repeated plan has no frozen sample seeds")
+    if int(payload.get("sample_count", -1)) != expected_samples:
+        raise SystemExit(
+            f"{label}: repeated sample count drifted: "
+            f"{payload.get('sample_count')!r} != {expected_samples}"
+        )
+
+    test_cost = payload.get("auxiliary_compute", {}).get("test", {})
+    values: dict[str, float] = {}
+    for key in (
+        "mean_auxiliary_wall_time_seconds_per_example",
+        "p90_auxiliary_wall_time_seconds_per_example",
+    ):
+        value = test_cost.get(key)
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise SystemExit(
+                f"{label}: missing/non-numeric repeated test compute field {key}"
+            ) from exc
+        if not np.isfinite(number) or number < 0:
+            raise SystemExit(
+                f"{label}: invalid repeated test compute field {key}={number!r}"
+            )
+        values[key] = number
+
+    return {
+        "sample_count": expected_samples,
+        **values,
+        "definition": (
+            "extra repeated-generation wall time for the frozen auxiliary samples; "
+            "target generation excluded"
+        ),
+    }
+
+
 def load_cell(spec: dict) -> PredictionCell:
     label = str(spec["cell"])
     traj = index(str(spec["trajuq_predictions"]))
@@ -124,11 +175,15 @@ def main() -> None:
 
     cells = [load_cell(spec) for spec in specs]
     per_cell: dict[str, dict] = {}
-    for cell in cells:
+    compute_rows: list[dict[str, float | int | str]] = []
+    for spec, cell in zip(specs, cells):
+        compute = load_auxiliary_compute(spec, len(cell.y_error))
+        compute_rows.append(compute)
         per_cell[cell.label] = {
             "adapter": cell.model_family,
             "dataset": cell.dataset,
             "n": len(cell.y_error),
+            "auxiliary_compute": compute,
             "metrics": {
                 metric: {
                     "trajuq": metric_value(
@@ -162,8 +217,46 @@ def main() -> None:
         for metric in AGGREGATE_METRICS
     }
 
+    mean_costs = np.asarray(
+        [
+            float(row["mean_auxiliary_wall_time_seconds_per_example"])
+            for row in compute_rows
+        ],
+        dtype=float,
+    )
+    p90_costs = np.asarray(
+        [
+            float(row["p90_auxiliary_wall_time_seconds_per_example"])
+            for row in compute_rows
+        ],
+        dtype=float,
+    )
+    sample_counts = {int(row["sample_count"]) for row in compute_rows}
+    if len(sample_counts) != 1:
+        raise SystemExit(
+            f"Repeated-sampling cells mix sample counts: {sorted(sample_counts)}"
+        )
+
+    auxiliary_compute = {
+        "definition": (
+            "extra five-sample repeated-generation wall time; "
+            "target generation excluded"
+        ),
+        "aggregation": "equal_cell_weight_macro",
+        "expected_cells": expected,
+        "observed_cells_with_complete_test_wall_time": len(compute_rows),
+        "complete": len(compute_rows) == expected,
+        "sample_count": next(iter(sample_counts)),
+        "mean_test_auxiliary_wall_time_seconds_per_example": float(
+            mean_costs.mean()
+        ),
+        "mean_test_p90_auxiliary_wall_time_seconds_per_example": float(
+            p90_costs.mean()
+        ),
+    }
+
     payload = {
-        "protocol": "trajuq_vs_repeated_macro_v1",
+        "protocol": "trajuq_vs_repeated_macro_v2",
         "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
         "delta_direction": "positive_means_trajuq_is_better",
         "plan": args.plan,
@@ -172,6 +265,7 @@ def main() -> None:
         "cell_set_complete": len(cells) == expected,
         "eligible_datasets": plan.get("eligible_datasets"),
         "excluded_datasets": plan.get("excluded_datasets"),
+        "auxiliary_compute": auxiliary_compute,
         "per_cell": per_cell,
         "macro": macro,
     }

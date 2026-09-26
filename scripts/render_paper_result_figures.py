@@ -63,17 +63,43 @@ def auroc_improvement_matrix(
 
 
 def require_complete_primary(primary: dict, expected: int) -> None:
+    if primary.get("protocol") != "hierarchical_within_cell_macro_bootstrap_v1":
+        raise ValueError("Primary result protocol is not recognized.")
     if primary.get("cell_set_complete") is not True:
         raise ValueError("Primary result cell set is incomplete.")
+    if int(primary.get("expected_cell_count", -1)) != expected:
+        raise ValueError("Primary result expected cell count is unexpected.")
     if int(primary.get("observed_cell_count", -1)) != expected:
         raise ValueError("Primary result observed cell count is unexpected.")
 
 
-def require_complete_adaptive(payload: dict, expected: int) -> None:
+def require_complete_adaptive(
+    payload: dict,
+    expected: int,
+    *,
+    fraction_key: str,
+    expected_fraction: float,
+    is_primary: bool,
+) -> None:
+    if payload.get("protocol") != "trajuq_adaptive_macro_v1":
+        raise ValueError("Adaptive result protocol is not recognized.")
+    if payload.get("execution_semantics") != "selective_second_pass_rerun":
+        raise ValueError("Adaptive result execution semantics drifted.")
+    if payload.get("fraction_key") != fraction_key:
+        raise ValueError("Adaptive result fraction key drifted.")
     if payload.get("cell_set_complete") is not True:
         raise ValueError("Adaptive result cell set is incomplete.")
+    if int(payload.get("expected_cells", -1)) != expected:
+        raise ValueError("Adaptive result expected cell count is unexpected.")
     if int(payload.get("observed_cells", -1)) != expected:
         raise ValueError("Adaptive result observed cell count is unexpected.")
+    if bool(payload.get("is_primary_fraction")) is not is_primary:
+        raise ValueError("Adaptive result primary-cap flag drifted.")
+    if not np.isclose(
+        float(payload.get("max_refine_fraction", -1)),
+        expected_fraction,
+    ):
+        raise ValueError("Adaptive result refinement fraction drifted.")
 
 
 def main() -> None:
@@ -131,8 +157,20 @@ def main() -> None:
     adapters, datasets = primary_orders(Path(args.primary_config))
     expected = len(adapters) * len(datasets)
     require_complete_primary(primary, expected)
-    for payload in adaptive.values():
-        require_complete_adaptive(payload, expected)
+    expected_fractions = {
+        "cap_025": (0.25, False),
+        "cap_050": (0.50, True),
+        "cap_075": (0.75, False),
+    }
+    for key, payload in adaptive.items():
+        fraction, is_primary = expected_fractions[key]
+        require_complete_adaptive(
+            payload,
+            expected,
+            fraction_key=key,
+            expected_fraction=fraction,
+            is_primary=is_primary,
+        )
 
     matrix = auroc_improvement_matrix(primary, adapters, datasets)
     out_dir = Path(args.output_dir)

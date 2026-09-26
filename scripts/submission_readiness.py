@@ -285,6 +285,25 @@ def verify_generated_results(
     }
 
 
+def prerequisite_gate_failures(
+    snapshot: dict,
+    *,
+    self_gate_id: str = "submission_readiness",
+) -> list[dict]:
+    """Return unmet required prerequisites, excluding this gate's own output.
+
+    The submission-readiness artifact is produced by this script, so treating
+    it as an input prerequisite would make the first valid run impossible.
+    """
+    return [
+        gate
+        for gate in snapshot["execution_gates"]
+        if gate["required"]
+        and gate["id"] != self_gate_id
+        and gate["state"] != "PASS"
+    ]
+
+
 def run_json_command(argv: list[str]) -> dict:
     completed = subprocess.run(
         argv,
@@ -381,11 +400,7 @@ def main() -> None:
         Path(args.status_config).read_text(encoding="utf-8")
     )
     snapshot = build_snapshot(Path.cwd(), config)
-    required_not_pass = [
-        gate
-        for gate in snapshot["execution_gates"]
-        if gate["required"] and gate["state"] != "PASS"
-    ]
+    required_not_pass = prerequisite_gate_failures(snapshot)
     if required_not_pass:
         failures.append(
             "required project gates are not all PASS: "
@@ -453,6 +468,7 @@ def main() -> None:
         "protocol": "trajuq_submission_readiness_v1",
         "status": "PASS" if not failures else "FAIL",
         "project_gate_summary": snapshot["summary"],
+        "submission_gate_self_excluded_from_prerequisites": "submission_readiness",
         "required_gate_failures": required_not_pass,
         "submission_checkout": submission_checkout,
         "preprimary_readiness_revalidation": preprimary_readiness,

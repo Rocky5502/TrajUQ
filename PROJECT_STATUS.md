@@ -65,7 +65,8 @@ particular, the following are implemented and versioned:
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;
 - primary-readiness v2 additionally revalidates the revision-ledger dataset
-  manifest hash and the exact CPU-verification protocol/step sequence;
+  manifest hash, the exact CPU-verification protocol/step sequence, frozen
+  MATH-500 dependency versions, and clean-checkout human attestations;
 - a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
   handoff exporter that refuses to omit required continuation context.
 
@@ -101,9 +102,9 @@ The remaining work is primarily **execution**, not paper-number invention.
    mismatches, and zero provenance mismatches. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
    binds raw/scored files by SHA-256 and the frozen git commit/model SHA. Inspect
-   at least 10 exported trajectories and record the protocol-v2 human attestation,
-   which binds the review sheet, parity artifact, and pilot-quality artifact by
-   SHA-256. See issue #1.
+   at least 10 exported trajectories and record the protocol-v2 human attestation
+   from the same frozen clean checkout; it binds the review sheet, parity
+   artifact, and pilot-quality artifact by SHA-256. See issue #1.
 5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. On
    Windows, use `scripts/parity_remaining_windows.ps1 -Model sdar`; it binds
    the run to the clean CPU/revision freeze and refuses ambiguous partial
@@ -116,11 +117,13 @@ The remaining work is primarily **execution**, not paper-number invention.
    review sheet, and protocol-v2 human attestation bound to the audit/sheet
    hashes. On Windows, `scripts/math500_gate_windows.ps1 -Stage all` performs
    the automated portion from the frozen clean state and deliberately stops
-   before the human attestation. See issue #4.
+   before the human attestation. Record that attestation from the same frozen
+   clean checkout; readiness also requires the audit to report
+   math-verify=0.9.0 and antlr4-python3-runtime=4.13.2. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
-   CPU, parity, pilot, human-review, MATH-500 scorer, dataset-manifest, commit,
-   and dirty-worktree state.
+   CPU, parity, pilot, human-review, MATH-500 scorer/dependency, dataset-manifest,
+   commit, and dirty-worktree state.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 

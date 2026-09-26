@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from scripts.plan_primary_analysis import scored_source_chain_passes
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -327,7 +329,18 @@ def main() -> None:
                     f"{cell_name} {partition}: frozen generation input drifted"
                 )
 
+            raw = Path(str(source["raw_output"]))
             scored = Path(str(source["scored_output"]))
+            if not scored_source_chain_passes(
+                generation_input,
+                raw,
+                scored,
+                experiment_commit,
+            ):
+                raise SystemExit(
+                    f"{cell_name} {partition}: scored target does not trace "
+                    "to the frozen input and clean raw audit"
+                )
             if not scored_audit_passes(scored, experiment_commit):
                 raise SystemExit(
                     f"{cell_name} {partition}: scored target is missing, "

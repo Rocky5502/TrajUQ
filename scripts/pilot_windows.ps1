@@ -40,6 +40,30 @@ function Read-FrozenLedger {
     if ($Ledger.git_commit -ne $Head) {
         throw "Revision ledger was frozen at $($Ledger.git_commit), but current HEAD is $Head. Do not mix commits."
     }
+
+    $Dirty = (& git status --porcelain) -join "`n"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to inspect git worktree."
+    }
+    if ($Dirty) {
+        throw "Worktree is dirty after the pre-primary freeze. Commit/stash changes and re-run scripts/freeze_preprimary_windows.ps1 before GPU execution."
+    }
+
+    $CpuPath = "results/cpu_verification.json"
+    if (-not (Test-Path $CpuPath)) {
+        throw "Missing $CpuPath. Re-run scripts/freeze_preprimary_windows.ps1 before GPU execution."
+    }
+    $Cpu = Get-Content $CpuPath -Raw | ConvertFrom-Json
+    if ($Cpu.protocol -ne "trajuq_cpu_verification_v1") {
+        throw "Unexpected CPU-verification protocol: $($Cpu.protocol)"
+    }
+    if ($Cpu.status -ne "PASS" -or $Cpu.git_clean -ne $true) {
+        throw "CPU verification is not a clean PASS."
+    }
+    if ($Cpu.git_commit -ne $Head) {
+        throw "CPU verification commit $($Cpu.git_commit) does not match frozen HEAD $Head."
+    }
+
     return $Ledger
 }
 

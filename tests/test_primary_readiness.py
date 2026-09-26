@@ -197,6 +197,7 @@ def build_case(
             "protocol": "trajuq_pilot_manual_gate_v2",
             "status": "PASS",
             "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "review_sheet": str(review_sheet),
             "review_sheet_sha256": sha256_file(review_sheet),
             "parity_artifact": str(llada_parity),
@@ -220,6 +221,10 @@ def build_case(
             "status": "PASS",
             "git_commit": EXPERIMENT_COMMIT,
             "failure_count": 0,
+            "dependency_versions": {
+                "math-verify": "0.9.0",
+                "antlr4-python3-runtime": "4.13.2",
+            },
         },
     )
     math_review_sheet = tmp_path / "math_review.md"
@@ -230,6 +235,7 @@ def build_case(
             "protocol": "trajuq_math500_manual_scorer_gate_v2",
             "status": "PASS",
             "git_commit": EXPERIMENT_COMMIT,
+            "git_clean": True,
             "automatic_audit": str(math_audit),
             "automatic_audit_sha256": sha256_file(math_audit),
             "automatic_audit_git_commit": EXPERIMENT_COMMIT,
@@ -377,3 +383,31 @@ def test_primary_readiness_can_enforce_current_clean_checkout(tmp_path):
         "current git worktree is not clean" in item
         for item in result["failures"]
     )
+
+
+def test_primary_readiness_rejects_dirty_human_attestations(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+
+    manual = json.loads(case["manual"].read_text(encoding="utf-8"))
+    manual["git_clean"] = False
+    write_json(case["manual"], manual)
+
+    math_manual = json.loads(case["math_manual"].read_text(encoding="utf-8"))
+    math_manual["git_clean"] = False
+    write_json(case["math_manual"], math_manual)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("human pilot-review gate" in item for item in result["failures"])
+    assert any("MATH-500 manual scorer review" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_math_dependency_version_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    audit = json.loads(case["math_audit"].read_text(encoding="utf-8"))
+    audit["dependency_versions"]["math-verify"] = "0.8.0"
+    write_json(case["math_audit"], audit)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("automatic scorer audit" in item for item in result["failures"])

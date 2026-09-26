@@ -422,7 +422,10 @@ python scripts/aggregate_cells.py \
 
 The bootstrap resamples examples within every cell, preserves pairing between
 TrajUQ and the decision-entropy baseline, then macro-averages cells. It does not
-pool examples from differently sized datasets.
+pool examples from differently sized datasets. For primary reporting the
+aggregator requires the complete frozen 3×6 cell set; `--allow-partial` is
+exploratory only. Apply the pre-registered positive-claim wording gate with
+`scripts/evaluate_rq1_claim_gate.py` after macro aggregation.
 
 
 ## Anonymous ARR software supplement

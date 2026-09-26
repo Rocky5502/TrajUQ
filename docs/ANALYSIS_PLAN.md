@@ -12,7 +12,7 @@ For SDAR, each active block emits mergeable position- and step-level sufficient 
 
 ## Primary endpoint and claim gate
 
-The single primary RQ1 endpoint is the equal-cell-weight hierarchical macro improvement in AUROC of the trajectory-augmented logistic model over the decision-time entropy logistic baseline. AUPRC and AURC improvements are secondary endpoints. A positive RQ1 claim requires the 95\% hierarchical bootstrap interval for macro AUROC improvement to lie above zero and positive point improvement in at least two of the three primary model families. Cell-level and secondary results are reported regardless of direction; this gate is frozen to prevent choosing the most favorable metric after test inspection.
+The single primary RQ1 endpoint is the equal-cell-weight hierarchical macro improvement in AUROC of the trajectory-augmented logistic model over the decision-time entropy logistic baseline. AUPRC and AURC improvements are secondary endpoints. A positive RQ1 claim requires the 95\% hierarchical bootstrap interval for macro AUROC improvement to lie above zero and positive point improvement in at least two of the three primary model families. Cell-level and secondary results are reported regardless of direction; this gate is frozen to prevent choosing the most favorable metric after test inspection. The primary macro aggregator rejects an incomplete model--dataset cell set unless `--allow-partial` is explicitly used for exploration, and `scripts/evaluate_rq1_claim_gate.py` converts the frozen rules into a machine-readable claim decision.
 
 ## RQ1 — Does the trajectory add predictive information?
 

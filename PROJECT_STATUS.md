@@ -237,6 +237,26 @@ artifacts plus the primary config before populating paper macros. Final
 submission readiness then distinguishes the historical experiment commit from
 the later clean paper/submission commit.
 
+## Execution tracking issues
+
+The repository now tracks every remaining runtime stage explicitly:
+
+- #1 LLaDA + GSM8K 50-example pilot and human trace review;
+- #2 SDAR exact parity;
+- #3 optional FLARE/HybridDiffusion RQ4 diagnostic;
+- #4 MATH-500 automatic/manual scorer gate;
+- #5 Dream exact parity;
+- #6 hosted CI runner-allocation infrastructure;
+- #7 LLaDA-MoE exact parity;
+- #8 frozen 18-cell primary matrix plus RQ1 analysis;
+- #9 RQ2 five-sample comparator with complete auxiliary compute accounting;
+- #10 RQ3 adaptive second-pass matrix at the frozen 25/50/75% caps;
+- #11 artifact-derived paper rendering and final ARR submission readiness.
+
+Issues #1, #2, #4, #5, and #7 remain open until real A100 artifacts pass.
+Issues #8--#11 are execution checklists, not evidence that those experiments are
+already complete.
+
 ## Commands to run first on a fresh continuation
 
 ~~~bash

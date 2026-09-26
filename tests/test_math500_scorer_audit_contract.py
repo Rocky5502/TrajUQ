@@ -25,3 +25,12 @@ def test_dependency_failures_rejects_version_drift():
         "math-verify",
         "antlr4-python3-runtime",
     }
+
+
+def test_scorer_audit_records_clean_checkout_contract():
+    from pathlib import Path
+
+    text = Path("scripts/audit_math500_scorer.py").read_text(encoding="utf-8")
+    assert "def git_clean()" in text
+    assert "git_worktree_not_clean" in text
+    assert '"git_clean": clean' in text

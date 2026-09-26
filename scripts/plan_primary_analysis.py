@@ -2,10 +2,49 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def audit_path(artifact: Path) -> Path:
+    return artifact.with_suffix(artifact.suffix + ".audit.json")
+
+
+def audit_passes(artifact: Path) -> bool:
+    audit = audit_path(artifact)
+    if not artifact.exists() or not audit.exists():
+        return False
+    try:
+        payload = json.loads(audit.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        payload.get("status") == "PASS"
+        and str(payload.get("sha256", "")) == sha256_file(artifact)
+    )
 
 
 def main() -> None:
@@ -33,20 +72,95 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    failures: list[str] = []
     plan_path = Path(args.primary_plan)
     if not plan_path.exists():
         raise SystemExit(f"Missing primary plan: {plan_path}")
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    if plan.get("protocol") != "trajuq_primary_matrix_plan_v2":
+        failures.append("primary matrix plan protocol is not v2")
     if plan.get("status") != "PASS":
-        raise SystemExit("Primary matrix plan is not PASS.")
+        failures.append("primary matrix plan is not PASS")
 
-    cfg = yaml.safe_load(Path(args.primary_config).read_text(encoding="utf-8"))
+    experiment_commit = str(plan.get("experiment_git_commit", ""))
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != experiment_commit:
+        failures.append(
+            "current git commit differs from the frozen experiment commit"
+        )
+
+    cfg_path = Path(args.primary_config)
+    if not cfg_path.exists():
+        failures.append(f"missing primary config: {cfg_path}")
+        cfg: dict = {}
+    else:
+        cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+        expected_cfg_hash = str(plan.get("primary_config_sha256", ""))
+        if not expected_cfg_hash:
+            failures.append("primary matrix plan has no primary-config hash")
+        elif sha256_file(cfg_path) != expected_cfg_hash:
+            failures.append(
+                "primary config hash differs from the frozen primary matrix plan"
+            )
+
     expected_cells = int(plan.get("expected_cells", 0))
     cells = plan.get("cells", [])
     if expected_cells <= 0 or len(cells) != expected_cells:
-        raise SystemExit(
-            f"Primary plan cell count mismatch: {len(cells)} != {expected_cells}"
+        failures.append(
+            f"primary plan cell count mismatch: {len(cells)} != {expected_cells}"
         )
+
+    seen_pairs: set[tuple[str, str]] = set()
+    input_bindings: dict[str, dict[str, dict[str, str]]] = {}
+    for cell in cells:
+        adapter = str(cell["adapter"])
+        dataset = str(cell["dataset"])
+        pair = (adapter, dataset)
+        if pair in seen_pairs:
+            failures.append(f"duplicate primary cell: {adapter}:{dataset}")
+            continue
+        seen_pairs.add(pair)
+
+        partitions: dict[str, dict[str, str]] = {}
+        for partition in ("calibration", "test"):
+            scored = Path(str(cell[partition]["scored_output"]))
+            if not scored.exists():
+                failures.append(
+                    f"{adapter}:{dataset} {partition}: missing scored artifact {scored}"
+                )
+                continue
+            if not audit_passes(scored):
+                failures.append(
+                    f"{adapter}:{dataset} {partition}: scored audit is not PASS "
+                    "or is stale"
+                )
+                continue
+            partitions[partition] = {
+                "path": str(scored),
+                "sha256": sha256_file(scored),
+                "audit_path": str(audit_path(scored)),
+                "audit_sha256": sha256_file(audit_path(scored)),
+            }
+        input_bindings[f"{adapter}:{dataset}"] = partitions
+
+    if failures:
+        payload = {
+            "protocol": "trajuq_primary_analysis_plan_v2",
+            "status": "FAIL",
+            "experiment_git_commit": experiment_commit or None,
+            "failures": failures,
+            "cell_analyses": [],
+        }
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        raise SystemExit(1)
 
     n_boot = int(cfg["statistics"]["bootstrap"]["n_boot"])
     seed = int(cfg["experiment"]["seed"])
@@ -66,15 +180,10 @@ def main() -> None:
         str(root / "macro_primary.json"),
     ]
 
-    seen_pairs: set[tuple[str, str]] = set()
     for cell in cells:
         adapter = str(cell["adapter"])
         dataset = str(cell["dataset"])
-        pair = (adapter, dataset)
-        if pair in seen_pairs:
-            raise SystemExit(f"Duplicate primary cell: {adapter}:{dataset}")
-        seen_pairs.add(pair)
-
+        cell_label = f"{adapter}:{dataset}"
         cal = str(cell["calibration"]["scored_output"])
         test = str(cell["test"]["scored_output"])
         cell_root = root / adapter / dataset
@@ -143,9 +252,10 @@ def main() -> None:
         aggregation_args.extend(["--cell", f"{label}={predictions}"])
         analyses.append(
             {
-                "cell": f"{adapter}:{dataset}",
+                "cell": cell_label,
                 "adapter": adapter,
                 "dataset": dataset,
+                "inputs": input_bindings[cell_label],
                 "evaluate_argv": evaluate,
                 "nested_comparison_argv": compare_nested,
                 "feature_ablation_argv": ablation,
@@ -174,10 +284,14 @@ def main() -> None:
     ]
 
     payload = {
-        "protocol": "trajuq_primary_analysis_plan_v1",
+        "protocol": "trajuq_primary_analysis_plan_v2",
         "status": "PASS",
+        "git_commit": current_head,
+        "experiment_git_commit": experiment_commit,
         "primary_plan": str(plan_path),
-        "primary_config": args.primary_config,
+        "primary_plan_sha256": sha256_file(plan_path),
+        "primary_config": str(cfg_path),
+        "primary_config_sha256": sha256_file(cfg_path),
         "seed": seed,
         "n_boot": n_boot,
         "cell_count": len(analyses),
@@ -189,14 +303,18 @@ def main() -> None:
             "rq1_claim_gate": str(gate_path),
         },
         "execution_order": (
-            "Run all cell analyses first, then macro aggregation, then the RQ1 claim gate. "
-            "Do not omit a weak cell or rerun with altered analysis settings."
+            "Run all cell analyses first, then macro aggregation, then the RQ1 "
+            "claim gate. Do not omit a weak cell or rerun with altered analysis "
+            "settings."
         ),
     }
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(
         json.dumps(
             {

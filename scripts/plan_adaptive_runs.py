@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from scripts.plan_primary_analysis import scored_source_chain_passes
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -246,7 +248,18 @@ def main() -> None:
                     f"{cell_label} {partition}: frozen input drifted"
                 )
 
+            raw_refined = Path(str(refined["raw_output"]))
             refined_scored = Path(str(refined["scored_output"]))
+            if not scored_source_chain_passes(
+                generation_input,
+                raw_refined,
+                refined_scored,
+                experiment_commit,
+            ):
+                raise SystemExit(
+                    f"{cell_label} {partition}: refined scored artifact does "
+                    "not trace to the frozen input and clean raw audit"
+                )
             if not scored_audit_passes(refined_scored, experiment_commit):
                 raise SystemExit(
                     f"{cell_label} {partition}: refined scored artifact is "

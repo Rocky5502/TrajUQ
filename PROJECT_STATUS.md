@@ -66,9 +66,10 @@ particular, the following are implemented and versioned:
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;
 - primary-readiness v2 additionally revalidates the revision-ledger dataset
-  manifest hash, the exact CPU-verification protocol/step sequence, clean
-  pilot-quality and MATH-500 automatic-audit provenance, frozen MATH dependency
-  versions, clean-checkout human attestations, and hash-bound parity sources;
+  manifest hash, the exact CPU-verification protocol/step sequence, raw/scored
+  pilot audit SHA bindings, clean pilot-quality and MATH-500 automatic-audit
+  provenance, frozen MATH dependency versions, source-bound clean-checkout
+  human attestations, MATH scored-pilot audit evidence, and hash-bound parity sources;
 - a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
   handoff exporter that refuses to omit required continuation context.
 
@@ -107,10 +108,12 @@ The remaining work is primarily **execution**, not paper-number invention.
    artifacts. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
    binds raw/scored files by SHA-256, records a clean checkout, and binds the
-   frozen git commit/model SHA. Inspect
-   at least 10 exported trajectories and record the protocol-v2 human attestation
-   from the same frozen clean checkout; it binds the review sheet, parity
-   artifact, and pilot-quality artifact by SHA-256. See issue #1.
+   frozen git commit/model SHA. Primary readiness also requires both raw/scored
+   `audit_run.py` artifacts to PASS and still match those files. Inspect at
+   least 10 exported trajectories; the review sheet now records the exact scored
+   artifact path/SHA, and the protocol-v2 human attestation is accepted only
+   when that source binding, parity artifact, and pilot-quality artifact remain
+   unchanged on the same frozen clean checkout. See issue #1.
 5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. On
    Windows, use `scripts/parity_remaining_windows.ps1 -Model sdar`; it binds
    the run to the clean CPU/revision freeze and refuses ambiguous partial
@@ -119,18 +122,20 @@ The remaining work is primarily **execution**, not paper-number invention.
    Windows, use `scripts/parity_remaining_windows.ps1 -Model dream` with the
    same frozen-state and non-overwrite safeguards. See issue #5.
 7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen clean
-   commit,
-   then a >=25-example calibration-only MATH-500 scoring pilot, deterministic
-   review sheet, and protocol-v2 human attestation bound to the audit/sheet
-   hashes. On Windows, `scripts/math500_gate_windows.ps1 -Stage all` performs
-   the automated portion from the frozen clean state and deliberately stops
-   before the human attestation. Record that attestation from the same frozen
-   clean checkout; readiness also requires the audit to report
+   commit, then a >=25-example calibration-only MATH-500 scoring pilot,
+   deterministic review sheet, and protocol-v2 human attestation. The wrapper
+   revalidates the frozen MATH split/audit and LLaDA parity source hashes before
+   running. The review sheet records the exact scored-pilot and calibration-input
+   SHA-256 values; the recorder and readiness independently revalidate those
+   sources plus the scored-pilot audit. On Windows,
+   `scripts/math500_gate_windows.ps1 -Stage all` performs the automated portion
+   and deliberately stops before the human attestation. Readiness also requires
    math-verify=0.9.0 and antlr4-python3-runtime=4.13.2. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
-   CPU, parity, pilot, human-review, MATH-500 scorer/dependency, dataset-manifest,
-   commit, and dirty-worktree state.
+   CPU, parity, pilot raw/scored audits, pilot review sources, MATH-500
+   scorer/dependency/review sources, dataset-manifest, commit, and dirty-worktree
+   state.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 

@@ -38,6 +38,30 @@ def reference_index(path: Path) -> dict[str, dict]:
     return out
 
 
+def validate_record_source(
+    rec: dict,
+    source: dict,
+    *,
+    item_id: str,
+) -> str:
+    source_dataset = str(source.get("dataset", "")).strip()
+    run_dataset = str(rec.get("dataset", "")).strip()
+    if not run_dataset:
+        raise ValueError(f"{item_id}: raw run has no dataset identity")
+    if run_dataset != source_dataset:
+        raise ValueError(
+            f"{item_id}: raw-run dataset {run_dataset!r} differs from "
+            f"frozen scoring input dataset {source_dataset!r}"
+        )
+
+    expected_prompt_hash = sha256_text(str(source["prompt"]))
+    if rec.get("prompt_sha256") != expected_prompt_hash:
+        raise ValueError(
+            f"{item_id}: scoring input prompt differs from generation input"
+        )
+    return source_dataset
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", required=True, help="Audited pre-outcome generation JSONL")

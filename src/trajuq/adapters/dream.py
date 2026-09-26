@@ -39,6 +39,19 @@ class DreamAdapter(BaseAdapter):
             revision=revision,
             trust_remote_code=True,
         )
+        self.mask_id = self.tokenizer.mask_token_id
+        if self.mask_id is None and getattr(self.tokenizer, "mask_token", None):
+            ids = self.tokenizer(
+                self.tokenizer.mask_token,
+                add_special_tokens=False,
+            )["input_ids"]
+            self.mask_id = ids[0] if ids else None
+        if self.mask_id is None:
+            raise ValueError(
+                "Dream tokenizer exposes no mask token id; telemetry cannot "
+                "distinguish unresolved from committed positions."
+            )
+        self.mask_id = int(self.mask_id)
 
     def generate(
         self,
@@ -69,7 +82,7 @@ class DreamAdapter(BaseAdapter):
 
         acc = TrajectoryAccumulator(
             prompt_length=input_ids.shape[1],
-            mask_id=self.tokenizer.mask_token_id,
+            mask_id=self.mask_id,
         )
 
         def hook(step, x, logits):
@@ -103,6 +116,7 @@ class DreamAdapter(BaseAdapter):
             metadata={
                 "model_id": self.model_id,
                 "model_revision": self.revision,
+                "mask_id": self.mask_id,
                 "steps_requested": int(steps),
                 "max_new_tokens": int(max_new_tokens),
                 "temperature": float(temperature),

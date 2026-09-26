@@ -15,3 +15,7 @@ generation:
 notes:
   - Uses Dream's documented generation hook to observe state and logits.
   - Freeze the exact model/tokenizer revision before primary runs.
+
+validation:
+  require_mask_token_id: true
+  require_exact_native_parity: true

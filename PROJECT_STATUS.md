@@ -110,19 +110,21 @@ The remaining work is primarily **execution**, not paper-number invention.
 
 ### Pre-primary hard gates
 
-1. Select one clean experiment commit. On Windows run
-   `scripts/freeze_preprimary_windows.ps1`; it runs clean CPU verification and
-   revision-ledger v2 resolution without changing commits. Hosted GitHub Actions
-   remains preferred when runner allocation works, but issue #6 still tracks the
-   current runner-allocation failure.
+1. Select one clean experiment commit. On the A100/Linux server run
+   `SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh` after installing the
+   project environment; Windows may use `scripts/freeze_preprimary_windows.ps1`.
+   Both run clean CPU verification and revision-ledger v2 resolution without
+   changing commits. Hosted GitHub Actions is currently infrastructure-blocked
+   before executable steps; issue #6 tracks that runner-allocation failure.
 2. Require `results/cpu_verification.json` PASS and
    `results/revision_ledger.json` protocol-v2 PASS at the same git commit.
 3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
    ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output
    mismatches, zero provenance mismatches, a clean comparator checkout, and
-   unchanged reference/instrumented SHA-256 evidence. The Windows wrapper now
-   preserves a valid PASS and refuses partial/stale evidence instead of deleting
-   artifacts. See issue #7.
+   unchanged reference/instrumented SHA-256 evidence. On A100/Linux use
+   `bash scripts/pilot_linux.sh prepare` followed by
+   `bash scripts/pilot_linux.sh parity`; the guarded wrappers preserve valid
+   evidence and refuse partial/stale artifacts. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
    binds raw/scored files by SHA-256, records a clean checkout, and binds the
    frozen git commit/model SHA. Primary readiness also requires both raw/scored
@@ -132,21 +134,25 @@ The remaining work is primarily **execution**, not paper-number invention.
    when that source binding, parity artifact, and pilot-quality artifact remain
    unchanged on the same frozen clean checkout. See issue #1.
 5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. On
-   Windows, use `scripts/parity_remaining_windows.ps1 -Model sdar`; it binds
-   the run to the clean CPU/revision freeze and refuses ambiguous partial
-   artifacts. See issue #2.
+   A100/Linux use `bash scripts/parity_remaining_linux.sh sdar`; Windows may
+   use `scripts/parity_remaining_windows.ps1 -Model sdar`. Both bind the run
+   to the clean CPU/revision freeze and refuse ambiguous partial artifacts. See
+   issue #2.
 6. Run Dream exact parity protocol v3 at the same frozen commit/revision. On
-   Windows, use `scripts/parity_remaining_windows.ps1 -Model dream` with the
-   same frozen-state and non-overwrite safeguards. See issue #5.
+   A100/Linux use `bash scripts/parity_remaining_linux.sh dream`; Windows may
+   use `scripts/parity_remaining_windows.ps1 -Model dream`, with the same
+   frozen-state and non-overwrite safeguards. See issue #5.
 7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen clean
    commit, then a >=25-example calibration-only MATH-500 scoring pilot,
    deterministic review sheet, and protocol-v2 human attestation. The wrapper
    revalidates the frozen MATH split/audit and LLaDA parity source hashes before
    running. The review sheet records the exact scored-pilot and calibration-input
    SHA-256 values; the recorder and readiness independently revalidate those
-   sources plus the scored-pilot audit. On Windows,
-   `scripts/math500_gate_windows.ps1 -Stage all` performs the automated portion
-   and deliberately stops before the human attestation. Readiness also requires
+   sources plus the scored-pilot audit. On A100/Linux run
+   `bash scripts/math500_gate_linux.sh prepare` and then
+   `bash scripts/math500_gate_linux.sh pilot`; Windows may use
+   `scripts/math500_gate_windows.ps1 -Stage all`. Both deliberately stop
+   before the human attestation. Readiness also requires
    math-verify=0.9.0 and antlr4-python3-runtime=4.13.2. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
@@ -192,10 +198,12 @@ After readiness passes:
     inputs and reusable base raw/scored artifacts must remain protocol-v1,
     clean, commit-matched, stage-correct, and SHA-bound;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
-13. render paper numbers only through scripts/render_results_tex.py; the renderer
-    re-evaluates the frozen RQ1 gate from configs/experiments/primary.yaml and
-    SHA-binds the primary, claim-gate, repeated, feature-ablation, adaptive,
-    and primary-config sources;
+13. render paper numbers only through scripts/render_results_tex.py and render
+    aggregate vector figures through scripts/render_paper_result_figures.py;
+    the text renderer re-evaluates the frozen RQ1 gate and SHA-binds the primary,
+    claim-gate, repeated, feature-ablation, adaptive, and primary-config sources;
+    the figure renderer separately SHA-binds the primary/config/25/50/75% sources
+    and all three PDF outputs;
 14. commit/stash the final paper-side changes so the submission checkout is clean,
     then run scripts/submission_readiness.py. The submission gate revalidates the
     historical experiment artifacts without requiring the paper commit to equal
@@ -234,6 +242,7 @@ frozen result artifacts exist:
 
 ~~~bash
 python scripts/render_results_tex.py
+python scripts/render_paper_result_figures.py
 python scripts/audit_paper.py --submission-ready
 python scripts/submission_readiness.py
 ~~~
@@ -241,8 +250,9 @@ python scripts/submission_readiness.py
 The renderer checks complete cell sets, re-evaluates the RQ1 claim gate from the
 frozen primary config, and writes a manifest that SHA-binds five result
 artifacts (primary, RQ1 gate, repeated sampling, feature ablations, and adaptive
-compute) plus the primary config before populating paper macros. Final
-submission readiness then distinguishes the historical experiment commit from
+compute) plus the primary config before populating paper macros. The result
+figure manifest separately binds the aggregate/adaptive sources and generated
+PDF hashes. Final submission readiness then distinguishes the historical experiment commit from
 the later clean paper/submission commit.
 
 ## Execution tracking issues

@@ -1,8 +1,10 @@
 import hashlib
 import json
+from pathlib import Path
 
 from scripts.plan_repeated_sampling import (
     arg_value,
+    jsonl_example_ids,
     repeated_generation_argv,
     scored_audit_passes,
 )
@@ -79,3 +81,29 @@ def test_repeated_plan_requires_frozen_scored_audit(tmp_path):
 
     assert scored_audit_passes(scored, "frozen-commit")
     assert not scored_audit_passes(scored, "other-commit")
+
+
+def test_repeated_plan_prediction_ids_are_exact_and_unique(tmp_path):
+    path = tmp_path / "predictions.jsonl"
+    path.write_text(
+        '{"example_id":"a"}\n{"example_id":"b"}\n',
+        encoding="utf-8",
+    )
+    assert jsonl_example_ids(path) == ["a", "b"]
+
+    path.write_text(
+        '{"example_id":"a"}\n{"example_id":"a"}\n',
+        encoding="utf-8",
+    )
+    try:
+        jsonl_example_ids(path)
+    except ValueError as exc:
+        assert "duplicate example IDs" in str(exc)
+    else:
+        raise AssertionError("duplicate prediction IDs must be rejected")
+
+
+def test_repeated_planner_checks_prediction_coverage_contract():
+    text = Path("scripts/plan_repeated_sampling.py").read_text(encoding="utf-8")
+    assert "predictions do not exactly" in text
+    assert "cover the frozen scored test target" in text

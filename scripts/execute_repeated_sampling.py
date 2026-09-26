@@ -42,7 +42,10 @@ def git_status_porcelain() -> str | None:
         return None
 
 
-def audit_passes(path: Path) -> bool:
+def audit_passes(
+    path: Path,
+    expected_commit: str | None = None,
+) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
         return False
@@ -51,9 +54,15 @@ def audit_passes(path: Path) -> bool:
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
         and payload.get("stage") == "raw"
-        and str(payload.get("sha256")) == sha256_file(path)
+        and str(payload.get("sha256", "")) == sha256_file(path)
+        and (
+            expected_commit is None
+            or payload.get("git_commit") == expected_commit
+        )
     )
 
 
@@ -162,11 +171,14 @@ def validate_plan_provenance(
                 )
                 continue
             if (
-                audit_payload.get("status") != "PASS"
+                audit_payload.get("protocol") != "trajuq_run_audit_v1"
+                or audit_payload.get("status") != "PASS"
+                or audit_payload.get("git_clean") is not True
+                or audit_payload.get("git_commit") != expected_commit
                 or audit_payload.get("stage") != "scored"
             ):
                 failures.append(
-                    f"{label} {partition}: scored audit is not a PASS"
+                    f"{label} {partition}: scored audit is not a clean frozen PASS"
                 )
             if str(audit_payload.get("sha256", "")) != observed_scored_hash:
                 failures.append(
@@ -196,14 +208,18 @@ def generation_dir_from_argv(argv: list[str]) -> Path:
     return Path(str(argv[index + 1]))
 
 
-def generation_state(argv: list[str], seeds: list[int]) -> dict[str, Any]:
+def generation_state(
+    argv: list[str],
+    seeds: list[int],
+    expected_commit: str | None = None,
+) -> dict[str, Any]:
     root = generation_dir_from_argv(argv)
     seed_state = {}
     for seed in seeds:
         path = root / f"seed-{seed}.raw.jsonl"
         seed_state[str(seed)] = {
             "path": str(path),
-            "complete": audit_passes(path),
+            "complete": audit_passes(path, expected_commit),
         }
     manifest = root / "manifest.json"
     complete = (
@@ -235,15 +251,20 @@ def comparison_state(path: Path) -> str:
     return "COMPLETE" if valid_json(path) else "INVALID"
 
 
-def cell_state(cell: dict[str, Any]) -> dict[str, Any]:
+def cell_state(
+    cell: dict[str, Any],
+    expected_commit: str | None = None,
+) -> dict[str, Any]:
     seeds = [int(seed) for seed in cell["seeds"]]
     calibration = generation_state(
         [str(value) for value in cell["calibration_generation_argv"]],
         seeds,
+        expected_commit,
     )
     test = generation_state(
         [str(value) for value in cell["test_generation_argv"]],
         seeds,
+        expected_commit,
     )
     evaluation = pair_state(
         Path(str(cell["repeated_metrics"])),
@@ -284,7 +305,11 @@ def macro_state(plan: dict[str, Any]) -> str:
 
 
 def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
-    cells = [cell_state(cell) for cell in plan.get("cells", [])]
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
+    cells = [
+        cell_state(cell, expected_commit)
+        for cell in plan.get("cells", [])
+    ]
     expected = int(plan.get("expected_cells", 0))
     complete_cells = sum(cell["complete"] for cell in cells)
     macro = macro_state(plan)
@@ -442,6 +467,7 @@ def main() -> None:
 
     state_path = Path(args.state_output)
     event_path = Path(args.event_log)
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
     initial = write_snapshot(plan, state_path)
     print(
         "[TrajUQ] repeated progress: "
@@ -457,7 +483,7 @@ def main() -> None:
             ("test", "test_generation_argv"),
         ):
             argv = [str(value) for value in cell[argv_key]]
-            state = generation_state(argv, seeds)
+            state = generation_state(argv, seeds, expected_commit)
             if state["complete"]:
                 print(f"[SKIP] {scope} {partition}_generation: complete")
                 continue
@@ -468,7 +494,9 @@ def main() -> None:
                 step=f"{partition}_generation",
                 event_log=event_path,
             )
-            if args.execute and not generation_state(argv, seeds)["complete"]:
+            if args.execute and not generation_state(
+                argv, seeds, expected_commit
+            )["complete"]:
                 write_snapshot(plan, state_path)
                 raise SystemExit(
                     f"{scope}: {partition} repeated generation incomplete."

@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -27,6 +29,25 @@ def parse_override(value: str) -> tuple[str, str]:
 
 def load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def generation_args(cfg: dict) -> list[str]:
@@ -104,13 +125,25 @@ def main() -> None:
     args = parser.parse_args()
 
     failures: list[str] = []
+    readiness: dict = {}
     readiness_path = Path(args.readiness)
     if not readiness_path.exists():
         failures.append(f"missing readiness artifact: {readiness_path}")
     else:
         readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
+        if readiness.get("protocol") != "trajuq_primary_readiness_v2":
+            failures.append("primary readiness protocol is not v2")
         if readiness.get("status") != "PASS":
             failures.append("primary readiness gate is not PASS")
+        current_head = git_head()
+        experiment_commit = readiness.get("experiment_git_commit")
+        if not current_head:
+            failures.append("current git commit could not be resolved")
+        elif current_head != experiment_commit:
+            failures.append(
+                "current git commit differs from the frozen experiment commit; "
+                "do not plan primary execution from modified code"
+            )
 
     primary_path = Path(args.primary_config)
     if not primary_path.exists():
@@ -122,6 +155,7 @@ def main() -> None:
     configured.update(dict(args.model_config))
 
     model_cfgs: dict[str, dict] = {}
+    model_cfg_hashes: dict[str, str] = {}
     expected_adapters: list[str] = []
     for model_path in primary.get("models", {}).get("primary", []):
         template = load_yaml(Path(model_path))
@@ -142,6 +176,7 @@ def main() -> None:
         if frozen.get("adapter") != adapter:
             failures.append(f"{adapter}: frozen adapter differs from template")
         model_cfgs[adapter] = frozen
+        model_cfg_hashes[adapter] = sha256_file(frozen_path)
 
     datasets = [str(x) for x in primary.get("datasets", [])]
     data_meta: dict[str, dict] = {}
@@ -176,7 +211,7 @@ def main() -> None:
 
     if failures:
         payload = {
-            "protocol": "trajuq_primary_matrix_plan_v1",
+            "protocol": "trajuq_primary_matrix_plan_v2",
             "status": "FAIL",
             "failures": failures,
             "cells": [],
@@ -232,6 +267,7 @@ def main() -> None:
                 ]
                 partition_commands[partition] = {
                     "input": str(input_path),
+                    "input_sha256": sha256_file(input_path),
                     "raw_output": str(raw),
                     "scored_output": str(scored),
                     "generate_argv": generate,
@@ -246,18 +282,26 @@ def main() -> None:
                     "adapter": adapter,
                     "model_id": cfg["model_id"],
                     "model_revision": cfg["revision"],
+                    "model_config_sha256": model_cfg_hashes[adapter],
                     "dataset": dataset,
                     "dataset_revision": data_meta[dataset]["requested_revision"],
+                    "split_manifest_sha256": sha256_file(
+                        data_root / dataset / "split_manifest.json"
+                    ),
                     "calibration": partition_commands["calibration"],
                     "test": partition_commands["test"],
                 }
             )
 
     payload = {
-        "protocol": "trajuq_primary_matrix_plan_v1",
+        "protocol": "trajuq_primary_matrix_plan_v2",
         "status": "PASS",
+        "git_commit": git_head(),
+        "experiment_git_commit": readiness.get("experiment_git_commit"),
         "primary_config": str(primary_path),
+        "primary_config_sha256": sha256_file(primary_path),
         "readiness": str(readiness_path),
+        "readiness_sha256": sha256_file(readiness_path),
         "seed": seed,
         "models": expected_adapters,
         "datasets": datasets,

@@ -22,7 +22,8 @@ function Get-FileSha256 {
 function Test-RunAuditPass {
     param(
         [string]$Artifact,
-        [string]$ExpectedStage
+        [string]$ExpectedStage,
+        [string]$ExpectedCommit
     )
     $AuditPath = "$Artifact.audit.json"
     if (-not (Test-Path $Artifact) -or -not (Test-Path $AuditPath)) {
@@ -30,7 +31,10 @@ function Test-RunAuditPass {
     }
     $Audit = Get-Content $AuditPath -Raw | ConvertFrom-Json
     return (
+        $Audit.protocol -eq "trajuq_run_audit_v1" -and
         $Audit.status -eq "PASS" -and
+        $Audit.git_clean -eq $true -and
+        $Audit.git_commit -eq $ExpectedCommit -and
         $Audit.stage -eq $ExpectedStage -and
         $Audit.sha256 -eq (Get-FileSha256 $Artifact)
     )
@@ -66,7 +70,7 @@ function Assert-ParityPass {
         (Test-Path $Instrumented) -and
         $Parity.instrumented_sha256 -eq (Get-FileSha256 $Instrumented)
     )
-    $InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"
+    $InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw" $Commit
     $Pass = (
         $Parity.protocol -eq "trajuq_exact_parity_v3" -and
         $Parity.status -eq "PASS" -and
@@ -103,8 +107,8 @@ function Assert-PilotGatePass {
     }
     $Gate = Get-Content $Path -Raw | ConvertFrom-Json
     $Revisions = @($Gate.model_revisions)
-    $RawAuditOk = Test-RunAuditPass $Raw "raw"
-    $ScoredAuditOk = Test-RunAuditPass $Scored "scored"
+    $RawAuditOk = Test-RunAuditPass $Raw "raw" $Commit
+    $ScoredAuditOk = Test-RunAuditPass $Scored "scored" $Commit
     $Pass = (
         $Gate.protocol -eq "trajuq_pilot_quality_gate_v2" -and
         $Gate.status -eq "PASS" -and

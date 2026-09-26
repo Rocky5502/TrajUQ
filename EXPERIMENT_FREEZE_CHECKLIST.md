@@ -35,7 +35,10 @@ Do not start the full primary matrix until every required item is checked.
 
 ## Engineering
 - [ ] 50-item pilot completes on one model.
+- [ ] Pilot raw and scored `audit_run.py` artifacts are PASS and still SHA-bind their files.
 - [ ] At least 10 trajectory records manually inspected.
+- [ ] Pilot review sheet identifies the exact scored-pilot path/SHA reviewed.
+- [ ] Human pilot attestation binds that review sheet, scored source, parity artifact, and pilot-quality artifact.
 - [ ] Raw-run audit PASS.
 - [ ] No NaN/Inf in features.
 - [ ] Duplicate IDs rejected.
@@ -67,8 +70,11 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] `results/sdar_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
 - [ ] `results/dream_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
 - [ ] `results/llada_gsm8k_pilot50_gate.json` reports PASS for exactly 50 raw/scored records.
-- [ ] `results/llada_gsm8k_pilot50_trace_review.md` manually reviewed.
+- [ ] Pilot raw/scored `.audit.json` files report PASS and match the pilot artifacts by SHA-256.
+- [ ] `results/llada_gsm8k_pilot50_trace_review.md` manually reviewed and source-bound to that scored pilot.
 - [ ] At least 10 trajectory traces checked for logging/parsing plausibility.
-- [ ] `results/math500_scorer_audit.json` reports PASS.
+- [ ] `results/math500_scorer_audit.json` reports clean protocol-v2 PASS with frozen dependency versions.
+- [ ] MATH-500 scorer review sheet is source-bound to the frozen calibration input and scored 25-example pilot.
+- [ ] MATH-500 scored-pilot `.audit.json` reports PASS and matches the reviewed scored artifact.
 - [ ] `results/math500_scorer_manual_review.json` reports PASS after >=25 calibration-only examples.
 - [ ] `results/primary_readiness.json` reports protocol `trajuq_primary_readiness_v2` and PASS.

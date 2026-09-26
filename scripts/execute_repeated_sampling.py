@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -342,6 +343,18 @@ def pair_state(
         return "INVALID"
     if expected_ids is not None and int(metrics.get("n_test", -1)) != len(expected_ids):
         return "INVALID"
+
+    test_cost = metrics.get("auxiliary_compute", {}).get("test", {})
+    for key in (
+        "mean_auxiliary_wall_time_seconds_per_example",
+        "p90_auxiliary_wall_time_seconds_per_example",
+    ):
+        try:
+            value = float(test_cost.get(key))
+        except (TypeError, ValueError):
+            return "INVALID"
+        if not math.isfinite(value) or value < 0:
+            return "INVALID"
     return "COMPLETE"
 
 

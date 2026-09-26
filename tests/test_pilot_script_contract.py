@@ -6,7 +6,8 @@ def test_windows_pilot_wrapper_has_single_stage_blocks():
     assert text.count('if ($Stage -in @("prepare", "all"))') == 1
     assert text.count('if ($Stage -in @("parity", "all"))') == 1
     assert text.count('if ($Stage -in @("pilot", "all"))') == 1
-    assert "results/llada_pilot_model_config.yaml" in text
+    assert "results/frozen_models/llada.yaml" in text
+    assert "results/llada_pilot_model_config.yaml" not in text
     assert "compare_run_parity.py" in text
     assert "pilot_quality_gate.py" in text
 

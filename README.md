@@ -239,7 +239,7 @@ The primary nested comparison uses paired class-stratified bootstrap intervals o
 
 ## RQ3: adaptive compute
 
-Generate frozen base-budget and refined-budget artifacts first. Select the refinement threshold on calibration only, then apply it unchanged to test:
+Generate frozen base-budget and refined-budget artifacts first. TrajUQ now selects the refinement threshold from out-of-fold calibrated probabilities on the calibration partition, then fits the final calibrator on all calibration examples and applies the threshold unchanged to test:
 
 ```bash
 python scripts/evaluate_adaptive.py \

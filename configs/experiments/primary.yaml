@@ -61,7 +61,10 @@ statistics:
     confidence_level: 0.95
 
 adaptive_compute:
-  threshold_selection: calibration_only
+  risk_model: trajectory_plus_final_logistic
+  crossfit_policy_selection: true
+  crossfit_folds: 5
+  threshold_selection: out_of_fold_calibration_only
   matched_compute: true
   max_refine_fraction_grid: [0.25, 0.50, 0.75]
 

@@ -15,28 +15,8 @@ from trajuq.evaluation import (
     risk_at_coverage,
     selective_curve,
 )
+from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
-
-
-TRAJECTORY_FEATURES = [
-    "entropy_final",
-    "entropy_mean",
-    "entropy_p90",
-    "entropy_slope",
-    "margin_mean",
-    "margin_min",
-    "js_mean",
-    "js_p90",
-    "js_slope",
-    "late_js_mean",
-    "revision_rate",
-    "late_revision_rate",
-    "mask_auc",
-    "late_mask_fraction",
-    "commitment_time_mean",
-]
-
-FINAL_BASELINE_FEATURES = ["entropy_final"]
 
 
 def load_xy(path: str, names: list[str]):
@@ -100,7 +80,7 @@ def main() -> None:
         "trajectory_plus_final_logistic": evaluate(
             args.calibration,
             args.test,
-            TRAJECTORY_FEATURES,
+            PRIMARY_TRAJECTORY_FEATURES,
         ),
     }
     Path(args.output).write_text(

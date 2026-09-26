@@ -59,3 +59,49 @@ class RiskCalibrator:
         if x.ndim == 1:
             x = x[:, None]
         return np.asarray(self.model.predict_proba(x)[:, 1], dtype=float)
+
+
+
+def cross_fitted_error_probabilities(
+    x: np.ndarray,
+    y_error: np.ndarray,
+    n_splits: int = 5,
+    random_state: int = 2027,
+) -> tuple[np.ndarray, int]:
+    """Out-of-fold logistic error probabilities for policy selection.
+
+    This lets a downstream threshold be selected on calibration examples
+    without using predictions from a calibrator trained on those same examples.
+    """
+
+    from sklearn.model_selection import StratifiedKFold
+
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y_error, dtype=int)
+    if x.ndim == 1:
+        x = x[:, None]
+    if len(x) != len(y):
+        raise ValueError("x and y_error must have equal length")
+    labels, counts = np.unique(y, return_counts=True)
+    if len(labels) < 2:
+        raise ValueError("Cross-fitting requires both correct and incorrect examples.")
+    folds = min(int(n_splits), int(counts.min()))
+    if folds < 2:
+        raise ValueError("Cross-fitting requires at least two examples in each class.")
+
+    splitter = StratifiedKFold(
+        n_splits=folds,
+        shuffle=True,
+        random_state=random_state,
+    )
+    predictions = np.full(len(y), np.nan, dtype=float)
+    for train_idx, valid_idx in splitter.split(x, y):
+        model = RiskCalibrator(
+            method="logistic",
+            random_state=random_state,
+        ).fit(x[train_idx], y[train_idx])
+        predictions[valid_idx] = model.predict_error_probability(x[valid_idx])
+
+    if not np.all(np.isfinite(predictions)):
+        raise ValueError("Cross-fitted calibration produced non-finite probabilities.")
+    return predictions, folds

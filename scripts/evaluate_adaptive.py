@@ -7,31 +7,60 @@ import json
 import numpy as np
 
 from trajuq.adaptive import evaluate_two_budget_policy, select_threshold_under_budget
+from trajuq.calibration import RiskCalibrator, cross_fitted_error_probabilities
+from trajuq.features import PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
-from trajuq.risk import RAW_RISK_VERSION, raw_trajectory_risk
 
 
 def aligned(base_path: str, refined_path: str):
-    base = {str(r["example_id"]): r for r in read_jsonl(base_path)}
-    refined = {str(r["example_id"]): r for r in read_jsonl(refined_path)}
-    ids = sorted(set(base).intersection(refined))
+    base_rows = list(read_jsonl(base_path))
+    refined_rows = list(read_jsonl(refined_path))
+    base = {str(r["example_id"]): r for r in base_rows}
+    refined = {str(r["example_id"]): r for r in refined_rows}
+
+    if len(base) != len(base_rows):
+        raise SystemExit(f"Duplicate example IDs in {base_path}")
+    if len(refined) != len(refined_rows):
+        raise SystemExit(f"Duplicate example IDs in {refined_path}")
+    if set(base) != set(refined):
+        missing_refined = sorted(set(base) - set(refined))
+        missing_base = sorted(set(refined) - set(base))
+        raise SystemExit(
+            "Base/refined ID sets differ: "
+            f"missing_refined={len(missing_refined)} missing_base={len(missing_base)}"
+        )
+
+    ids = sorted(base)
     if not ids:
-        raise SystemExit("No overlapping example IDs between base/refined runs")
+        raise SystemExit("No examples in base/refined runs")
     if any(base[i].get("correct") is None or refined[i].get("correct") is None for i in ids):
         raise SystemExit("Adaptive evaluation requires scored artifacts")
 
-    risk = np.asarray(
-        [raw_trajectory_risk(base[i]["generation"]["features"]) for i in ids],
+    x = np.asarray(
+        [
+            [
+                float(base[i]["generation"]["features"][name])
+                for name in PRIMARY_TRAJECTORY_FEATURES
+            ]
+            for i in ids
+        ],
         dtype=float,
     )
+    if not np.all(np.isfinite(x)):
+        raise SystemExit("NaN/Inf in base-budget trajectory features")
+
     base_correct = np.asarray([bool(base[i]["correct"]) for i in ids], dtype=float)
     refined_correct = np.asarray([bool(refined[i]["correct"]) for i in ids], dtype=float)
-    return ids, risk, base_correct, refined_correct
+    y_error = 1 - base_correct.astype(int)
+    return ids, x, y_error, base_correct, refined_correct
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Calibration-selected two-budget adaptive-compute evaluation."
+        description=(
+            "Calibration-selected two-budget adaptive-compute evaluation using "
+            "trajectory+final calibrated error probability."
+        )
     )
     parser.add_argument("--cal-base", required=True)
     parser.add_argument("--cal-refined", required=True)
@@ -40,11 +69,22 @@ def main() -> None:
     parser.add_argument("--max-refine-fraction", type=float, default=0.50)
     parser.add_argument("--base-compute", type=float, required=True)
     parser.add_argument("--refined-compute", type=float, required=True)
+    parser.add_argument("--crossfit-folds", type=int, default=5)
+    parser.add_argument("--seed", type=int, default=2027)
     args = parser.parse_args()
 
-    _, cal_risk, cal_base, cal_refined = aligned(args.cal_base, args.cal_refined)
+    cal_ids, x_cal, y_cal, cal_base, cal_refined = aligned(
+        args.cal_base,
+        args.cal_refined,
+    )
+    cal_risk_oof, folds_used = cross_fitted_error_probabilities(
+        x_cal,
+        y_cal,
+        n_splits=args.crossfit_folds,
+        random_state=args.seed,
+    )
     selected = select_threshold_under_budget(
-        cal_risk,
+        cal_risk_oof,
         cal_base,
         cal_refined,
         max_refine_fraction=args.max_refine_fraction,
@@ -52,7 +92,19 @@ def main() -> None:
         refined_compute=args.refined_compute,
     )
 
-    ids, test_risk, test_base, test_refined = aligned(args.test_base, args.test_refined)
+    test_ids, x_test, y_test, test_base, test_refined = aligned(
+        args.test_base,
+        args.test_refined,
+    )
+    if set(cal_ids).intersection(test_ids):
+        raise SystemExit("Calibration/test ID overlap detected")
+
+    final_calibrator = RiskCalibrator(
+        method="logistic",
+        random_state=args.seed,
+    ).fit(x_cal, y_cal)
+    test_risk = final_calibrator.predict_error_probability(x_test)
+
     test = evaluate_two_budget_policy(
         test_risk,
         test_base,
@@ -63,12 +115,16 @@ def main() -> None:
     )
 
     payload = {
-        "risk_version": RAW_RISK_VERSION,
+        "risk_source": "trajectory_plus_final_logistic",
+        "policy_threshold_source": "out_of_fold_calibration_predictions",
+        "crossfit_folds_used": folds_used,
         "selected_on_calibration": selected.to_dict(),
         "test": test.to_dict(),
-        "n_test": len(ids),
+        "n_calibration": len(cal_ids),
+        "n_test": len(test_ids),
         "base_accuracy": float(test_base.mean()),
         "refined_accuracy": float(test_refined.mean()),
+        "base_error_rate": float(y_test.mean()),
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
 

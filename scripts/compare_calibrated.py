@@ -7,28 +7,10 @@ import json
 import numpy as np
 
 from trajuq.calibration import RiskCalibrator
+from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
 from trajuq.statistics import paired_bootstrap_improvement
 
-
-FINAL_FEATURES = ["entropy_final"]
-TRAJECTORY_PLUS_FINAL_FEATURES = [
-    "entropy_final",
-    "entropy_mean",
-    "entropy_p90",
-    "entropy_slope",
-    "margin_mean",
-    "margin_min",
-    "js_mean",
-    "js_p90",
-    "js_slope",
-    "late_js_mean",
-    "revision_rate",
-    "late_revision_rate",
-    "mask_auc",
-    "late_mask_fraction",
-    "commitment_time_mean",
-]
 
 
 def load(path: str, feature_names: list[str]):
@@ -62,10 +44,10 @@ def main() -> None:
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
-    cal_ids_b, x_cal_b, y_cal_b = load(args.calibration, FINAL_FEATURES)
-    test_ids_b, x_test_b, y_test_b = load(args.test, FINAL_FEATURES)
-    cal_ids_t, x_cal_t, y_cal_t = load(args.calibration, TRAJECTORY_PLUS_FINAL_FEATURES)
-    test_ids_t, x_test_t, y_test_t = load(args.test, TRAJECTORY_PLUS_FINAL_FEATURES)
+    cal_ids_b, x_cal_b, y_cal_b = load(args.calibration, FINAL_BASELINE_FEATURES)
+    test_ids_b, x_test_b, y_test_b = load(args.test, FINAL_BASELINE_FEATURES)
+    cal_ids_t, x_cal_t, y_cal_t = load(args.calibration, TRAJECTORY_PLUS_FINAL_BASELINE_FEATURES)
+    test_ids_t, x_test_t, y_test_t = load(args.test, TRAJECTORY_PLUS_FINAL_BASELINE_FEATURES)
 
     if cal_ids_b != cal_ids_t or test_ids_b != test_ids_t:
         raise SystemExit("Feature loaders produced inconsistent example ordering")

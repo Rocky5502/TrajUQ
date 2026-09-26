@@ -1,6 +1,8 @@
 import hashlib
 import json
 
+import yaml
+
 import scripts.submission_readiness as submission_readiness
 from scripts.render_results_tex import build_macros, render_tex
 from scripts.submission_readiness import (
@@ -113,8 +115,6 @@ def make_render_sources(tmp_path):
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         }
     config = tmp_path / "primary.yaml"
-    import yaml
-
     config.write_text(yaml.safe_dump(primary_cfg), encoding="utf-8")
     sources["primary_config"] = {
         "path": str(config),
@@ -164,6 +164,8 @@ def test_generated_results_hash_gate_passes(tmp_path):
 
     result = verify_generated_results(manifest, generated)
     assert result["status"] == "PASS"
+
+
 def test_generated_results_hash_gate_rejects_changed_source(tmp_path):
     generated, manifest, _ = write_valid_render_bundle(tmp_path)
     source = tmp_path / "primary.json"
@@ -192,6 +194,8 @@ def test_generated_results_gate_rejects_joint_tex_manifest_tampering(tmp_path):
         "differs from deterministic re-render" in item
         for item in result["failures"]
     )
+
+
 def test_generated_results_gate_rejects_pre_results_placeholder(tmp_path):
     generated = tmp_path / "generated_results.tex"
     generated.write_text(

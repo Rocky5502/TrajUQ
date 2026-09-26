@@ -105,7 +105,8 @@ After readiness passes:
    cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics;
 8. aggregate the complete 18-cell primary endpoint;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
-10. run the complete 18-cell five-sample comparator;
+10. run the complete 18-cell five-sample comparator with
+   scripts/execute_repeated_sampling.py; verified seed artifacts are resumable;
 11. run RQ3 base-budget generations and all frozen 25/50/75% cap analyses;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
 13. render paper numbers only through scripts/render_results_tex.py.

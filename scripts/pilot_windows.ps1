@@ -88,6 +88,7 @@ function Assert-PilotGatePass {
     $Pass = (
         $Gate.protocol -eq "trajuq_pilot_quality_gate_v2" -and
         $Gate.status -eq "PASS" -and
+        $Gate.git_clean -eq $true -and
         $Gate.git_commit -eq $Commit -and
         $Gate.raw -eq $Raw -and
         $Gate.scored -eq $Scored -and

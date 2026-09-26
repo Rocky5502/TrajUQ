@@ -446,4 +446,4 @@ The tracked YAML files remain generic templates. Freeze model revisions into
 artifact-local configs with `scripts/freeze_model_config.py`, prepare each
 dataset at an immutable revision, pass `scripts/primary_readiness.py`, and only
 then generate `results/primary_matrix_plan.json` with
-`scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`.
+`scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`. The companion `scripts/plan_adaptive_runs.py` derives all frozen low-budget RQ3 runs from that primary plan, so base/refined paths and compute accounting cannot drift manually.

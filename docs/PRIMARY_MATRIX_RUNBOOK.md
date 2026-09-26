@@ -84,3 +84,28 @@ When executing the plan:
 
 After cell-level metrics are exported, use `scripts/aggregate_cells.py` for the
 hierarchical equal-cell-weight macro analysis.
+
+
+## 6. Adaptive second-pass plan
+
+The full-budget primary outputs double as the refined-budget artifacts for RQ3.
+After the primary execution plan is frozen, generate the separate low-budget
+base-run plan:
+
+```bash
+python scripts/plan_adaptive_runs.py
+```
+
+The frozen budgets are:
+
+| Model | Base | Refined |
+|---|---:|---:|
+| LLaDA | 32 steps | 128 steps |
+| Dream | 32 steps | 128 steps |
+| SDAR | 2 denoising steps/block | 4 denoising steps/block |
+
+The primary selection cap is 50%; 25% and 75% are sensitivity settings. Selected
+examples are evaluated under the conservative **second-pass rerun** semantics:
+the base run is always paid and the refined run is an additional complete
+generation. The planner never uses the cheaper continuation cost formula unless
+a future runtime genuinely resumes the same denoising trajectory.

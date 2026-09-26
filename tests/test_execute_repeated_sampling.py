@@ -178,6 +178,11 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
         ],
     }
     monkeypatch.setattr(execute_repeated_sampling, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_repeated_sampling,
+        "git_status_porcelain",
+        lambda: "",
+    )
 
     assert validate_plan_provenance(plan) == []
 

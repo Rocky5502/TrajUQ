@@ -175,6 +175,11 @@ def test_adaptive_provenance_rejects_refined_input_drift(
         ],
     }
     monkeypatch.setattr(execute_adaptive_plan, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_adaptive_plan,
+        "git_status_porcelain",
+        lambda: "",
+    )
 
     assert validate_plan_provenance(plan) == []
 

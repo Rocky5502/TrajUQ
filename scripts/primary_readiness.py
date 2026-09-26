@@ -238,6 +238,7 @@ def evaluate_readiness(
             quality.get("protocol") == "trajuq_pilot_quality_gate_v2"
             and quality.get("status") == "PASS"
             and quality.get("git_commit") == experiment_commit
+            and quality.get("git_clean") is True
             and int(quality.get("raw_records", 0)) == 50
             and int(quality.get("scored_records", 0)) == 50
             and quality.get("adapters") == ["llada"]
@@ -250,6 +251,7 @@ def evaluate_readiness(
             "status": quality.get("status"),
             "protocol": quality.get("protocol"),
             "git_commit": quality.get("git_commit"),
+            "git_clean": quality.get("git_clean"),
             "records": quality.get("raw_records"),
             "scored_records": quality.get("scored_records"),
             "model_revisions": quality.get("model_revisions"),
@@ -325,6 +327,7 @@ def evaluate_readiness(
             math_audit.get("protocol") == "trajuq_math500_scorer_audit_v2"
             and math_audit.get("status") == "PASS"
             and math_audit.get("git_commit") == experiment_commit
+            and math_audit.get("git_clean") is True
             and int(math_audit.get("failure_count", 1)) == 0
             and math_dependency_versions.get("math-verify") == "0.9.0"
             and math_dependency_versions.get("antlr4-python3-runtime") == "4.13.2"
@@ -334,6 +337,7 @@ def evaluate_readiness(
             "status": math_audit.get("status"),
             "protocol": math_audit.get("protocol"),
             "git_commit": math_audit.get("git_commit"),
+            "git_clean": math_audit.get("git_clean"),
             "failure_count": math_audit.get("failure_count"),
             "dependency_versions": math_dependency_versions,
         }

@@ -79,7 +79,7 @@ TrajUQ/
 
 | Family | Public checkpoint | Role | Integration state |
 |---|---|---|---|
-| LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | pilot adapter; GPU parity audit required |
+| LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | sampler-aligned pilot adapter; exact GPU parity required |
 | SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | instrumented pilot adapter; on-GPU upstream parity required |
 | Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | hook-based pilot adapter; GPU audit required |
 | FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | upstream boundary; noncommercial upstream terms |
@@ -259,6 +259,10 @@ python scripts/run_generation.py \
   --sdar-denoising-steps 4 \
   --sdar-temperature 0
 ```
+
+## LLaDA native parity
+
+The LLaDA pilot adapter now mirrors the public sampler's attention-mask, transfer-count, and Gumbel-max semantics. Run `scripts/run_llada_reference.py` and the exact comparator in `docs/LLADA_INSTRUMENTATION.md` before any LLaDA-MoE paper number.
 
 ## Dream native parity
 

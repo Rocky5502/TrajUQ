@@ -14,3 +14,8 @@ Always re-check exact upstream terms and revisions before public artifact releas
 ## SDAR adapter attribution
 
 `src/trajuq/adapters/sdar.py` follows and modifies the block-diffusion inference structure published in `JetAstra/SDAR` at commit `4c2749ba103448f45520e8411533710a1e66574d`. The inspected upstream repository is MIT licensed. TrajUQ adds telemetry, revision pinning, deterministic-greedy support for research controls, and its own output schema. The selected checkpoint `JetLM/SDAR-1.7B-Chat` is governed by its model-card terms (Apache-2.0 at the inspected revision).
+
+
+## LLaDA adapter attribution
+
+`src/trajuq/adapters/llada.py` follows the public LLaDA masked-diffusion generation algorithm in `ML-GSAI/LLaDA` at commit `9182493720ed723ef8031210d85959364e51cbe0`, with TrajUQ telemetry added before sampling/token transfer. The selected MoE checkpoint is `inclusionAI/LLaDA-MoE-7B-A1B-Instruct`; its inspected model card reports Apache-2.0. Repository-code and checkpoint terms should be rechecked at final artifact release.

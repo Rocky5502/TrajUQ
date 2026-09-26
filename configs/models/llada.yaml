@@ -16,3 +16,7 @@ notes:
   - Freeze an exact Hugging Face model/tokenizer revision before primary runs.
   - Pilot adapter must pass parity/instrumentation audit for the selected checkpoint.
   - If the MoE runtime API differs from the adapter, do not silently substitute another checkpoint.
+upstream:
+  repository: ML-GSAI/LLaDA
+  commit: 9182493720ed723ef8031210d85959364e51cbe0
+status: pilot_adapter_implemented_parity_pending

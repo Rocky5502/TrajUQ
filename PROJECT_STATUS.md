@@ -86,7 +86,7 @@ The remaining work is primarily **execution**, not paper-number invention.
 7. Run the automatic MATH-500 scorer audit, then a >=25-example
    calibration-only MATH-500 scoring pilot, export the deterministic review
    sheet, inspect it, and record the human scorer attestation. See issue #4.
-8. Require python scripts/primary_readiness.py to return status=PASS.
+8. Require python scripts/primary_readiness.py to return status=PASS. Readiness\n   v2 rejects stale/mixed artifacts: CPU verification and all three parity files\n   must share the revision-ledger git commit, each parity file must contain\n   exactly 20 shared prompts, and its model revision must equal the ledger SHA.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 

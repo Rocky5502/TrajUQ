@@ -17,6 +17,7 @@ def fmt(value) -> str:
     except Exception:
         return str(value)
 
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -12,38 +13,68 @@ DEFAULT_SEEDS = [2027, 2028, 2029, 2030, 2031]
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate frozen repeated-sampling raw artifacts for the UQ baseline."
+        description="Generate the frozen repeated-sampling uncertainty baseline."
     )
-    parser.add_argument("--adapter", choices=["dream", "llada", "sdar"], required=True)
+    parser.add_argument("--adapter", choices=["llada", "dream", "sdar"], required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--input", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--seeds", nargs="+", type=int, default=DEFAULT_SEEDS)
     parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--steps", type=int, default=128)
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--block-length", type=int, default=128)
+    parser.add_argument("--llada-cfg-scale", type=float, default=0.0)
+    parser.add_argument("--llada-remasking", default="low_confidence")
+    parser.add_argument("--dream-alg", default="entropy")
+    parser.add_argument("--dream-alg-temp", type=float, default=0.1)
     parser.add_argument("--sdar-denoising-steps", type=int, default=4)
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--sdar-top-k", type=int, default=0)
+    parser.add_argument("--sdar-remasking-strategy", default="low_confidence_dynamic")
+    parser.add_argument("--sdar-confidence-threshold", type=float, default=0.85)
+    parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
-    if len(args.seeds) < 2:
-        raise SystemExit("Repeated-sampling baseline requires at least two seeds.")
-    if len(set(args.seeds)) != len(args.seeds):
-        raise SystemExit("Repeated-sampling seeds must be unique.")
     if args.temperature <= 0:
         raise SystemExit(
-            "Repeated-sampling baseline requires nonzero temperature; "
-            "the frozen primary value is 0.2."
+            "Repeated-sampling baseline requires temperature > 0 so independent seeds "
+            "can produce non-degenerate samples."
         )
+    if len(args.seeds) < 2:
+        raise SystemExit("Repeated-sampling baseline requires at least two seeds.")
+    if len(args.seeds) != len(set(args.seeds)):
+        raise SystemExit("Repeated-sampling seeds must be unique.")
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    manifest = {
+        "protocol": "repeated_sampling_v1",
+        "adapter": args.adapter,
+        "model": args.model,
+        "model_revision": args.revision,
+        "input": args.input,
+        "seeds": args.seeds,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "steps": args.steps,
+        "max_new_tokens": args.max_new_tokens,
+        "block_length": args.block_length,
+        "runs": [],
+    }
+
     for seed in args.seeds:
-        out = out_dir / f"seed_{seed}.raw.jsonl"
+        output = out_dir / f"seed-{seed}.raw.jsonl"
+        if output.exists() and not args.overwrite:
+            raise SystemExit(
+                f"Refusing to overwrite {output}. Use a new output directory or --overwrite."
+            )
+        if output.exists():
+            output.unlink()
+
         cmd = [
             sys.executable,
             "scripts/run_generation.py",
@@ -56,7 +87,7 @@ def main() -> None:
             "--input",
             args.input,
             "--output",
-            str(out),
+            str(output),
             "--seed",
             str(seed),
             "--temperature",
@@ -70,13 +101,34 @@ def main() -> None:
             "--block-length",
             str(args.block_length),
         ]
-        if args.adapter == "sdar":
+        if args.limit is not None:
+            cmd += ["--limit", str(args.limit)]
+
+        if args.adapter == "llada":
+            cmd += [
+                "--llada-cfg-scale",
+                str(args.llada_cfg_scale),
+                "--llada-remasking",
+                args.llada_remasking,
+            ]
+        elif args.adapter == "dream":
+            cmd += [
+                "--dream-alg",
+                args.dream_alg,
+                "--dream-alg-temp",
+                str(args.dream_alg_temp),
+            ]
+        elif args.adapter == "sdar":
             cmd += [
                 "--sdar-denoising-steps",
                 str(args.sdar_denoising_steps),
+                "--sdar-top-k",
+                str(args.sdar_top_k),
+                "--sdar-remasking-strategy",
+                args.sdar_remasking_strategy,
+                "--sdar-confidence-threshold",
+                str(args.sdar_confidence_threshold),
             ]
-        if args.limit is not None:
-            cmd += ["--limit", str(args.limit)]
 
         print("[TrajUQ repeated]", " ".join(cmd))
         subprocess.run(cmd, check=True)
@@ -85,15 +137,21 @@ def main() -> None:
                 sys.executable,
                 "scripts/audit_run.py",
                 "--run",
-                str(out),
+                str(output),
                 "--stage",
                 "raw",
                 "--require-revision",
             ],
             check=True,
         )
+        manifest["runs"].append({"seed": seed, "path": str(output)})
 
-    print(f"[TrajUQ] repeated-sampling raw artifacts ready -> {out_dir}")
+    manifest_path = out_dir / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(f"[TrajUQ] repeated-sampling manifest -> {manifest_path}")
 
 
 if __name__ == "__main__":

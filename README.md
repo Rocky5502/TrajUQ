@@ -256,15 +256,26 @@ python scripts/run_repeated_samples.py \
   --output-dir runs/repeated/llada_gsm8k_cal \
   --temperature 0.2
 
-# Evaluate repeated-sampling uncertainty (repeat --cal-sample/--test-sample):
+# Run the same five seeds for calibration and test.
+python scripts/run_repeated_samples.py \
+  --adapter llada \
+  --model inclusionAI/LLaDA-MoE-7B-A1B-Instruct \
+  --revision <EXACT_MODEL_SHA> \
+  --input data/processed/gsm8k/test.jsonl \
+  --output-dir runs/repeated/llada_gsm8k_test \
+  --temperature 0.2
+
+# Then evaluate, supplying the five seed files from each directory.
 python scripts/evaluate_repeated_sampling.py \
   --cal-target runs/llada_gsm8k_cal.scored.jsonl \
-  --cal-sample runs/cal_seed1.raw.jsonl \
-  --cal-sample runs/cal_seed2.raw.jsonl \
+  --cal-sample runs/repeated/llada_gsm8k_cal/seed-2027.raw.jsonl \
+  --cal-sample runs/repeated/llada_gsm8k_cal/seed-2028.raw.jsonl \
   --test-target runs/llada_gsm8k_test.scored.jsonl \
-  --test-sample runs/test_seed1.raw.jsonl \
-  --test-sample runs/test_seed2.raw.jsonl \
+  --test-sample runs/repeated/llada_gsm8k_test/seed-2027.raw.jsonl \
+  --test-sample runs/repeated/llada_gsm8k_test/seed-2028.raw.jsonl \
   --output results/llada_gsm8k_repeated_sampling.json
+
+The frozen primary repeated-sampling baseline uses five seeds (2027--2031); the shortened command above only illustrates the repeated flag syntax.
 
 # Training-free raw-risk sensitivity:
 python scripts/compare_methods.py \

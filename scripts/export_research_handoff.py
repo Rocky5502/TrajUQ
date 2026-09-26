@@ -19,6 +19,8 @@ CONTEXT_FILES = [
     "configs/experiments/primary.yaml",
     "docs/PILOT_RUNBOOK.md",
     "docs/PRIMARY_MATRIX_RUNBOOK.md",
+    "docs/A100_EXECUTION.md",
+    "docs/RESULT_ARTIFACT_MAP.md",
     "paper/generated_results.tex",
     "paper/generated_results_manifest.json",
 ]
@@ -31,6 +33,8 @@ REQUIRED_CONTEXT_FILES = {
     "configs/experiments/primary.yaml",
     "docs/PILOT_RUNBOOK.md",
     "docs/PRIMARY_MATRIX_RUNBOOK.md",
+    "docs/A100_EXECUTION.md",
+    "docs/RESULT_ARTIFACT_MAP.md",
     "paper/generated_results.tex",
 }
 

@@ -210,7 +210,7 @@ execution_gates:
     label: "10-trace human pilot review"
     stage: pre_primary
     issue: 1
-    action: "Inspect the exported 10-trace sheet and record the protocol-v2 attestation with scripts/record_manual_gate.py; it binds the review sheet, LLaDA parity, and pilot-quality artifacts by SHA-256."
+    action: "Inspect the exported 10-trace sheet and record the protocol-v2 attestation with scripts/record_manual_gate.py from the same frozen clean checkout; it binds the review sheet, LLaDA parity, and pilot-quality artifacts by SHA-256."
     artifact: results/llada_gsm8k_pilot50_manual_review.json
     expect: {key: status, equals: PASS}
   - id: sdar_parity
@@ -238,13 +238,13 @@ execution_gates:
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
-    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to generate/audit/score exactly 25 calibration-only examples and export the deterministic review sheet. Inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py."
+    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to generate/audit/score exactly 25 calibration-only examples and export the deterministic review sheet. Inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py from the same frozen clean checkout."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, pilot quality/manual review, MATH-500 scorer audit/manual review, and all three exact-parity artifacts."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, clean-checkout pilot/MATH human attestations, the frozen MATH dependency versions, and all three exact-parity artifacts."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

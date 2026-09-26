@@ -40,9 +40,10 @@ particular, the following are implemented and versioned:
   risk-coverage metrics;
 - exact-parity harnesses for LLaDA, SDAR, and Dream, including same prompt hash,
   model/revision, seed, and adapter-specific frozen-generation provenance
-  checks; parity protocol v3 records uniform run-level provenance, and primary
-  readiness accepts only exact 20-prompt parity artifacts bound to the frozen
-  revision-ledger git commit and model SHA;
+  checks; parity protocol v3 records uniform run-level provenance, clean-checkout
+  state, and SHA-256 bindings to both reference and instrumented JSONL; primary
+  readiness re-hashes that evidence and accepts only exact 20-prompt artifacts
+  bound to the frozen revision-ledger git commit and model SHA;
 - frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, configs, frozen model configs, and prepared dataset inputs;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation;
@@ -99,7 +100,10 @@ The remaining work is primarily **execution**, not paper-number invention.
    `results/revision_ledger.json` protocol-v2 PASS at the same git commit.
 3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
    ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output
-   mismatches, and zero provenance mismatches. See issue #7.
+   mismatches, zero provenance mismatches, a clean comparator checkout, and
+   unchanged reference/instrumented SHA-256 evidence. The Windows wrapper now
+   preserves a valid PASS and refuses partial/stale evidence instead of deleting
+   artifacts. See issue #7.
 4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
    binds raw/scored files by SHA-256 and the frozen git commit/model SHA. Inspect
    at least 10 exported trajectories and record the protocol-v2 human attestation

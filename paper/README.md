@@ -27,7 +27,7 @@ The committed `generated_results.tex` is a pre-results fallback containing TBD m
 
     python scripts/render_results_tex.py
 
-The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, writes all table macros, and emits `paper/generated_results_manifest.json` with source SHA-256 hashes. A failed RQ1 gate produces narrow result language rather than a positive claim.
+The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost macros, and emits `paper/generated_results_manifest.json` with source SHA-256 hashes. A failed RQ1 gate produces narrow result language rather than a positive claim.
 
 ## Main-page budget
 

@@ -127,6 +127,14 @@ def write_parity(
     instrumented = path.with_name(path.stem + ".instrumented.jsonl")
     reference.write_text('{"example_id":"x"}\n', encoding="utf-8")
     instrumented.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    write_json(
+        instrumented.with_suffix(instrumented.suffix + ".audit.json"),
+        {
+            "status": "PASS",
+            "stage": "raw",
+            "sha256": sha256_file(instrumented),
+        },
+    )
 
     write_json(
         path,
@@ -495,7 +503,7 @@ def test_primary_readiness_rejects_mutated_parity_source(tmp_path):
 
     result = evaluate(case)
     assert result["status"] == "FAIL"
-    assert any("hash-bound evidence" in item for item in result["failures"])
+    assert any("hash/audit-bound evidence" in item for item in result["failures"])
 
 
 def test_primary_readiness_rejects_dirty_parity_artifact(tmp_path):
@@ -507,7 +515,7 @@ def test_primary_readiness_rejects_dirty_parity_artifact(tmp_path):
 
     result = evaluate(case)
     assert result["status"] == "FAIL"
-    assert any("hash-bound evidence" in item for item in result["failures"])
+    assert any("hash/audit-bound evidence" in item for item in result["failures"])
 
 
 def test_primary_readiness_rejects_dirty_pilot_quality_artifact(tmp_path):
@@ -574,3 +582,16 @@ def test_primary_readiness_rejects_math_review_source_drift(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("MATH-500 manual scorer review" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_missing_parity_raw_audit(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    parity = json.loads(
+        Path(case["parity"]["llada"]).read_text(encoding="utf-8")
+    )
+    instrumented = Path(parity["instrumented"])
+    instrumented.with_suffix(instrumented.suffix + ".audit.json").unlink()
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash/audit-bound evidence" in item for item in result["failures"])

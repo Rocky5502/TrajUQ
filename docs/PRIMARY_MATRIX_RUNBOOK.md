@@ -172,6 +172,24 @@ command be executed. The macro command rejects selective cell omission. Run the
 RQ1 claim-gate command last; a negative gate is a valid result and must not be
 used as a reason to redesign the test analysis.
 
+The preferred resumable analysis executor is:
+
+```bash
+# Dry-run/status:
+python scripts/execute_primary_analysis.py
+
+# Execute one cell without touching other cells:
+python scripts/execute_primary_analysis.py --cell llada:gsm8k --execute
+
+# Resume all missing cell analyses and, only when all 18 are complete,
+# run the macro aggregation and frozen RQ1 claim gate:
+python scripts/execute_primary_analysis.py --execute
+```
+
+The executor refuses to overwrite partial or invalid result pairs. It writes
+`results/primary_analysis_execution_state.json` and a chronological event
+log so analysis progress remains recoverable after interruption.
+
 
 ## 8. Freeze the expensive repeated-sampling plan
 

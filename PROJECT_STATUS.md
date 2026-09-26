@@ -95,7 +95,8 @@ After readiness passes:
 4. execute all 18 calibration/test cells exactly as planned;
 5. audit and score every cell without overwriting completed artifacts;
 6. create results/primary_analysis_plan.json;
-7. run every cell-level held-out analysis, ablation, and diagnostic;
+7. dry-run scripts/execute_primary_analysis.py and then use it to resume all
+   cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics;
 8. aggregate the complete 18-cell primary endpoint;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
 10. run the complete 18-cell five-sample comparator;

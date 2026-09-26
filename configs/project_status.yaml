@@ -65,6 +65,12 @@ implementation:
     evidence:
       - scripts/plan_primary_analysis.py
       - scripts/aggregate_cells.py
+  - id: resumable_primary_analysis_executor
+    label: "Resumable non-overwriting primary-analysis executor"
+    state: DONE
+    evidence:
+      - scripts/execute_primary_analysis.py
+      - tests/test_execute_primary_analysis.py
   - id: rq1_gate
     label: "Pre-registered positive-claim gate for RQ1"
     state: DONE
@@ -195,6 +201,11 @@ execution_gates:
     stage: analysis
     artifact: results/primary_analysis_plan.json
     expect: {key: status, equals: PASS}
+  - id: primary_analysis_execution_complete
+    label: "All 18 primary cell analyses plus macro and RQ1 gate complete"
+    stage: analysis
+    artifact: results/primary_analysis_execution_state.json
+    expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
     label: "Frozen five-sample 18-cell comparator plan"
     stage: analysis

@@ -156,6 +156,7 @@ def verify_generated_results(
         "primary",
         "claim_gate",
         "repeated",
+        "ablation",
         "adaptive",
         "primary_config",
     }
@@ -204,6 +205,7 @@ def verify_generated_results(
             primary = load_json(source_paths["primary"])
             claim = load_json(source_paths["claim_gate"])
             repeated = load_json(source_paths["repeated"])
+            ablation = load_json(source_paths["ablation"])
             adaptive = load_json(source_paths["adaptive"])
             primary_cfg = yaml.safe_load(
                 source_paths["primary_config"].read_text(encoding="utf-8")
@@ -212,6 +214,7 @@ def verify_generated_results(
                 primary,
                 claim,
                 repeated,
+                ablation,
                 adaptive,
                 primary_cfg,
             )
@@ -224,6 +227,7 @@ def verify_generated_results(
                     "primary",
                     "claim_gate",
                     "repeated",
+                    "ablation",
                     "adaptive",
                     "primary_config",
                 )

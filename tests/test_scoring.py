@@ -1,0 +1,24 @@
+import pytest
+
+from trajuq.scoring import extract_choice, extract_number, score_record
+
+
+def test_extractors():
+    assert extract_choice("Reasoning... FINAL: C") == "C"
+    assert extract_number("Reasoning... FINAL: 1,234.5") == 1234.5
+
+
+def test_gsm8k_scoring():
+    ok, name = score_record("gsm8k", "work\nFINAL: 18", "some work\n#### 18")
+    assert ok
+    assert name == "gsm8k_numeric_exact"
+
+
+def test_mc_scoring():
+    assert score_record("mmlu_pro", "FINAL: B", "B")[0]
+    assert not score_record("mmlu_pro", "FINAL: C", "B")[0]
+
+
+def test_math500_not_silently_approximated():
+    with pytest.raises(ValueError):
+        score_record("math500", "FINAL: 1/2", r"\frac{1}{2}")

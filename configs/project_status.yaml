@@ -177,6 +177,10 @@ implementation:
       - scripts/pilot_windows.ps1
       - scripts/parity_remaining_windows.ps1
       - scripts/math500_gate_windows.ps1
+      - scripts/pilot_linux.sh
+      - scripts/parity_remaining_linux.sh
+      - scripts/math500_gate_linux.sh
+      - tests/test_pilot_script_contract.py
       - tests/test_remaining_parity_script_contract.py
       - tests/test_math500_gate_script_contract.py
 
@@ -198,14 +202,14 @@ execution_gates:
     label: "LLaDA 20-prompt exact parity"
     stage: pre_primary
     issue: 7
-    action: "Run scripts/pilot_windows.ps1 -Stage prepare, then -Stage parity. The wrapper is non-overwriting, reuses only a clean hash-bound parity-v3 PASS, and stops on partial/stale evidence."
+    action: "On A100/Linux run bash scripts/pilot_linux.sh prepare then bash scripts/pilot_linux.sh parity; on Windows use scripts/pilot_windows.ps1 -Stage prepare/-Stage parity. Both paths are non-overwriting, reuse only clean hash-bound parity-v3 evidence, and stop on partial/stale artifacts."
     artifact: results/llada_parity.json
     expect: {key: status, equals: PASS}
   - id: pilot_quality
     label: "LLaDA + GSM8K 50-example pilot quality"
     stage: pre_primary
     issue: 1
-    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot. The pilot-quality v2 artifact must be a clean-checkout, hash-bound PASS at the frozen commit/model revision, and primary readiness additionally requires the raw/scored audit artifacts to PASS with matching SHA-256."
+    action: "After LLaDA parity PASS, on A100/Linux run bash scripts/pilot_linux.sh pilot; on Windows use scripts/pilot_windows.ps1 -Stage pilot. The pilot-quality v2 artifact must be a clean-checkout, hash-bound PASS at the frozen commit/model revision, and primary readiness additionally requires matching raw/scored SHA-256 audits."
     artifact: results/llada_gsm8k_pilot50_gate.json
     expect: {key: status, equals: PASS}
   - id: pilot_manual
@@ -219,28 +223,28 @@ execution_gates:
     label: "SDAR exact parity"
     stage: pre_primary
     issue: 2
-    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model sdar; otherwise follow docs/SDAR_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
+    action: "On A100/Linux run bash scripts/parity_remaining_linux.sh sdar; on Windows run scripts/parity_remaining_windows.ps1 -Model sdar. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
     artifact: results/sdar_parity.json
     expect: {key: status, equals: PASS}
   - id: dream_parity
     label: "Dream exact parity"
     stage: pre_primary
     issue: 5
-    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model dream; otherwise follow docs/DREAM_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
+    action: "On A100/Linux run bash scripts/parity_remaining_linux.sh dream; on Windows run scripts/parity_remaining_windows.ps1 -Model dream. Require parity-v3 exact 20-prompt token equality, clean frozen provenance, and unchanged reference/instrumented SHA-256 evidence."
     artifact: results/dream_parity.json
     expect: {key: status, equals: PASS}
   - id: math500_auto
     label: "Automatic MATH-500 scorer audit"
     stage: pre_primary
     issue: 4
-    action: "The clean CPU verification already runs scripts/audit_math500_scorer.py; on Windows scripts/math500_gate_windows.ps1 -Stage prepare revalidates a clean-checkout commit-bound protocol-v2 artifact and the frozen dependency versions before the calibration pilot."
+    action: "The clean CPU verification already runs scripts/audit_math500_scorer.py. On A100/Linux run bash scripts/math500_gate_linux.sh prepare; on Windows use scripts/math500_gate_windows.ps1 -Stage prepare. Revalidate the clean-checkout protocol-v2 scorer artifact and pinned dependency versions before the calibration pilot."
     artifact: results/math500_scorer_audit.json
     expect: {key: status, equals: PASS}
   - id: math500_manual
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
-    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to revalidate the frozen MATH split/parity evidence, generate/audit/score exactly 25 calibration-only examples, and export the deterministic review sheet. The sheet records scored/input SHA-256; inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py from the same frozen clean checkout. Readiness independently revalidates the scored artifact, calibration input, and scored audit."
+    action: "On A100/Linux run bash scripts/math500_gate_linux.sh pilot after prepare; on Windows use scripts/math500_gate_windows.ps1 -Stage all. Generate/audit/score exactly 25 calibration-only examples and export the deterministic review sheet. Inspect all 25 manually before recording the protocol-v2 attestation with scripts/record_math500_scorer_review.py from the same frozen clean checkout."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness

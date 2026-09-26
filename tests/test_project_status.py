@@ -131,3 +131,22 @@ def test_next_action_advances_after_pass(tmp_path):
     }
     snapshot = build_snapshot(tmp_path, config)
     assert snapshot["next_action"]["id"] == "second"
+
+
+def test_dashboard_explicitly_disclaims_protocol_revalidation(tmp_path):
+    snapshot = build_snapshot(
+        tmp_path,
+        {
+            "project": {"target": "test"},
+            "implementation": [],
+            "execution_gates": [],
+        },
+    )
+
+    assert (
+        snapshot["validation_scope"]
+        == "dashboard_expectations_only_not_protocol_revalidation"
+    )
+    rendered = render_markdown(snapshot)
+    assert "Dashboard scope" in rendered
+    assert "not a substitute" in rendered

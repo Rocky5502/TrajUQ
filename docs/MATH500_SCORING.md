@@ -65,6 +65,20 @@ keeps MATH-500 in the same 18-cell repeated-sampling matrix as the other tasks.
 
 ## Pre-primary scorer gates
 
+On Windows, the preferred guarded path is:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/math500_gate_windows.ps1 -Stage all
+```
+
+This wrapper requires the clean CPU/revision freeze and an exact LLaDA parity-v3
+PASS at the same frozen commit/revision. It verifies the installed
+`math-verify==0.9.0` and `antlr4-python3-runtime==4.13.2`, prepares the frozen
+MATH-500 calibration/test pair, runs exactly 25 calibration-only LLaDA examples,
+audits raw/scored artifacts separately, and exports the deterministic review
+sheet. It intentionally does **not** create the human attestation and refuses to
+overwrite existing pilot/review evidence.
+
 Before any primary MATH-500 generation, run the automatic audit at the same
 frozen experiment commit recorded by revision-ledger v2:
 

@@ -9,6 +9,7 @@ import numpy as np
 
 from trajuq.calibration import RiskCalibrator
 from trajuq.evaluation import (
+    SELECTIVE_RISK_VERSION,
     calibration_metrics,
     error_detection_metrics,
     expected_calibration_error,
@@ -250,6 +251,7 @@ def main() -> None:
 
     payload = {
         "protocol": "trajuq_repeated_sampling_baseline_v2",
+        "selective_risk_version": SELECTIVE_RISK_VERSION,
         "baseline": "repeated_sampling_vote_uncertainty",
         "features": REPEATED_FEATURES,
         "sample_count": len(args.cal_sample),

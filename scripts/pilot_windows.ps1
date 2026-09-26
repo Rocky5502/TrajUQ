@@ -251,6 +251,22 @@ if ($Stage -in @("prepare", "all")) {
         if ($Freeze.model_config_sha256 -ne (Get-FileSha256 $ModelConfig)) {
             throw "Existing pilot freeze manifest model-config hash drifted."
         }
+        $FrozenDatasets = @{}
+        foreach ($Item in @($Freeze.datasets)) {
+            $FrozenDatasets[[string]$Item.path] = [string]$Item.sha256
+        }
+        if (-not $FrozenDatasets.ContainsKey($CalData)) {
+            throw "Existing pilot freeze manifest is missing the calibration dataset path."
+        }
+        if (-not $FrozenDatasets.ContainsKey($TestData)) {
+            throw "Existing pilot freeze manifest is missing the test dataset path."
+        }
+        if ($FrozenDatasets[$CalData] -ne (Get-FileSha256 $CalData)) {
+            throw "Existing pilot freeze manifest calibration hash drifted."
+        }
+        if ($FrozenDatasets[$TestData] -ne (Get-FileSha256 $TestData)) {
+            throw "Existing pilot freeze manifest test hash drifted."
+        }
         Write-Host "Preserving existing results/pilot_freeze_manifest.json." -ForegroundColor Green
     }
 }

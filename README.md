@@ -61,6 +61,8 @@ TrajUQ/
 │   ├── evaluate_run.py
 │   ├── compare_methods.py
 │   ├── aggregate_feature_ablation.py
+│   ├── a100_campaign_linux.sh
+│   ├── build_overleaf_package.py
 │   ├── evaluate_adaptive.py
 │   ├── freeze_manifest.py
 │   ├── preflight.py
@@ -191,6 +193,21 @@ compute, and final artifact-derived paper rendering.
 The key rule is simple: after `freeze_preprimary.sh` passes, do not edit tracked
 experiment code on that run. A required code repair means a new commit and a new
 freeze; never repair code underneath already-produced frozen evidence.
+
+The staged convenience runner is:
+
+```bash
+bash scripts/a100_campaign_linux.sh status
+bash scripts/a100_campaign_linux.sh pilot
+# human 10-trace review + attestation
+bash scripts/a100_campaign_linux.sh parity-math
+# human 25-example MATH-500 review + attestation
+bash scripts/a100_campaign_linux.sh readiness
+bash scripts/a100_campaign_linux.sh all-after-readiness
+```
+
+The two human-review boundaries are deliberate and cannot be bypassed by the
+campaign runner.
 
 ## Prepare a frozen benchmark pair
 
@@ -505,6 +522,20 @@ and the MATH review must still bind the frozen calibration input, scored pilot,
 and scored audit. Only after readiness PASS should
 `python scripts/plan_primary_matrix.py` create the inspectable 18-cell
 execution plan.
+
+## Overleaf package
+
+Build a clean anonymous Overleaf ZIP from the current paper source and the
+official ACL style pinned at commit
+`d5adc823ff0f80f98c80405ca0ab66c68e684409`:
+
+```bash
+python scripts/build_overleaf_package.py
+```
+
+The builder requires a clean checkout, scans paper/style text for identity and
+local-path leaks, includes generated result PDFs when they exist, and writes a
+deterministic ZIP with an internal SHA-256 manifest.
 
 ## Paper
 

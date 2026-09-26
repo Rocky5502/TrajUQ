@@ -16,9 +16,29 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def write_raw(path: Path, *, commit: str = "frozen-commit") -> None:
+def write_input(path: Path, ids: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    path.write_text(
+        "".join(json.dumps({"id": item_id}) + "\n" for item_id in ids),
+        encoding="utf-8",
+    )
+
+
+def write_raw(
+    path: Path,
+    *,
+    ids: list[str] | None = None,
+    commit: str = "frozen-commit",
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_ids = ids or ["x"]
+    path.write_text(
+        "".join(
+            json.dumps({"example_id": item_id}) + "\n"
+            for item_id in resolved_ids
+        ),
+        encoding="utf-8",
+    )
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     path.with_suffix(path.suffix + ".audit.json").write_text(
         json.dumps(
@@ -35,19 +55,82 @@ def write_raw(path: Path, *, commit: str = "frozen-commit") -> None:
     )
 
 
+def write_manifest(
+    root: Path,
+    input_path: Path,
+    seeds: list[int],
+    *,
+    commit: str = "frozen-commit",
+) -> None:
+    payload = {
+        "protocol": "repeated_sampling_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "input": str(input_path),
+        "input_sha256": _sha256(input_path),
+        "seeds": seeds,
+        "runs": [
+            {
+                "seed": seed,
+                "path": str(root / f"seed-{seed}.raw.jsonl"),
+                "status": "GENERATED",
+            }
+            for seed in seeds
+        ],
+    }
+    (root / "manifest.json").write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+
 def test_generation_state_requires_every_seed_and_manifest(tmp_path):
+    source = tmp_path / "input.jsonl"
+    write_input(source, ["x"])
     argv = [
         "python",
         "scripts/run_repeated_samples.py",
+        "--input",
+        str(source),
         "--output-dir",
         str(tmp_path),
     ]
     write_raw(tmp_path / "seed-2027.raw.jsonl")
     write_raw(tmp_path / "seed-2028.raw.jsonl")
-    assert not generation_state(argv, [2027, 2028])["complete"]
+    assert not generation_state(
+        argv,
+        [2027, 2028],
+        "frozen-commit",
+    )["complete"]
 
-    (tmp_path / "manifest.json").write_text("{}", encoding="utf-8")
-    assert generation_state(argv, [2027, 2028])["complete"]
+    write_manifest(tmp_path, source, [2027, 2028])
+    state = generation_state(argv, [2027, 2028], "frozen-commit")
+    assert state["manifest_valid"]
+    assert state["expected_records"] == 1
+    assert state["complete"]
+
+
+def test_generation_state_rejects_audited_truncated_seed(tmp_path):
+    source = tmp_path / "input.jsonl"
+    write_input(source, ["a", "b"])
+    argv = [
+        "python",
+        "scripts/run_repeated_samples.py",
+        "--input",
+        str(source),
+        "--output-dir",
+        str(tmp_path),
+    ]
+    write_raw(
+        tmp_path / "seed-2027.raw.jsonl",
+        ids=["a"],
+    )
+    write_manifest(tmp_path, source, [2027])
+
+    state = generation_state(argv, [2027], "frozen-commit")
+    assert not state["seeds"]["2027"]["ids_complete"]
+    assert state["seeds"]["2027"]["audit_pass"]
+    assert not state["complete"]
 
 
 def test_pair_state_rejects_partial_outputs(tmp_path):
@@ -55,6 +138,22 @@ def test_pair_state_rejects_partial_outputs(tmp_path):
     predictions = tmp_path / "predictions.jsonl"
     metrics.write_text("{}", encoding="utf-8")
     assert pair_state(metrics, predictions) == "PARTIAL"
+
+
+def test_pair_state_rejects_incomplete_prediction_coverage(tmp_path):
+    metrics = tmp_path / "metrics.json"
+    predictions = tmp_path / "predictions.jsonl"
+    metrics.write_text("{}", encoding="utf-8")
+    predictions.write_text(
+        '{"example_id":"a"}\n',
+        encoding="utf-8",
+    )
+
+    assert pair_state(
+        metrics,
+        predictions,
+        ["a", "b"],
+    ) == "INVALID"
 
 
 def test_audit_hash_must_match(tmp_path):
@@ -68,9 +167,15 @@ def test_audit_hash_must_match(tmp_path):
 def test_execution_snapshot_waits_for_macro(tmp_path):
     cal = tmp_path / "cal"
     test = tmp_path / "test"
-    for root in (cal, test):
+    cal_input = tmp_path / "calibration.jsonl"
+    test_input = tmp_path / "test.jsonl"
+    scored_target = tmp_path / "test.scored.jsonl"
+    write_input(cal_input, ["x"])
+    write_input(test_input, ["x"])
+    scored_target.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    for root, source in ((cal, cal_input), (test, test_input)):
         write_raw(root / "seed-2027.raw.jsonl")
-        (root / "manifest.json").write_text("{}", encoding="utf-8")
+        write_manifest(root, source, [2027])
 
     metrics = tmp_path / "metrics.json"
     predictions = tmp_path / "predictions.jsonl"
@@ -82,6 +187,7 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
     macro = tmp_path / "macro.json"
     plan = {
         "expected_cells": 1,
+        "experiment_git_commit": "frozen-commit",
         "macro_output": str(macro),
         "cells": [
             {
@@ -92,15 +198,24 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
                 "calibration_generation_argv": [
                     "python",
                     "x",
+                    "--input",
+                    str(cal_input),
                     "--output-dir",
                     str(cal),
                 ],
                 "test_generation_argv": [
                     "python",
                     "x",
+                    "--input",
+                    str(test_input),
                     "--output-dir",
                     str(test),
                 ],
+                "provenance": {
+                    "test": {
+                        "scored_target": str(scored_target),
+                    }
+                },
                 "repeated_metrics": str(metrics),
                 "repeated_predictions": str(predictions),
                 "direct_comparison": str(comparison),

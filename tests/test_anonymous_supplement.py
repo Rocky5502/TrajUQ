@@ -25,6 +25,9 @@ def test_anonymous_supplement_builds_and_excludes_identity_paths(tmp_path):
         assert "README.md" in names
         assert "MANIFEST.json" in names
         assert "CITATION.cff" not in names
+        assert "docs/A100_EXECUTION.md" not in names
+        assert "docs/RESULT_ARTIFACT_MAP.md" in names
+        assert "scripts/aggregate_feature_ablation.py" in names
         assert "paper/main.tex" not in names
         assert all(not name.startswith("runs/") for name in names)
         assert all(not name.startswith("results/") for name in names)

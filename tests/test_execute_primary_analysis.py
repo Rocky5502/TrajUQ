@@ -207,11 +207,30 @@ def test_analysis_provenance_rejects_scored_input_drift(
     commit = "a" * 40
     primary_plan = tmp_path / "primary_plan.json"
     primary_config = tmp_path / "primary.yaml"
+    source_input = tmp_path / "calibration.jsonl"
+    raw = tmp_path / "calibration.raw.jsonl"
+    raw_audit = tmp_path / "calibration.raw.jsonl.audit.json"
     scored = tmp_path / "calibration.scored.jsonl"
     audit = tmp_path / "calibration.scored.jsonl.audit.json"
 
     primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
     primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    source_input.write_text('{"id":"x"}\n', encoding="utf-8")
+    raw.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    raw_audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": "raw",
+                "sha256": _sha256(raw),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
     audit.write_text(
         json.dumps(
@@ -229,6 +248,12 @@ def test_analysis_provenance_rejects_scored_input_drift(
     )
 
     input_spec = {
+        "source_input": str(source_input),
+        "source_input_sha256": _sha256(source_input),
+        "raw_path": str(raw),
+        "raw_sha256": _sha256(raw),
+        "raw_audit_path": str(raw_audit),
+        "raw_audit_sha256": _sha256(raw_audit),
         "path": str(scored),
         "sha256": _sha256(scored),
         "audit_path": str(audit),
@@ -274,11 +299,30 @@ def test_analysis_provenance_rejects_audit_from_other_commit(
     commit = "a" * 40
     primary_plan = tmp_path / "primary_plan.json"
     primary_config = tmp_path / "primary.yaml"
+    source_input = tmp_path / "test.jsonl"
+    raw = tmp_path / "test.raw.jsonl"
+    raw_audit = tmp_path / "test.raw.jsonl.audit.json"
     scored = tmp_path / "test.scored.jsonl"
     audit = tmp_path / "test.scored.jsonl.audit.json"
 
     primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
     primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    source_input.write_text('{"id":"x"}\n', encoding="utf-8")
+    raw.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    raw_audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": "raw",
+                "sha256": _sha256(raw),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
     audit.write_text(
         json.dumps(
@@ -295,6 +339,12 @@ def test_analysis_provenance_rejects_audit_from_other_commit(
         encoding="utf-8",
     )
     spec = {
+        "source_input": str(source_input),
+        "source_input_sha256": _sha256(source_input),
+        "raw_path": str(raw),
+        "raw_sha256": _sha256(raw),
+        "raw_audit_path": str(raw_audit),
+        "raw_audit_sha256": _sha256(raw_audit),
         "path": str(scored),
         "sha256": _sha256(scored),
         "audit_path": str(audit),

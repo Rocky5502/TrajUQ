@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import hashlib
 import json
 
@@ -46,3 +48,13 @@ def test_adaptive_plan_requires_frozen_scored_audit(tmp_path):
 
     assert scored_audit_passes(scored, "frozen-commit")
     assert not scored_audit_passes(scored, "other-commit")
+
+
+def test_adaptive_plan_binds_base_runs_to_frozen_inputs():
+    text = Path("scripts/plan_adaptive_runs.py").read_text(encoding="utf-8")
+
+    assert '"input": str(generation_input)' in text
+    assert '"input_sha256": sha256_file(generation_input)' in text
+    assert '"generation_input_sha256"' in text
+    assert '"refined_scored_sha256"' in text
+    assert '"refined_audit_sha256"' in text

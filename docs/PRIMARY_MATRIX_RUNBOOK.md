@@ -123,8 +123,10 @@ python scripts/execute_primary_plan.py --execute
 ```
 
 The executor never overwrites existing raw/scored artifacts. It reuses an
-existing artifact only when the corresponding audit JSON is PASS **and** its
-stored SHA-256 matches the current file. After every executed step it rewrites
+existing artifact only when the corresponding audit is protocol
+`trajuq_run_audit_v1`, was recorded from a clean checkout at the frozen
+experiment commit, has the correct raw/scored stage, and its stored SHA-256
+matches the current file. After every executed step it rewrites
 `results/primary_execution_state.json` and appends an event to
 `results/primary_execution_events.jsonl`, making interruption/restart status
 explicit.
@@ -171,8 +173,11 @@ bootstrap.
 
 Adaptive plan protocol v3 SHA-binds the frozen primary plan/config, every
 calibration/test prompt input, every refined scored artifact, and each scored
-audit. `execute_adaptive_plan.py` revalidates those bindings before any low-budget
-GPU work, so a changed refined artifact cannot silently enter RQ3.
+audit. Refined scored audits must be clean protocol-v1 evidence from the frozen
+experiment commit. `execute_adaptive_plan.py` revalidates those bindings before
+any low-budget GPU work, and reusable base raw/scored artifacts must satisfy the
+same protocol/clean/commit/stage/SHA contract, so stale evidence cannot silently
+enter RQ3.
 
 Selected examples use the conservative **second-pass rerun** semantics: the base
 run is always paid and the refined run is an additional complete generation.
@@ -193,9 +198,9 @@ python scripts/plan_primary_analysis.py
 ```
 
 This writes `results/primary_analysis_plan.json`. Protocol v2 requires every
-scored calibration/test artifact and its audit to be present and current, then
-SHA-binds those inputs together with the frozen primary plan/config and experiment
-commit. For every model--dataset cell it freezes commands for the calibrated
+scored calibration/test artifact to have a clean protocol-v1 scored audit from
+the frozen experiment commit, then SHA-binds those inputs/audits together with
+the frozen primary plan/config and experiment commit. For every model--dataset cell it freezes commands for the calibrated
 baseline/TrajUQ metrics, paired nested bootstrap comparison, frozen
 feature-family ablations, and the training-free raw-risk diagnostic.
 
@@ -219,7 +224,8 @@ python scripts/execute_primary_analysis.py --execute
 ```
 
 The executor first revalidates the plan-bound primary plan/config, scored inputs,
-and scored-audit hashes, then refuses to overwrite partial or invalid result
+and scored-audit hashes **plus** audit protocol, clean-checkout state, stage, and
+frozen experiment commit, then refuses to overwrite partial or invalid result
 pairs. It writes `results/primary_analysis_execution_state.json` and a
 chronological event log so analysis progress remains recoverable after interruption.
 
@@ -236,7 +242,8 @@ python scripts/plan_repeated_sampling.py
 The frozen comparator now covers all 18 cells. Repeated-sampling plan protocol
 v2 SHA-binds the primary plan, primary-analysis plan, primary config, prompt
 partitions, scored targets/audits, and per-cell TrajUQ prediction artifacts before
-auxiliary generation. MATH-500 sample votes use reference-free pairwise
+auxiliary generation. Every bound scored target must have a clean protocol-v1
+scored audit from the frozen experiment commit. MATH-500 sample votes use reference-free pairwise
 Math-Verify equivalence clustering instead of string matching. The plan fixes five seeds
 (2027--2031), temperature 0.2, model revision, prompt partitions, and all
 adapter-specific generation settings.
@@ -264,8 +271,10 @@ python scripts/execute_repeated_sampling.py --execute
 Before any five-seed generation, the executor revalidates every upstream
 SHA-bound artifact recorded by repeated-sampling plan protocol v2. Each
 five-seed generation command then uses `--resume-verified`: an existing seed is
-reused only when its raw audit is PASS and the audit SHA-256 matches the current
-artifact. Unverified partial artifacts are never overwritten automatically. The executor writes
+reused only when its raw audit is protocol-v1, clean, from the frozen experiment
+commit, stage=`raw`, and SHA-bound to the current artifact. The repeated
+manifest also records the git commit/clean state and input SHA-256. Unverified
+partial artifacts are never overwritten automatically. The executor writes
 `results/repeated_sampling_execution_state.json` and an append-only event log.
 The full macro is run only after all 18 cells are complete.
 

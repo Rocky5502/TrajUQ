@@ -71,12 +71,24 @@ Before any primary MATH-500 generation:
 python scripts/audit_math500_scorer.py
 ```
 
-Then manually inspect at least 25 **calibration** examples spanning subject and
-difficulty metadata. Check extraction, symbolic-equivalence behavior, and any
-parser failures. Record that review with:
+After LLaDA parity passes, generate and score a small MATH-500 **calibration-only**
+pilot with at least 25 examples. Export a deterministic subject/level-diverse
+review sheet:
+
+```bash
+python scripts/export_math500_scorer_review.py \
+  --scored runs/llada_math500_scorer_pilot.scored.jsonl \
+  --input data/processed/math500/calibration.jsonl \
+  --count 25 \
+  --output results/math500_scorer_review.md
+```
+
+Then manually inspect those calibration examples. Check extraction,
+symbolic-equivalence behavior, and parser failures. Record that review with:
 
 ```bash
 python scripts/record_math500_scorer_review.py \
+  --review-sheet results/math500_scorer_review.md \
   --reviewed-records 25 \
   --answer-extraction-pass \
   --symbolic-equivalence-pass \

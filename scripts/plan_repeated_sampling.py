@@ -72,6 +72,20 @@ def valid_jsonl(path: Path) -> bool:
     return bool(rows)
 
 
+def jsonl_example_ids(path: Path) -> list[str]:
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            rows = [json.loads(line) for line in handle if line.strip()]
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid JSONL artifact {path}: {exc}") from exc
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if not rows or any(not item_id for item_id in ids):
+        raise ValueError(f"invalid example IDs in {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"duplicate example IDs in {path}")
+    return ids
+
+
 def arg_value(argv: list[str], flag: str, default: str | None = None) -> str:
     if flag not in argv:
         if default is None:
@@ -335,6 +349,18 @@ def main() -> None:
         if not valid_jsonl(trajuq_predictions):
             raise SystemExit(
                 f"{cell_name}: primary TrajUQ predictions are missing or invalid"
+            )
+        try:
+            prediction_ids = jsonl_example_ids(trajuq_predictions)
+            frozen_test_ids = jsonl_example_ids(
+                Path(str(cell["test"]["scored_output"]))
+            )
+        except ValueError as exc:
+            raise SystemExit(f"{cell_name}: {exc}") from exc
+        if prediction_ids != frozen_test_ids:
+            raise SystemExit(
+                f"{cell_name}: primary TrajUQ predictions do not exactly "
+                "cover the frozen scored test target"
             )
 
         cal_dir = Path(args.run_root) / adapter / dataset / "calibration"

@@ -4,8 +4,10 @@ from pathlib import Path
 
 import scripts.execute_adaptive_plan as execute_adaptive_plan
 from scripts.execute_adaptive_plan import (
+    artifact_id_state,
     audit_passes,
     base_partition_state,
+    command_needed,
     evaluation_state,
     execution_snapshot,
     validate_plan_provenance,
@@ -16,14 +18,30 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def write_input(path: Path, ids: list[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(json.dumps({"id": item_id}) + "\n" for item_id in ids),
+        encoding="utf-8",
+    )
+
+
 def write_audited(
     path: Path,
     stage: str,
     *,
+    ids: list[str] | None = None,
     commit: str = "frozen-commit",
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    resolved_ids = ids or ["x"]
+    path.write_text(
+        "".join(
+            json.dumps({"example_id": item_id}) + "\n"
+            for item_id in resolved_ids
+        ),
+        encoding="utf-8",
+    )
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     path.with_suffix(path.suffix + ".audit.json").write_text(
         json.dumps(
@@ -41,14 +59,60 @@ def write_audited(
 
 
 def test_base_partition_requires_both_audited_files(tmp_path):
+    source = tmp_path / "input.jsonl"
     raw = tmp_path / "base.raw.jsonl"
     scored = tmp_path / "base.scored.jsonl"
-    spec = {"raw_output": str(raw), "scored_output": str(scored)}
+    write_input(source, ["x"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
 
     write_audited(raw, "raw")
     assert not base_partition_state(spec)["complete"]
     write_audited(scored, "scored")
     assert base_partition_state(spec)["complete"]
+
+
+def test_adaptive_partial_raw_prefix_resumes_but_is_not_complete(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "base.raw.jsonl"
+    scored = tmp_path / "base.scored.jsonl"
+    write_input(source, ["a", "b"])
+    write_audited(raw, "raw", ids=["a"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    assert artifact_id_state(raw, spec) == "PREFIX"
+    assert command_needed("generate", spec, "frozen-commit")
+    state = base_partition_state(spec, "frozen-commit")
+    assert state["raw_id_state"] == "PREFIX"
+    assert not state["complete"]
+
+
+def test_adaptive_partial_scored_artifact_is_not_overwritten(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "base.raw.jsonl"
+    scored = tmp_path / "base.scored.jsonl"
+    write_input(source, ["a", "b"])
+    write_audited(raw, "raw", ids=["a", "b"])
+    write_audited(scored, "scored", ids=["a"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    try:
+        command_needed("score", spec, "frozen-commit")
+    except ValueError as exc:
+        assert "partial/invalid adaptive scored artifact" in str(exc)
+    else:
+        raise AssertionError("partial adaptive scored artifact must not be reused")
 
 
 def test_adaptive_evaluation_rejects_partial_pair(tmp_path):
@@ -59,6 +123,16 @@ def test_adaptive_evaluation_rejects_partial_pair(tmp_path):
     assert evaluation_state(spec) == "PARTIAL"
 
 
+def test_adaptive_evaluation_rejects_incomplete_prediction_coverage(tmp_path):
+    result = tmp_path / "result.json"
+    predictions = tmp_path / "predictions.jsonl"
+    result.write_text("{}", encoding="utf-8")
+    predictions.write_text('{"example_id":"a"}\n', encoding="utf-8")
+
+    spec = {"result": str(result), "predictions": str(predictions)}
+    assert evaluation_state(spec, ["a", "b"]) == "INVALID"
+
+
 def test_audit_stage_is_checked(tmp_path):
     raw = tmp_path / "base.raw.jsonl"
     write_audited(raw, "scored")
@@ -66,6 +140,10 @@ def test_audit_stage_is_checked(tmp_path):
 
 
 def test_execution_snapshot_requires_all_macros(tmp_path):
+    cal_input = tmp_path / "calibration.jsonl"
+    test_input = tmp_path / "test.jsonl"
+    write_input(cal_input, ["x"])
+    write_input(test_input, ["x"])
     raw_cal = tmp_path / "cal.raw.jsonl"
     scored_cal = tmp_path / "cal.scored.jsonl"
     raw_test = tmp_path / "test.raw.jsonl"
@@ -99,10 +177,12 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
                 "adapter": "llada",
                 "dataset": "gsm8k",
                 "calibration_base": {
+                    "input": str(cal_input),
                     "raw_output": str(raw_cal),
                     "scored_output": str(scored_cal),
                 },
                 "test_base": {
+                    "input": str(test_input),
                     "raw_output": str(raw_test),
                     "scored_output": str(scored_test),
                 },
@@ -146,7 +226,7 @@ def test_adaptive_provenance_rejects_refined_input_drift(
 
     primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
     primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
-    generation_input.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    generation_input.write_text('{"id":"x"}\n', encoding="utf-8")
     refined.write_text('{"example_id":"x"}\n', encoding="utf-8")
     refined_audit.write_text(
         json.dumps(
@@ -182,6 +262,14 @@ def test_adaptive_provenance_rejects_refined_input_drift(
         "cells": [
             {
                 "cell": "llada:gsm8k",
+                "calibration_base": {
+                    "input": str(generation_input),
+                    "input_sha256": _sha256(generation_input),
+                },
+                "test_base": {
+                    "input": str(generation_input),
+                    "input_sha256": _sha256(generation_input),
+                },
                 "provenance": {
                     "calibration": dict(partition),
                     "test": dict(partition),

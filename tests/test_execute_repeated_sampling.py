@@ -2,12 +2,18 @@ import hashlib
 import json
 from pathlib import Path
 
+import scripts.execute_repeated_sampling as execute_repeated_sampling
 from scripts.execute_repeated_sampling import (
     audit_passes,
     execution_snapshot,
     generation_state,
     pair_state,
+    validate_plan_provenance,
 )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def write_raw(path: Path) -> None:
@@ -105,3 +111,79 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
         encoding="utf-8",
     )
     assert execution_snapshot(plan)["status"] == "COMPLETE"
+
+
+def test_repeated_provenance_rejects_primary_prediction_drift(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "b" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    analysis_plan = tmp_path / "analysis_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    generation_input = tmp_path / "calibration.jsonl"
+    scored = tmp_path / "calibration.scored.jsonl"
+    scored_audit = tmp_path / "calibration.scored.jsonl.audit.json"
+    predictions = tmp_path / "trajuq_predictions.jsonl"
+
+    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    analysis_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    generation_input.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    scored_audit.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "stage": "scored",
+                "sha256": _sha256(scored),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    predictions.write_text(
+        '{"example_id":"x","risk":0.5}\n',
+        encoding="utf-8",
+    )
+
+    partition = {
+        "generation_input": str(generation_input),
+        "generation_input_sha256": _sha256(generation_input),
+        "scored_target": str(scored),
+        "scored_target_sha256": _sha256(scored),
+        "scored_audit": str(scored_audit),
+        "scored_audit_sha256": _sha256(scored_audit),
+    }
+    plan = {
+        "protocol": "trajuq_repeated_sampling_plan_v2",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_analysis_plan": str(analysis_plan),
+        "primary_analysis_plan_sha256": _sha256(analysis_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "provenance": {
+                    "calibration": dict(partition),
+                    "test": dict(partition),
+                    "trajuq_predictions": str(predictions),
+                    "trajuq_predictions_sha256": _sha256(predictions),
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(execute_repeated_sampling, "git_head", lambda: commit)
+
+    assert validate_plan_provenance(plan) == []
+
+    predictions.write_text(
+        '{"example_id":"x","risk":0.9}\n',
+        encoding="utf-8",
+    )
+    failures = validate_plan_provenance(plan)
+    assert any("TrajUQ predictions hash drifted" in item for item in failures)

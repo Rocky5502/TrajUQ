@@ -140,6 +140,20 @@ implementation:
     state: DONE
     evidence:
       - scripts/build_anonymous_supplement.py
+  - id: overleaf_package
+    label: "Deterministic anonymous Overleaf package pinned to official ACL style"
+    state: DONE
+    evidence:
+      - scripts/build_overleaf_package.py
+      - tests/test_build_overleaf_package.py
+      - paper/README.md
+  - id: a100_campaign
+    label: "Guarded staged A100 campaign runner with explicit human-review stops"
+    state: DONE
+    evidence:
+      - scripts/a100_campaign_linux.sh
+      - docs/A100_EXECUTION.md
+      - tests/test_pilot_script_contract.py
   - id: submission_readiness_gate
     label: "Final ARR gate separating historical experiment provenance from a clean submission checkout"
     state: DONE

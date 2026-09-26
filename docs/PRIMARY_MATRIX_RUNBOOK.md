@@ -1,60 +1,85 @@
 # Primary matrix runbook
 
-The full primary matrix is intentionally impossible to plan until the integration
-gates are complete.
+The full primary matrix is intentionally impossible to plan until the frozen
+experiment commit, integration gates, scorer gates, and readiness gate all pass.
+The order below is part of the reproducibility protocol.
 
-## 1. Pass the integration readiness gate
+## 1. Freeze one clean experiment commit, CPU verification, and immutable revisions
 
-Required artifacts:
+Do this **before** model parity. The same git commit must anchor CPU verification,
+the revision ledger, and all three primary-model parity artifacts.
 
-- LLaDA exact parity PASS;
-- SDAR exact parity PASS;
-- Dream exact parity PASS;
-- LLaDA + GSM8K 50-example pilot quality PASS;
-- human pilot-review attestation PASS.
+Windows preferred path:
 
-Then:
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
+```
+
+Linux/macOS equivalent:
+
+```bash
+bash scripts/verify_cpu.sh
+python scripts/resolve_experiment_revisions.py
+```
+
+Do not change tracked experiment code between those commands. The revision
+resolver requires Hugging Face access to all frozen primary assets, including
+GPQA. It writes:
+
+- `results/revision_ledger.json` with protocol
+  `trajuq_revision_ledger_v2`;
+- the experiment git commit;
+- hashes of the primary config and dataset manifest;
+- immutable model and dataset SHAs;
+- hash-bound model configs under `results/frozen_models/`.
+
+If any repository cannot be resolved, stop rather than substituting a moving
+branch or a different benchmark source.
+
+## 2. Pass the pre-primary execution gates at that frozen commit
+
+Required execution evidence includes:
+
+- `results/cpu_verification.json` = clean PASS at the ledger git commit;
+- LLaDA exact parity v3 = PASS on exactly 20 shared prompts;
+- LLaDA + GSM8K 50-example calibration pilot quality = PASS;
+- human review of at least 10 pilot trajectories = PASS;
+- SDAR exact parity v3 = PASS on exactly 20 shared prompts;
+- Dream exact parity v3 = PASS on exactly 20 shared prompts;
+- automatic MATH-500 symbolic scorer audit = PASS;
+- calibration-only MATH-500 manual scorer review of at least 25 examples = PASS.
+
+Every parity-v3 artifact must match the revision-ledger git commit and the
+ledger-resolved model SHA. Do not regenerate the ledger after seeing parity or
+pilot outcomes merely to make an artifact pass.
+
+For the first LLaDA path on Windows:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
+```
+
+Then complete the required human pilot attestation, SDAR/Dream parity protocols,
+and MATH-500 scorer review using their dedicated runbooks.
+
+## 3. Run the primary readiness hard gate
+
+Only after the preceding artifacts exist:
 
 ```bash
 python scripts/primary_readiness.py
 ```
 
+Readiness protocol v2 rejects stale or mixed provenance. In particular it
+requires the clean CPU artifact and every parity artifact to share the
+revision-ledger git commit, requires each parity model revision to equal the
+ledger SHA, and requires exactly 20 shared parity prompts.
+
 Do not continue unless `results/primary_readiness.json` says `PASS`.
 
-## 2. Freeze exact model and dataset revisions without editing tracked templates
-
-Preferred one-command resolver:
-
-```bash
-python scripts/resolve_experiment_revisions.py
-```
-
-This resolves all three primary model repositories and all six dataset
-repositories to immutable Hugging Face SHAs, writes
-`results/revision_ledger.json`, and creates artifact-local model configs under
-`results/frozen_models/`. It writes no frozen configs if any repository fails
-to resolve. GPQA is gated, so authenticate to Hugging Face before running this
-command.
-
-The lower-level per-model route remains available when debugging:
-
-Example:
-
-```bash
-python scripts/resolve_hf_revision.py \
-  --repo-type model \
-  --repo-id inclusionAI/LLaDA-MoE-7B-A1B-Instruct \
-  --output results/llada_model_revision.json
-
-python scripts/freeze_model_config.py \
-  --template configs/models/llada.yaml \
-  --revision <EXACT_LLADA_SHA> \
-  --output results/frozen_models/llada.yaml
-```
-
-Repeat for `sdar` and `dream`.
-
-## 3. Prepare all dataset snapshots
+## 4. Prepare all dataset snapshots
 
 Use the exact dataset SHAs from `results/revision_ledger.json` and prepare each
 pair:
@@ -68,7 +93,7 @@ python scripts/prepare_eval_pair.py \
 The planner will reject a split manifest whose `requested_revision` is empty.
 GPQA remains gated and must be accessed under its upstream terms.
 
-## 4. Build, inspect, and archive the execution plan
+## 5. Build, inspect, and archive the execution plan
 
 ```bash
 python scripts/plan_primary_matrix.py
@@ -82,7 +107,7 @@ The planner **does not execute GPU work**. This is deliberate: inspect and archi
 `results/primary_matrix_plan.json` together with the freeze manifests before
 launching expensive runs.
 
-## 5. Execute without mutation
+## 6. Execute without mutation
 
 The preferred resumable executor is:
 
@@ -118,7 +143,7 @@ After cell-level metrics are exported, use `scripts/aggregate_cells.py` for the
 hierarchical equal-cell-weight macro analysis.
 
 
-## 6. Adaptive second-pass plan
+## 7. Adaptive second-pass plan
 
 The full-budget primary outputs double as the refined-budget artifacts for RQ3.
 After the primary execution plan is frozen, generate the separate low-budget
@@ -153,7 +178,7 @@ continuation cost formula unless a future runtime genuinely resumes the same
 denoising trajectory.
 
 
-## 7. Freeze the primary analysis plan
+## 8. Freeze the primary analysis plan
 
 After all 18 calibration/test pairs are generated, audited, and scored, create
 the analysis command ledger:
@@ -191,7 +216,7 @@ The executor refuses to overwrite partial or invalid result pairs. It writes
 log so analysis progress remains recoverable after interruption.
 
 
-## 8. Freeze the expensive repeated-sampling plan
+## 9. Freeze the expensive repeated-sampling plan
 
 After the primary matrix and primary-analysis plans are frozen, create the
 five-sample baseline ledger:
@@ -211,7 +236,7 @@ the plan's `aggregate_repeated_baseline.py` command. This full-matrix comparator
 secondary baseline rather than the pre-registered RQ1 endpoint.
 
 
-## 9. Execute the five-sample comparator resumably
+## 10. Execute the five-sample comparator resumably
 
 After the repeated-sampling plan is frozen, use:
 
@@ -234,7 +259,7 @@ automatically. The executor writes
 The full macro is run only after all 18 cells are complete.
 
 
-## 10. Execute the adaptive RQ3 matrix resumably
+## 11. Execute the adaptive RQ3 matrix resumably
 
 After `results/adaptive_matrix_plan.json` is frozen, use:
 

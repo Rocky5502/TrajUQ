@@ -316,6 +316,81 @@ def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
     assert any("input hash differs from plan" in item for item in failures)
 
 
+def test_validate_plan_provenance_rejects_split_binding_drift(
+    tmp_path,
+    monkeypatch,
+):
+    primary = tmp_path / "primary.yaml"
+    readiness = tmp_path / "readiness.json"
+    ledger = tmp_path / "revision_ledger.json"
+    model = tmp_path / "llada.yaml"
+    split_manifest = tmp_path / "split_manifest.json"
+    split_audit = tmp_path / "split_audit.json"
+    cal = tmp_path / "cal.jsonl"
+    test = tmp_path / "test.jsonl"
+    for path in (
+        primary,
+        readiness,
+        ledger,
+        model,
+        split_manifest,
+        split_audit,
+        cal,
+        test,
+    ):
+        path.write_text("frozen\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_head",
+        lambda: "frozen-commit",
+    )
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_status_porcelain",
+        lambda: "",
+    )
+    plan = {
+        "protocol": "trajuq_primary_matrix_plan_v2",
+        "experiment_git_commit": "frozen-commit",
+        "primary_config": str(primary),
+        "primary_config_sha256": hashlib.sha256(primary.read_bytes()).hexdigest(),
+        "readiness": str(readiness),
+        "readiness_sha256": hashlib.sha256(readiness.read_bytes()).hexdigest(),
+        "revision_ledger": str(ledger),
+        "revision_ledger_sha256": hashlib.sha256(ledger.read_bytes()).hexdigest(),
+        "model_configs": {
+            "llada": {
+                "path": str(model),
+                "sha256": hashlib.sha256(model.read_bytes()).hexdigest(),
+            }
+        },
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "split_manifest": str(split_manifest),
+                "split_manifest_sha256": hashlib.sha256(
+                    split_manifest.read_bytes()
+                ).hexdigest(),
+                "split_audit": str(split_audit),
+                "split_audit_sha256": hashlib.sha256(
+                    split_audit.read_bytes()
+                ).hexdigest(),
+                "calibration": {
+                    "input": str(cal),
+                    "input_sha256": hashlib.sha256(cal.read_bytes()).hexdigest(),
+                },
+                "test": {
+                    "input": str(test),
+                    "input_sha256": hashlib.sha256(test.read_bytes()).hexdigest(),
+                },
+            }
+        ],
+    }
+
+    split_audit.write_text("mutated\n", encoding="utf-8")
+    failures = validate_plan_provenance(plan)
+    assert any("split_audit hash differs from plan" in item for item in failures)
+
+
 def test_audit_passes_rejects_other_commit(tmp_path):
     artifact = tmp_path / "run.raw.jsonl"
     write_artifact(artifact)

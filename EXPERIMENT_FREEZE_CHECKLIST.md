@@ -19,9 +19,17 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] Adaptive policy and matched-compute comparison frozen.
 
 ## Model/runtime integrity
-- [ ] Exact model and tokenizer revision recorded.
+- [ ] One clean experiment git commit selected before GPU parity.
+- [ ] `results/cpu_verification.json` is PASS on that exact commit.
+- [ ] `results/revision_ledger.json` is protocol `trajuq_revision_ledger_v2` and PASS on that exact commit.
+- [ ] Primary config and dataset-manifest hashes match the revision ledger.
+- [ ] Exact model/tokenizer and dataset SHAs are recorded in the revision ledger.
+- [ ] Frozen model-config hashes match the revision ledger.
 - [ ] Exact upstream runtime commit recorded where applicable.
 - [ ] Mask ID / special-token assumptions audited.
+- [ ] LLaDA, SDAR, and Dream parity artifacts are protocol `trajuq_exact_parity_v3`.
+- [ ] Every primary parity artifact covers exactly 20 shared prompts with zero output/provenance mismatches.
+- [ ] Every primary parity artifact matches the revision-ledger git commit and model SHA.
 - [ ] Pilot output matches the exact state whose trajectory was logged.
 - [ ] Precision, CUDA, PyTorch, Transformers, and GPU recorded.
 
@@ -52,8 +60,15 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] Every paper number maps to a frozen result artifact and code commit.
 
 
-## Pilot automation artifacts
-- [ ] `results/llada_parity.json` reports PASS.
-- [ ] `results/llada_gsm8k_pilot50_gate.json` reports PASS.
+## Pre-primary automation artifacts
+- [ ] `results/cpu_verification.json` reports clean PASS.
+- [ ] `results/revision_ledger.json` reports protocol-v2 PASS.
+- [ ] `results/llada_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
+- [ ] `results/sdar_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
+- [ ] `results/dream_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
+- [ ] `results/llada_gsm8k_pilot50_gate.json` reports PASS for exactly 50 raw/scored records.
 - [ ] `results/llada_gsm8k_pilot50_trace_review.md` manually reviewed.
 - [ ] At least 10 trajectory traces checked for logging/parsing plausibility.
+- [ ] `results/math500_scorer_audit.json` reports PASS.
+- [ ] `results/math500_scorer_manual_review.json` reports PASS after >=25 calibration-only examples.
+- [ ] `results/primary_readiness.json` reports protocol `trajuq_primary_readiness_v2` and PASS.

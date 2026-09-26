@@ -163,3 +163,31 @@ def test_linux_math500_wrapper_is_guarded():
     assert "review %s" in text
     assert "will not overwrite evidence" in text
     assert "rm -f" not in text
+
+
+def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    assert "require_clean_frozen_checkout" in text
+    assert "trajuq_revision_ledger_v2" in text
+    assert "trajuq_primary_readiness_v2" in text
+    assert "scripts/pilot_linux.sh prepare" in text
+    assert "scripts/pilot_linux.sh parity" in text
+    assert "scripts/pilot_linux.sh pilot" in text
+    assert "STOP FOR HUMAN REVIEW" in text
+    assert "trajuq_pilot_manual_gate_v2" in text
+    assert "scripts/parity_remaining_linux.sh all" in text
+    assert "scripts/math500_gate_linux.sh prepare" in text
+    assert "scripts/math500_gate_linux.sh pilot" in text
+    assert "STOP FOR HUMAN MATH-500 REVIEW" in text
+    assert "scripts/plan_primary_matrix.py" in text
+    assert "scripts/execute_primary_plan.py --execute" in text
+    assert "scripts/plan_primary_analysis.py" in text
+    assert "scripts/execute_primary_analysis.py --execute" in text
+    assert "scripts/plan_repeated_sampling.py" in text
+    assert "scripts/execute_repeated_sampling.py --execute" in text
+    assert "scripts/plan_adaptive_runs.py" in text
+    assert "scripts/execute_adaptive_plan.py --execute" in text
+    assert "scripts/render_results_tex.py" in text
+    assert "scripts/render_paper_result_figures.py" in text
+    assert "all-after-readiness" in text

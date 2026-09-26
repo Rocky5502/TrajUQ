@@ -129,3 +129,20 @@ baselines:
         - mmlu_pro
         - truthfulqa
       math500_clustering: pairwise_math_verify_connected_components_v1
+
+
+hybrid_diagnostic:
+  role: rq4_diagnostic_not_primary_endpoint
+  checkpoint_family: flare
+  require_same_checkpoint: true
+  calibration: logistic
+  features:
+    - exact_text_disagreement
+    - parsed_answer_available
+    - parsed_answer_disagreement
+    - token_metrics_available
+    - normalized_token_edit_distance
+    - token_common_prefix_fraction
+    - normalized_length_difference
+  correctness_source: external_benchmark_scorer
+  ar_path_is_ground_truth: false

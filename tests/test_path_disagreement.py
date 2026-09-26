@@ -31,3 +31,20 @@ def test_gsm8k_equivalent_numeric_surface_answers_agree():
     assert result.features["parsed_answer_available"] == 1.0
     assert result.features["parsed_answer_disagreement"] == 0.0
     assert result.features["token_metrics_available"] == 0.0
+
+
+
+def test_math500_symbolic_path_answers_agree():
+    import pytest
+
+    pytest.importorskip("math_verify")
+    result = compare_paths(
+        "x",
+        "math500",
+        r"FINAL: \frac{1}{2}",
+        r"FINAL: 0.5",
+        None,
+        None,
+    )
+    assert result.features["parsed_answer_available"] == 1.0
+    assert result.features["parsed_answer_disagreement"] == 0.0

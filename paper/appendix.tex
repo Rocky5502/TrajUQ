@@ -209,3 +209,20 @@ inside every cell, candidate and baseline retain the same sampled indices, and
 the resulting cell-level improvements are macro-averaged.  We additionally
 report the number of cells with positive, zero, and negative point improvement
 so that a macro gain cannot hide systematic regressions.
+
+
+\section{Hybrid AR/Diffusion Diagnostic}
+
+For the FLARE/HybridDiffusion extension, AR and diffusion outputs must originate
+from the same immutable checkpoint revision and identical prompts.
+The pre-outcome join records exact-text disagreement, conservative parsed-answer
+disagreement, normalized token edit distance, token common-prefix fraction, and
+normalized length difference. MATH-500 parsed answers use the pinned symbolic
+equivalence relation.
+
+A logistic diagnostic is fitted on the calibration partition to predict the
+externally scored diffusion-answer error from these disagreement features.
+We report held-out discrimination, calibration, risk--coverage behavior, and
+the descriptive error-rate difference between parsed-answer agreement and
+disagreement groups. Neither the AR path nor path agreement is treated as
+ground truth, and this analysis does not enter the primary RQ1 claim gate.

@@ -30,6 +30,21 @@ def index(path: str) -> dict[str, dict]:
     return result
 
 
+def checkpoint_identity(row: dict) -> tuple[str | None, str | None]:
+    generation_meta = row.get("generation", {}).get("metadata", {})
+    row_meta = row.get("metadata", {})
+    model = row.get("model") or generation_meta.get("model_id") or row_meta.get("model_id")
+    revision = (
+        generation_meta.get("model_revision")
+        or row_meta.get("model_revision")
+        or row.get("model_revision")
+    )
+    return (
+        None if model is None else str(model),
+        None if revision is None else str(revision),
+    )
+
+
 def generation(row: dict) -> tuple[str, list[int] | None]:
     gen = row.get("generation", row)
     text = str(gen.get("text", ""))
@@ -45,6 +60,11 @@ def main() -> None:
     parser.add_argument("--diffusion", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--dataset", default=None)
+    parser.add_argument(
+        "--require-checkpoint-metadata",
+        action="store_true",
+        help="Require both paths to expose identical model id and immutable revision.",
+    )
     args = parser.parse_args()
 
     ar_path = Path(args.ar)
@@ -76,6 +96,22 @@ def main() -> None:
             if ar_prompt_hash and diff_prompt_hash and ar_prompt_hash != diff_prompt_hash:
                 raise SystemExit(f"Prompt-hash mismatch for {item_id}")
 
+            ar_model, ar_revision = checkpoint_identity(ar_row)
+            diff_model, diff_revision = checkpoint_identity(diff_row)
+            if args.require_checkpoint_metadata:
+                if not ar_model or not diff_model or not ar_revision or not diff_revision:
+                    raise SystemExit(
+                        f"Missing same-checkpoint metadata for {item_id}: "
+                        f"ar=({ar_model},{ar_revision}) diffusion=({diff_model},{diff_revision})"
+                    )
+            if ar_model and diff_model and ar_model != diff_model:
+                raise SystemExit(f"Model-id mismatch for {item_id}: {ar_model} != {diff_model}")
+            if ar_revision and diff_revision and ar_revision != diff_revision:
+                raise SystemExit(
+                    f"Model-revision mismatch for {item_id}: "
+                    f"{ar_revision} != {diff_revision}"
+                )
+
             dataset = args.dataset or ar_row.get("dataset") or diff_row.get("dataset") or "unknown"
             ar_text, ar_ids = generation(ar_row)
             diff_text, diff_ids = generation(diff_row)
@@ -93,6 +129,18 @@ def main() -> None:
                     "diffusion_source_sha256": diff_hash,
                     "prompt_sha256": ar_prompt_hash or diff_prompt_hash,
                     "contains_correctness_label": False,
+                    "ar_model_id": ar_model,
+                    "diffusion_model_id": diff_model,
+                    "ar_model_revision": ar_revision,
+                    "diffusion_model_revision": diff_revision,
+                    "same_checkpoint_verified": bool(
+                        ar_model
+                        and diff_model
+                        and ar_revision
+                        and diff_revision
+                        and ar_model == diff_model
+                        and ar_revision == diff_revision
+                    ),
                 }
             )
             f.write(json.dumps(diagnostic, ensure_ascii=False, sort_keys=True) + "\n")

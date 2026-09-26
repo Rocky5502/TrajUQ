@@ -77,7 +77,32 @@ python scripts/join_hybrid_paths.py \
   --ar runs/hybrid_ar.raw.jsonl \
   --diffusion runs/hybrid_diffusion.raw.jsonl \
   --output runs/hybrid_path_disagreement.jsonl \
-  --dataset gsm8k
+  --dataset gsm8k \
+  --require-checkpoint-metadata
 ```
 
 The joiner refuses ID mismatches and prompt-hash mismatches (when hashes are available). It computes exact-text disagreement, parsed-answer disagreement where a conservative parser exists, normalized token edit distance, common-prefix fraction, and length difference. It writes **no correctness labels**.
+
+
+## Held-out RQ4 evaluation
+
+After calibration/test AR and diffusion outputs are frozen and the diffusion
+path has been scored externally, evaluate whether same-checkpoint path
+disagreement is associated with diffusion-answer error:
+
+```bash
+python scripts/evaluate_hybrid_diagnostic.py \
+  --cal-target runs/flare_cal.scored.jsonl \
+  --cal-diagnostic runs/flare_cal.path_disagreement.jsonl \
+  --test-target runs/flare_test.scored.jsonl \
+  --test-diagnostic runs/flare_test.path_disagreement.jsonl \
+  --require-same-checkpoint \
+  --output results/flare_rq4_hybrid.json \
+  --predictions-output results/flare_rq4_hybrid.predictions.jsonl
+```
+
+The logistic diagnostic is fit on calibration data only. The report includes
+held-out AUROC/AUPRC/calibration/selective-risk metrics and a descriptive
+agreement-versus-disagreement error-rate split. This analysis is explicitly
+secondary/RQ4 diagnostic evidence and is never substituted for the primary
+three-family RQ1 endpoint.

@@ -4,7 +4,12 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from .scoring import extract_choice, extract_final_field, extract_number
+from .scoring import (
+    extract_choice,
+    extract_final_field,
+    extract_number,
+    math500_equivalent,
+)
 
 
 DISAGREEMENT_SCHEMA_VERSION = "trajuq-path-disagreement-v1"
@@ -48,6 +53,14 @@ def _candidate_answer(dataset: str, text: str) -> str | None:
     # Keep answer extraction conservative for open-ended/symbolic tasks. We do
     # not attempt mathematical equivalence here.
     return re.sub(r"\s+", " ", target).strip()
+
+
+def _answers_disagree(dataset: str, left: str | None, right: str | None) -> bool:
+    if left is None or right is None:
+        return False
+    if dataset.lower() == "math500":
+        return not math500_equivalent(left, right)
+    return left != right
 
 
 def _levenshtein(a: list[int], b: list[int]) -> int:
@@ -95,9 +108,7 @@ def compare_paths(
         "exact_text_disagreement": float(ar_norm != diff_norm),
         "parsed_answer_available": float(ar_answer is not None and diff_answer is not None),
         "parsed_answer_disagreement": float(
-            ar_answer is not None
-            and diff_answer is not None
-            and ar_answer != diff_answer
+            _answers_disagree(dataset, ar_answer, diff_answer)
         ),
     }
 
@@ -130,8 +141,8 @@ def compare_paths(
         "ar_candidate_answer": ar_answer,
         "diffusion_candidate_answer": diff_answer,
         "answer_semantics": (
-            "surface/parsed-answer disagreement only; AR is not ground truth and "
-            "symbolic equivalence is not inferred"
+            "parsed-answer disagreement; MATH-500 uses pinned symbolic equivalence, "
+            "other tasks use frozen conservative parsers; AR is never ground truth"
         ),
     }
     return PathDisagreement(

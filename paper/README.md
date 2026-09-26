@@ -31,7 +31,7 @@ Keep the main scientific content within 8 pages. Limitations, optional ethics, r
 
 ## Static audit
 
-During development:
+During development (this also checks citation-key integrity, duplicate labels, and missing LaTeX references):
 
     python scripts/audit_paper.py
 

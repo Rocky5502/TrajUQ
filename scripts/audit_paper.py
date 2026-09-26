@@ -76,6 +76,58 @@ def main() -> None:
     if re.search(r"\\author\{(?!Anonymous ACL Submission\})", main):
         failures.append("non-anonymous author declaration detected")
 
+    citation_keys: set[str] = set()
+    for match in re.finditer(
+        r"\\cite(?:t|p|alp|author|year|yearpar)?\*?(?:\[[^\]]*\])?(?:\[[^\]]*\])?\{([^}]+)\}",
+        main + "\n" + appendix,
+    ):
+        citation_keys.update(
+            key.strip()
+            for key in match.group(1).split(",")
+            if key.strip()
+        )
+
+    bib_keys = re.findall(
+        r"(?m)^\s*@\w+\s*\{\s*([^,\s]+)\s*,",
+        bib,
+    )
+    duplicate_bib_keys = sorted(
+        key for key in set(bib_keys) if bib_keys.count(key) > 1
+    )
+    if duplicate_bib_keys:
+        failures.append(
+            f"duplicate bibliography keys: {duplicate_bib_keys}"
+        )
+
+    bib_key_set = set(bib_keys)
+    missing_citations = sorted(citation_keys - bib_key_set)
+    if missing_citations:
+        failures.append(
+            f"citation keys missing from references.bib: {missing_citations}"
+        )
+    unused_bib = sorted(bib_key_set - citation_keys)
+    if unused_bib:
+        warnings.append(
+            f"unused bibliography entries: {unused_bib}"
+        )
+
+    labels = re.findall(r"\\label\{([^}]+)\}", main + "\n" + appendix)
+    duplicate_labels = sorted(
+        label for label in set(labels) if labels.count(label) > 1
+    )
+    if duplicate_labels:
+        failures.append(f"duplicate LaTeX labels: {duplicate_labels}")
+
+    refs = set(
+        re.findall(
+            r"\\(?:ref|autoref|pageref)\{([^}]+)\}",
+            main + "\n" + appendix,
+        )
+    )
+    missing_labels = sorted(refs - set(labels))
+    if missing_labels:
+        failures.append(f"LaTeX references to missing labels: {missing_labels}")
+
     tbd_count = len(re.findall(r"\\tbd\b|\bTBD\b", all_text))
     if tbd_count:
         message = f"development placeholders remain: {tbd_count}"
@@ -91,6 +143,8 @@ def main() -> None:
         "status": "PASS" if not failures else "FAIL",
         "submission_ready_mode": bool(args.submission_ready),
         "tbd_count": tbd_count,
+        "citation_count": len(citation_keys),
+        "bibliography_entry_count": len(bib_keys),
         "warnings": warnings,
         "failures": failures,
     }

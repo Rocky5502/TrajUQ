@@ -27,3 +27,17 @@ The TBD cells are development placeholders only. Before submission, every placeh
 ## Main-page budget
 
 Keep the main scientific content within 8 pages. Limitations, optional ethics, references, and appendices follow the current ARR rules and should remain in the same PDF. Run the official ACL pubcheck before submission.
+
+
+## Static audit
+
+During development:
+
+    python scripts/audit_paper.py
+
+Immediately before ARR submission:
+
+    python scripts/audit_paper.py --submission-ready
+
+Submission-ready mode fails if any TBD placeholder remains, in addition to the
+anonymity and structural checks.

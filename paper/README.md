@@ -29,6 +29,12 @@ The committed `generated_results.tex` is a pre-results fallback containing TBD m
 
 The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation macro, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation macros, and emits `paper/generated_results_manifest.json` with SHA-256 bindings to six sources: primary, RQ1 gate, repeated sampling, feature ablations, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim.
 
+After all three adaptive-cap macros exist, also run:
+
+    python scripts/render_paper_result_figures.py
+
+This writes three vector PDFs plus `paper/figures/generated/result_figure_manifest.json` protocol v2. The manifest binds the primary/config/adaptive sources and each PDF hash; the appendix includes those figures conditionally, and final submission readiness rejects stale or missing figure evidence.
+
 ## Main-page budget
 
 Keep the main scientific content within 8 pages. Limitations, optional ethics, references, and appendices follow the current ARR rules and should remain in the same PDF. Run the official ACL pubcheck before submission.
@@ -63,8 +69,9 @@ After all frozen results are rendered, run:
     python scripts/submission_readiness.py
 
 This requires every **required** project execution gate to be PASS, verifies
-that the result-render manifest still hashes to the exact source artifacts,
-runs the manuscript audit in submission-ready mode, and rebuilds the
+that the result-render and result-figure manifests still hash to their exact
+source artifacts/outputs, runs the manuscript audit in submission-ready mode,
+and rebuilds the
 deterministic anonymous software supplement. It records the supplement SHA-256
 in `results/submission_readiness.json`.
 

@@ -27,3 +27,10 @@ def test_local_cpu_verifier_matches_ci_dependency_scope():
     text = Path("scripts/verify_cpu.ps1").read_text(encoding="utf-8")
     assert '".[dev,math]"' in text
     assert "audit_paper.py" in text
+
+
+def test_preprimary_freeze_exports_private_handoff():
+    text = Path("scripts/freeze_preprimary_windows.ps1").read_text(encoding="utf-8")
+    assert "scripts/export_research_handoff.py" in text
+    assert "dist/trajuq_preprimary_handoff.zip" in text
+    assert "--skip-status-refresh" in text

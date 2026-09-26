@@ -32,10 +32,20 @@ def build_adapter(
             mask_id=mask_id,
             revision=revision,
         )
-    if name in {"sdar", "flare"}:
+    if name == "sdar":
+        from trajuq.adapters.sdar import SDARAdapter
+
+        return SDARAdapter(
+            model,
+            device=device,
+            dtype=dtype,
+            mask_id=mask_id,
+            revision=revision,
+        )
+    if name == "flare":
         raise SystemExit(
-            f"{name} is intentionally an upstream integration boundary. "
-            "Instrument/parity-test the pinned upstream runtime before primary runs."
+            "flare remains an upstream integration boundary until the "
+            "HybridDiffusion telemetry/parity gate is complete."
         )
     raise SystemExit(f"Unknown adapter: {name}")
 
@@ -55,6 +65,16 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--block-length", type=int, default=128)
     parser.add_argument("--mask-id", type=int, default=None)
+    parser.add_argument("--sdar-denoising-steps", type=int, default=4)
+    parser.add_argument("--sdar-temperature", type=float, default=0.0)
+    parser.add_argument("--sdar-top-k", type=int, default=0)
+    parser.add_argument("--sdar-top-p", type=float, default=1.0)
+    parser.add_argument(
+        "--sdar-remasking-strategy",
+        choices=["sequential", "low_confidence_static", "low_confidence_dynamic"],
+        default="low_confidence_dynamic",
+    )
+    parser.add_argument("--sdar-confidence-threshold", type=float, default=0.85)
     args = parser.parse_args()
 
     rows = list(read_jsonl(args.input))
@@ -97,6 +117,19 @@ def main() -> None:
                 seed=args.seed,
                 steps=args.steps,
                 max_new_tokens=args.max_new_tokens,
+            )
+        elif args.adapter == "sdar":
+            result = adapter.generate(
+                prompt,
+                seed=args.seed,
+                gen_length=args.max_new_tokens,
+                block_length=args.block_length,
+                denoising_steps=args.sdar_denoising_steps,
+                temperature=args.sdar_temperature,
+                top_k=args.sdar_top_k,
+                top_p=args.sdar_top_p,
+                remasking_strategy=args.sdar_remasking_strategy,
+                confidence_threshold=args.sdar_confidence_threshold,
             )
         else:
             result = adapter.generate(

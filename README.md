@@ -80,7 +80,7 @@ TrajUQ/
 | Family | Public checkpoint | Role | Integration state |
 |---|---|---|---|
 | LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | pilot adapter; GPU parity audit required |
-| SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | pinned upstream boundary; telemetry integration next |
+| SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | instrumented pilot adapter; on-GPU upstream parity required |
 | Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | hook-based pilot adapter; GPU audit required |
 | FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | upstream boundary; noncommercial upstream terms |
 
@@ -240,6 +240,26 @@ python scripts/evaluate_adaptive.py \
   --refined-compute 128
 ```
 
+## SDAR pilot
+
+The repository includes an instrumented SDAR adapter based on the pinned MIT upstream block-diffusion generator. It is **not yet cleared for paper numbers**: first run the parity protocol in `docs/SDAR_INSTRUMENTATION.md`.
+
+Example after pinning an exact model revision:
+
+```bash
+python scripts/run_generation.py \
+  --adapter sdar \
+  --model JetLM/SDAR-1.7B-Chat \
+  --revision <EXACT_MODEL_COMMIT> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/sdar_gsm8k_pilot.raw.jsonl \
+  --limit 50 \
+  --max-new-tokens 128 \
+  --block-length 4 \
+  --sdar-denoising-steps 4 \
+  --sdar-temperature 0
+```
+
 ## Scientific guardrails
 
 1. **No invented results.**
@@ -257,7 +277,7 @@ python scripts/evaluate_adaptive.py \
 The repository tracks the remaining gates as GitHub issues:
 
 - GPU pilot / 50-item gate;
-- SDAR telemetry parity;
+- SDAR telemetry parity (adapter implemented; GPU parity still open);
 - FLARE/HybridDiffusion diagnostic parity;
 - Dream hook parity;
 - MATH-500 symbolic scorer;

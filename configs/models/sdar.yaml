@@ -7,7 +7,16 @@ dtype: bfloat16
 upstream:
   repository: JetAstra/SDAR
   commit: 4c2749ba103448f45520e8411533710a1e66574d
-status: integration_boundary
+status: pilot_adapter_implemented_parity_pending
 notes:
-  - Public checkpoint exists, but TrajUQ primary results are blocked until the pinned upstream block-diffusion loop is instrumented and parity-tested.
-  - Capture predictive state before token transfer/remasking and state after each denoising step.
+  - TrajUQ now contains an instrumented pilot adapter derived from the pinned MIT upstream generation loop.
+  - Primary-paper use remains blocked until deterministic on-GPU parity against the pinned upstream generator passes.
+generation:
+  gen_length: 128
+  block_length: 4
+  denoising_steps: 4
+  temperature: 0.0
+  top_k: 0
+  top_p: 1.0
+  remasking_strategy: low_confidence_dynamic
+  confidence_threshold: 0.85

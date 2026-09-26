@@ -1,39 +1,68 @@
-# SDAR instrumentation plan
+# SDAR instrumentation and parity gate
 
-Primary SDAR results are currently blocked until the pinned upstream runtime is instrumented and parity-tested.
+Selected checkpoint: `JetLM/SDAR-1.7B-Chat`.
 
 Pinned upstream integration reference:
-
 - repository: `JetAstra/SDAR`
 - commit: `4c2749ba103448f45520e8411533710a1e66574d`
-- selected checkpoint: `JetLM/SDAR-1.7B-Chat`
+- upstream generator: `block_diffusion_generate`
 
-The public generator's core loop is `block_diffusion_generate`. TrajUQ telemetry should be attached without changing token-selection semantics.
+TrajUQ now contains `src/trajuq/adapters/sdar.py`, an instrumented research adapter derived from that MIT-licensed inference loop. Telemetry is collected from predictive logits **before token transfer** so the logger does not use outcome information.
 
-## Hook points
+## What must remain identical in the parity audit
 
-For every denoising iteration in the active block:
-
-1. obtain the upstream logits exactly as the normal generator does;
-2. compute/log trajectory statistics **before** sampling/transfer;
-3. run the unchanged upstream sampler;
-4. apply the unchanged confidence/remasking transfer rule;
-5. log the resulting block state if needed for commitment/revision bookkeeping.
-
-The adapter must preserve:
-- attention mask construction;
+- chat template and tokenization;
+- mask token id;
+- block-aligned attention mask;
 - position IDs;
-- KV-cache behavior;
-- number of transfer tokens;
-- confidence threshold semantics;
-- stopping criteria.
+- prefill boundary and `DynamicCache` behavior;
+- transfer-token counts;
+- sampling/remasking rule;
+- confidence threshold;
+- stopping criteria;
+- model/checkpoint revision.
 
-## Parity test
+## Telemetry semantics
 
-With telemetry disabled versus enabled, on the same checkpoint/config/seed:
-- decoded output must match for deterministic settings;
-- number of model forward calls must match;
-- token-transfer decisions must match;
-- timing differences may occur but generation semantics must not.
+SDAR denoises one active block at a time. TrajUQ computes the standard trajectory feature dictionary within each generated block and then token-weights those block summaries into an example-level record. `entropy_max` and `margin_min` preserve max/min semantics; `trajectory_steps` is summed.
 
-Only after this parity gate should SDAR move from `integration_boundary` to a runnable primary adapter.
+This block-local definition is explicit because pretending SDAR exposes a whole-sequence denoising state would be scientifically incorrect.
+
+## Required parity experiment
+
+Use one frozen checkpoint revision and 20 non-test prompts.
+
+1. Run the pinned upstream generator with a deterministic configuration.
+2. Run TrajUQ with telemetry on and otherwise identical settings.
+3. Compare:
+   - decoded token IDs;
+   - generated text;
+   - number of model forward evaluations;
+   - block transfer decisions (temporary debug log);
+   - EOS stopping point.
+4. Require exact token equality for deterministic greedy decoding.
+5. For stochastic decoding, require equality under the same random seed after confirming both paths consume RNG identically; otherwise compare the deterministic condition for the hard parity gate.
+
+Primary-paper SDAR results are blocked until this passes.
+
+## Important difference from the upstream demo
+
+The public upstream helper always samples with `torch.multinomial`. TrajUQ also supports `temperature=0` as a deterministic **research control** using argmax. That mode is not claimed to be byte-for-byte identical to an upstream sampling run. For upstream parity, use an equivalent deterministic upstream configuration or add the same argmax control to a temporary local upstream copy and document it.
+
+## Pilot command
+
+```bash
+python scripts/run_generation.py \
+  --adapter sdar \
+  --model JetLM/SDAR-1.7B-Chat \
+  --revision <EXACT_MODEL_REVISION> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/sdar_parity_pilot.raw.jsonl \
+  --limit 20 \
+  --max-new-tokens 128 \
+  --block-length 4 \
+  --sdar-denoising-steps 4 \
+  --sdar-temperature 0
+```
+
+Then run `scripts/audit_run.py --stage raw --require-revision`.

@@ -9,3 +9,8 @@ TrajUQ code is MIT licensed. This repository does **not** relicense model weight
 - **Benchmarks** — GSM8K, MATH-500, GPQA, ARC, MMLU-Pro, and TruthfulQA are downloaded from upstream sources. Their cards/licenses/terms control redistribution and use.
 
 Always re-check exact upstream terms and revisions before public artifact release.
+
+
+## SDAR adapter attribution
+
+`src/trajuq/adapters/sdar.py` follows and modifies the block-diffusion inference structure published in `JetAstra/SDAR` at commit `4c2749ba103448f45520e8411533710a1e66574d`. The inspected upstream repository is MIT licensed. TrajUQ adds telemetry, revision pinning, deterministic-greedy support for research controls, and its own output schema. The selected checkpoint `JetLM/SDAR-1.7B-Chat` is governed by its model-card terms (Apache-2.0 at the inspected revision).

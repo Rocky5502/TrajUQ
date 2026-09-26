@@ -79,6 +79,7 @@ def validate_plan_provenance(
     for key, hash_key in (
         ("primary_config", "primary_config_sha256"),
         ("readiness", "readiness_sha256"),
+        ("revision_ledger", "revision_ledger_sha256"),
     ):
         path = Path(str(plan.get(key, "")))
         expected_hash = plan.get(hash_key)
@@ -96,17 +97,29 @@ def validate_plan_provenance(
             failures.append(f"{adapter}: frozen model config hash differs from plan")
 
     for cell in plan.get("cells", []):
+        label = str(cell.get("cell", "<unknown>"))
+        for key, hash_key in (
+            ("split_manifest", "split_manifest_sha256"),
+            ("split_audit", "split_audit_sha256"),
+        ):
+            path = Path(str(cell.get(key, "")))
+            expected_hash = cell.get(hash_key)
+            if not path.exists() or not expected_hash:
+                failures.append(f"{label}: bound {key} is missing")
+            elif sha256_file(path) != expected_hash:
+                failures.append(f"{label}: {key} hash differs from plan")
+
         for partition in ("calibration", "test"):
             spec = cell.get(partition, {})
             path = Path(str(spec.get("input", "")))
             expected_hash = spec.get("input_sha256")
             if not path.exists() or not expected_hash:
                 failures.append(
-                    f"{cell.get('cell')} {partition}: bound input is missing"
+                    f"{label} {partition}: bound input is missing"
                 )
             elif sha256_file(path) != expected_hash:
                 failures.append(
-                    f"{cell.get('cell')} {partition}: input hash differs from plan"
+                    f"{label} {partition}: input hash differs from plan"
                 )
     return failures
 

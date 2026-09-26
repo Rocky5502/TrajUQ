@@ -146,8 +146,8 @@ hierarchical equal-cell-weight macro analysis.
 ## 7. Adaptive second-pass plan
 
 The full-budget primary outputs double as the refined-budget artifacts for RQ3.
-After the primary execution plan is frozen, generate the separate low-budget
-base-run plan:
+After all 18 refined primary scored artifacts and their audits exist, generate
+the separate low-budget base-run plan:
 
 ```bash
 python scripts/plan_adaptive_runs.py
@@ -162,12 +162,17 @@ The frozen budgets are:
 | SDAR | 2 denoising steps/block | 4 denoising steps/block |
 
 The primary selection cap is 50%; 25% and 75% are pre-registered sensitivity
-settings. The v2 planner emits all three evaluation commands for every one of
+settings. The v3 planner emits all three evaluation commands for every one of
 the 18 model--dataset cells and exports per-example adaptive decisions. After
 all cells are complete, run the plan's `aggregate_adaptive.py` command for
 `cap_050`, then the two sensitivity commands for `cap_025` and `cap_075`.
 Each macro result uses equal cell weight and a paired within-cell hierarchical
 bootstrap.
+
+Adaptive plan protocol v3 SHA-binds the frozen primary plan/config, every
+calibration/test prompt input, every refined scored artifact, and each scored
+audit. `execute_adaptive_plan.py` revalidates those bindings before any low-budget
+GPU work, so a changed refined artifact cannot silently enter RQ3.
 
 Selected examples use the conservative **second-pass rerun** semantics: the base
 run is always paid and the refined run is an additional complete generation.
@@ -187,10 +192,12 @@ the analysis command ledger:
 python scripts/plan_primary_analysis.py
 ```
 
-This writes `results/primary_analysis_plan.json`. For every model--dataset
-cell it freezes commands for the calibrated baseline/TrajUQ metrics, paired
-nested bootstrap comparison, frozen feature-family ablations, and the
-training-free raw-risk diagnostic.
+This writes `results/primary_analysis_plan.json`. Protocol v2 requires every
+scored calibration/test artifact and its audit to be present and current, then
+SHA-binds those inputs together with the frozen primary plan/config and experiment
+commit. For every model--dataset cell it freezes commands for the calibrated
+baseline/TrajUQ metrics, paired nested bootstrap comparison, frozen
+feature-family ablations, and the training-free raw-risk diagnostic.
 
 Only after **all 18** cell analyses exist should the plan's macro aggregation
 command be executed. The macro command rejects selective cell omission. Run the
@@ -211,23 +218,26 @@ python scripts/execute_primary_analysis.py --cell llada:gsm8k --execute
 python scripts/execute_primary_analysis.py --execute
 ```
 
-The executor refuses to overwrite partial or invalid result pairs. It writes
-`results/primary_analysis_execution_state.json` and a chronological event
-log so analysis progress remains recoverable after interruption.
+The executor first revalidates the plan-bound primary plan/config, scored inputs,
+and scored-audit hashes, then refuses to overwrite partial or invalid result
+pairs. It writes `results/primary_analysis_execution_state.json` and a
+chronological event log so analysis progress remains recoverable after interruption.
 
 
 ## 9. Freeze the expensive repeated-sampling plan
 
-After the primary matrix and primary-analysis plans are frozen, create the
-five-sample baseline ledger:
+After primary analysis has produced the complete 18-cell TrajUQ prediction
+artifacts, create the five-sample baseline ledger:
 
 ```bash
 python scripts/plan_repeated_sampling.py
 ```
 
-The frozen comparator now covers all 18 cells. MATH-500 sample votes use
-reference-free pairwise Math-Verify equivalence clustering instead of string
-matching. The plan fixes five seeds
+The frozen comparator now covers all 18 cells. Repeated-sampling plan protocol
+v2 SHA-binds the primary plan, primary-analysis plan, primary config, prompt
+partitions, scored targets/audits, and per-cell TrajUQ prediction artifacts before
+auxiliary generation. MATH-500 sample votes use reference-free pairwise
+Math-Verify equivalence clustering instead of string matching. The plan fixes five seeds
 (2027--2031), temperature 0.2, model revision, prompt partitions, and all
 adapter-specific generation settings.
 
@@ -251,10 +261,11 @@ python scripts/execute_repeated_sampling.py --cell llada:gsm8k --execute
 python scripts/execute_repeated_sampling.py --execute
 ```
 
-Each five-seed generation command uses `--resume-verified`: an existing seed
-is reused only when its raw audit is PASS and the audit SHA-256 matches the
-current artifact. Unverified partial artifacts are never overwritten
-automatically. The executor writes
+Before any five-seed generation, the executor revalidates every upstream
+SHA-bound artifact recorded by repeated-sampling plan protocol v2. Each
+five-seed generation command then uses `--resume-verified`: an existing seed is
+reused only when its raw audit is PASS and the audit SHA-256 matches the current
+artifact. Unverified partial artifacts are never overwritten automatically. The executor writes
 `results/repeated_sampling_execution_state.json` and an append-only event log.
 The full macro is run only after all 18 cells are complete.
 

@@ -10,6 +10,7 @@ from scripts.submission_readiness import (
     preprimary_revalidation_argv,
     verify_downstream_provenance,
     verify_generated_results,
+    verify_result_figures,
     verify_submission_checkout,
 )
 
@@ -463,3 +464,102 @@ def test_submission_prerequisites_still_block_other_required_gate():
     }
     failures = prerequisite_gate_failures(snapshot)
     assert [item["id"] for item in failures] == ["primary"]
+
+
+def test_result_figure_manifest_hash_gate_passes(tmp_path):
+    source_paths = {}
+    for name in ("primary", "primary_config", "cap_025", "cap_050", "cap_075"):
+        path = tmp_path / f"{name}.json"
+        path.write_text('{"ok":true}\n', encoding="utf-8")
+        source_paths[name] = path
+
+    outputs = {}
+    for name in (
+        "primary_auroc_matrix",
+        "family_macro_auroc",
+        "adaptive_tradeoff",
+    ):
+        path = tmp_path / f"{name}.pdf"
+        path.write_bytes(b"%PDF-1.4\nsynthetic-test\n")
+        outputs[name] = path
+
+    manifest = tmp_path / "result_figure_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_paper_result_figures_v2",
+                "expected_cells": 18,
+                "sources": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                    }
+                    for name, path in source_paths.items()
+                },
+                "outputs": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                        "bytes": path.stat().st_size,
+                    }
+                    for name, path in outputs.items()
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = verify_result_figures(manifest)
+    assert result["status"] == "PASS"
+
+
+def test_result_figure_manifest_rejects_pdf_tampering(tmp_path):
+    source_paths = {}
+    for name in ("primary", "primary_config", "cap_025", "cap_050", "cap_075"):
+        path = tmp_path / f"{name}.json"
+        path.write_text('{"ok":true}\n', encoding="utf-8")
+        source_paths[name] = path
+
+    outputs = {}
+    for name in (
+        "primary_auroc_matrix",
+        "family_macro_auroc",
+        "adaptive_tradeoff",
+    ):
+        path = tmp_path / f"{name}.pdf"
+        path.write_bytes(b"%PDF-1.4\nsynthetic-test\n")
+        outputs[name] = path
+
+    manifest = tmp_path / "result_figure_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_paper_result_figures_v2",
+                "expected_cells": 18,
+                "sources": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                    }
+                    for name, path in source_paths.items()
+                },
+                "outputs": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                        "bytes": path.stat().st_size,
+                    }
+                    for name, path in outputs.items()
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    outputs["adaptive_tradeoff"].write_bytes(b"%PDF-1.4\ntampered\n")
+
+    result = verify_result_figures(manifest)
+    assert result["status"] == "FAIL"
+    assert any(
+        "result figure hash changed: adaptive_tradeoff" in item
+        for item in result["failures"]
+    )

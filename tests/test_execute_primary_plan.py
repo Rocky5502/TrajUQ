@@ -100,6 +100,10 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
         "scripts.execute_primary_plan.git_head",
         lambda: "frozen-commit",
     )
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_status_porcelain",
+        lambda: "",
+    )
     plan = {
         "protocol": "trajuq_primary_matrix_plan_v2",
         "experiment_git_commit": "frozen-commit",
@@ -129,6 +133,13 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
     }
 
     assert validate_plan_provenance(plan) == []
+
+    monkeypatch.setattr(
+        "scripts.execute_primary_plan.git_status_porcelain",
+        lambda: " M scripts/run_generation.py",
+    )
+    failures = validate_plan_provenance(plan)
+    assert any("worktree is dirty" in item for item in failures)
 
 
 def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):

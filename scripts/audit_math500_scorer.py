@@ -29,6 +29,18 @@ def git_head() -> str | None:
         return None
 
 
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
 EXPECTED_MATH_VERIFY_VERSION = "0.9.0"
 EXPECTED_ANTLR_VERSION = "4.13.2"
 
@@ -138,12 +150,22 @@ def main() -> None:
     failures.extend(dependency_failures(observed_dependencies))
 
     commit = git_head()
+    clean = git_clean()
     if not commit:
         failures.append({"kind": "environment", "reason": "git_commit_unavailable"})
+    if clean is not True:
+        failures.append(
+            {
+                "kind": "environment",
+                "reason": "git_worktree_not_clean",
+                "git_clean": clean,
+            }
+        )
 
     payload = {
         "protocol": "trajuq_math500_scorer_audit_v2",
         "git_commit": commit,
+        "git_clean": clean,
         "dependency": "math-verify[antlr4_13_2]==0.9.0",
         "dependency_versions": {
             "math-verify": observed_dependencies["math-verify"],

@@ -80,6 +80,15 @@ def test_bundle_is_deterministic_for_same_state(tmp_path, monkeypatch):
     assert first.read_bytes() == second.read_bytes()
 
 
+def test_bundle_rejects_missing_required_context(tmp_path, monkeypatch):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(handoff, "git_value", fake_git_value)
+    (root / "NEW_CHAT_MASTER_PROMPT.md").unlink()
+
+    with pytest.raises(ValueError, match="required handoff context missing"):
+        handoff.build_handoff(root, root / "dist" / "handoff.zip")
+
+
 def test_bundle_rejects_secret_like_token(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     monkeypatch.setattr(handoff, "git_value", fake_git_value)

@@ -29,13 +29,15 @@ def load_json(path: Path) -> dict:
 
 def primary_orders(config_path: Path) -> tuple[list[str], list[str]]:
     cfg = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    adapters: list[str] = []
-    for model_path in cfg["models"]["primary"]:
-        model_cfg = yaml.safe_load(
-            Path(model_path).read_text(encoding="utf-8")
-        )
-        adapters.append(str(model_cfg["adapter"]))
+    adapters = [
+        Path(str(model_path)).stem
+        for model_path in cfg["models"]["primary"]
+    ]
+    if not adapters or len(adapters) != len(set(adapters)):
+        raise ValueError("Primary model-config path stems are empty or duplicated.")
     datasets = [str(name) for name in cfg["datasets"]]
+    if not datasets or len(datasets) != len(set(datasets)):
+        raise ValueError("Primary dataset order is empty or duplicated.")
     return adapters, datasets
 
 

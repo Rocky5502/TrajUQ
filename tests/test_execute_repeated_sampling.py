@@ -16,13 +16,20 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def write_raw(path: Path) -> None:
+def write_raw(path: Path, *, commit: str = "frozen-commit") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text('{"example_id":"x"}\n', encoding="utf-8")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     path.with_suffix(path.suffix + ".audit.json").write_text(
         json.dumps(
-            {"status": "PASS", "stage": "raw", "sha256": digest}
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": "raw",
+                "sha256": digest,
+            }
         ),
         encoding="utf-8",
     )
@@ -134,7 +141,10 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
     scored_audit.write_text(
         json.dumps(
             {
+                "protocol": "trajuq_run_audit_v1",
                 "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
                 "stage": "scored",
                 "sha256": _sha256(scored),
             }
@@ -192,3 +202,9 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
     )
     failures = validate_plan_provenance(plan)
     assert any("TrajUQ predictions hash drifted" in item for item in failures)
+
+
+def test_repeated_raw_audit_rejects_other_commit(tmp_path):
+    path = tmp_path / "seed.raw.jsonl"
+    write_raw(path, commit="other-commit")
+    assert not audit_passes(path, "frozen-commit")

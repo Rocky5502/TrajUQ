@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import scripts.execute_primary_analysis as execute_primary_analysis
+from trajuq.features import FROZEN_FEATURE_GROUPS
 from scripts.execute_primary_analysis import (
     execution_snapshot,
     output_valid,
@@ -70,14 +71,21 @@ def test_semantic_output_rejects_truncated_predictions(tmp_path):
 def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
     cal = tmp_path / "calibration.scored.jsonl"
     test = tmp_path / "test.scored.jsonl"
-    cal.write_text('{"example_id":"c"}\n', encoding="utf-8")
-    test.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    cal.write_text(
+        '{"example_id":"c","correct":true}\n',
+        encoding="utf-8",
+    )
+    test.write_text(
+        '{"example_id":"x","correct":false}\n',
+        encoding="utf-8",
+    )
 
     outputs = {
         "metrics": tmp_path / "metrics.json",
         "predictions": tmp_path / "predictions.jsonl",
         "nested_bootstrap": tmp_path / "nested.json",
         "feature_ablation": tmp_path / "ablation.json",
+        "feature_ablation_predictions": tmp_path / "ablation_predictions.jsonl",
         "raw_risk_diagnostic": tmp_path / "raw.json",
     }
     outputs["metrics"].write_text(
@@ -116,11 +124,35 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
             {
                 "protocol": "frozen_feature_family_ablation_v1",
                 "baseline": "decision_only",
+                "group_order": list(FROZEN_FEATURE_GROUPS),
                 "n_calibration": 1,
                 "n_test": 1,
-                "groups": {"decision_only": {}},
+                "groups": {
+                    name: {}
+                    for name in FROZEN_FEATURE_GROUPS
+                },
+                "paired_improvements_vs_decision_only": {
+                    name: {}
+                    for name in FROZEN_FEATURE_GROUPS
+                    if name != "decision_only"
+                },
             }
         ),
+        encoding="utf-8",
+    )
+    outputs["feature_ablation_predictions"].write_text(
+        json.dumps(
+            {
+                "example_id": "x",
+                "y_error": 1,
+                "correct": False,
+                "p_error_by_group": {
+                    name: 0.5
+                    for name in FROZEN_FEATURE_GROUPS
+                },
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     outputs["raw_risk_diagnostic"].write_text(
@@ -135,6 +167,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
     )
 
     macro = tmp_path / "macro.json"
+    ablation_macro = tmp_path / "ablation_macro.json"
     claim = tmp_path / "claim.json"
     plan = {
         "status": "PASS",
@@ -153,6 +186,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         ],
         "final_outputs": {
             "macro_primary": str(macro),
+            "macro_feature_ablation": str(ablation_macro),
             "rq1_claim_gate": str(claim),
         },
     }
@@ -180,6 +214,29 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                         "risk50",
                         "risk80",
                     )
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    ablation_macro.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_feature_ablation_macro_v1",
+                "baseline": "decision_only",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "groups": {
+                    name: {
+                        "metrics": {
+                            "auroc": {},
+                            "auprc": {},
+                            "aurc": {},
+                        }
+                    }
+                    for name in FROZEN_FEATURE_GROUPS
+                    if name != "decision_only"
                 },
             }
         ),
@@ -370,3 +427,40 @@ def test_analysis_provenance_rejects_audit_from_other_commit(
 
     failures = validate_plan_provenance(plan)
     assert any("clean frozen scored PASS" in item for item in failures)
+
+
+def test_feature_ablation_prediction_semantics_reject_group_drift(tmp_path):
+    cal = tmp_path / "cal.jsonl"
+    test = tmp_path / "test.jsonl"
+    pred = tmp_path / "ablation_predictions.jsonl"
+    cal.write_text(
+        '{"example_id":"c","correct":true}\n',
+        encoding="utf-8",
+    )
+    test.write_text(
+        '{"example_id":"t","correct":false}\n',
+        encoding="utf-8",
+    )
+    pred.write_text(
+        json.dumps(
+            {
+                "example_id": "t",
+                "y_error": 1,
+                "correct": False,
+                "p_error_by_group": {"decision_only": 0.5},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    cell = {
+        "inputs": {
+            "calibration": {"path": str(cal)},
+            "test": {"path": str(test)},
+        }
+    }
+    assert not semantic_output_valid(
+        cell,
+        "feature_ablation_predictions",
+        pred,
+    )

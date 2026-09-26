@@ -57,8 +57,8 @@ particular, the following are implemented and versioned:
   config hashes, immutable model/data SHAs, and frozen model-config hashes;
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
-- PowerShell and Bash CPU-verification entry points plus a one-command Windows
-  pre-primary freeze wrapper;
+- PowerShell and Bash CPU-verification entry points plus one-command strict
+  pre-primary freeze wrappers for Windows and Linux/macOS;
 - a guarded Windows parity wrapper for SDAR/Dream that consumes the frozen
   revision ledger, enforces a clean matching checkout, preserves valid PASS
   artifacts, and refuses ambiguous partial evidence;
@@ -215,11 +215,11 @@ PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 Linux/macOS:
 
 ~~~bash
-bash scripts/verify_cpu.sh
-python scripts/resolve_experiment_revisions.py
+bash scripts/freeze_preprimary.sh
 ~~~
 
-Do not change commits between those commands. Then follow
+Both freeze wrappers enforce one clean experiment commit and export the private
+pre-primary handoff. Then follow
 docs/PILOT_RUNBOOK.md for the first GPU gate and
 docs/PRIMARY_MATRIX_RUNBOOK.md after readiness passes.
 

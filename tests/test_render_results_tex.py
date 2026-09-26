@@ -23,6 +23,8 @@ def primary():
             "improvement_ci_low": 0.01,
             "improvement_ci_high": 0.10,
         }
+    metrics["auroc"]["positive_model_families"] = 3
+    metrics["auroc"]["n_model_families"] = 3
     return {
         "cell_set_complete": True,
         "expected_cell_count": 18,
@@ -33,6 +35,7 @@ def primary():
 
 def claim(supported: bool = True):
     return {
+        "protocol": "trajuq_rq1_claim_gate_v1",
         "decision": (
             "SUPPORT_POSITIVE_RQ1_CLAIM"
             if supported
@@ -105,3 +108,10 @@ def test_result_renderer_rejects_partial_primary_matrix():
 def test_result_renderer_uses_narrow_language_when_claim_gate_fails():
     macros = build_macros(primary(), claim(False), repeated(), adaptive())
     assert "not met" in macros["AbstractResultSentence"]
+
+
+def test_result_renderer_rejects_contradictory_claim_flag_and_decision():
+    payload = claim(True)
+    payload["decision"] = "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"
+    with pytest.raises(ValueError, match="contradicts"):
+        build_macros(primary(), payload, repeated(), adaptive())

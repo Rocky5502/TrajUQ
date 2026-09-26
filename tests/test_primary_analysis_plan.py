@@ -149,3 +149,13 @@ def test_primary_macro_aggregator_requires_frozen_test_coverage():
     assert "validate_plan_provenance(analysis_plan)" in text
     assert "predictions do not exactly cover the frozen" in text
     assert "scored test target" in text
+
+
+def test_primary_analysis_plan_wires_ablation_predictions_and_macro():
+    text = Path("scripts/plan_primary_analysis.py").read_text(encoding="utf-8")
+
+    assert '"--predictions-output"' in text
+    assert "feature_ablation_predictions.jsonl" in text
+    assert "aggregate_feature_ablation.py" in text
+    assert "macro_feature_ablation.json" in text
+    assert '"feature_ablation_macro_argv"' in text

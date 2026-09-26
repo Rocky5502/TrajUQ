@@ -123,12 +123,22 @@ def write_parity(
     *,
     commit: str = EXPERIMENT_COMMIT,
 ) -> None:
+    reference = path.with_name(path.stem + ".reference.jsonl")
+    instrumented = path.with_name(path.stem + ".instrumented.jsonl")
+    reference.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    instrumented.write_text('{"example_id":"x"}\n', encoding="utf-8")
+
     write_json(
         path,
         {
             "protocol": "trajuq_exact_parity_v3",
             "status": "PASS",
             "git_commit": commit,
+            "git_clean": True,
+            "reference": str(reference),
+            "reference_sha256": sha256_file(reference),
+            "instrumented": str(instrumented),
+            "instrumented_sha256": sha256_file(instrumented),
             "require_token_ids": True,
             "require_provenance": True,
             "mismatch_count": 0,
@@ -411,3 +421,30 @@ def test_primary_readiness_rejects_math_dependency_version_drift(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("automatic scorer audit" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_mutated_parity_source(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    parity = json.loads(
+        Path(case["parity"]["llada"]).read_text(encoding="utf-8")
+    )
+    Path(parity["instrumented"]).write_text(
+        '{"example_id":"tampered"}\n',
+        encoding="utf-8",
+    )
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash-bound evidence" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_dirty_parity_artifact(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    parity_path = Path(case["parity"]["llada"])
+    parity = json.loads(parity_path.read_text(encoding="utf-8"))
+    parity["git_clean"] = False
+    write_json(parity_path, parity)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash-bound evidence" in item for item in result["failures"])

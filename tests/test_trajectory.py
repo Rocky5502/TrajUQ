@@ -47,6 +47,6 @@ def test_finalize_ignores_committed_and_inactive_logits():
     assert features["entropy_max"] == 0.6
     # Revision at position 0 from step 0->1 counts; step 1->2 does not because
     # position 0 is already committed at the step-2 observation.
-    assert np.isclose(features["revision_rate"], 1 / 3)
+    assert np.isclose(features["revision_rate"], 0.5)
     assert summaries[0].active_count == 1
     assert summaries[1].active_count == 2

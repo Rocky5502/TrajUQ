@@ -36,6 +36,7 @@ def main() -> None:
     )
 
     payload = {
+        "protocol": "trajuq_raw_risk_diagnostic_v1",
         "risk_version": RAW_RISK_VERSION,
         "n": len(rows),
         "comparison": "raw_trajectory_risk_minus_decision_entropy",

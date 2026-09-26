@@ -12,6 +12,17 @@ import yaml
 from scripts.evaluate_rq1_claim_gate import evaluate_gate
 
 
+ABLATION_SUFFIXES = {
+    "decision_plus_distribution": "Distribution",
+    "decision_plus_stability": "Stability",
+    "decision_plus_persistence": "Persistence",
+    "full": "Full",
+    "full_without_js": "NoJS",
+    "full_without_revisions": "NoRevisions",
+    "full_without_persistence": "NoPersistence",
+}
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -152,6 +163,42 @@ def require_repeated(repeated: dict) -> None:
         float(node["candidate_macro"])
 
 
+def require_ablation(ablation: dict) -> None:
+    if ablation.get("protocol") != "trajuq_feature_ablation_macro_v1":
+        raise ValueError("Feature-ablation macro protocol is not recognized.")
+    if ablation.get("baseline") != "decision_only":
+        raise ValueError("Feature-ablation baseline is not decision_only.")
+    if ablation.get("cell_set_complete") is not True:
+        raise ValueError("Feature-ablation macro cell set is incomplete.")
+    if int(ablation.get("expected_cells", -1)) != 18:
+        raise ValueError("Feature-ablation expected cell count is not 18.")
+    if int(ablation.get("observed_cells", -1)) != 18:
+        raise ValueError("Feature-ablation observed cell count is not 18.")
+    groups = ablation.get("groups", {})
+    if set(groups) != set(ABLATION_SUFFIXES):
+        raise ValueError("Feature-ablation group set differs from frozen contract.")
+    for group in ABLATION_SUFFIXES:
+        metrics = groups[group].get("metrics", {})
+        for metric in ("auroc", "auprc", "aurc"):
+            node = metrics.get(metric)
+            if not isinstance(node, dict):
+                raise ValueError(
+                    f"Feature-ablation group={group} missing metric={metric}"
+                )
+            for key in (
+                "candidate_macro",
+                "baseline_macro",
+                "improvement_macro",
+                "improvement_ci_low",
+                "improvement_ci_high",
+            ):
+                value = float(node[key])
+                if not math.isfinite(value):
+                    raise ValueError(
+                        f"Feature-ablation {group}/{metric}/{key} is non-finite."
+                    )
+
+
 def require_adaptive(adaptive: dict) -> None:
     if adaptive.get("protocol") != "trajuq_adaptive_macro_v1":
         raise ValueError("Adaptive macro protocol is not recognized.")
@@ -195,12 +242,14 @@ def build_macros(
     primary: dict,
     claim: dict,
     repeated: dict,
+    ablation: dict,
     adaptive: dict,
     primary_cfg: dict | None = None,
 ) -> dict[str, str]:
     require_primary(primary)
     require_claim_gate(claim, primary, primary_cfg)
     require_repeated(repeated)
+    require_ablation(ablation)
     require_adaptive(adaptive)
 
     macros: dict[str, str] = {}
@@ -229,6 +278,25 @@ def build_macros(
     macros["RepeatedAuxWallTime"] = (
         f'{float(repeated["auxiliary_compute"]["mean_test_auxiliary_wall_time_seconds_per_example"]):.2f}'
     )
+
+    for group, suffix in ABLATION_SUFFIXES.items():
+        metrics = ablation["groups"][group]["metrics"]
+        auroc = metrics["auroc"]
+        macros[f"Ablation{suffix}AUROCDelta"] = fmt_signed(
+            auroc["improvement_macro"]
+        )
+        macros[f"Ablation{suffix}AUROCLow"] = fmt_signed(
+            auroc["improvement_ci_low"]
+        )
+        macros[f"Ablation{suffix}AUROCHigh"] = fmt_signed(
+            auroc["improvement_ci_high"]
+        )
+        macros[f"Ablation{suffix}AUPRCDelta"] = fmt_signed(
+            metrics["auprc"]["improvement_macro"]
+        )
+        macros[f"Ablation{suffix}AURCDelta"] = fmt_signed(
+            metrics["aurc"]["improvement_macro"]
+        )
 
     a = adaptive["macro"]
     macros.update(
@@ -324,6 +392,10 @@ def main() -> None:
         default="results/repeated_sampling/macro_trajuq_vs_repeated.json",
     )
     parser.add_argument(
+        "--ablation",
+        default="results/primary_analysis/macro_feature_ablation.json",
+    )
+    parser.add_argument(
         "--adaptive",
         default="results/adaptive/macro_cap_050.json",
     )
@@ -341,6 +413,7 @@ def main() -> None:
         "primary": Path(args.primary),
         "claim_gate": Path(args.claim_gate),
         "repeated": Path(args.repeated),
+        "ablation": Path(args.ablation),
         "adaptive": Path(args.adaptive),
     }
     payloads = {
@@ -357,6 +430,7 @@ def main() -> None:
         payloads["primary"],
         payloads["claim_gate"],
         payloads["repeated"],
+        payloads["ablation"],
         payloads["adaptive"],
         primary_cfg,
     )

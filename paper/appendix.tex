@@ -1,6 +1,6 @@
 \section{Appendix Overview}
 
-The appendix contains the complete pre-results experimental contract.
+The appendix records the complete frozen experimental contract and supplementary analyses.
 It is intentionally detailed so that model-specific implementation choices cannot be changed silently after test outcomes are observed.
 
 \section{Trajectory Telemetry Contract}
@@ -110,7 +110,7 @@ TruthfulQA & frozen internal holdout & frozen internal holdout\\
 MATH-500 & frozen internal holdout & frozen internal holdout\\
 \bottomrule
 \end{tabular}
-\caption{Planned split roles. Internal holdouts are created before model calls.}
+\caption{Frozen split roles. Internal holdouts are created before model calls.}
 \end{table}
 
 All prepared example IDs are namespaced as
@@ -205,9 +205,9 @@ Every reported number must be associated with:
 \item raw and scored artifact SHA-256 hashes.
 \end{itemize}
 
-\section{Planned Result Tables}
+\section{Supplementary Result Contract}
 
-The final appendix will contain:
+The appendix reports the following analyses when their corresponding frozen artifacts exist:
 per-model/per-dataset uncertainty metrics;
 calibration sensitivity;
 feature-family ablations;
@@ -235,7 +235,7 @@ so that a macro gain cannot hide systematic regressions.
 \section{Additional Aggregate Result Figures}
 
 The following figures are generated only from complete frozen aggregate artifacts.
-They are conditionally included so the pre-results manuscript remains compilable before the experiment artifacts exist.
+They are conditionally included so the same frozen source remains compilable before and after result artifacts are produced.
 
 \IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
 \begin{figure*}[t]

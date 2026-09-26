@@ -60,11 +60,20 @@ def make_render_sources(tmp_path):
         },
     }
     repeated = {
-        "protocol": "trajuq_vs_repeated_macro_v1",
+        "protocol": "trajuq_vs_repeated_macro_v2",
         "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
         "cell_set_complete": True,
         "expected_cells": 18,
         "observed_cells": 18,
+        "auxiliary_compute": {
+            "aggregation": "equal_cell_weight_macro",
+            "expected_cells": 18,
+            "observed_cells_with_complete_test_wall_time": 18,
+            "complete": True,
+            "sample_count": 5,
+            "mean_test_auxiliary_wall_time_seconds_per_example": 12.34,
+            "mean_test_p90_auxiliary_wall_time_seconds_per_example": 15.67,
+        },
         "macro": {
             "auroc": {"baseline_macro": 0.58, "candidate_macro": 0.61},
             "auprc": {"baseline_macro": 0.48, "candidate_macro": 0.51},

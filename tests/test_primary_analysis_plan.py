@@ -1,6 +1,10 @@
 import hashlib
 import json
-from scripts.plan_primary_analysis import audit_passes, main as analysis_main
+from scripts.plan_primary_analysis import (
+    audit_passes,
+    exact_id_coverage,
+    main as analysis_main,
+)
 
 
 def test_primary_analysis_planner_imports():
@@ -33,3 +37,45 @@ def test_primary_analysis_requires_frozen_scored_audit(tmp_path):
     payload["git_clean"] = False
     audit.write_text(json.dumps(payload), encoding="utf-8")
     assert not audit_passes(scored, "frozen-commit")
+
+
+def test_primary_analysis_requires_exact_frozen_input_coverage(tmp_path):
+    source = tmp_path / "calibration.jsonl"
+    scored = tmp_path / "calibration.scored.jsonl"
+    source.write_text(
+        '{"id":"a"}\n{"id":"b"}\n',
+        encoding="utf-8",
+    )
+    scored.write_text(
+        '{"example_id":"a"}\n',
+        encoding="utf-8",
+    )
+
+    assert not exact_id_coverage(source, scored)
+
+    scored.write_text(
+        '{"example_id":"a"}\n{"example_id":"b"}\n',
+        encoding="utf-8",
+    )
+    assert exact_id_coverage(source, scored)
+
+
+def test_primary_analysis_rejects_reordered_or_duplicate_ids(tmp_path):
+    source = tmp_path / "test.jsonl"
+    scored = tmp_path / "test.scored.jsonl"
+    source.write_text(
+        '{"id":"a"}\n{"id":"b"}\n',
+        encoding="utf-8",
+    )
+
+    scored.write_text(
+        '{"example_id":"b"}\n{"example_id":"a"}\n',
+        encoding="utf-8",
+    )
+    assert not exact_id_coverage(source, scored)
+
+    scored.write_text(
+        '{"example_id":"a"}\n{"example_id":"a"}\n',
+        encoding="utf-8",
+    )
+    assert not exact_id_coverage(source, scored)

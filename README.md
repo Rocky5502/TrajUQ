@@ -272,7 +272,7 @@ A native no-hook reference runner is provided for the Dream parity gate. See `do
 
 The pinned upstream runtime already exposes a JSONL trace switch. TrajUQ parses it without modifying/vendoring the SGLang server. See `docs/FLARE_INSTRUMENTATION.md` and `scripts/convert_hybrid_trace.py`.
 
-The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vocabulary entropy and stays an RQ4 diagnostic unless a parity-safe full-logit summary is added.
+The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vocabulary entropy and stays an RQ4 diagnostic unless a parity-safe full-logit summary is added. Frozen same-checkpoint AR/diffusion outputs can be joined with `scripts/join_hybrid_paths.py`; the resulting disagreement features contain no correctness labels.
 
 ## Scientific guardrails
 

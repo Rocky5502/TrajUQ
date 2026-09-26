@@ -66,3 +66,18 @@ Store AR-path and diffusion-path answers separately with stable prompt IDs. Comp
 ## Licensing
 
 The inspected upstream release states HybridDiffusion-authored code/modifications/checkpoints use PolyForm Noncommercial 1.0.0, while third-party portions retain their own terms. Keep the runtime external and re-check exact terms before public artifact release.
+
+
+## Join frozen AR and diffusion outputs
+
+Once both paths have been exported with the same stable example IDs, create the pre-outcome disagreement artifact:
+
+```bash
+python scripts/join_hybrid_paths.py \
+  --ar runs/hybrid_ar.raw.jsonl \
+  --diffusion runs/hybrid_diffusion.raw.jsonl \
+  --output runs/hybrid_path_disagreement.jsonl \
+  --dataset gsm8k
+```
+
+The joiner refuses ID mismatches and prompt-hash mismatches (when hashes are available). It computes exact-text disagreement, parsed-answer disagreement where a conservative parser exists, normalized token edit distance, common-prefix fraction, and length difference. It writes **no correctness labels**.

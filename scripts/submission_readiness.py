@@ -302,7 +302,11 @@ def verify_result_figures(manifest_path: Path) -> dict:
 
     if manifest.get("protocol") != "trajuq_paper_result_figures_v2":
         failures.append("result-figure manifest protocol is not v2")
-    if int(manifest.get("expected_cells", -1)) != 18:
+    try:
+        expected_cells = int(manifest.get("expected_cells", -1))
+    except (TypeError, ValueError):
+        expected_cells = -1
+    if expected_cells != 18:
         failures.append("result-figure manifest expected cell count is not 18")
 
     required_sources = {
@@ -325,6 +329,9 @@ def verify_result_figures(manifest_path: Path) -> dict:
 
     for name in sorted(required_sources.intersection(sources)):
         source = sources[name]
+        if not isinstance(source, dict):
+            failures.append(f"result-figure source entry is invalid: {name}")
+            continue
         path = Path(str(source.get("path", "")))
         if not path.exists():
             failures.append(f"result-figure source missing: {name} -> {path}")
@@ -350,6 +357,9 @@ def verify_result_figures(manifest_path: Path) -> dict:
 
     for name in sorted(required_outputs.intersection(outputs)):
         item = outputs[name]
+        if not isinstance(item, dict):
+            failures.append(f"result-figure output entry is invalid: {name}")
+            continue
         path = Path(str(item.get("path", "")))
         if not path.exists():
             failures.append(f"result figure missing: {name} -> {path}")

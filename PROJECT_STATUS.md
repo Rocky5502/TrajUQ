@@ -46,7 +46,7 @@ particular, the following are implemented and versioned:
   bound to the frozen revision-ledger git commit and model SHA;
 - frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, configs, frozen model configs, and prepared dataset inputs;
 - pre-registered RQ1 positive-claim gate;
-- five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation;
+- five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation; repeated macro protocol v2 additionally requires complete test-time auxiliary wall-clock metadata in all 18 cells and carries an equal-cell-weight compute summary into artifact-derived paper rendering;
 - pinned MATH-500 symbolic scoring, commit-bound automatic audit with runtime
   dependency-version verification, deterministic calibration review-sheet
   export, a guarded calibration-only Windows pilot wrapper, and SHA-bound human
@@ -179,8 +179,10 @@ After readiness passes:
 10. freeze repeated-sampling plan protocol v2 after primary analysis predictions
     exist, then run the complete 18-cell five-sample comparator with
     scripts/execute_repeated_sampling.py; primary scored targets and every reused
-    seed require clean protocol-v1 audits from the frozen experiment commit, and
-    the generator/executor reject stale seed evidence;
+    seed require clean protocol-v1 audits from the frozen experiment commit, the
+    generator/executor reject stale seed evidence, and repeated macro protocol v2
+    refuses completion unless all 18 cells retain valid auxiliary wall-time
+    accounting;
 11. freeze adaptive plan protocol v3 after all refined primary scored artifacts
     have clean frozen-commit audits, then run RQ3 base-budget generations and all
     frozen 25/50/75% cap analyses with scripts/execute_adaptive_plan.py; refined

@@ -244,7 +244,10 @@ python scripts/execute_repeated_sampling.py --execute
 ```
 
 This executes the frozen five-seed (2027--2031) comparator over all 18 cells.
-Preserve compute accounting; do not report it as a free baseline.
+Repeated macro protocol v2 is fail-closed on compute accounting: every cell must
+retain valid test-time auxiliary wall-clock metadata, and the final artifact
+reports the equal-cell-weight mean extra seconds per example with target
+generation excluded. Do not report the comparator as a free baseline.
 
 ## 9. RQ3 adaptive compute
 

@@ -267,8 +267,34 @@ def build_case(
             },
         },
     )
+    math_scored = tmp_path / "runs" / "llada_math500_scorer_pilot.scored.jsonl"
+    math_scored.parent.mkdir(parents=True, exist_ok=True)
+    math_scored.write_text('{"example_id":"m"}\n', encoding="utf-8")
+    write_json(
+        math_scored.with_suffix(math_scored.suffix + ".audit.json"),
+        {
+            "status": "PASS",
+            "stage": "scored",
+            "sha256": sha256_file(math_scored),
+        },
+    )
+    math_input = tmp_path / "data" / "processed" / "math500" / "calibration.jsonl"
+    math_input.parent.mkdir(parents=True, exist_ok=True)
+    math_input.write_text('{"id":"m"}\n', encoding="utf-8")
     math_review_sheet = tmp_path / "math_review.md"
-    math_review_sheet.write_text("# reviewed math scorer examples\n", encoding="utf-8")
+    math_review_sheet.write_text(
+        "\n".join(
+            [
+                "# reviewed math scorer examples",
+                f"- scored artifact: {math_scored}",
+                f"- scored SHA-256: {sha256_file(math_scored)}",
+                f"- normalized input: {math_input}",
+                f"- input SHA-256: {sha256_file(math_input)}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     write_json(
         math_manual,
         {
@@ -281,6 +307,10 @@ def build_case(
             "automatic_audit_git_commit": EXPERIMENT_COMMIT,
             "review_sheet": str(math_review_sheet),
             "review_sheet_sha256": sha256_file(math_review_sheet),
+            "review_scored_artifact": str(math_scored),
+            "review_scored_sha256": sha256_file(math_scored),
+            "review_input": str(math_input),
+            "review_input_sha256": sha256_file(math_input),
             "reviewed_records": 25,
             "checks": {
                 "answer_extraction": True,
@@ -531,3 +561,16 @@ def test_primary_readiness_rejects_pilot_review_source_drift(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("human pilot-review gate" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_math_review_source_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    manual = json.loads(case["math_manual"].read_text(encoding="utf-8"))
+    Path(manual["review_scored_artifact"]).write_text(
+        '{"example_id":"tampered"}\n',
+        encoding="utf-8",
+    )
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("MATH-500 manual scorer review" in item for item in result["failures"])

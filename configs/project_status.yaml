@@ -78,7 +78,7 @@ implementation:
       - scripts/evaluate_rq1_claim_gate.py
       - tests/test_rq1_claim_gate.py
   - id: repeated_sampling
-    label: "Hash-bound five-sample baseline over the complete 18-cell matrix"
+    label: "Hash-bound five-sample baseline with complete 18-cell compute accounting"
     state: DONE
     evidence:
       - scripts/run_repeated_samples.py
@@ -282,7 +282,7 @@ execution_gates:
   - id: repeated_execution_complete
     label: "All 18 five-sample cells plus macro complete"
     stage: analysis
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, and from the frozen experiment commit."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, and from the frozen experiment commit. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan
@@ -312,10 +312,10 @@ execution_gates:
         - SUPPORT_POSITIVE_RQ1_CLAIM
         - DO_NOT_MAKE_POSITIVE_RQ1_CLAIM
   - id: repeated_macro
-    label: "Complete repeated-sampling 18-cell macro result"
+    label: "Complete repeated-sampling 18-cell macro result with compute accounting"
     stage: analysis
     artifact: results/repeated_sampling/macro_trajuq_vs_repeated.json
-    expect: {key: cell_set_complete, equals: true}
+    expect: {key: auxiliary_compute.complete, equals: true}
   - id: adaptive_macro
     label: "Complete adaptive primary-cap 18-cell macro result"
     stage: analysis

@@ -196,3 +196,16 @@ parity audits;
 runtime/memory overhead;
 and a failure taxonomy.
 No cell is populated without a corresponding immutable result artifact.
+
+
+\section{Cross-Cell Aggregation}
+
+Primary metrics are never computed by pooling examples from heterogeneous
+benchmarks.  For each model--dataset cell, the decision-entropy baseline and
+\method are evaluated on identical test examples.  A macro summary gives every
+cell equal weight.  Confidence intervals use a hierarchical paired bootstrap:
+within each replicate, examples are class-stratified and resampled independently
+inside every cell, candidate and baseline retain the same sampled indices, and
+the resulting cell-level improvements are macro-averaged.  We additionally
+report the number of cells with positive, zero, and negative point improvement
+so that a macro gain cannot hide systematic regressions.

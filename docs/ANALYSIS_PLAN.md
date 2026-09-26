@@ -63,7 +63,7 @@ Discrete AURC is the mean selective risk over the attainable empirical coverage 
 
 ## Confidence intervals and aggregation
 
-Use paired class-stratified bootstrap resampling over examples. For cross-dataset summaries, compute metrics within each dataset first and macro-average; do not pool heterogeneous tasks merely to obtain tighter confidence intervals.
+Use paired class-stratified bootstrap resampling over examples. For cross-model/cross-dataset summaries, compute each metric within every model--dataset cell and give cells equal macro weight. For confidence intervals, resample examples class-stratified within each cell on every bootstrap replicate and then macro-average the cell-level improvements. Do not pool heterogeneous tasks merely to obtain tighter confidence intervals. Report how many cells have positive, zero, and negative held-out improvement.
 
 ## Multiple seeds
 

@@ -299,7 +299,7 @@ python scripts/compare_methods.py \
   --n-boot 2000
 ```
 
-The primary nested comparison uses a strong per-token decision-time entropy baseline and paired class-stratified bootstrap intervals on identical examples. A separately reported repeated-sampling baseline is intentionally more expensive and must include its generation cost. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
+The primary nested comparison uses a strong per-token decision-time entropy baseline and paired class-stratified bootstrap intervals on identical examples. After all model-dataset cells are complete, use `scripts/aggregate_cells.py` to macro-average cells without pooling heterogeneous examples. A separately reported repeated-sampling baseline is intentionally more expensive and must include its generation cost. Positive deltas always mean the trajectory-augmented model is better; AURC is lower-is-better and is sign-normalized accordingly.
 
 ## RQ3: adaptive compute
 
@@ -387,3 +387,22 @@ Working title:
 > **When Diffusion Language Models Are Unsure: Trajectory-Aware Uncertainty for Selective and Adaptive Generation**
 
 The current manuscript is intentionally pre-experiment: numerical result cells remain TBD until traceable artifacts exist.
+
+
+## Cross-cell macro aggregation
+
+Once each model-dataset cell has exported held-out probabilities with
+`evaluate_run.py --predictions-output`, aggregate them with equal cell weight:
+
+```bash
+python scripts/aggregate_cells.py \
+  --cell llada_gsm8k=results/llada_gsm8k_predictions.jsonl \
+  --cell dream_gsm8k=results/dream_gsm8k_predictions.jsonl \
+  --cell sdar_gsm8k=results/sdar_gsm8k_predictions.jsonl \
+  --n-boot 2000 \
+  --output results/macro_primary.json
+```
+
+The bootstrap resamples examples within every cell, preserves pairing between
+TrajUQ and the decision-entropy baseline, then macro-averages cells. It does not
+pool examples from differently sized datasets.

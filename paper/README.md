@@ -41,3 +41,11 @@ Immediately before ARR submission:
 
 Submission-ready mode fails if any TBD placeholder remains, in addition to the
 anonymity and structural checks.
+
+
+## NAACL 2027 target
+
+The target is the ARR October 2026 cycle for NAACL 2027. The current official
+ARR deadline is **2026-10-12 (AoE)**. See `docs/NAACL2027_SUBMISSION.md` for the
+verified submission/anonymity/service checklist. The development repository
+must not be linked from the anonymous review PDF.

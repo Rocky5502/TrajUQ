@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +19,7 @@ def main() -> None:
         "--automatic-audit",
         default="results/math500_scorer_audit.json",
     )
+    parser.add_argument("--review-sheet", required=True)
     parser.add_argument("--reviewed-records", type=int, required=True)
     parser.add_argument("--answer-extraction-pass", action="store_true")
     parser.add_argument("--symbolic-equivalence-pass", action="store_true")
@@ -31,6 +33,12 @@ def main() -> None:
 
     failures: list[str] = []
     audit_path = Path(args.automatic_audit)
+    review_sheet = Path(args.review_sheet)
+    review_sheet_sha256 = None
+    if not review_sheet.exists():
+        failures.append(f"missing review sheet: {review_sheet}")
+    else:
+        review_sheet_sha256 = hashlib.sha256(review_sheet.read_bytes()).hexdigest()
     audit_status = None
     if not audit_path.exists():
         failures.append(f"missing automatic scorer audit: {audit_path}")
@@ -60,6 +68,8 @@ def main() -> None:
         "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
         "automatic_audit": str(audit_path),
         "automatic_audit_status": audit_status,
+        "review_sheet": str(review_sheet),
+        "review_sheet_sha256": review_sheet_sha256,
         "reviewed_records": int(args.reviewed_records),
         "checks": {
             "answer_extraction": bool(args.answer_extraction_pass),

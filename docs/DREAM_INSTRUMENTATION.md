@@ -58,7 +58,7 @@ python scripts/compare_run_parity.py \
   --output results/dream_parity.json
 ```
 
-The hard gate is exact token-ID equality for all 20 prompts under the deterministic condition.
+The hard gate is exact token-ID equality for all 20 prompts under the deterministic condition. The comparator emits `trajuq_exact_parity_v3`; primary readiness additionally requires exactly 20 shared records, uniform run provenance, the revision-ledger Dream SHA, and the same frozen experiment git commit.
 
 ## Manual telemetry audit
 

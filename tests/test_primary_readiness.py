@@ -139,26 +139,64 @@ def write_parity(
     )
 
 
-def write_common_gates(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
+def build_case(
+    tmp_path: Path,
+    models: tuple[str, ...] = ("llada", "sdar", "dream"),
+) -> dict:
+    config = tmp_path / "primary.yaml"
+    ledger = tmp_path / "ledger.json"
+    cpu = tmp_path / "cpu.json"
     quality = tmp_path / "quality.json"
     manual = tmp_path / "manual.json"
     math_audit = tmp_path / "math_audit.json"
     math_manual = tmp_path / "math_manual.json"
-    cpu = tmp_path / "cpu.json"
 
+    write_config(config, models)
+    revisions = write_revision_ledger(ledger, config, models)
+    write_cpu_pass(cpu)
+
+    parity: dict[str, str] = {}
+    for model in models:
+        parity_path = tmp_path / f"{model}_parity.json"
+        write_parity(parity_path, model, revisions[model])
+        parity[model] = str(parity_path)
+
+    raw = tmp_path / "pilot.raw.jsonl"
+    scored = tmp_path / "pilot.scored.jsonl"
+    raw.write_text('{"dummy":"raw"}\n', encoding="utf-8")
+    scored.write_text('{"dummy":"scored"}\n', encoding="utf-8")
     write_json(
         quality,
         {
+            "protocol": "trajuq_pilot_quality_gate_v2",
             "status": "PASS",
+            "git_commit": EXPERIMENT_COMMIT,
+            "raw": str(raw),
+            "raw_sha256": sha256_file(raw),
+            "scored": str(scored),
+            "scored_sha256": sha256_file(scored),
             "raw_records": 50,
             "scored_records": 50,
+            "adapters": ["llada"],
             "model_revisions": ["rev-llada"],
         },
     )
+
+    review_sheet = tmp_path / "pilot_review.md"
+    review_sheet.write_text("# reviewed pilot traces\n", encoding="utf-8")
+    llada_parity = Path(parity["llada"])
     write_json(
         manual,
         {
+            "protocol": "trajuq_pilot_manual_gate_v2",
             "status": "PASS",
+            "git_commit": EXPERIMENT_COMMIT,
+            "review_sheet": str(review_sheet),
+            "review_sheet_sha256": sha256_file(review_sheet),
+            "parity_artifact": str(llada_parity),
+            "parity_artifact_sha256": sha256_file(llada_parity),
+            "pilot_quality": str(quality),
+            "pilot_quality_sha256": sha256_file(quality),
             "reviewed_records": 10,
             "checks": {
                 "trajectory_semantics": True,
@@ -168,11 +206,29 @@ def write_common_gates(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
             },
         },
     )
-    write_json(math_audit, {"status": "PASS", "failure_count": 0})
+
+    write_json(
+        math_audit,
+        {
+            "protocol": "trajuq_math500_scorer_audit_v2",
+            "status": "PASS",
+            "git_commit": EXPERIMENT_COMMIT,
+            "failure_count": 0,
+        },
+    )
+    math_review_sheet = tmp_path / "math_review.md"
+    math_review_sheet.write_text("# reviewed math scorer examples\n", encoding="utf-8")
     write_json(
         math_manual,
         {
+            "protocol": "trajuq_math500_manual_scorer_gate_v2",
             "status": "PASS",
+            "git_commit": EXPERIMENT_COMMIT,
+            "automatic_audit": str(math_audit),
+            "automatic_audit_sha256": sha256_file(math_audit),
+            "automatic_audit_git_commit": EXPERIMENT_COMMIT,
+            "review_sheet": str(math_review_sheet),
+            "review_sheet_sha256": sha256_file(math_review_sheet),
             "reviewed_records": 25,
             "checks": {
                 "answer_extraction": True,
@@ -181,172 +237,97 @@ def write_common_gates(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
             },
         },
     )
-    write_cpu_pass(cpu)
-    return quality, manual, math_audit, math_manual, cpu
+
+    return {
+        "config": config,
+        "ledger": ledger,
+        "cpu": cpu,
+        "quality": quality,
+        "manual": manual,
+        "math_audit": math_audit,
+        "math_manual": math_manual,
+        "parity": parity,
+    }
 
 
-def evaluate(
-    config: Path,
-    quality: Path,
-    manual: Path,
-    parity: dict[str, str],
-    math_audit: Path,
-    math_manual: Path,
-    cpu: Path,
-    ledger: Path,
-) -> dict:
+def evaluate(case: dict) -> dict:
     return evaluate_readiness(
-        str(config),
-        str(quality),
-        str(manual),
-        parity,
-        str(math_audit),
-        str(math_manual),
-        str(cpu),
-        str(ledger),
+        str(case["config"]),
+        str(case["quality"]),
+        str(case["manual"]),
+        case["parity"],
+        str(case["math_audit"]),
+        str(case["math_manual"]),
+        str(case["cpu"]),
+        str(case["ledger"]),
     )
 
 
-def test_primary_readiness_passes_only_with_all_gates(tmp_path):
-    models = ("llada", "sdar", "dream")
-    config = tmp_path / "primary.yaml"
-    ledger = tmp_path / "ledger.json"
-    write_config(config, models)
-    revisions = write_revision_ledger(ledger, config, models)
-    quality, manual, math_audit, math_manual, cpu = write_common_gates(tmp_path)
-
-    parity: dict[str, str] = {}
-    for model in models:
-        parity_path = tmp_path / f"{model}.json"
-        write_parity(parity_path, model, revisions[model])
-        parity[model] = str(parity_path)
-
-    result = evaluate(
-        config,
-        quality,
-        manual,
-        parity,
-        math_audit,
-        math_manual,
-        cpu,
-        ledger,
-    )
+def test_primary_readiness_passes_only_with_all_bound_gates(tmp_path):
+    case = build_case(tmp_path)
+    result = evaluate(case)
     assert result["status"] == "PASS"
     assert result["experiment_git_commit"] == EXPERIMENT_COMMIT
     assert not result["failures"]
 
 
-def test_primary_readiness_fails_when_model_parity_missing(tmp_path):
-    models = ("llada",)
-    config = tmp_path / "primary.yaml"
-    ledger = tmp_path / "ledger.json"
-    write_config(config, models)
-    write_revision_ledger(ledger, config, models)
-    quality, manual, math_audit, math_manual, cpu = write_common_gates(tmp_path)
-
-    result = evaluate(
-        config,
-        quality,
-        manual,
-        {},
-        math_audit,
-        math_manual,
-        cpu,
-        ledger,
-    )
-    assert result["status"] == "FAIL"
-    assert any("parity" in item for item in result["failures"])
-
-
-def test_primary_readiness_fails_without_math500_manual_gate(tmp_path):
-    models = ("llada",)
-    config = tmp_path / "primary.yaml"
-    ledger = tmp_path / "ledger.json"
-    write_config(config, models)
-    revisions = write_revision_ledger(ledger, config, models)
-    quality, manual, math_audit, math_manual, cpu = write_common_gates(tmp_path)
-
-    write_json(
-        math_manual,
-        {
-            "status": "FAIL",
-            "reviewed_records": 0,
-            "checks": {
-                "answer_extraction": False,
-                "symbolic_equivalence": False,
-                "no_manual_label_flips": False,
-            },
-        },
-    )
-    parity_path = tmp_path / "llada.json"
-    write_parity(parity_path, "llada", revisions["llada"])
-
-    result = evaluate(
-        config,
-        quality,
-        manual,
-        {"llada": str(parity_path)},
-        math_audit,
-        math_manual,
-        cpu,
-        ledger,
-    )
-    assert result["status"] == "FAIL"
-    assert any("MATH-500 manual" in item for item in result["failures"])
-
-
 def test_primary_readiness_rejects_stale_cpu_and_parity_commit(tmp_path):
-    models = ("llada",)
-    config = tmp_path / "primary.yaml"
-    ledger = tmp_path / "ledger.json"
-    write_config(config, models)
-    revisions = write_revision_ledger(ledger, config, models)
-    quality, manual, math_audit, math_manual, cpu = write_common_gates(tmp_path)
-    write_cpu_pass(cpu, commit="old-commit")
-
-    parity_path = tmp_path / "llada.json"
+    case = build_case(tmp_path, ("llada",))
+    write_cpu_pass(case["cpu"], commit="old-commit")
     write_parity(
-        parity_path,
+        Path(case["parity"]["llada"]),
         "llada",
-        revisions["llada"],
+        "rev-llada",
         commit="old-commit",
     )
 
-    result = evaluate(
-        config,
-        quality,
-        manual,
-        {"llada": str(parity_path)},
-        math_audit,
-        math_manual,
-        cpu,
-        ledger,
-    )
+    result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("frozen experiment commit" in item for item in result["failures"])
     assert any("frozen revision/commit" in item for item in result["failures"])
 
 
 def test_primary_readiness_rejects_parity_revision_not_in_ledger(tmp_path):
-    models = ("llada",)
-    config = tmp_path / "primary.yaml"
-    ledger = tmp_path / "ledger.json"
-    write_config(config, models)
-    write_revision_ledger(ledger, config, models)
-    quality, manual, math_audit, math_manual, cpu = write_common_gates(tmp_path)
-
-    parity_path = tmp_path / "llada.json"
-    write_parity(parity_path, "llada", "wrong-revision")
-
-    result = evaluate(
-        config,
-        quality,
-        manual,
-        {"llada": str(parity_path)},
-        math_audit,
-        math_manual,
-        cpu,
-        ledger,
+    case = build_case(tmp_path, ("llada",))
+    write_parity(
+        Path(case["parity"]["llada"]),
+        "llada",
+        "wrong-revision",
     )
+
+    result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("frozen revision/commit" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_mutated_pilot_artifact(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    quality = json.loads(case["quality"].read_text(encoding="utf-8"))
+    Path(quality["raw"]).write_text('{"mutated":true}\n', encoding="utf-8")
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("hash-bound PASS" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_stale_human_review_binding(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    Path(case["parity"]["llada"]).write_text(
+        Path(case["parity"]["llada"]).read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("human pilot-review gate" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_math_audit_from_other_commit(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    audit = json.loads(case["math_audit"].read_text(encoding="utf-8"))
+    audit["git_commit"] = "other-commit"
+    write_json(case["math_audit"], audit)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("automatic scorer audit" in item for item in result["failures"])

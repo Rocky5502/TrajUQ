@@ -23,6 +23,7 @@ from scripts.execute_repeated_sampling import (
     validate_plan_provenance as validate_repeated_provenance,
 )
 from scripts.project_status import build_snapshot
+from scripts.render_results_tex import build_macros, render_tex
 
 
 def sha256_file(path: Path) -> str:
@@ -177,16 +178,73 @@ def verify_generated_results(
     except (TypeError, ValueError):
         failures.append("generated-results manifest macro_count is invalid")
 
+    source_paths: dict[str, Path] = {}
+    source_hashes_valid = True
     for name, source in sources.items():
         path = Path(str(source["path"]))
+        source_paths[name] = path
         if not path.exists():
+            source_hashes_valid = False
             failures.append(f"render source missing: {name} -> {path}")
             continue
         observed = sha256_file(path)
         expected = str(source.get("sha256"))
         if observed != expected:
+            source_hashes_valid = False
             failures.append(
                 f"render source hash changed: {name} {observed} != {expected}"
+            )
+
+    expected_rendered_text: str | None = None
+    if required_sources.issubset(source_paths) and source_hashes_valid:
+        try:
+            primary = load_json(source_paths["primary"])
+            claim = load_json(source_paths["claim_gate"])
+            repeated = load_json(source_paths["repeated"])
+            adaptive = load_json(source_paths["adaptive"])
+            primary_cfg = yaml.safe_load(
+                source_paths["primary_config"].read_text(encoding="utf-8")
+            )
+            macros = build_macros(
+                primary,
+                claim,
+                repeated,
+                adaptive,
+                primary_cfg,
+            )
+            expected_sources = {
+                name: (
+                    str(source_paths[name]),
+                    str(sources[name]["sha256"]),
+                )
+                for name in (
+                    "primary",
+                    "claim_gate",
+                    "repeated",
+                    "adaptive",
+                    "primary_config",
+                )
+            }
+            expected_rendered_text = render_tex(macros, expected_sources)
+            if int(manifest.get("macro_count", -1)) != len(macros):
+                failures.append(
+                    "generated-results manifest macro_count differs from "
+                    "deterministic re-render"
+                )
+            if manifest.get("rq1_claim_decision") != claim.get("decision"):
+                failures.append(
+                    "generated-results manifest RQ1 decision differs from "
+                    "claim-gate source"
+                )
+        except (
+            ValueError,
+            KeyError,
+            TypeError,
+            OSError,
+            json.JSONDecodeError,
+        ) as exc:
+            failures.append(
+                f"render source semantic revalidation failed: {exc}"
             )
 
     if not generated_tex.exists():
@@ -197,6 +255,14 @@ def verify_generated_results(
             failures.append("generated_results.tex hash differs from render manifest")
 
         text = generated_tex.read_text(encoding="utf-8")
+        if (
+            expected_rendered_text is not None
+            and text != expected_rendered_text
+        ):
+            failures.append(
+                "generated_results.tex differs from deterministic re-render "
+                "of the frozen source artifacts"
+            )
         forbidden = [
             "PRE-RESULTS FALLBACK",
             r"\tbd",

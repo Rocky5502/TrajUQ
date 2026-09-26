@@ -13,7 +13,11 @@ def test_anonymous_supplement_builds_and_excludes_identity_paths(tmp_path):
             sys.executable,
             "scripts/build_anonymous_supplement.py",
             "--output",
-            str(out.relative_to(Path.cwd())) if out.is_relative_to(Path.cwd()) else "dist/test_anon.zip",
+            (
+                str(out.relative_to(Path.cwd()))
+                if out.is_relative_to(Path.cwd())
+                else "dist/test_anon.zip"
+            ),
         ],
         check=True,
     )

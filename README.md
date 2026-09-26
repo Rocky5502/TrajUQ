@@ -327,7 +327,8 @@ python scripts/evaluate_adaptive.py \
   --max-refine-fraction 0.50 \
   --base-compute 64 \
   --refined-compute 128 \
-  --n-boot 2000
+  --n-boot 2000 \
+  --output results/llada_gsm8k_adaptive.json
 ```
 
 ## SDAR pilot

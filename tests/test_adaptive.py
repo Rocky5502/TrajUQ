@@ -23,6 +23,23 @@ def test_adaptive_policy_refines_high_risk_cases():
     assert result.accuracy == 1.0
     assert result.refine_fraction == 0.5
     assert result.mean_compute == 8.0
+    assert result.cost_mode == "selective_second_pass_rerun"
+
+
+def test_continuation_cost_requires_explicit_mode():
+    risk = np.array([0.1, 0.2, 0.8, 0.9])
+    base = np.array([1, 1, 0, 0])
+    refined = np.array([1, 1, 1, 1])
+    result = evaluate_two_budget_policy(
+        risk,
+        base,
+        refined,
+        threshold=0.5,
+        base_compute=4,
+        refined_compute=8,
+        cost_mode="continuation",
+    )
+    assert result.mean_compute == 6.0
 
 
 def test_threshold_selection_respects_budget():

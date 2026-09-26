@@ -76,6 +76,7 @@ def main() -> None:
     parser.add_argument("--crossfit-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--n-boot", type=int, default=2000)
+    parser.add_argument("--output", default=None)
     parser.add_argument(
         "--cost-mode",
         choices=["selective_second_pass_rerun"],
@@ -156,7 +157,14 @@ def main() -> None:
         "refined_accuracy": float(test_refined.mean()),
         "base_error_rate": float(y_test.mean()),
     }
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    rendered = json.dumps(payload, indent=2, sort_keys=True)
+    print(rendered)
+    if args.output:
+        from pathlib import Path
+
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(rendered + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

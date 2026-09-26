@@ -73,13 +73,11 @@ LLaDA established masked diffusion as a scalable alternative to autoregressive f
 Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \citep{ye2025dream}.
 SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \citep{cheng2026sdar}.
 FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \citep{zhu2026flare}.
-These works primarily optimize modeling capability and inference efficiency; \method instead treats the intermediate denoising process as an uncertainty signal.
+Recent decoding work also shows that confidence trajectories are operationally useful in dLLMs. One-shot dynamic thresholding adapts parallel-decoding cutoffs from observed confidence trajectories \citep{shen2025osdt}, while CD4LM uses confidence-adaptive decoding to allocate inference effort \citep{liang2026cd4lm}. DiffuGuard further reports that intra-step and inter-step denoising dynamics can matter for safety failures \citep{li2026diffuguard}. These studies motivate trajectory-aware control, but they do not test whether denoising dynamics provide calibrated, answer-level error prediction beyond a matched final-decision confidence baseline.
 
 \paragraph{Language-model uncertainty.}
 Calibration asks whether predicted confidence reflects empirical correctness \citep{jiang2021know}.
-Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}.
-These methods motivate our repeated-sampling baseline, but repeated generation incurs additional inference cost.
-\method asks whether a \emph{single} diffusion trajectory already exposes useful instability.
+Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines, but they either summarize a completed generation or require multiple generations. \method asks whether a \emph{single} diffusion trajectory already exposes useful process-level instability before the final answer is scored.
 
 \paragraph{Selective prediction.}
 A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.

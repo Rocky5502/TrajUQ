@@ -42,6 +42,24 @@ def git_text(*args: str) -> str | None:
     except Exception:
         return None
 
+def run_audit_passes(
+    audit_path: Path,
+    artifact_path: Path,
+    expected_stage: str,
+) -> tuple[bool, dict]:
+    if not audit_path.exists() or not artifact_path.exists():
+        return False, {}
+    try:
+        payload = json.loads(audit_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, {}
+    passed = (
+        payload.get("status") == "PASS"
+        and payload.get("stage") == expected_stage
+        and str(payload.get("sha256", "")) == sha256_file(artifact_path)
+    )
+    return passed, payload
+
 
 def parse_override(value: str) -> tuple[str, str]:
     if "=" not in value:
@@ -234,6 +252,14 @@ def evaluate_readiness(
             scored_path.exists()
             and quality.get("scored_sha256") == sha256_file(scored_path)
         )
+        raw_audit_path = raw_path.with_suffix(raw_path.suffix + ".audit.json")
+        scored_audit_path = scored_path.with_suffix(scored_path.suffix + ".audit.json")
+        raw_audit_ok, raw_audit = run_audit_passes(
+            raw_audit_path, raw_path, "raw"
+        )
+        scored_audit_ok, scored_audit = run_audit_passes(
+            scored_audit_path, scored_path, "scored"
+        )
         quality_pass = (
             quality.get("protocol") == "trajuq_pilot_quality_gate_v2"
             and quality.get("status") == "PASS"
@@ -245,6 +271,8 @@ def evaluate_readiness(
             and quality.get("model_revisions") == [expected_llada_revision]
             and raw_hash_ok
             and scored_hash_ok
+            and raw_audit_ok
+            and scored_audit_ok
         )
         checks["pilot_quality"] = {
             "path": pilot_quality_path,
@@ -257,10 +285,16 @@ def evaluate_readiness(
             "model_revisions": quality.get("model_revisions"),
             "raw_hash_ok": raw_hash_ok,
             "scored_hash_ok": scored_hash_ok,
+            "raw_audit": str(raw_audit_path),
+            "raw_audit_status": raw_audit.get("status"),
+            "raw_audit_ok": raw_audit_ok,
+            "scored_audit": str(scored_audit_path),
+            "scored_audit_status": scored_audit.get("status"),
+            "scored_audit_ok": scored_audit_ok,
         }
         if not quality_pass:
             failures.append(
-                "50-example pilot quality gate is not a hash-bound PASS at the frozen commit/revision"
+                "50-example pilot quality gate is not a hash/audit-bound PASS at the frozen commit/revision"
             )
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"pilot quality artifact unavailable/invalid: {exc}")

@@ -63,7 +63,7 @@ def test_present_failed_gate_is_not_counted_as_pending(tmp_path):
     assert snapshot["execution_gates"][0]["state"] == "FAIL"
     assert snapshot["summary"]["execution_failed_or_invalid"] == 1
     assert snapshot["summary"]["execution_pending"] == 0
-    assert "Execution gates passed" in render_markdown(snapshot)
+    assert "Required execution gates passed" in render_markdown(snapshot)
 
 
 def test_project_status_config_loads():
@@ -72,7 +72,6 @@ def test_project_status_config_loads():
     )
     assert config["project"]["primary_cells"] == 18
     assert config["project"]["adaptive_primary_cap"] == 0.50
-
 
 
 def test_optional_gate_does_not_block_required_progress(tmp_path):

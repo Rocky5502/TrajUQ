@@ -155,7 +155,6 @@ def test_primary_readiness_fails_when_model_parity_missing(tmp_path):
     assert result["status"] == "FAIL"
 
 
-
 def test_primary_readiness_fails_without_math500_manual_gate(tmp_path):
     config = tmp_path / "primary.yaml"
     config.write_text(
@@ -213,7 +212,6 @@ def test_primary_readiness_fails_without_math500_manual_gate(tmp_path):
     )
     assert result["status"] == "FAIL"
     assert any("MATH-500 manual" in item for item in result["failures"])
-
 
 
 def test_primary_readiness_fails_without_cpu_verification(tmp_path):

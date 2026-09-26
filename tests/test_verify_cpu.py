@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from scripts.verify_cpu import run_step
@@ -6,7 +7,7 @@ from scripts.verify_cpu import run_step
 def test_run_step_records_pass_and_log(tmp_path):
     record = run_step(
         "hello",
-        ["python", "-c", "print('ok')"],
+        [sys.executable, "-c", "print('ok')"],
         tmp_path,
     )
     assert record["status"] == "PASS"
@@ -17,7 +18,7 @@ def test_run_step_records_pass_and_log(tmp_path):
 def test_run_step_records_failure(tmp_path):
     record = run_step(
         "bad",
-        ["python", "-c", "raise SystemExit(3)"],
+        [sys.executable, "-c", "raise SystemExit(3)"],
         tmp_path,
     )
     assert record["status"] == "FAIL"

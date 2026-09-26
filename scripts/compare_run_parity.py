@@ -192,6 +192,56 @@ def provenance_mismatches(
     return mismatches
 
 
+def summarize_run_provenance(
+    shared: list[str],
+    reference: dict[str, dict],
+    instrumented: dict[str, dict],
+    require: bool,
+) -> tuple[dict, list[dict]]:
+    summary: dict[str, object] = {}
+    errors: list[dict] = []
+    fields = ("dataset", "model", "adapter", "seed")
+    for field in fields:
+        values = {
+            reference[item_id].get(field)
+            for item_id in shared
+        } | {
+            instrumented[item_id].get(field)
+            for item_id in shared
+        }
+        values.discard(None)
+        if require and len(values) != 1:
+            errors.append(
+                {
+                    "id": "__run__",
+                    "reason": "non_uniform_run_provenance",
+                    "field": field,
+                    "values": sorted(str(value) for value in values),
+                }
+            )
+        summary[field] = next(iter(values)) if len(values) == 1 else None
+
+    revisions = {
+        generation_metadata(reference[item_id]).get("model_revision")
+        for item_id in shared
+    } | {
+        generation_metadata(instrumented[item_id]).get("model_revision")
+        for item_id in shared
+    }
+    revisions.discard(None)
+    if require and len(revisions) != 1:
+        errors.append(
+            {
+                "id": "__run__",
+                "reason": "non_uniform_run_provenance",
+                "field": "generation.metadata.model_revision",
+                "values": sorted(str(value) for value in revisions),
+            }
+        )
+    summary["model_revision"] = next(iter(revisions)) if len(revisions) == 1 else None
+    return summary, errors
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -277,6 +327,14 @@ def main() -> None:
                 }
             )
 
+    run_provenance, run_provenance_errors = summarize_run_provenance(
+        shared,
+        ref,
+        inst,
+        require=args.require_provenance,
+    )
+    provenance_errors.extend(run_provenance_errors)
+
     status = (
         "PASS"
         if shared
@@ -287,7 +345,7 @@ def main() -> None:
         else "FAIL"
     )
     payload = {
-        "protocol": "trajuq_exact_parity_v2",
+        "protocol": "trajuq_exact_parity_v3",
         "git_commit": git_head(),
         "reference": args.reference,
         "reference_sha256": sha256_file(args.reference),
@@ -295,6 +353,7 @@ def main() -> None:
         "instrumented_sha256": sha256_file(args.instrumented),
         "require_token_ids": bool(args.require_token_ids),
         "require_provenance": bool(args.require_provenance),
+        "run_provenance": run_provenance,
         "shared_records": len(shared),
         "missing_reference": missing_reference,
         "missing_instrumented": missing_instrumented,

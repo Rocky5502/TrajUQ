@@ -15,11 +15,26 @@ def write_artifact(path: Path, content: str = "x\n") -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def write_pass_audit(path: Path) -> None:
+def write_pass_audit(
+    path: Path,
+    *,
+    stage: str | None = None,
+    commit: str = "frozen-commit",
+) -> None:
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     audit = path.with_suffix(path.suffix + ".audit.json")
+    resolved_stage = stage or ("scored" if "scored" in path.name else "raw")
     audit.write_text(
-        json.dumps({"status": "PASS", "sha256": digest}),
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": commit,
+                "git_clean": True,
+                "stage": resolved_stage,
+                "sha256": digest,
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -28,10 +43,10 @@ def test_audit_passes_requires_matching_hash(tmp_path):
     artifact = tmp_path / "run.jsonl"
     write_artifact(artifact)
     write_pass_audit(artifact)
-    assert audit_passes(artifact)
+    assert audit_passes(artifact, "raw")
 
     artifact.write_text("changed\n", encoding="utf-8")
-    assert not audit_passes(artifact)
+    assert not audit_passes(artifact, "raw")
 
 
 def test_partition_complete_only_after_both_audited_artifacts(tmp_path):
@@ -187,3 +202,10 @@ def test_validate_plan_provenance_rejects_mutated_input(tmp_path, monkeypatch):
 
     failures = validate_plan_provenance(plan)
     assert any("input hash differs from plan" in item for item in failures)
+
+
+def test_audit_passes_rejects_other_commit(tmp_path):
+    artifact = tmp_path / "run.raw.jsonl"
+    write_artifact(artifact)
+    write_pass_audit(artifact, stage="raw", commit="other-commit")
+    assert not audit_passes(artifact, "raw", "frozen-commit")

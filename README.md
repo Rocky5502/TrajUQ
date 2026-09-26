@@ -211,7 +211,7 @@ python scripts/run_generation.py \
   --block-length 128
 ```
 
-Audit the **raw** artifact before it can see outcomes:
+Audit the **raw** artifact before it can see outcomes. The audit now checks schema/version, frozen feature presence, semantic bounds for entropy/confidence/JS/rate features, per-step summaries, v4 trajectory semantics, and recursively rejects outcome-like metadata keys:
 
 ```bash
 python scripts/audit_run.py \

@@ -142,10 +142,16 @@ After readiness passes:
 10. freeze repeated-sampling plan protocol v2 after primary analysis predictions exist, then run the complete 18-cell five-sample comparator with scripts/execute_repeated_sampling.py; verified seed artifacts are resumable and the executor rejects drift in bound primary artifacts;
 11. freeze adaptive plan protocol v3 after all refined primary scored artifacts exist, then run RQ3 base-budget generations and all frozen 25/50/75% cap analyses with scripts/execute_adaptive_plan.py; the executor rejects drift in refined inputs/audits;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
-13. render paper numbers only through scripts/render_results_tex.py;
-14. run scripts/submission_readiness.py to re-check required project gates,
-    source hashes, anonymous paper audit, and the deterministic software
-    supplement before the external ACL pubcheck/upload step.
+13. render paper numbers only through scripts/render_results_tex.py; the renderer
+    re-evaluates the frozen RQ1 gate from configs/experiments/primary.yaml and
+    SHA-binds the primary, claim-gate, repeated, adaptive, and primary-config
+    sources;
+14. commit/stash the final paper-side changes so the submission checkout is clean,
+    then run scripts/submission_readiness.py. The submission gate revalidates the
+    historical experiment artifacts without requiring the paper commit to equal
+    the experiment commit, while separately requiring the current submission
+    checkout to be clean. It also re-checks source hashes, anonymity, and the
+    deterministic software supplement before ACL pubcheck/upload.
 
 A negative RQ1 claim gate is a valid scientific result. Do not redesign the
 test analysis because a frozen result is weak.
@@ -178,8 +184,11 @@ python scripts/audit_paper.py --submission-ready
 python scripts/submission_readiness.py
 ~~~
 
-The renderer checks complete cell sets and the RQ1 claim-gate decision before
-populating paper macros.
+The renderer checks complete cell sets, re-evaluates the RQ1 claim gate from the
+frozen primary config, and writes a manifest that SHA-binds all four result
+artifacts plus the primary config before populating paper macros. Final
+submission readiness then distinguishes the historical experiment commit from
+the later clean paper/submission commit.
 
 ## Commands to run first on a fresh continuation
 

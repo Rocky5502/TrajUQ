@@ -173,8 +173,11 @@ After readiness passes:
    analysis-plan protocol v2 then SHA-binds those inputs, audits, the primary
    plan/config, and experiment commit;
 7. dry-run scripts/execute_primary_analysis.py and then use it to resume all
-   cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics; the executor refuses upstream provenance drift before reading result values;
-8. aggregate the complete 18-cell primary endpoint;
+   cell-level metrics, nested comparisons, ablation summaries plus per-example
+   ablation probabilities, and raw-risk diagnostics; the executor refuses
+   upstream provenance drift before reading result values;
+8. aggregate both the complete 18-cell primary endpoint and the complete frozen
+   feature-ablation macro with equal-cell paired hierarchical bootstrap;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
 10. freeze repeated-sampling plan protocol v2 after primary analysis predictions
     exist, then run the complete 18-cell five-sample comparator with
@@ -191,8 +194,8 @@ After readiness passes:
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
 13. render paper numbers only through scripts/render_results_tex.py; the renderer
     re-evaluates the frozen RQ1 gate from configs/experiments/primary.yaml and
-    SHA-binds the primary, claim-gate, repeated, adaptive, and primary-config
-    sources;
+    SHA-binds the primary, claim-gate, repeated, feature-ablation, adaptive,
+    and primary-config sources;
 14. commit/stash the final paper-side changes so the submission checkout is clean,
     then run scripts/submission_readiness.py. The submission gate revalidates the
     historical experiment artifacts without requiring the paper commit to equal
@@ -212,6 +215,10 @@ test analysis because a frozen result is weak.
 - #5 - Dream native parity
 - #6 - GitHub Actions runner allocation
 - #7 - LLaDA native parity
+- #8 - frozen 18-cell primary matrix, primary analysis, and feature-ablation macro
+- #9 - RQ2 five-sample comparator with compute accounting
+- #10 - RQ3 adaptive 25/50/75% matrix
+- #11 - artifact-derived paper rendering and final ARR submission readiness
 
 Keep these issues open until their **execution artifacts** pass. Implemented
 support code alone is not grounds for closing an execution gate.
@@ -232,8 +239,9 @@ python scripts/submission_readiness.py
 ~~~
 
 The renderer checks complete cell sets, re-evaluates the RQ1 claim gate from the
-frozen primary config, and writes a manifest that SHA-binds all four result
-artifacts plus the primary config before populating paper macros. Final
+frozen primary config, and writes a manifest that SHA-binds five result
+artifacts (primary, RQ1 gate, repeated sampling, feature ablations, and adaptive
+compute) plus the primary config before populating paper macros. Final
 submission readiness then distinguishes the historical experiment commit from
 the later clean paper/submission commit.
 
@@ -291,9 +299,9 @@ A future chat can start with:
 > Continue the TrajUQ NAACL 2027 project from the repository
 > Rocky5502/TrajUQ. Read PROJECT_STATUS.md, configs/project_status.yaml, the
 > open GitHub issues, and the latest main branch before changing anything.
-> Preserve the frozen 3x6 primary design, outcome isolation, RQ1 claim gate,
-> five-sample 18-cell comparator, and RQ3 50% primary cap with 25/75%
-> sensitivities. Do not invent results. Continue from the first unmet execution
+> Preserve the frozen 3x6 primary design, outcome isolation, complete 18-cell
+> feature-ablation macro, RQ1 claim gate, five-sample 18-cell comparator, and
+> RQ3 50% primary cap with 25/75% sensitivities. Do not invent results. Continue from the first unmet execution
 > gate and update PROJECT_STATUS.md whenever a milestone materially changes.
 
 ## Maintenance rule

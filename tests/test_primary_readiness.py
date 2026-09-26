@@ -216,7 +216,17 @@ def build_case(
     )
 
     review_sheet = tmp_path / "pilot_review.md"
-    review_sheet.write_text("# reviewed pilot traces\n", encoding="utf-8")
+    review_sheet.write_text(
+        "\n".join(
+            [
+                "# reviewed pilot traces",
+                f"- scored artifact: {scored}",
+                f"- scored SHA-256: {sha256_file(scored)}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     llada_parity = Path(parity["llada"])
     write_json(
         manual,
@@ -227,6 +237,8 @@ def build_case(
             "git_clean": True,
             "review_sheet": str(review_sheet),
             "review_sheet_sha256": sha256_file(review_sheet),
+            "review_scored_artifact": str(scored),
+            "review_scored_sha256": sha256_file(scored),
             "parity_artifact": str(llada_parity),
             "parity_artifact_sha256": sha256_file(llada_parity),
             "pilot_quality": str(quality),
@@ -508,3 +520,14 @@ def test_primary_readiness_rejects_missing_or_stale_pilot_audits(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("hash/audit-bound PASS" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_pilot_review_source_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    manual = json.loads(case["manual"].read_text(encoding="utf-8"))
+    manual["review_scored_sha256"] = "wrong"
+    write_json(case["manual"], manual)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any("human pilot-review gate" in item for item in result["failures"])

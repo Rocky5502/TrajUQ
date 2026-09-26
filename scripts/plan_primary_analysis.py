@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from trajuq.io import read_jsonl
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -42,6 +44,26 @@ def git_status_porcelain() -> str | None:
 
 def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
+
+
+def exact_id_coverage(input_path: Path, artifact_path: Path) -> bool:
+    try:
+        input_rows = list(read_jsonl(input_path))
+        artifact_rows = list(read_jsonl(artifact_path))
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        return False
+
+    input_ids = [str(row.get("id", "")) for row in input_rows]
+    artifact_ids = [str(row.get("example_id", "")) for row in artifact_rows]
+    if (
+        not input_rows
+        or any(not item_id for item_id in input_ids)
+        or any(not item_id for item_id in artifact_ids)
+        or len(input_ids) != len(set(input_ids))
+        or len(artifact_ids) != len(set(artifact_ids))
+    ):
+        return False
+    return artifact_ids == input_ids
 
 
 def audit_passes(
@@ -151,10 +173,17 @@ def main() -> None:
 
         partitions: dict[str, dict[str, str]] = {}
         for partition in ("calibration", "test"):
+            source_input = Path(str(cell[partition]["input"]))
             scored = Path(str(cell[partition]["scored_output"]))
             if not scored.exists():
                 failures.append(
                     f"{adapter}:{dataset} {partition}: missing scored artifact {scored}"
+                )
+                continue
+            if not exact_id_coverage(source_input, scored):
+                failures.append(
+                    f"{adapter}:{dataset} {partition}: scored artifact does not "
+                    "exactly cover the frozen input IDs"
                 )
                 continue
             if not audit_passes(scored, experiment_commit):

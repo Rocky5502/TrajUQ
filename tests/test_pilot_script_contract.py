@@ -59,6 +59,8 @@ def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
     assert '$ScoredAuditOk = Test-RunAuditPass $Scored "scored"' in text
     assert "$RawAuditOk -and" in text
     assert "$ScoredAuditOk -and" in text
+    assert '$InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"' in text
+    assert "$InstrumentedAuditOk" in text
 
 
 def test_gpu_stages_revalidate_frozen_pilot_inputs():

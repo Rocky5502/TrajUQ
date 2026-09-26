@@ -49,3 +49,16 @@ def test_remaining_parity_wrapper_writes_expected_artifacts():
     assert "results/dream_parity.json" in text
     assert "results/sdar_instrumentation_overhead.json" in text
     assert "results/dream_instrumentation_overhead.json" in text
+
+
+def test_remaining_parity_wrapper_revalidates_source_and_split_hashes():
+    text = Path("scripts/parity_remaining_windows.ps1").read_text(encoding="utf-8")
+
+    assert "$Parity.git_clean -eq $true" in text
+    assert "reference_sha256" in text
+    assert "instrumented_sha256" in text
+    assert "calibration_sha256" in text
+    assert "test_sha256" in text
+    assert "split_manifest.json" in text
+    assert "split_audit.json" in text
+    assert "zero-overlap PASS" in text

@@ -516,6 +516,12 @@ def evaluate_readiness(
                 and bool(payload.get("instrumented_sha256"))
                 and payload.get("instrumented_sha256") == sha256_file(instrumented_path)
             )
+            instrumented_audit_path = instrumented_path.with_suffix(
+                instrumented_path.suffix + ".audit.json"
+            )
+            instrumented_audit_ok, instrumented_audit = run_audit_passes(
+                instrumented_audit_path, instrumented_path, "raw"
+            )
 
             passed = (
                 status == "PASS"
@@ -532,6 +538,7 @@ def evaluate_readiness(
                 and int(provenance_mismatch_count or 0) == 0
                 and reference_hash_ok
                 and instrumented_hash_ok
+                and instrumented_audit_ok
             )
             parity_checks[model] = {
                 "path": path,
@@ -548,12 +555,15 @@ def evaluate_readiness(
                 "reference_hash_ok": reference_hash_ok,
                 "instrumented": payload.get("instrumented"),
                 "instrumented_hash_ok": instrumented_hash_ok,
+                "instrumented_audit": str(instrumented_audit_path),
+                "instrumented_audit_status": instrumented_audit.get("status"),
+                "instrumented_audit_ok": instrumented_audit_ok,
                 "run_provenance": run_provenance,
                 "expected_model_revision": expected_revision,
             }
             if not passed:
                 failures.append(
-                    f"{model} parity gate is not an exact 20-prompt PASS at the frozen revision/commit with clean hash-bound evidence"
+                    f"{model} parity gate is not an exact 20-prompt PASS at the frozen revision/commit with clean hash/audit-bound evidence"
                 )
         except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")

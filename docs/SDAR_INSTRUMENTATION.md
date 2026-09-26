@@ -66,3 +66,18 @@ python scripts/run_generation.py \
 ```
 
 Then run `scripts/audit_run.py --stage raw --require-revision`.
+
+
+## Automated parity comparison
+
+Save the upstream/reference outputs and TrajUQ outputs as JSONL with matching `example_id` values and token IDs, then run:
+
+```bash
+python scripts/compare_run_parity.py \
+  --reference runs/sdar_upstream_reference.jsonl \
+  --instrumented runs/sdar_trajuq_instrumented.jsonl \
+  --require-token-ids \
+  --output results/sdar_parity.json
+```
+
+A hard parity gate requires `status=PASS`.

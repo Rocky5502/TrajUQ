@@ -45,6 +45,20 @@ Linux/macOS guarded equivalent:
 bash scripts/freeze_preprimary.sh
 ```
 
+On a Linux GPU server (including an NVIDIA A100), the guarded LLaDA path is:
+
+```bash
+bash scripts/pilot_linux.sh prepare
+bash scripts/pilot_linux.sh parity
+bash scripts/pilot_linux.sh pilot
+```
+
+The Linux wrapper mirrors the Windows evidence contract: it requires the same
+clean CPU/revision-ledger commit, preserves existing valid evidence, refuses to
+overwrite partial/stale artifacts, revalidates the frozen GSM8K split and pilot
+manifest, requires exact parity-v3 with 20 shared prompts, and only then runs the
+50-example pilot. Use Python >=3.10; Ubuntu 20.04's system Python may be older.
+
 This performs the same clean-checkout CPU verification, immutable revision
 resolution, post-freeze cleanliness check, status refresh, and private handoff
 export as the Windows wrapper. Revision-ledger protocol v2

@@ -2,10 +2,57 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def scored_audit_passes(path: Path) -> bool:
+    audit = path.with_suffix(path.suffix + ".audit.json")
+    if not path.exists() or not audit.exists():
+        return False
+    try:
+        payload = json.loads(audit.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        payload.get("status") == "PASS"
+        and payload.get("stage") == "scored"
+        and str(payload.get("sha256", "")) == sha256_file(path)
+    )
+
+
+def valid_jsonl(path: Path) -> bool:
+    if not path.exists() or path.stat().st_size <= 0:
+        return False
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            rows = [json.loads(line) for line in handle if line.strip()]
+    except (OSError, json.JSONDecodeError):
+        return False
+    return bool(rows)
 
 
 def arg_value(argv: list[str], flag: str, default: str | None = None) -> str:
@@ -107,8 +154,8 @@ def repeated_generation_argv(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Plan the frozen five-sample uncertainty baseline on the eligible "
-            "model-dataset subset. This command never runs a model."
+            "Plan the frozen five-sample uncertainty baseline on the complete "
+            "primary model-dataset matrix. This command never runs a model."
         )
     )
     parser.add_argument(
@@ -137,33 +184,81 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    primary = json.loads(Path(args.primary_plan).read_text(encoding="utf-8"))
-    analysis = json.loads(
-        Path(args.primary_analysis_plan).read_text(encoding="utf-8")
-    )
-    if primary.get("status") != "PASS":
-        raise SystemExit("Primary matrix plan is not PASS.")
-    if analysis.get("status") != "PASS":
-        raise SystemExit("Primary analysis plan is not PASS.")
+    failures: list[str] = []
+    primary_path = Path(args.primary_plan)
+    analysis_path = Path(args.primary_analysis_plan)
+    cfg_path = Path(args.primary_config)
+    for path in (primary_path, analysis_path, cfg_path):
+        if not path.exists():
+            failures.append(f"missing required artifact: {path}")
+    if failures:
+        raise SystemExit("\n".join(failures))
 
-    cfg = yaml.safe_load(Path(args.primary_config).read_text(encoding="utf-8"))
+    primary = json.loads(primary_path.read_text(encoding="utf-8"))
+    analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
+    if primary.get("protocol") != "trajuq_primary_matrix_plan_v2":
+        failures.append("primary matrix plan protocol is not v2")
+    if primary.get("status") != "PASS":
+        failures.append("primary matrix plan is not PASS")
+    if analysis.get("protocol") != "trajuq_primary_analysis_plan_v2":
+        failures.append("primary analysis plan protocol is not v2")
+    if analysis.get("status") != "PASS":
+        failures.append("primary analysis plan is not PASS")
+
+    experiment_commit = str(primary.get("experiment_git_commit", ""))
+    if str(analysis.get("experiment_git_commit", "")) != experiment_commit:
+        failures.append(
+            "primary and analysis plans disagree on the experiment git commit"
+        )
+    current_head = git_head()
+    if not current_head:
+        failures.append("current git commit could not be resolved")
+    elif current_head != experiment_commit:
+        failures.append(
+            "current git commit differs from the frozen experiment commit"
+        )
+
+    current_cfg_hash = sha256_file(cfg_path)
+    if str(primary.get("primary_config_sha256", "")) != current_cfg_hash:
+        failures.append("primary config hash differs from primary matrix plan")
+    if str(analysis.get("primary_config_sha256", "")) != current_cfg_hash:
+        failures.append("primary config hash differs from primary analysis plan")
+
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
     repeated = cfg["baselines"]["expensive"]["repeated_sampling"]
     seeds = [int(seed) for seed in repeated["seeds"]]
     samples = int(repeated["samples"])
     if len(seeds) != samples or len(seeds) != len(set(seeds)):
-        raise SystemExit("Frozen repeated-sampling seed contract is inconsistent.")
+        failures.append("frozen repeated-sampling seed contract is inconsistent")
 
     eligible = [str(name) for name in repeated["eligible_datasets"]]
     excluded = dict(repeated.get("excluded_datasets", {}))
     if set(eligible).intersection(excluded):
-        raise SystemExit("Repeated-sampling eligible/excluded datasets overlap.")
+        failures.append("repeated-sampling eligible/excluded datasets overlap")
 
     analysis_by_cell = {
         str(item["cell"]): item
         for item in analysis.get("cell_analyses", [])
     }
     if len(analysis_by_cell) != len(analysis.get("cell_analyses", [])):
-        raise SystemExit("Duplicate cells in primary analysis plan.")
+        failures.append("duplicate cells in primary analysis plan")
+
+    if failures:
+        payload = {
+            "protocol": "trajuq_repeated_sampling_plan_v2",
+            "status": "FAIL",
+            "experiment_git_commit": experiment_commit or None,
+            "failures": failures,
+            "cells": [],
+        }
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        raise SystemExit(1)
 
     n_boot = int(cfg["statistics"]["bootstrap"]["n_boot"])
     result_root = Path(args.result_root)
@@ -178,6 +273,44 @@ def main() -> None:
         cell_name = f"{adapter}:{dataset}"
         if cell_name not in analysis_by_cell:
             raise SystemExit(f"Missing primary analysis cell: {cell_name}")
+
+        provenance: dict[str, dict[str, str]] = {}
+        for partition in ("calibration", "test"):
+            source = cell[partition]
+            generation_input = Path(str(source["input"]))
+            expected_input_hash = str(source.get("input_sha256", ""))
+            if (
+                not generation_input.exists()
+                or not expected_input_hash
+                or sha256_file(generation_input) != expected_input_hash
+            ):
+                raise SystemExit(
+                    f"{cell_name} {partition}: frozen generation input drifted"
+                )
+
+            scored = Path(str(source["scored_output"]))
+            if not scored_audit_passes(scored):
+                raise SystemExit(
+                    f"{cell_name} {partition}: scored target is missing, "
+                    "invalid, or stale"
+                )
+            scored_audit = scored.with_suffix(scored.suffix + ".audit.json")
+            provenance[partition] = {
+                "generation_input": str(generation_input),
+                "generation_input_sha256": sha256_file(generation_input),
+                "scored_target": str(scored),
+                "scored_target_sha256": sha256_file(scored),
+                "scored_audit": str(scored_audit),
+                "scored_audit_sha256": sha256_file(scored_audit),
+            }
+
+        trajuq_predictions = Path(
+            str(analysis_by_cell[cell_name]["outputs"]["predictions"])
+        )
+        if not valid_jsonl(trajuq_predictions):
+            raise SystemExit(
+                f"{cell_name}: primary TrajUQ predictions are missing or invalid"
+            )
 
         cal_dir = Path(args.run_root) / adapter / dataset / "calibration"
         test_dir = Path(args.run_root) / adapter / dataset / "test"
@@ -199,8 +332,12 @@ def main() -> None:
         )
 
         repeated_metrics = result_root / adapter / dataset / "metrics.json"
-        repeated_predictions = result_root / adapter / dataset / "predictions.jsonl"
-        direct_comparison = result_root / adapter / dataset / "trajuq_vs_repeated.json"
+        repeated_predictions = (
+            result_root / adapter / dataset / "predictions.jsonl"
+        )
+        direct_comparison = (
+            result_root / adapter / dataset / "trajuq_vs_repeated.json"
+        )
 
         evaluate = [
             "python",
@@ -235,14 +372,11 @@ def main() -> None:
             ]
         )
 
-        trajuq_predictions = str(
-            analysis_by_cell[cell_name]["outputs"]["predictions"]
-        )
         compare = [
             "python",
             "scripts/compare_repeated_to_trajuq.py",
             "--trajuq-predictions",
-            trajuq_predictions,
+            str(trajuq_predictions),
             "--repeated-predictions",
             str(repeated_predictions),
             "--n-boot",
@@ -260,11 +394,18 @@ def main() -> None:
                 "dataset": dataset,
                 "sample_count": samples,
                 "seeds": seeds,
+                "provenance": {
+                    **provenance,
+                    "trajuq_predictions": str(trajuq_predictions),
+                    "trajuq_predictions_sha256": sha256_file(
+                        trajuq_predictions
+                    ),
+                },
                 "calibration_generation_argv": cal_cmd,
                 "test_generation_argv": test_cmd,
                 "evaluate_argv": evaluate,
                 "compare_to_trajuq_argv": compare,
-                "trajuq_predictions": trajuq_predictions,
+                "trajuq_predictions": str(trajuq_predictions),
                 "repeated_predictions": str(repeated_predictions),
                 "repeated_metrics": str(repeated_metrics),
                 "direct_comparison": str(direct_comparison),
@@ -274,7 +415,8 @@ def main() -> None:
     expected_cells = len(cfg["models"]["primary"]) * len(eligible)
     if len(cells) != expected_cells:
         raise SystemExit(
-            f"Repeated baseline cell count mismatch: {len(cells)} != {expected_cells}"
+            f"Repeated baseline cell count mismatch: {len(cells)} != "
+            f"{expected_cells}"
         )
 
     macro_path = result_root / "macro_trajuq_vs_repeated.json"
@@ -292,11 +434,16 @@ def main() -> None:
     ]
 
     payload = {
-        "protocol": "trajuq_repeated_sampling_plan_v1",
+        "protocol": "trajuq_repeated_sampling_plan_v2",
         "status": "PASS",
-        "primary_plan": args.primary_plan,
-        "primary_analysis_plan": args.primary_analysis_plan,
-        "primary_config": args.primary_config,
+        "git_commit": current_head,
+        "experiment_git_commit": experiment_commit,
+        "primary_plan": str(primary_path),
+        "primary_plan_sha256": sha256_file(primary_path),
+        "primary_analysis_plan": str(analysis_path),
+        "primary_analysis_plan_sha256": sha256_file(analysis_path),
+        "primary_config": str(cfg_path),
+        "primary_config_sha256": current_cfg_hash,
         "samples": samples,
         "seeds": seeds,
         "temperature": float(repeated["temperature"]),
@@ -310,14 +457,17 @@ def main() -> None:
         "macro_output": str(macro_path),
         "execution_order": (
             "Generate all calibration/test auxiliary samples, evaluate every "
-            "eligible cell, run paired per-cell comparisons, then macro-aggregate "
-            "the complete matched subset."
+            "cell, run paired per-cell comparisons, then macro-aggregate the "
+            "complete 18-cell matrix."
         ),
     }
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(
         json.dumps(
             {

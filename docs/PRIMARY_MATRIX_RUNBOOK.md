@@ -209,3 +209,26 @@ adapter-specific generation settings.
 Execute every planned auxiliary generation and cell evaluation before running
 the plan's `aggregate_repeated_baseline.py` command. This full-matrix comparator is reported separately because it is an expensive
 secondary baseline rather than the pre-registered RQ1 endpoint.
+
+
+## 9. Execute the five-sample comparator resumably
+
+After the repeated-sampling plan is frozen, use:
+
+```bash
+# Dry-run/status:
+python scripts/execute_repeated_sampling.py
+
+# Execute one model--dataset cell:
+python scripts/execute_repeated_sampling.py --cell llada:gsm8k --execute
+
+# Resume the complete 18-cell comparator:
+python scripts/execute_repeated_sampling.py --execute
+```
+
+Each five-seed generation command uses `--resume-verified`: an existing seed
+is reused only when its raw audit is PASS and the audit SHA-256 matches the
+current artifact. Unverified partial artifacts are never overwritten
+automatically. The executor writes
+`results/repeated_sampling_execution_state.json` and an append-only event log.
+The full macro is run only after all 18 cells are complete.

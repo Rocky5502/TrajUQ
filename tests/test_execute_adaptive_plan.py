@@ -2,12 +2,18 @@ import hashlib
 import json
 from pathlib import Path
 
+import scripts.execute_adaptive_plan as execute_adaptive_plan
 from scripts.execute_adaptive_plan import (
     audit_passes,
     base_partition_state,
     evaluation_state,
     execution_snapshot,
+    validate_plan_provenance,
 )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def write_audited(path: Path, stage: str) -> None:
@@ -113,3 +119,66 @@ def test_execution_snapshot_requires_all_macros(tmp_path):
         encoding="utf-8",
     )
     assert execution_snapshot(plan)["status"] == "COMPLETE"
+
+
+def test_adaptive_provenance_rejects_refined_input_drift(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "c" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    generation_input = tmp_path / "calibration.jsonl"
+    refined = tmp_path / "refined.scored.jsonl"
+    refined_audit = tmp_path / "refined.scored.jsonl.audit.json"
+
+    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    generation_input.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    refined.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    refined_audit.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "stage": "scored",
+                "sha256": _sha256(refined),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    partition = {
+        "generation_input": str(generation_input),
+        "generation_input_sha256": _sha256(generation_input),
+        "refined_scored": str(refined),
+        "refined_scored_sha256": _sha256(refined),
+        "refined_audit": str(refined_audit),
+        "refined_audit_sha256": _sha256(refined_audit),
+    }
+    plan = {
+        "protocol": "trajuq_adaptive_matrix_plan_v3",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "provenance": {
+                    "calibration": dict(partition),
+                    "test": dict(partition),
+                },
+            }
+        ],
+    }
+    monkeypatch.setattr(execute_adaptive_plan, "git_head", lambda: commit)
+
+    assert validate_plan_provenance(plan) == []
+
+    refined.write_text('{"example_id":"tampered"}\n', encoding="utf-8")
+    failures = validate_plan_provenance(plan)
+    assert any("refined scored input hash drifted" in item for item in failures)
+    assert any("refined audit no longer binds input" in item for item in failures)

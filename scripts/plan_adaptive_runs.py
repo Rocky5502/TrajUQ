@@ -29,6 +29,17 @@ def git_head() -> str | None:
         return None
 
 
+def git_status_porcelain() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
 def scored_audit_passes(path: Path) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
@@ -119,6 +130,14 @@ def main() -> None:
     elif current_head != experiment_commit:
         failures.append(
             "current git commit differs from the frozen experiment commit"
+        )
+    current_status = git_status_porcelain()
+    if current_status is None:
+        failures.append("current git worktree status could not be resolved")
+    elif current_status:
+        failures.append(
+            "current git worktree is dirty; adaptive planning requires the "
+            "frozen clean checkout"
         )
 
     cfg_hash = sha256_file(cfg_path)

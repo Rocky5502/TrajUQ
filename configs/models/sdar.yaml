@@ -10,13 +10,19 @@ upstream:
 status: pilot_adapter_implemented_parity_pending
 notes:
   - TrajUQ now contains an instrumented pilot adapter derived from the pinned MIT upstream generation loop.
-  - Primary-paper use remains blocked until deterministic on-GPU parity against the pinned upstream generator passes.
+  - Primary-paper use remains blocked until seed-matched on-GPU parity against the pinned upstream sampler passes.
 generation:
   gen_length: 128
   block_length: 4
   denoising_steps: 4
-  temperature: 0.0
+  temperature: 1.0
   top_k: 0
   top_p: 1.0
   remasking_strategy: low_confidence_dynamic
   confidence_threshold: 0.85
+
+parity:
+  temperature: 1.0
+  seed: 2027
+  prompts: 20
+  require_exact_token_ids: true

@@ -7,49 +7,57 @@ Pinned upstream integration reference:
 - commit: `4c2749ba103448f45520e8411533710a1e66574d`
 - upstream generator: `block_diffusion_generate`
 
-TrajUQ now contains `src/trajuq/adapters/sdar.py`, an instrumented research adapter derived from that MIT-licensed inference loop. Telemetry is collected from predictive logits **before token transfer** so the logger does not use outcome information.
+TrajUQ contains an instrumented research adapter derived from that MIT-licensed inference loop. Telemetry is collected from predictive logits **before token transfer**, so the logger never uses correctness or the future benchmark outcome.
 
 ## What must remain identical in the parity audit
 
 - chat template and tokenization;
 - mask token id;
 - block-aligned attention mask;
-- position IDs;
-- prefill boundary and `DynamicCache` behavior;
+- position IDs and prefill boundary;
+- DynamicCache behavior;
 - transfer-token counts;
 - sampling/remasking rule;
 - confidence threshold;
 - stopping criteria;
-- model/checkpoint revision.
+- checkpoint/runtime revision;
+- random seed.
 
-## Telemetry semantics
+## Native sampling semantics
 
-SDAR denoises one active block at a time. TrajUQ computes the standard trajectory feature dictionary within each generated block and then token-weights those block summaries into an example-level record. `entropy_max` and `margin_min` preserve max/min semantics; `trajectory_steps` is summed.
+The pinned upstream SDAR helper always samples with `torch.multinomial`. Its public default is `temperature=1.0`; passing zero would divide logits by zero and is **not** a valid native deterministic mode.
 
-This block-local definition is explicit because pretending SDAR exposes a whole-sequence denoising state would be scientifically incorrect.
+Accordingly, the hard parity gate uses the upstream-native stochastic path at `temperature=1.0` with the same seed in the reference and instrumented runs. TrajUQ telemetry performs no random draws, so exact token-ID equality is expected when instrumentation preserves sampler semantics.
+
+TrajUQ also exposes `temperature=0` argmax as an explicit research control, but that control is not called upstream-native SDAR and is not used for the native parity claim.
+
+## Exact blockwise feature aggregation
+
+SDAR denoises one active block at a time. Each block exports mergeable sufficient statistics: unresolved-position entropy/margin/JS samples, per-step event/count statistics, per-token decision-time confidence, and commitment times.
+
+TrajUQ then recomputes the example-level feature vector after concatenating blocks in generation order. It does **not** average block-level percentiles or temporal slopes. This preserves exact global p90/max/min features, late-stage rates, temporal trends, decision-time means, and commitment statistics under the same schema-v4 semantics used by whole-sequence adapters.
 
 ## Required parity experiment
 
 Use one frozen checkpoint revision and 20 non-test prompts.
 
-1. Run the pinned upstream generator with a deterministic configuration.
-2. Run TrajUQ with telemetry on and otherwise identical settings.
-3. Compare:
-   - decoded token IDs;
-   - generated text;
-   - number of model forward evaluations;
-   - block transfer decisions (temporary debug log);
-   - EOS stopping point.
-4. Require exact token equality for deterministic greedy decoding.
-5. For stochastic decoding, require equality under the same random seed after confirming both paths consume RNG identically; otherwise compare the deterministic condition for the hard parity gate.
+Reference:
 
-Primary-paper SDAR results are blocked until this passes.
+```bash
+python scripts/run_sdar_reference.py \
+  --model JetLM/SDAR-1.7B-Chat \
+  --revision <EXACT_MODEL_REVISION> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/sdar_native_reference.jsonl \
+  --limit 20 \
+  --max-new-tokens 128 \
+  --block-length 4 \
+  --denoising-steps 4 \
+  --temperature 1.0 \
+  --remasking-strategy low_confidence_dynamic
+```
 
-## Important difference from the upstream demo
-
-The public upstream helper always samples with `torch.multinomial`. TrajUQ also supports `temperature=0` as a deterministic **research control** using argmax. That mode is not claimed to be byte-for-byte identical to an upstream sampling run. For upstream parity, use an equivalent deterministic upstream configuration or add the same argmax control to a temporary local upstream copy and document it.
-
-## Pilot command
+Instrumented run:
 
 ```bash
 python scripts/run_generation.py \
@@ -57,38 +65,37 @@ python scripts/run_generation.py \
   --model JetLM/SDAR-1.7B-Chat \
   --revision <EXACT_MODEL_REVISION> \
   --input data/processed/gsm8k/calibration.jsonl \
-  --output runs/sdar_parity_pilot.raw.jsonl \
+  --output runs/sdar_trajuq.raw.jsonl \
   --limit 20 \
   --max-new-tokens 128 \
   --block-length 4 \
   --sdar-denoising-steps 4 \
-  --sdar-temperature 0
+  --temperature 1.0 \
+  --sdar-remasking-strategy low_confidence_dynamic
 ```
 
-Then run `scripts/audit_run.py --stage raw --require-revision`.
-
-
-## Automated parity comparison
-
-Save the upstream/reference outputs and TrajUQ outputs as JSONL with matching `example_id` values and token IDs, then run:
+Audit and compare:
 
 ```bash
+python scripts/audit_run.py \
+  --run runs/sdar_trajuq.raw.jsonl \
+  --stage raw \
+  --require-revision
+
 python scripts/compare_run_parity.py \
-  --reference runs/sdar_upstream_reference.jsonl \
-  --instrumented runs/sdar_trajuq_instrumented.jsonl \
+  --reference runs/sdar_native_reference.jsonl \
+  --instrumented runs/sdar_trajuq.raw.jsonl \
   --require-token-ids \
   --output results/sdar_parity.json
+
+python scripts/compare_instrumentation_overhead.py \
+  --reference runs/sdar_native_reference.jsonl \
+  --instrumented runs/sdar_trajuq.raw.jsonl \
+  --output results/sdar_instrumentation_overhead.json
 ```
 
-A hard parity gate requires `status=PASS`.
+The hard gate requires exact token equality for all 20 seed-matched prompts. Primary-paper SDAR results remain blocked until this passes.
 
+## Pilot/primary configuration
 
-## Blockwise feature aggregation
-
-TrajUQ does **not** average block-level percentiles or slopes. Each SDAR block exports
-mergeable sufficient statistics: unresolved-position entropy/margin/JS samples,
-per-step event/count statistics, per-token decision-time confidence, and
-commitment times. The example-level feature vector is then recomputed after
-concatenating blocks in generation order. This preserves exact global p90/max/min
-statistics, late-stage rates, temporal slopes, and decision-time means under the
-same semantics used by whole-sequence adapters.
+After parity, use the pinned native temperature and other frozen model settings recorded in `configs/models/sdar.yaml` (or an artifact-local copy with the immutable model revision filled in). Do not silently switch between stochastic native sampling and the argmax research control after inspecting outcomes.

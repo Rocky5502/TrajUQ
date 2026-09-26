@@ -319,6 +319,9 @@ python scripts/evaluate_adaptive.py \
 
 ## SDAR pilot
 
+The SDAR hard parity gate now has a pinned-upstream reference runner (`scripts/run_sdar_reference.py`). Because upstream SDAR always uses multinomial sampling, parity is seed-matched at its native `temperature=1.0`; `temperature=0` remains a separate TrajUQ argmax research control.
+
+
 The repository includes an instrumented SDAR adapter based on the pinned MIT upstream block-diffusion generator. It is **not yet cleared for paper numbers**: first run the parity protocol in `docs/SDAR_INSTRUMENTATION.md`.
 
 Example after pinning an exact model revision:
@@ -334,7 +337,7 @@ python scripts/run_generation.py \
   --max-new-tokens 128 \
   --block-length 4 \
   --sdar-denoising-steps 4 \
-  --sdar-temperature 0
+  --temperature 1.0
 ```
 
 ## LLaDA native parity

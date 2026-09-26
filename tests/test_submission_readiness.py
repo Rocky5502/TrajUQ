@@ -6,6 +6,7 @@ import yaml
 import scripts.submission_readiness as submission_readiness
 from scripts.render_results_tex import build_macros, render_tex
 from scripts.submission_readiness import (
+    prerequisite_gate_failures,
     preprimary_revalidation_argv,
     verify_downstream_provenance,
     verify_generated_results,
@@ -401,3 +402,40 @@ def test_generated_results_gate_rejects_missing_required_sources(tmp_path):
     result = verify_generated_results(manifest, generated)
     assert result["status"] == "FAIL"
     assert any("missing required sources" in item for item in result["failures"])
+
+
+def test_submission_prerequisites_exclude_own_output_gate():
+    snapshot = {
+        "execution_gates": [
+            {
+                "id": "primary",
+                "required": True,
+                "state": "PASS",
+            },
+            {
+                "id": "submission_readiness",
+                "required": True,
+                "state": "PENDING",
+            },
+        ]
+    }
+    assert prerequisite_gate_failures(snapshot) == []
+
+
+def test_submission_prerequisites_still_block_other_required_gate():
+    snapshot = {
+        "execution_gates": [
+            {
+                "id": "primary",
+                "required": True,
+                "state": "PENDING",
+            },
+            {
+                "id": "submission_readiness",
+                "required": True,
+                "state": "PENDING",
+            },
+        ]
+    }
+    failures = prerequisite_gate_failures(snapshot)
+    assert [item["id"] for item in failures] == ["primary"]

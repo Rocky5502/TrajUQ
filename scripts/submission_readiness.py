@@ -42,6 +42,41 @@ def load_json(path: Path) -> dict:
         raise ValueError(f"invalid JSON artifact {path}: {exc}") from exc
 
 
+def git_text(*args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def verify_submission_checkout() -> dict:
+    commit = git_text("rev-parse", "HEAD")
+    status = git_text("status", "--porcelain")
+    failures: list[str] = []
+    if not commit:
+        failures.append("current submission git commit could not be resolved")
+    if status is None:
+        failures.append("current submission worktree status could not be resolved")
+        clean = None
+    else:
+        clean = status == ""
+        if not clean:
+            failures.append(
+                "current submission worktree is dirty; commit/stash final paper changes "
+                "before the submission gate"
+            )
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "git_commit": commit,
+        "git_clean": clean,
+        "failures": failures,
+    }
+
+
 def verify_downstream_provenance(
     primary_plan_path: Path,
     analysis_plan_path: Path,
@@ -221,12 +256,20 @@ def main() -> None:
 
     failures: list[str] = []
 
+    submission_checkout = verify_submission_checkout()
+    failures.extend(submission_checkout["failures"])
+
     preprimary_readiness = run_json_command(
-        [sys.executable, "scripts/primary_readiness.py"]
+        [
+            sys.executable,
+            "scripts/primary_readiness.py",
+            "--historical-provenance-only",
+        ]
     )
     if preprimary_readiness.get("status") != "PASS":
         failures.append(
-            "pre-primary provenance/readiness revalidation failed at submission time"
+            "historical pre-primary provenance/readiness revalidation failed "
+            "at submission time"
         )
 
     config = yaml.safe_load(
@@ -306,6 +349,7 @@ def main() -> None:
         "status": "PASS" if not failures else "FAIL",
         "project_gate_summary": snapshot["summary"],
         "required_gate_failures": required_not_pass,
+        "submission_checkout": submission_checkout,
         "preprimary_readiness_revalidation": preprimary_readiness,
         "downstream_provenance_revalidation": downstream_provenance,
         "generated_results": rendered,

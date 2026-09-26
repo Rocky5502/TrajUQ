@@ -41,6 +41,15 @@ TrajUQ then recomputes the example-level feature vector after concatenating bloc
 
 Use one frozen checkpoint revision and 20 non-test prompts.
 
+On Windows, the preferred guarded entry point is:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/parity_remaining_windows.ps1 -Model sdar
+```
+
+The wrapper requires the clean protocol-v1 CPU artifact and protocol-v2 revision ledger at the current frozen HEAD, prepares the frozen GSM8K calibration split if needed, preserves an already-valid parity-v3 PASS, and refuses to overwrite ambiguous partial evidence.
+
+
 Reference:
 
 ```bash

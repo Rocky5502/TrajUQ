@@ -138,78 +138,92 @@ execution_gates:
     label: "Clean-commit CPU verification suite"
     stage: pre_primary
     issue: 6
+    action: "Run scripts/verify_cpu.ps1 on Windows or scripts/verify_cpu.sh on Linux/macOS from a clean commit."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
   - id: llada_parity
     label: "LLaDA 20-prompt exact parity"
     stage: pre_primary
     issue: 7
+    action: "Run scripts/pilot_windows.ps1 -Stage prepare, then -Stage parity."
     artifact: results/llada_parity.json
     expect: {key: status, equals: PASS}
   - id: pilot_quality
     label: "LLaDA + GSM8K 50-example pilot quality"
     stage: pre_primary
     issue: 1
+    action: "After LLaDA parity PASS, run scripts/pilot_windows.ps1 -Stage pilot."
     artifact: results/llada_gsm8k_pilot50_gate.json
     expect: {key: status, equals: PASS}
   - id: pilot_manual
     label: "10-trace human pilot review"
     stage: pre_primary
     issue: 1
+    action: "Inspect the exported 10-trace sheet and record the attestation with scripts/record_manual_gate.py."
     artifact: results/llada_gsm8k_pilot50_manual_review.json
     expect: {key: status, equals: PASS}
   - id: sdar_parity
     label: "SDAR exact parity"
     stage: pre_primary
     issue: 2
+    action: "Follow docs/SDAR_INSTRUMENTATION.md and require exact 20-prompt token parity."
     artifact: results/sdar_parity.json
     expect: {key: status, equals: PASS}
   - id: dream_parity
     label: "Dream exact parity"
     stage: pre_primary
     issue: 5
+    action: "Follow docs/DREAM_INSTRUMENTATION.md and require exact 20-prompt token parity."
     artifact: results/dream_parity.json
     expect: {key: status, equals: PASS}
   - id: math500_auto
     label: "Automatic MATH-500 scorer audit"
     stage: pre_primary
     issue: 4
+    action: "Run python scripts/audit_math500_scorer.py."
     artifact: results/math500_scorer_audit.json
     expect: {key: status, equals: PASS}
   - id: math500_manual
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
+    action: "Export and inspect the calibration-only scorer review sheet, then record the manual attestation."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: revision_ledger
     label: "Immutable model/dataset revision ledger"
     stage: pre_primary
+    action: "Run python scripts/resolve_experiment_revisions.py after authenticating to Hugging Face for GPQA."
     artifact: results/revision_ledger.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
+    action: "Run python scripts/primary_readiness.py and require status=PASS."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan
     label: "Frozen 18-cell execution plan"
     stage: primary_execution
+    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution."
     artifact: results/primary_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: primary_execution_complete
     label: "All 18 primary cells fully generated, audited, and scored"
     stage: primary_execution
+    action: "Use python scripts/execute_primary_plan.py --execute to resume the frozen plan without overwriting validated artifacts."
     artifact: results/primary_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: primary_analysis_plan
     label: "Frozen 18-cell analysis command ledger"
     stage: analysis
+    action: "Run python scripts/plan_primary_analysis.py after all 18 scored cells exist."
     artifact: results/primary_analysis_plan.json
     expect: {key: status, equals: PASS}
   - id: primary_analysis_execution_complete
     label: "All 18 primary cell analyses plus macro and RQ1 gate complete"
     stage: analysis
+    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, macro aggregation, and the frozen RQ1 gate."
     artifact: results/primary_analysis_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
@@ -249,11 +263,14 @@ execution_gates:
   - id: hybrid_rq4_result
     label: "Held-out FLARE same-checkpoint RQ4 diagnostic"
     stage: diagnostic
+    required: false
     issue: 3
+    action: "Optional diagnostic: run same-checkpoint AR/diffusion RQ4 only after FLARE parity/trace gates pass."
     artifact: results/flare_rq4_hybrid.json
     expect: {key: role, equals: RQ4_DIAGNOSTIC_NOT_PRIMARY_ENDPOINT}
   - id: rendered_results
     label: "Artifact-derived paper result manifest"
     stage: submission
+    action: "Run python scripts/render_results_tex.py, then python scripts/audit_paper.py --submission-ready."
     artifact: paper/generated_results_manifest.json
     expect: {key: protocol, equals: trajuq_paper_results_render_v1}

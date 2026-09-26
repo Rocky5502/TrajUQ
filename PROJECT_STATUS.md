@@ -59,8 +59,10 @@ python scripts/project_status.py
 ~~~
 
 to write results/project_status_snapshot.json and
-results/project_status_snapshot.md. These two local snapshots separate
-**implemented code** from **executed experimental gates**, so a high engineering
+results/project_status_snapshot.md. The dashboard reports implementation
+evidence, required-vs-optional execution progress by phase, and the **next
+required action** with its expected artifact. These local snapshots separate
+implemented code from executed experimental gates, so a high engineering
 completion count cannot be mistaken for completed empirical work.
 
 ## What is still blocked / not done

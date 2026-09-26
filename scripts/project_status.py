@@ -41,6 +41,8 @@ def gate_state(root: Path, gate: dict[str, Any]) -> dict[str, Any]:
         "stage": gate.get("stage", "unknown"),
         "issue": gate.get("issue"),
         "artifact": str(gate["artifact"]),
+        "required": bool(gate.get("required", True)),
+        "action": gate.get("action"),
     }
     if not path.exists():
         return {**base, "state": "PENDING", "reason": "artifact_missing"}
@@ -89,8 +91,45 @@ def build_snapshot(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     ]
 
     verified_impl = sum(item["verified"] for item in implementation)
+    required_gates = [gate for gate in gates if gate["required"]]
+    optional_gates = [gate for gate in gates if not gate["required"]]
     passed_gates = sum(gate["state"] == "PASS" for gate in gates)
+    passed_required = sum(gate["state"] == "PASS" for gate in required_gates)
     failed_gates = sum(gate["state"] in {"FAIL", "INVALID"} for gate in gates)
+
+    phase_summary: dict[str, dict[str, int | float]] = {}
+    for gate in gates:
+        stage = str(gate["stage"])
+        phase = phase_summary.setdefault(
+            stage,
+            {"passed": 0, "required": 0, "total": 0},
+        )
+        phase["total"] = int(phase["total"]) + 1
+        if gate["required"]:
+            phase["required"] = int(phase["required"]) + 1
+            if gate["state"] == "PASS":
+                phase["passed"] = int(phase["passed"]) + 1
+    for phase in phase_summary.values():
+        required = int(phase["required"])
+        passed = int(phase["passed"])
+        phase["fraction"] = passed / required if required else 1.0
+
+    next_action = next(
+        (
+            {
+                "id": gate["id"],
+                "label": gate["label"],
+                "stage": gate["stage"],
+                "state": gate["state"],
+                "artifact": gate["artifact"],
+                "issue": gate.get("issue"),
+                "action": gate.get("action"),
+            }
+            for gate in required_gates
+            if gate["state"] != "PASS"
+        ),
+        None,
+    )
 
     return {
         "protocol": "trajuq_project_status_v1",
@@ -106,9 +145,19 @@ def build_snapshot(root: Path, config: dict[str, Any]) -> dict[str, Any]:
             "execution_passed": passed_gates,
             "execution_total": len(gates),
             "execution_fraction": passed_gates / len(gates) if gates else 0.0,
+            "required_execution_passed": passed_required,
+            "required_execution_total": len(required_gates),
+            "required_execution_fraction": (
+                passed_required / len(required_gates)
+                if required_gates
+                else 1.0
+            ),
+            "optional_execution_total": len(optional_gates),
             "execution_failed_or_invalid": failed_gates,
             "execution_pending": sum(gate["state"] == "PENDING" for gate in gates),
         },
+        "phase_summary": phase_summary,
+        "next_action": next_action,
     }
 
 
@@ -125,11 +174,45 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
             f"**{summary['implementation_verified']}/{summary['implementation_total']}**"
         ),
         (
-            "Execution gates passed: "
-            f"**{summary['execution_passed']}/{summary['execution_total']}** "
-            f"(pending: {summary['execution_pending']}, "
-            f"failed/invalid: {summary['execution_failed_or_invalid']})"
+            "Required execution gates passed: "
+            f"**{summary['required_execution_passed']}/"
+            f"{summary['required_execution_total']}** "
+            f"(all gates including optional: "
+            f"{summary['execution_passed']}/{summary['execution_total']})"
         ),
+        (
+            "Pending gates: "
+            f"{summary['execution_pending']}; failed/invalid: "
+            f"{summary['execution_failed_or_invalid']}"
+        ),
+        "",
+    ]
+
+    next_action = snapshot.get("next_action")
+    if next_action:
+        lines += [
+            "## Next required action",
+            "",
+            f"**{next_action['label']}** ({next_action['stage']})",
+            "",
+            str(next_action.get("action") or "Create the required artifact."),
+            "",
+            f"Expected artifact: {next_action['artifact']}",
+            "",
+        ]
+
+    lines += [
+        "## Phase progress",
+        "",
+        "| Phase | Required passed | Required total |",
+        "|---|---:|---:|",
+    ]
+    for stage, phase in snapshot.get("phase_summary", {}).items():
+        lines.append(
+            f"| {stage} | {phase['passed']} | {phase['required']} |"
+        )
+
+    lines += [
         "",
         "## Implementation",
         "",
@@ -148,12 +231,13 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
         "",
         "## Execution gates",
         "",
-        "| Stage | Gate | State | Artifact |",
-        "|---|---|---|---|",
+        "| Stage | Gate | Required | State | Artifact |",
+        "|---|---|---:|---|---|",
     ]
     for gate in snapshot["execution_gates"]:
         lines.append(
-            f"| {gate['stage']} | {gate['label']} | {gate['state']} | "
+            f"| {gate['stage']} | {gate['label']} | "
+            f"{'yes' if gate['required'] else 'no'} | {gate['state']} | "
             f"{gate['artifact']} |"
         )
     lines.append("")

@@ -6,6 +6,7 @@ import scripts.execute_primary_analysis as execute_primary_analysis
 from scripts.execute_primary_analysis import (
     execution_snapshot,
     output_valid,
+    semantic_output_valid,
     step_state,
     validate_plan_provenance,
 )
@@ -36,7 +37,42 @@ def test_evaluate_step_detects_partial_outputs(tmp_path):
     assert step_state(cell, ("metrics", "predictions")) == "PARTIAL"
 
 
+def test_semantic_output_rejects_truncated_predictions(tmp_path):
+    cal = tmp_path / "calibration.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    predictions = tmp_path / "predictions.jsonl"
+    cal.write_text(
+        '{"example_id":"c1"}\n{"example_id":"c2"}\n',
+        encoding="utf-8",
+    )
+    test.write_text(
+        '{"example_id":"t1"}\n{"example_id":"t2"}\n',
+        encoding="utf-8",
+    )
+    predictions.write_text(
+        '{"example_id":"t1"}\n',
+        encoding="utf-8",
+    )
+    cell = {
+        "inputs": {
+            "calibration": {"path": str(cal)},
+            "test": {"path": str(test)},
+        }
+    }
+
+    assert not semantic_output_valid(
+        cell,
+        "predictions",
+        predictions,
+    )
+
+
 def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
+    cal = tmp_path / "calibration.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    cal.write_text('{"example_id":"c"}\n', encoding="utf-8")
+    test.write_text('{"example_id":"x"}\n', encoding="utf-8")
+
     outputs = {
         "metrics": tmp_path / "metrics.json",
         "predictions": tmp_path / "predictions.jsonl",
@@ -44,11 +80,59 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         "feature_ablation": tmp_path / "ablation.json",
         "raw_risk_diagnostic": tmp_path / "raw.json",
     }
-    for key, path in outputs.items():
-        if key == "predictions":
-            path.write_text('{"example_id":"x"}\n', encoding="utf-8")
-        else:
-            path.write_text("{}", encoding="utf-8")
+    outputs["metrics"].write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_heldout_evaluation_v1",
+                "decision_entropy_baseline": {
+                    "n_calibration": 1,
+                    "n_test": 1,
+                },
+                "trajectory_plus_decision_logistic": {
+                    "n_calibration": 1,
+                    "n_test": 1,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    outputs["predictions"].write_text(
+        '{"example_id":"x"}\n',
+        encoding="utf-8",
+    )
+    outputs["nested_bootstrap"].write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_nested_calibrated_comparison_v1",
+                "n_calibration": 1,
+                "n_test": 1,
+                "metrics": {"auroc": {}, "auprc": {}, "aurc": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    outputs["feature_ablation"].write_text(
+        json.dumps(
+            {
+                "protocol": "frozen_feature_family_ablation_v1",
+                "baseline": "decision_only",
+                "n_calibration": 1,
+                "n_test": 1,
+                "groups": {"decision_only": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    outputs["raw_risk_diagnostic"].write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_raw_risk_diagnostic_v1",
+                "n": 1,
+                "metrics": {"auroc": {}, "auprc": {}, "aurc": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     macro = tmp_path / "macro.json"
     claim = tmp_path / "claim.json"
@@ -60,6 +144,10 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                 "cell": "llada:gsm8k",
                 "adapter": "llada",
                 "dataset": "gsm8k",
+                "inputs": {
+                    "calibration": {"path": str(cal)},
+                    "test": {"path": str(test)},
+                },
                 "outputs": {key: str(value) for key, value in outputs.items()},
             }
         ],
@@ -74,11 +162,38 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
     assert snapshot["status"] == "IN_PROGRESS"
 
     macro.write_text(
-        json.dumps({"cell_set_complete": True}),
+        json.dumps(
+            {
+                "protocol": "hierarchical_within_cell_macro_bootstrap_v1",
+                "cell_set_complete": True,
+                "expected_cell_count": 1,
+                "observed_cell_count": 1,
+                "macro": {
+                    key: {}
+                    for key in (
+                        "auroc",
+                        "auprc",
+                        "brier",
+                        "nll",
+                        "ece15",
+                        "aurc",
+                        "risk50",
+                        "risk80",
+                    )
+                },
+            }
+        ),
         encoding="utf-8",
     )
     claim.write_text(
-        json.dumps({"decision": "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"}),
+        json.dumps(
+            {
+                "protocol": "trajuq_rq1_claim_gate_v1",
+                "decision": "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
+                "claim_supported": False,
+                "conditions": {"complete_frozen_cell_set": True},
+            }
+        ),
         encoding="utf-8",
     )
     snapshot = execution_snapshot(plan)

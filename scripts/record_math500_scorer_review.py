@@ -49,7 +49,10 @@ def review_sheet_metadata(path: Path) -> dict[str, str]:
                 found[key] = line[len(prefix):].strip()
     return found
 
-def scored_audit_passes(path: Path) -> tuple[bool, dict]:
+def scored_audit_passes(
+    path: Path,
+    expected_commit: str | None,
+) -> tuple[bool, dict]:
     audit_path = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit_path.exists():
         return False, {}
@@ -58,7 +61,10 @@ def scored_audit_passes(path: Path) -> tuple[bool, dict]:
     except (OSError, json.JSONDecodeError):
         return False, {}
     passed = (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("git_commit") == expected_commit
         and payload.get("stage") == "scored"
         and str(payload.get("sha256", "")) == sha256_file(path)
     )
@@ -125,10 +131,6 @@ def main() -> None:
     else:
         input_sha256 = sha256_file(input_path)
 
-    scored_audit_ok, scored_audit = scored_audit_passes(scored_path)
-    if not scored_audit_ok:
-        failures.append("reviewed MATH-500 scored artifact has no current PASS audit")
-
     if review_meta:
         if review_meta.get("scored_artifact") != str(scored_path):
             failures.append("review sheet scored artifact path differs from --scored")
@@ -180,6 +182,12 @@ def main() -> None:
         failures.append(
             f"automatic scorer audit commit {audit_commit} differs from current commit {commit}"
         )
+    scored_audit_ok, scored_audit = scored_audit_passes(scored_path, commit)
+    if not scored_audit_ok:
+        failures.append(
+            "reviewed MATH-500 scored artifact has no current clean PASS audit at this commit"
+        )
+
     normalized_input = str(input_path).replace("\\", "/")
     if not normalized_input.endswith("data/processed/math500/calibration.jsonl"):
         failures.append("MATH-500 human review input must be the frozen calibration split")

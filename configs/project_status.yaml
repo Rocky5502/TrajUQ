@@ -151,13 +151,39 @@ implementation:
       - scripts/verify_cpu.sh
       - scripts/freeze_preprimary_windows.ps1
       - .github/workflows/ci.yml
+  - id: clean_checkout_provenance
+    label: "Clean-checkout provenance guards from pre-primary freeze through frozen execution"
+    state: DONE
+    evidence:
+      - scripts/pilot_windows.ps1
+      - scripts/primary_readiness.py
+      - scripts/plan_primary_matrix.py
+      - scripts/execute_primary_plan.py
+      - scripts/execute_primary_analysis.py
+      - scripts/execute_repeated_sampling.py
+      - scripts/execute_adaptive_plan.py
+  - id: private_handoff
+    label: "Privacy-scanned deterministic research handoff bundle and canonical continuation prompt"
+    state: DONE
+    evidence:
+      - NEW_CHAT_MASTER_PROMPT.md
+      - scripts/export_research_handoff.py
+      - tests/test_export_research_handoff.py
+  - id: guarded_preprimary_wrappers
+    label: "Frozen-state guarded SDAR/Dream parity and MATH-500 scorer-pilot wrappers"
+    state: DONE
+    evidence:
+      - scripts/parity_remaining_windows.ps1
+      - scripts/math500_gate_windows.ps1
+      - tests/test_remaining_parity_script_contract.py
+      - tests/test_math500_gate_script_contract.py
 
 execution_gates:
   - id: cpu_verification_artifact
     label: "Clean-commit CPU verification suite"
     stage: pre_primary
     issue: 6
-    action: "On Windows, run scripts/freeze_preprimary_windows.ps1 from a clean commit; it runs CPU verification and immediately writes the commit-bound revision ledger. On Linux/macOS, run scripts/verify_cpu.sh and then scripts/resolve_experiment_revisions.py without changing commits."
+    action: "On Windows, run scripts/freeze_preprimary_windows.ps1 from a clean commit; it runs CPU verification, writes the commit-bound revision ledger, re-checks worktree cleanliness, refreshes project status, and exports dist/trajuq_preprimary_handoff.zip. On Linux/macOS, run scripts/verify_cpu.sh and then scripts/resolve_experiment_revisions.py without changing commits."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
   - id: revision_ledger
@@ -191,34 +217,34 @@ execution_gates:
     label: "SDAR exact parity"
     stage: pre_primary
     issue: 2
-    action: "Follow docs/SDAR_INSTRUMENTATION.md and require exact 20-prompt token parity."
+    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model sdar; otherwise follow docs/SDAR_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality and matching frozen provenance."
     artifact: results/sdar_parity.json
     expect: {key: status, equals: PASS}
   - id: dream_parity
     label: "Dream exact parity"
     stage: pre_primary
     issue: 5
-    action: "Follow docs/DREAM_INSTRUMENTATION.md and require exact 20-prompt token parity."
+    action: "On Windows run scripts/parity_remaining_windows.ps1 -Model dream; otherwise follow docs/DREAM_INSTRUMENTATION.md. Require parity-v3 exact 20-prompt token equality and matching frozen provenance."
     artifact: results/dream_parity.json
     expect: {key: status, equals: PASS}
   - id: math500_auto
     label: "Automatic MATH-500 scorer audit"
     stage: pre_primary
     issue: 4
-    action: "Run python scripts/audit_math500_scorer.py at the frozen experiment commit; protocol v2 records that git commit."
+    action: "The clean CPU verification already runs scripts/audit_math500_scorer.py; on Windows scripts/math500_gate_windows.ps1 -Stage prepare revalidates the commit-bound protocol-v2 artifact and frozen dependency versions before the calibration pilot."
     artifact: results/math500_scorer_audit.json
     expect: {key: status, equals: PASS}
   - id: math500_manual
     label: "25-example MATH-500 calibration scorer review"
     stage: pre_primary
     issue: 4
-    action: "Export and inspect the calibration-only scorer review sheet, then record the protocol-v2 manual attestation; it binds the sheet and automatic scorer audit by SHA-256 at the frozen commit."
+    action: "On Windows run scripts/math500_gate_windows.ps1 -Stage all to generate/audit/score exactly 25 calibration-only examples and export the deterministic review sheet. Inspect it manually, then record the protocol-v2 attestation with scripts/record_math500_scorer_review.py."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires CPU verification, pilot quality/manual review, MATH-500 scorer audit/manual review, and all three exact-parity artifacts to be commit/hash-bound to the revision ledger."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, pilot quality/manual review, MATH-500 scorer audit/manual review, and all three exact-parity artifacts."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

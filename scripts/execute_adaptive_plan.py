@@ -50,7 +50,11 @@ def git_status_porcelain() -> str | None:
         return None
 
 
-def audit_passes(path: Path, stage: str) -> bool:
+def audit_passes(
+    path: Path,
+    stage: str,
+    expected_commit: str | None = None,
+) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
         return False
@@ -59,9 +63,15 @@ def audit_passes(path: Path, stage: str) -> bool:
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
         and payload.get("stage") == stage
-        and str(payload.get("sha256")) == sha256_file(path)
+        and str(payload.get("sha256", "")) == sha256_file(path)
+        and (
+            expected_commit is None
+            or payload.get("git_commit") == expected_commit
+        )
     )
 
 
@@ -172,11 +182,14 @@ def validate_plan_provenance(
                 )
                 continue
             if (
-                audit_payload.get("status") != "PASS"
+                audit_payload.get("protocol") != "trajuq_run_audit_v1"
+                or audit_payload.get("status") != "PASS"
+                or audit_payload.get("git_clean") is not True
+                or audit_payload.get("git_commit") != expected_commit
                 or audit_payload.get("stage") != "scored"
             ):
                 failures.append(
-                    f"{label} {partition}: refined audit is not a PASS"
+                    f"{label} {partition}: refined audit is not a clean frozen PASS"
                 )
             if str(audit_payload.get("sha256", "")) != observed_refined_hash:
                 failures.append(
@@ -186,11 +199,14 @@ def validate_plan_provenance(
     return failures
 
 
-def base_partition_state(spec: dict[str, Any]) -> dict[str, Any]:
+def base_partition_state(
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> dict[str, Any]:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
-    raw_ok = audit_passes(raw, "raw")
-    scored_ok = audit_passes(scored, "scored")
+    raw_ok = audit_passes(raw, "raw", expected_commit)
+    scored_ok = audit_passes(scored, "scored", expected_commit)
     return {
         "raw_output": str(raw),
         "scored_output": str(scored),
@@ -231,9 +247,15 @@ def macro_state(spec: dict[str, Any], expected_cells: int) -> str:
     return "COMPLETE" if complete else "INVALID"
 
 
-def cell_state(cell: dict[str, Any], fraction_keys: list[str]) -> dict[str, Any]:
-    calibration = base_partition_state(cell["calibration_base"])
-    test = base_partition_state(cell["test_base"])
+def cell_state(
+    cell: dict[str, Any],
+    fraction_keys: list[str],
+    expected_commit: str | None = None,
+) -> dict[str, Any]:
+    calibration = base_partition_state(
+        cell["calibration_base"], expected_commit
+    )
+    test = base_partition_state(cell["test_base"], expected_commit)
     evaluations = {
         key: evaluation_state(cell["evaluations"][key])
         for key in fraction_keys
@@ -256,8 +278,9 @@ def cell_state(cell: dict[str, Any], fraction_keys: list[str]) -> dict[str, Any]
 def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
     fraction_keys = [str(item["key"]) for item in plan.get("fractions", [])]
     expected = int(plan.get("expected_cells", 0))
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
     cells = [
-        cell_state(cell, fraction_keys)
+        cell_state(cell, fraction_keys, expected_commit)
         for cell in plan.get("cells", [])
     ]
     complete_cells = sum(cell["complete"] for cell in cells)
@@ -358,17 +381,21 @@ def run_command(
     )
 
 
-def command_needed(step: str, spec: dict[str, Any]) -> bool:
+def command_needed(
+    step: str,
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> bool:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
         return not raw.exists()
     if step == "audit_raw":
-        return not audit_passes(raw, "raw")
+        return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
         return not scored.exists()
     if step == "audit_scored":
-        return not audit_passes(scored, "scored")
+        return not audit_passes(scored, "scored", expected_commit)
     raise ValueError(step)
 
 
@@ -461,6 +488,7 @@ def main() -> None:
 
     state_path = Path(args.state_output)
     event_path = Path(args.event_log)
+    expected_commit = str(plan.get("experiment_git_commit", "")) or None
     initial = write_snapshot(plan, state_path)
     print(
         "[TrajUQ] adaptive progress: "
@@ -475,7 +503,7 @@ def main() -> None:
         ):
             spec = cell[spec_key]
             for step, argv_key in BASE_STEPS:
-                if not command_needed(step, spec):
+                if not command_needed(step, spec, expected_commit):
                     print(
                         f"[SKIP] {scope} {partition_name}_{step}: complete"
                     )
@@ -490,7 +518,9 @@ def main() -> None:
                 if args.execute:
                     write_snapshot(plan, state_path)
 
-            if args.execute and not base_partition_state(spec)["complete"]:
+            if args.execute and not base_partition_state(
+                spec, expected_commit
+            )["complete"]:
                 raise SystemExit(
                     f"{scope}: {partition_name} base-budget partition "
                     "did not validate."
@@ -531,7 +561,8 @@ def main() -> None:
         macro_spec["fraction_key"] = key
         state = macro_state(macro_spec, expected)
         all_key_cells_complete = all(
-            cell_state(cell, [key])["complete"] for cell in cells
+            cell_state(cell, [key], expected_commit)["complete"]
+            for cell in cells
         )
         if subset_requested and not all_key_cells_complete:
             print(

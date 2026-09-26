@@ -143,26 +143,34 @@ artifacts without pretending that implemented code means completed experiments.
 The canonical handoff is `PROJECT_STATUS.md`; the machine-readable gate
 specification is `configs/project_status.yaml`.
 
-## Local verification while GitHub Actions is unavailable
+## Local verification and frozen pre-primary commit
 
-The hosted Actions job is currently failing before runner allocation, so Windows users can validate the repository locally:
+The hosted Actions job is currently failing before runner allocation. On Windows,
+the preferred pre-primary command is:
 
 ```powershell
-PowerShell -ExecutionPolicy Bypass -File scripts/verify_cpu.ps1
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 ```
 
-Linux/macOS:
+It requires a clean worktree, runs the complete CPU verification suite, resolves
+all primary model/data repositories to immutable Hugging Face SHAs, and writes
+`results/revision_ledger.json` plus hash-bound configs in
+`results/frozen_models/`. The CPU artifact and revision ledger must record the
+same git commit.
+
+Linux/macOS equivalent:
 
 ```bash
 bash scripts/verify_cpu.sh
+python scripts/resolve_experiment_revisions.py
 ```
 
-Both local verification paths call `scripts/verify_cpu.py`, which archives
-`results/cpu_verification.json` plus per-step logs. The primary readiness gate
-requires this verification to PASS on a clean git worktree. The suite covers
-compile checks, Ruff, pytest, metric smoke, the leak-safe synthetic end-to-end
-pipeline, the pinned MATH-500 scorer audit, and the paper anonymity audit. It
-does not replace GPU model parity.
+Do not change commits between those commands. Primary readiness v2 later requires
+all three parity-v3 artifacts to match this ledger git commit and their
+ledger-resolved model SHA. CPU verification covers compile checks, Ruff, pytest,
+metric smoke, the leak-safe synthetic end-to-end pipeline, the pinned MATH-500
+scorer audit, and the paper anonymity audit. It does not replace GPU model
+parity.
 
 ## Prepare a frozen benchmark pair
 
@@ -189,13 +197,15 @@ The processed benchmark directory is gitignored. The split manifest records requ
 
 ## Preflight and freeze
 
-Keep the tracked model/data configs as generic templates. Before the primary
-matrix, `python scripts/resolve_experiment_revisions.py` resolves all three
-primary models and all six datasets to immutable Hugging Face SHAs and writes
-artifact-local frozen model configs. The lower-level
-`scripts/resolve_hf_revision.py` and `scripts/freeze_model_config.py` remain
-available for individual debugging. Use the frozen config for preflight and
-manifests:
+Keep the tracked model/data configs as generic templates. Before **any primary
+model parity run**, freeze one clean experiment commit and run
+`python scripts/resolve_experiment_revisions.py` (or the Windows freeze wrapper).
+Revision-ledger protocol v2 records the experiment git commit, hashes of the
+primary config and dataset manifest, immutable SHAs for all three primary models
+and all six datasets, and hashes of the artifact-local frozen model configs.
+The lower-level `scripts/resolve_hf_revision.py` and
+`scripts/freeze_model_config.py` remain debugging tools, not the primary
+freeze path. Use the ledger-generated frozen config for preflight and manifests:
 
 ```bash
 python scripts/preflight.py \
@@ -217,19 +227,31 @@ A primary experiment should not use an unpinned model revision.
 
 ## First pilot choice
 
-The first GPU pilot is frozen to **LLaDA-MoE-7B-A1B-Instruct on GSM8K calibration data**. Resolve immutable Hugging Face SHAs with `scripts/resolve_hf_revision.py`, pass the 20-prompt exact parity gate, and only then run the 50-example pilot. Full commands are in `docs/PILOT_RUNBOOK.md`.
+The first GPU pilot is frozen to **LLaDA-MoE-7B-A1B-Instruct on GSM8K
+calibration data**. Freeze the clean experiment commit and immutable revisions
+first, pass the 20-prompt exact parity-v3 gate at that same commit/model SHA, and
+only then run the 50-example pilot. Full commands are in
+`docs/PILOT_RUNBOOK.md`.
 
-## One-command Windows pilot gate
+## Windows pre-primary + pilot gate
 
-For the Windows GPU workstation, run the safety wrapper in stages:
+For the Windows GPU workstation, run:
 
 ```powershell
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
 PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage pilot
 ```
 
-`-Stage all` runs the same stages sequentially, but the script hard-stops if exact token parity fails. The prepare stage writes a frozen runtime config at `results/llada_pilot_model_config.yaml` without modifying the tracked template. The parity stage records telemetry overhead, and the pilot stage writes `results/llada_gsm8k_pilot50_gate.json` plus a stratified 10-example manual trace-review sheet.
+The freeze wrapper writes `results/cpu_verification.json`,
+`results/revision_ledger.json`, and `results/frozen_models/*.yaml`. The pilot
+wrapper consumes those frozen LLaDA/GSM8K revisions; it does not re-resolve a
+moving Hugging Face head. The parity stage hard-stops unless protocol v3 has
+exactly 20 shared prompts, zero output/provenance mismatches, and the same git
+commit/model SHA as the ledger. The pilot stage writes
+`results/llada_gsm8k_pilot50_gate.json` plus a stratified 10-example manual
+trace-review sheet.
 
 ## 50-example GPU pilot
 
@@ -444,7 +466,15 @@ The repository tracks the remaining gates as GitHub issues:
 - MATH-500 scorer manual-audit gate;
 - CI runner allocation.
 
-Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass. After the human review is recorded, run `python scripts/primary_readiness.py`; it hard-fails unless the 50-item pilot, manual gate, and exact parity artifacts for every primary model are PASS. Once exact model/data revisions are frozen, `python scripts/plan_primary_matrix.py` creates the inspectable 18-cell execution plan without launching GPU work.
+Do not scale to the primary model × dataset matrix until the clean CPU artifact,
+revision-ledger v2, LLaDA/SDAR/Dream parity-v3 gates, 50-item pilot + human
+review, and MATH-500 automatic/manual scorer gates are complete. Then run
+`python scripts/primary_readiness.py`. Readiness v2 rejects stale or mixed
+artifacts: CPU verification and all parity files must share the ledger git
+commit, each parity model revision must equal the ledger SHA, and each parity
+run must contain exactly 20 shared prompts. Only after readiness PASS should
+`python scripts/plan_primary_matrix.py` create the inspectable 18-cell
+execution plan.
 
 ## Paper
 
@@ -494,8 +524,12 @@ the archive.
 
 ## Full primary matrix
 
-The tracked YAML files remain generic templates. Freeze model revisions into
-artifact-local configs with `scripts/freeze_model_config.py`, prepare each
-dataset at an immutable revision, pass `scripts/primary_readiness.py`, and only
-then generate `results/primary_matrix_plan.json` with
-`scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`. The companion `scripts/plan_adaptive_runs.py` derives all frozen low-budget RQ3 runs from that primary plan, so base/refined paths and compute accounting cannot drift manually.
+The tracked YAML files remain generic templates. Freeze one clean experiment
+commit with CPU verification + revision-ledger v2, execute the model parity,
+pilot, and MATH-500 scorer gates at that frozen provenance, and require
+`scripts/primary_readiness.py` to PASS. Prepare all six dataset pairs from the
+ledger SHAs and only then generate `results/primary_matrix_plan.json` with
+`scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`. The
+companion `scripts/plan_adaptive_runs.py` derives all frozen low-budget RQ3
+runs from that primary plan, so base/refined paths and compute accounting cannot
+drift manually.

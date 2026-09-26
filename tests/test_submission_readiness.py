@@ -563,3 +563,39 @@ def test_result_figure_manifest_rejects_pdf_tampering(tmp_path):
         "result figure hash changed: adaptive_tradeoff" in item
         for item in result["failures"]
     )
+
+
+def test_result_figure_manifest_rejects_malformed_entries(tmp_path):
+    manifest = tmp_path / "result_figure_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_paper_result_figures_v2",
+                "expected_cells": 18,
+                "sources": {
+                    "primary": "not-an-object",
+                    "primary_config": {},
+                    "cap_025": {},
+                    "cap_050": {},
+                    "cap_075": {},
+                },
+                "outputs": {
+                    "primary_auroc_matrix": "not-an-object",
+                    "family_macro_auroc": {},
+                    "adaptive_tradeoff": {},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = verify_result_figures(manifest)
+    assert result["status"] == "FAIL"
+    assert any(
+        "source entry is invalid: primary" in item
+        for item in result["failures"]
+    )
+    assert any(
+        "output entry is invalid: primary_auroc_matrix" in item
+        for item in result["failures"]
+    )

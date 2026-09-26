@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+from importlib import metadata
 from pathlib import Path
 
 from trajuq.scoring import math500_equivalent, score_math500
@@ -25,6 +26,17 @@ def git_head() -> str | None:
             stderr=subprocess.STDOUT,
         ).strip()
     except Exception:
+        return None
+
+
+EXPECTED_MATH_VERIFY_VERSION = "0.9.0"
+EXPECTED_ANTLR_VERSION = "4.13.2"
+
+
+def package_version(name: str) -> str | None:
+    try:
+        return metadata.version(name)
+    except metadata.PackageNotFoundError:
         return None
 
 
@@ -101,6 +113,28 @@ def main() -> None:
         for item in results + pairwise_checks
         if bool(item["observed"]) != bool(item["expected"])
     ]
+
+    observed_math_verify = package_version("math-verify")
+    observed_antlr = package_version("antlr4-python3-runtime")
+    if observed_math_verify != EXPECTED_MATH_VERIFY_VERSION:
+        failures.append(
+            {
+                "kind": "dependency",
+                "package": "math-verify",
+                "expected": EXPECTED_MATH_VERIFY_VERSION,
+                "observed": observed_math_verify,
+            }
+        )
+    if observed_antlr != EXPECTED_ANTLR_VERSION:
+        failures.append(
+            {
+                "kind": "dependency",
+                "package": "antlr4-python3-runtime",
+                "expected": EXPECTED_ANTLR_VERSION,
+                "observed": observed_antlr,
+            }
+        )
+
     commit = git_head()
     if not commit:
         failures.append({"kind": "environment", "reason": "git_commit_unavailable"})
@@ -109,6 +143,14 @@ def main() -> None:
         "protocol": "trajuq_math500_scorer_audit_v2",
         "git_commit": commit,
         "dependency": "math-verify[antlr4_13_2]==0.9.0",
+        "dependency_versions": {
+            "math-verify": observed_math_verify,
+            "antlr4-python3-runtime": observed_antlr,
+        },
+        "expected_dependency_versions": {
+            "math-verify": EXPECTED_MATH_VERIFY_VERSION,
+            "antlr4-python3-runtime": EXPECTED_ANTLR_VERSION,
+        },
         "status": "PASS" if not failures else "FAIL",
         "scorer_cases": results,
         "pairwise_clustering_cases": pairwise_checks,

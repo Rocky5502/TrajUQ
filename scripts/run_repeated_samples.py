@@ -20,7 +20,33 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def verified_raw_artifact(path: Path) -> bool:
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
+def verified_raw_artifact(
+    path: Path,
+    expected_commit: str | None,
+) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
         return False
@@ -29,9 +55,12 @@ def verified_raw_artifact(path: Path) -> bool:
     except (OSError, json.JSONDecodeError):
         return False
     return (
-        payload.get("status") == "PASS"
+        payload.get("protocol") == "trajuq_run_audit_v1"
+        and payload.get("status") == "PASS"
+        and payload.get("git_clean") is True
+        and payload.get("git_commit") == expected_commit
         and payload.get("stage") == "raw"
-        and str(payload.get("sha256")) == sha256_file(path)
+        and str(payload.get("sha256", "")) == sha256_file(path)
     )
 
 
@@ -64,8 +93,9 @@ def main() -> None:
         "--resume-verified",
         action="store_true",
         help=(
-            "Skip an existing seed only when its raw audit is PASS and the "
-            "audit SHA-256 matches the current artifact."
+            "Skip an existing seed only when its protocol-v1 raw audit is a "
+            "clean PASS at the current frozen git commit and its SHA-256 "
+            "matches the current artifact."
         ),
     )
     args = parser.parse_args()
@@ -80,15 +110,31 @@ def main() -> None:
     if len(args.seeds) != len(set(args.seeds)):
         raise SystemExit("Repeated-sampling seeds must be unique.")
 
+    commit = git_head()
+    clean = git_clean()
+    if not commit:
+        raise SystemExit("Repeated-sampling generation requires a resolvable git commit.")
+    if clean is not True:
+        raise SystemExit(
+            "Repeated-sampling generation requires the frozen clean checkout."
+        )
+
+    input_path = Path(args.input)
+    if not input_path.is_file():
+        raise SystemExit(f"Repeated-sampling input is missing: {input_path}")
+
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     manifest = {
         "protocol": "repeated_sampling_v1",
+        "git_commit": commit,
+        "git_clean": clean,
         "adapter": args.adapter,
         "model": args.model,
         "model_revision": args.revision,
         "input": args.input,
+        "input_sha256": sha256_file(input_path),
         "seeds": args.seeds,
         "temperature": args.temperature,
         "top_p": args.top_p,
@@ -100,7 +146,11 @@ def main() -> None:
 
     for seed in args.seeds:
         output = out_dir / f"seed-{seed}.raw.jsonl"
-        if output.exists() and args.resume_verified and verified_raw_artifact(output):
+        if (
+            output.exists()
+            and args.resume_verified
+            and verified_raw_artifact(output, commit)
+        ):
             print(f"[TrajUQ repeated] verified seed already complete -> {output}")
             manifest["runs"].append(
                 {

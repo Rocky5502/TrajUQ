@@ -101,3 +101,19 @@ def normalize_row(name: str, row: dict[str, Any], idx: int) -> dict[str, Any]:
 def split_bucket(dataset: str, item_id: str, seed: str = "2027") -> float:
     digest = hashlib.sha256(f"{seed}:{dataset}:{item_id}".encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") / float(2**64)
+
+
+def namespace_record_id(dataset: str, source_split: str, item_id: str) -> str:
+    """Create a globally unique evaluation ID without changing benchmark content.
+
+    Official calibration and test splits often both number rows from zero. A bare
+    row index therefore collides across splits and can make a clean evaluation
+    look like label leakage. Namespacing IDs by dataset and immutable source
+    split prevents that while preserving deterministic alignment.
+    """
+    dataset = str(dataset).strip()
+    source_split = str(source_split).strip()
+    item_id = str(item_id).strip()
+    if not dataset or not source_split or not item_id:
+        raise ValueError("dataset, source_split, and item_id must be non-empty")
+    return f"{dataset}:{source_split}:{item_id}"

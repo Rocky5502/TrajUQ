@@ -34,3 +34,16 @@ data/processed/<dataset>/
 The split manifest records counts, requested revision, Hugging Face fingerprints, and SHA-256 hashes. Freeze it before generation.
 
 Never obtain a final test result and then alter the calibration partition, feature set, prompt template, threshold rule, or scorer.
+
+
+## ID namespacing
+
+Prepared examples use IDs of the form:
+
+`<dataset>:<immutable-source-split>:<upstream-item-id>`
+
+This is required even for official train/validation/test pairs because many
+datasets restart row numbering at zero in every split. Bare integer IDs would
+create false calibration/test overlap during the leakage audit. Internal
+holdouts retain their original source-split namespace on both sides; the
+partition itself is still determined only by the frozen hash rule.

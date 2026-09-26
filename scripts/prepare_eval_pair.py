@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Iterable
 
-from trajuq.datasets import normalize_row, split_bucket
+from trajuq.datasets import namespace_record_id, normalize_row, split_bucket
 
 
 def file_sha256(path: Path) -> str:
@@ -72,13 +72,24 @@ def main() -> None:
         test_ds = load_hf(load_dataset, spec, spec["test_split"], revision)
         fingerprints["calibration"] = getattr(cal_ds, "_fingerprint", None)
         fingerprints["test"] = getattr(test_ds, "_fingerprint", None)
+        def official_rows(ds, split_name):
+            for i, row in enumerate(ds):
+                norm = normalize_row(args.dataset, dict(row), i)
+                norm["id"] = namespace_record_id(
+                    args.dataset,
+                    split_name,
+                    str(norm["id"]),
+                )
+                norm.setdefault("metadata", {})["source_split"] = split_name
+                yield norm
+
         n_cal = write_rows(
             cal_path,
-            (normalize_row(args.dataset, dict(row), i) for i, row in enumerate(cal_ds)),
+            official_rows(cal_ds, spec["calibration_split"]),
         )
         n_test = write_rows(
             test_path,
-            (normalize_row(args.dataset, dict(row), i) for i, row in enumerate(test_ds)),
+            official_rows(test_ds, spec["test_split"]),
         )
 
     elif strategy == "internal_holdout":
@@ -90,7 +101,14 @@ def main() -> None:
         test_rows: list[dict] = []
         for i, row in enumerate(source):
             norm = normalize_row(args.dataset, dict(row), i)
-            if split_bucket(args.dataset, str(norm["id"]), seed) < frac:
+            raw_id = str(norm["id"])
+            norm["id"] = namespace_record_id(
+                args.dataset,
+                spec["source_split"],
+                raw_id,
+            )
+            norm.setdefault("metadata", {})["source_split"] = spec["source_split"]
+            if split_bucket(args.dataset, raw_id, seed) < frac:
                 cal_rows.append(norm)
             else:
                 test_rows.append(norm)

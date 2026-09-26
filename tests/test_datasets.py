@@ -1,4 +1,4 @@
-from trajuq.datasets import normalize_row, split_bucket
+from trajuq.datasets import namespace_record_id, normalize_row, split_bucket
 
 
 def test_split_bucket_deterministic():
@@ -21,3 +21,12 @@ def test_arc_normalization():
     assert rec["id"] == "x"
     assert rec["reference"] == "B"
     assert "A. one" in rec["prompt"]
+
+
+
+def test_namespaced_ids_do_not_collide_across_official_splits():
+    train_id = namespace_record_id("gsm8k", "train", "0")
+    test_id = namespace_record_id("gsm8k", "test", "0")
+    assert train_id == "gsm8k:train:0"
+    assert test_id == "gsm8k:test:0"
+    assert train_id != test_id

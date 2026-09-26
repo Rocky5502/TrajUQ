@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from trajuq.io import read_jsonl
+
 
 STEP_KEYS = (
     ("generate", "generate_argv"),
@@ -113,6 +115,44 @@ def audit_path(artifact: Path) -> Path:
     return artifact.with_suffix(artifact.suffix + ".audit.json")
 
 
+def expected_input_ids(spec: dict[str, Any]) -> list[str]:
+    path = Path(str(spec["input"]))
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("id", "")) for row in rows]
+    if not rows:
+        raise ValueError(f"planned input is empty: {path}")
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"planned input contains a row without id: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"planned input contains duplicate ids: {path}")
+    return ids
+
+
+def artifact_example_ids(path: Path) -> list[str]:
+    rows = list(read_jsonl(path))
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if any(not item_id for item_id in ids):
+        raise ValueError(f"artifact contains a row without example_id: {path}")
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"artifact contains duplicate example_ids: {path}")
+    return ids
+
+
+def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
+    if not path.exists():
+        return "MISSING"
+    expected = expected_input_ids(spec)
+    try:
+        observed = artifact_example_ids(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return "INVALID"
+    if observed == expected:
+        return "COMPLETE"
+    if len(observed) < len(expected) and observed == expected[: len(observed)]:
+        return "PREFIX"
+    return "INVALID"
+
+
 def audit_passes(
     artifact: Path,
     expected_stage: str,
@@ -146,19 +186,23 @@ def partition_state(
     scored = Path(str(spec["scored_output"]))
     raw_exists = raw.exists()
     scored_exists = scored.exists()
+    raw_id_state = artifact_id_state(raw, spec)
+    scored_id_state = artifact_id_state(scored, spec)
     raw_audit_pass = audit_passes(raw, "raw", expected_commit)
     scored_audit_pass = audit_passes(scored, "scored", expected_commit)
     return {
         "raw_output": str(raw),
         "scored_output": str(scored),
         "raw_exists": raw_exists,
+        "raw_id_state": raw_id_state,
         "raw_audit_pass": raw_audit_pass,
         "scored_exists": scored_exists,
+        "scored_id_state": scored_id_state,
         "scored_audit_pass": scored_audit_pass,
         "complete": bool(
-            raw_exists
+            raw_id_state == "COMPLETE"
             and raw_audit_pass
-            and scored_exists
+            and scored_id_state == "COMPLETE"
             and scored_audit_pass
         ),
     }
@@ -236,13 +280,29 @@ def command_needed(
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
-        return not raw.exists()
+        state = artifact_id_state(raw, spec)
+        if state == "INVALID":
+            raise ValueError(
+                f"raw artifact is not an exact prefix of the frozen input: {raw}"
+            )
+        return state != "COMPLETE"
     if step == "audit_raw":
-        return not audit_passes(raw, "raw", expected_commit)
+        return (
+            artifact_id_state(raw, spec) == "COMPLETE"
+            and not audit_passes(raw, "raw", expected_commit)
+        )
     if step == "score":
-        return not scored.exists()
+        state = artifact_id_state(scored, spec)
+        if state in {"PREFIX", "INVALID"}:
+            raise ValueError(
+                f"partial/invalid scored artifact requires inspection before rerun: {scored}"
+            )
+        return state == "MISSING"
     if step == "audit_scored":
-        return not audit_passes(scored, "scored", expected_commit)
+        return (
+            artifact_id_state(scored, spec) == "COMPLETE"
+            and not audit_passes(scored, "scored", expected_commit)
+        )
     raise ValueError(step)
 
 

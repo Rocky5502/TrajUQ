@@ -231,6 +231,8 @@ def main() -> None:
         str(seed),
         "--primary-config",
         args.primary_config,
+        "--analysis-plan",
+        args.output,
         "--output",
         str(root / "macro_primary.json"),
     ]

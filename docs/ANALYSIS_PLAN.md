@@ -55,7 +55,7 @@ Compare against:
 
 The primary execution semantics are a **selective second-pass rerun**: every example pays the complete base generation, and a selected high-risk example launches a separate full refined-budget generation from scratch. Thus mean nominal compute is $B_0 + fB_1$, not $B_0+f(B_1-B_0)$, where $f$ is the selected fraction. This is directly realizable from paired frozen artifacts and does not pretend that an independently generated refined answer is a continuation of the base trajectory. A true continuation policy is reserved for future model-specific runtime support.
 
-For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined generation, and versus the expected random second-pass policy at the same selected fraction. The threshold remains fixed from calibration during all test resamples.
+For the frozen TrajUQ policy, report paired bootstrap confidence intervals for accuracy change versus the base budget, versus fixed refined generation, and versus the expected random second-pass policy at the same selected fraction. The threshold remains fixed from calibration during all test resamples. Base/refined artifacts must match in dataset, prompt hash, model, adapter, seed, revision, scorer, and all generation settings except the compute budget. In addition to nominal denoising budget, report measured wall time and model-forward evaluations under the same second-pass accounting whenever those metadata are complete.
 
 The repository's `evaluate_adaptive.py` implements the two-budget TrajUQ-versus-random comparison. Model-native schedulers remain model-specific.
 

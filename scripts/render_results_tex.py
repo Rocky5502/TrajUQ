@@ -6,6 +6,10 @@ import hashlib
 import json
 from pathlib import Path
 
+import yaml
+
+from scripts.evaluate_rq1_claim_gate import evaluate_gate
+
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -39,13 +43,32 @@ def require_primary(primary: dict) -> None:
         metric_pair(primary, metric)
 
 
-def require_claim_gate(claim: dict, primary: dict) -> None:
+def require_claim_gate(
+    claim: dict,
+    primary: dict,
+    primary_cfg: dict | None = None,
+) -> None:
+    if claim.get("protocol") != "trajuq_rq1_claim_gate_v1":
+        raise ValueError("RQ1 claim gate protocol is not recognized.")
+
     decision = str(claim.get("decision", ""))
     if decision not in {
         "SUPPORT_POSITIVE_RQ1_CLAIM",
         "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
     }:
         raise ValueError("RQ1 claim gate has no valid frozen decision.")
+
+    supported = claim.get("claim_supported")
+    if not isinstance(supported, bool):
+        raise ValueError("RQ1 claim gate has no boolean claim_supported value.")
+    expected_decision = (
+        "SUPPORT_POSITIVE_RQ1_CLAIM"
+        if supported
+        else "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"
+    )
+    if decision != expected_decision:
+        raise ValueError("RQ1 claim_supported contradicts the frozen decision.")
+
     observed = claim.get("observed", {})
     primary_auroc = primary["macro"]["auroc"]
     checks = [
@@ -61,9 +84,29 @@ def require_claim_gate(claim: dict, primary: dict) -> None:
             float(observed["macro_auroc_ci_high"]),
             float(primary_auroc["improvement_ci_high"]),
         ),
+        (
+            float(observed["positive_model_families"]),
+            float(primary_auroc["positive_model_families"]),
+        ),
+        (
+            float(observed["n_model_families"]),
+            float(primary_auroc["n_model_families"]),
+        ),
     ]
     if any(abs(left - right) > 1e-12 for left, right in checks):
         raise ValueError("RQ1 claim gate does not match the supplied primary macro.")
+
+    if primary_cfg is not None:
+        expected = evaluate_gate(primary, primary_cfg)
+        for key in ("primary_endpoint", "decision", "claim_supported", "frozen_rules", "conditions"):
+            if claim.get(key) != expected.get(key):
+                raise ValueError(
+                    f"RQ1 claim gate field {key!r} differs from re-evaluated frozen gate."
+                )
+        if claim.get("observed") != expected.get("observed"):
+            raise ValueError(
+                "RQ1 claim gate observations differ from re-evaluated frozen gate."
+            )
 
 
 def require_repeated(repeated: dict) -> None:
@@ -119,9 +162,10 @@ def build_macros(
     claim: dict,
     repeated: dict,
     adaptive: dict,
+    primary_cfg: dict | None = None,
 ) -> dict[str, str]:
     require_primary(primary)
-    require_claim_gate(claim, primary)
+    require_claim_gate(claim, primary, primary_cfg)
     require_repeated(repeated)
     require_adaptive(adaptive)
 
@@ -231,6 +275,10 @@ def main() -> None:
         default="results/primary_analysis/macro_primary.json",
     )
     parser.add_argument(
+        "--primary-config",
+        default="configs/experiments/primary.yaml",
+    )
+    parser.add_argument(
         "--claim-gate",
         default="results/primary_analysis/rq1_claim_gate.json",
     )
@@ -262,16 +310,27 @@ def main() -> None:
         name: load_json(str(path))
         for name, path in paths.items()
     }
+    primary_config_path = Path(args.primary_config)
+    if not primary_config_path.exists():
+        raise SystemExit(f"Missing primary config: {primary_config_path}")
+    primary_cfg = yaml.safe_load(
+        primary_config_path.read_text(encoding="utf-8")
+    )
     macros = build_macros(
         payloads["primary"],
         payloads["claim_gate"],
         payloads["repeated"],
         payloads["adaptive"],
+        primary_cfg,
     )
     sources = {
         name: (str(path), sha256(path))
         for name, path in paths.items()
     }
+    sources["primary_config"] = (
+        str(primary_config_path),
+        sha256(primary_config_path),
+    )
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

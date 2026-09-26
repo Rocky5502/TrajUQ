@@ -253,8 +253,13 @@ Math-Verify equivalence clustering instead of string matching. The plan fixes fi
 adapter-specific generation settings.
 
 Execute every planned auxiliary generation and cell evaluation before running
-the plan's `aggregate_repeated_baseline.py` command. This full-matrix comparator is reported separately because it is an expensive
-secondary baseline rather than the pre-registered RQ1 endpoint.
+the plan's `aggregate_repeated_baseline.py` command. Repeated macro protocol v2
+requires complete test-time auxiliary wall-clock metadata in all 18 cells and
+reports the equal-cell-weight mean auxiliary seconds per example, excluding the
+target generation itself. The executor and paper renderer both reject a macro
+that drops this compute accounting. This full-matrix comparator is reported
+separately because it is an expensive secondary baseline rather than the
+pre-registered RQ1 endpoint.
 
 
 ## 10. Execute the five-sample comparator resumably
@@ -280,7 +285,9 @@ commit, stage=`raw`, and SHA-bound to the current artifact. The repeated
 manifest also records the git commit/clean state and input SHA-256. Unverified
 partial artifacts are never overwritten automatically. The executor writes
 `results/repeated_sampling_execution_state.json` and an append-only event log.
-The full macro is run only after all 18 cells are complete.
+The full macro is run only after all 18 cells are complete, and the execution
+state marks it complete only for protocol `trajuq_vs_repeated_macro_v2` with
+complete five-sample auxiliary compute accounting.
 
 
 ## 11. Execute the adaptive RQ3 matrix resumably

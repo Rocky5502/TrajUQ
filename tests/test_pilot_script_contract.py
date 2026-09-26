@@ -54,3 +54,16 @@ def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
     assert "test_sha256" in text
     assert "$Parity.git_clean -eq $true" in text
     assert "$Gate.git_clean -eq $true" in text
+
+
+def test_gpu_stages_revalidate_frozen_pilot_inputs():
+    text = Path("scripts/pilot_windows.ps1").read_text(encoding="utf-8")
+    assert "function Assert-FrozenPilotInputs" in text
+    assert text.count("Assert-FrozenPilotInputs") == 2
+    stage = text.index('if ($Stage -in @("parity", "pilot", "all"))')
+    parity = text.index('if ($Stage -in @("parity", "all"))')
+    between = text[stage:parity]
+    assert "Assert-FrozenPilotInputs" in between
+    assert "-FreezeManifestPath \"results/pilot_freeze_manifest.json\"" in between
+    assert "-DatasetSha $DatasetSha" in between
+    assert "-Commit $Ledger.git_commit" in between

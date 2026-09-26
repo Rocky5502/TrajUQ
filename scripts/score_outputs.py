@@ -2,37 +2,61 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
-from trajuq.io import append_jsonl, read_jsonl
+from trajuq.io import append_jsonl, read_jsonl, sha256_text
 from trajuq.scoring import score_record
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", required=True, help="Pre-outcome generation JSONL")
-    parser.add_argument("--input", required=True, help="Normalized benchmark JSONL with references")
+    parser.add_argument("--run", required=True, help="Audited pre-outcome generation JSONL")
+    parser.add_argument("--input", required=True, help="Frozen normalized benchmark JSONL with references")
     parser.add_argument("--output", required=True, help="New scored JSONL; never overwrites raw run")
     args = parser.parse_args()
 
+    run_path = Path(args.run)
+    input_path = Path(args.input)
     out = Path(args.output)
     if out.exists():
         raise SystemExit(f"Refusing to overwrite existing scored artifact: {out}")
 
-    refs = {str(r["id"]): r for r in read_jsonl(args.input)}
+    refs = {str(r["id"]): r for r in read_jsonl(input_path)}
     seen: set[str] = set()
     total = 0
     correct = 0
+    raw_sha = sha256_file(run_path)
+    input_sha = sha256_file(input_path)
 
-    for rec in read_jsonl(args.run):
+    for rec in read_jsonl(run_path):
         item_id = str(rec["example_id"])
         if item_id in seen:
             raise SystemExit(f"Duplicate run id: {item_id}")
         seen.add(item_id)
+
+        if rec.get("correct") is not None or rec.get("reference") is not None:
+            raise SystemExit(
+                f"Refusing to score non-raw artifact: outcome/reference already present for {item_id}"
+            )
         if item_id not in refs:
             raise SystemExit(f"Run id missing from normalized input: {item_id}")
 
         source = refs[item_id]
+        expected_prompt_hash = sha256_text(str(source["prompt"]))
+        if rec.get("prompt_sha256") != expected_prompt_hash:
+            raise SystemExit(
+                f"Prompt hash mismatch for {item_id}: scoring input differs from generation input"
+            )
+
         dataset = str(rec["dataset"])
         is_correct, scorer = score_record(
             dataset=dataset,
@@ -42,7 +66,13 @@ def main() -> None:
 
         rec["correct"] = bool(is_correct)
         rec["reference"] = None
-        rec.setdefault("metadata", {})["scorer"] = scorer
+        rec.setdefault("metadata", {}).update(
+            {
+                "scorer": scorer,
+                "raw_run_sha256": raw_sha,
+                "scoring_input_sha256": input_sha,
+            }
+        )
         append_jsonl(out, rec)
         total += 1
         correct += int(is_correct)

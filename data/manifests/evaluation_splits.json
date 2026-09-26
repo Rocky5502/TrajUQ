@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "datasets": {
+    "gsm8k": {
+      "hf_id": "openai/gsm8k",
+      "config": "main",
+      "strategy": "official",
+      "calibration_split": "train",
+      "test_split": "test",
+      "revision": null
+    },
+    "arc_challenge": {
+      "hf_id": "allenai/ai2_arc",
+      "config": "ARC-Challenge",
+      "strategy": "official",
+      "calibration_split": "validation",
+      "test_split": "test",
+      "revision": null
+    },
+    "mmlu_pro": {
+      "hf_id": "TIGER-Lab/MMLU-Pro",
+      "config": null,
+      "strategy": "official",
+      "calibration_split": "validation",
+      "test_split": "test",
+      "revision": null
+    },
+    "gpqa_diamond": {
+      "hf_id": "Idavidrein/gpqa",
+      "config": "gpqa_diamond",
+      "strategy": "internal_holdout",
+      "source_split": "train",
+      "calibration_fraction": 0.30,
+      "split_seed": "2027",
+      "revision": null,
+      "gated": true
+    },
+    "truthfulqa": {
+      "hf_id": "truthfulqa/truthful_qa",
+      "config": "multiple_choice",
+      "strategy": "internal_holdout",
+      "source_split": "validation",
+      "calibration_fraction": 0.30,
+      "split_seed": "2027",
+      "revision": null
+    },
+    "math500": {
+      "hf_id": "HuggingFaceH4/MATH-500",
+      "config": null,
+      "strategy": "internal_holdout",
+      "source_split": "test",
+      "calibration_fraction": 0.30,
+      "split_seed": "2027",
+      "revision": null,
+      "nonstandard_note": "Internal held-out evaluation only; do not call this the standard full MATH-500 score. Primary inclusion also requires the symbolic-equivalence scorer gate."
+    }
+  }
+}

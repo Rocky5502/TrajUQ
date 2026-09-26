@@ -19,9 +19,11 @@ def sha256_file(path: Path) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Audit raw or scored TrajUQ JSONL artifacts.")
     parser.add_argument("--run", required=True)
     parser.add_argument("--output", default=None)
+    parser.add_argument("--stage", choices=["raw", "scored", "auto"], default="auto")
+    parser.add_argument("--require-revision", action="store_true")
     args = parser.parse_args()
 
     path = Path(args.run)
@@ -31,6 +33,17 @@ def main() -> None:
     feature_names: set[str] | None = None
     models: set[str] = set()
     adapters: set[str] = set()
+
+    if not rows:
+        failures.append("artifact contains zero records")
+
+    if args.stage == "auto":
+        has_labels = [r.get("correct") is not None for r in rows]
+        stage = "scored" if rows and all(has_labels) else "raw"
+        if any(has_labels) and not all(has_labels):
+            failures.append("mixed scored/unscored rows")
+    else:
+        stage = args.stage
 
     for i, row in enumerate(rows):
         item_id = str(row.get("example_id", ""))
@@ -45,6 +58,8 @@ def main() -> None:
 
         feats = row.get("generation", {}).get("features", {})
         names = set(feats)
+        if not feats:
+            failures.append(f"row {i}: missing trajectory features")
         if feature_names is None:
             feature_names = names
         elif names != feature_names:
@@ -59,10 +74,24 @@ def main() -> None:
                 failures.append(f"row {i}: non-finite feature {key}={value!r}")
 
         if row.get("reference") is not None:
-            failures.append(f"row {i}: reference leaked into pre-outcome run file")
+            failures.append(f"row {i}: reference must never be stored in run artifacts")
+
+        if stage == "raw" and row.get("correct") is not None:
+            failures.append(f"row {i}: correctness leaked into raw artifact")
+        if stage == "scored" and not isinstance(row.get("correct"), bool):
+            failures.append(f"row {i}: scored artifact requires boolean correctness")
+
+        if args.require_revision:
+            revision = (
+                row.get("metadata", {}).get("model_revision")
+                or row.get("generation", {}).get("metadata", {}).get("model_revision")
+            )
+            if not revision:
+                failures.append(f"row {i}: model revision is not pinned")
 
     audit = {
         "file": str(path),
+        "stage": stage,
         "sha256": sha256_file(path),
         "records": len(rows),
         "unique_ids": len(ids),

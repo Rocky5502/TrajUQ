@@ -67,3 +67,5 @@ def test_math500_human_review_is_calibration_source_bound():
     assert "data/processed/math500/calibration.jsonl" in record_text
     assert "math_scored_audit_ok" in readiness_text
     assert "math_input_hash_ok" in readiness_text
+    assert "reviewed MATH-500 scored artifact has no current PASS audit" in record_text
+    assert "review_scored_audit_ok" in record_text

@@ -1,5 +1,3 @@
-import yaml
-
 from scripts.evaluate_rq1_claim_gate import evaluate_gate
 
 

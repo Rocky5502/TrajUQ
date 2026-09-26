@@ -28,6 +28,18 @@ def git_head() -> str | None:
         return None
 
 
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -108,8 +120,13 @@ def main() -> None:
             failures.append(f"invalid pilot quality artifact JSON: {exc}")
 
     commit = git_head()
+    clean = git_clean()
     if not commit:
         failures.append("git commit could not be resolved")
+    if clean is not True:
+        failures.append(
+            "git worktree must be clean when recording the human attestation"
+        )
 
     if args.reviewed_records < 10:
         failures.append("at least 10 trajectory records must be manually reviewed")
@@ -129,6 +146,7 @@ def main() -> None:
         "status": "PASS" if not failures else "FAIL",
         "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": commit,
+        "git_clean": clean,
         "review_sheet": str(review_sheet),
         "review_sheet_sha256": review_sheet_sha256,
         "parity_artifact": str(parity_path),

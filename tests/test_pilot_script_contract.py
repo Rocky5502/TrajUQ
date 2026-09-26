@@ -54,6 +54,11 @@ def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
     assert "test_sha256" in text
     assert "$Parity.git_clean -eq $true" in text
     assert "$Gate.git_clean -eq $true" in text
+    assert "function Test-RunAuditPass" in text
+    assert '$RawAuditOk = Test-RunAuditPass $Raw "raw"' in text
+    assert '$ScoredAuditOk = Test-RunAuditPass $Scored "scored"' in text
+    assert "$RawAuditOk -and" in text
+    assert "$ScoredAuditOk -and" in text
 
 
 def test_gpu_stages_revalidate_frozen_pilot_inputs():
@@ -78,5 +83,5 @@ def test_pilot_human_review_is_source_bound():
     assert "- scored SHA-256: " in export_text
     assert "review_scored_artifact" in record_text
     assert "review_scored_sha256" in record_text
-    assert "LLaDA parity reference source hash is stale" in record_text
+    assert "LLaDA parity {label} source hash is stale" in record_text
     assert "review_source_ok" in readiness_text

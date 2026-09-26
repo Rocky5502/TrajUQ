@@ -147,7 +147,37 @@ def verify_generated_results(
     if manifest.get("protocol") != "trajuq_paper_results_render_v1":
         failures.append("generated-results manifest protocol is not recognized")
 
-    for name, source in manifest.get("sources", {}).items():
+    sources = manifest.get("sources", {})
+    required_sources = {
+        "primary",
+        "claim_gate",
+        "repeated",
+        "adaptive",
+        "primary_config",
+    }
+    if not isinstance(sources, dict):
+        failures.append("generated-results manifest sources is not an object")
+        sources = {}
+    missing_sources = sorted(required_sources - set(sources))
+    if missing_sources:
+        failures.append(
+            "generated-results manifest missing required sources: "
+            + ", ".join(missing_sources)
+        )
+
+    decision = manifest.get("rq1_claim_decision")
+    if decision not in {
+        "SUPPORT_POSITIVE_RQ1_CLAIM",
+        "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM",
+    }:
+        failures.append("generated-results manifest has no valid RQ1 claim decision")
+    try:
+        if int(manifest.get("macro_count", 0)) <= 0:
+            failures.append("generated-results manifest has no rendered macros")
+    except (TypeError, ValueError):
+        failures.append("generated-results manifest macro_count is invalid")
+
+    for name, source in sources.items():
         path = Path(str(source["path"]))
         if not path.exists():
             failures.append(f"render source missing: {name} -> {path}")

@@ -150,6 +150,7 @@ def main() -> None:
             "PRE-RESULTS FALLBACK",
             "pre-experiment manuscript",
             "This manuscript is currently pre-experiment",
+            "pre-experiment",
         ]
         remaining = [
             marker

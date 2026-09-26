@@ -110,7 +110,10 @@ After readiness passes:
 11. run RQ3 base-budget generations and all frozen 25/50/75% cap analyses
    with scripts/execute_adaptive_plan.py;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
-13. render paper numbers only through scripts/render_results_tex.py.
+13. render paper numbers only through scripts/render_results_tex.py;
+14. run scripts/submission_readiness.py to re-check required project gates,
+    source hashes, anonymous paper audit, and the deterministic software
+    supplement before the external ACL pubcheck/upload step.
 
 A negative RQ1 claim gate is a valid scientific result. Do not redesign the
 test analysis because a frozen result is weak.
@@ -140,6 +143,7 @@ frozen result artifacts exist:
 ~~~bash
 python scripts/render_results_tex.py
 python scripts/audit_paper.py --submission-ready
+python scripts/submission_readiness.py
 ~~~
 
 The renderer checks complete cell sets and the RQ1 claim-gate decision before

@@ -151,9 +151,19 @@ def main() -> None:
         cal = root / "calibration.jsonl"
         test = root / "test.jsonl"
         manifest = root / "split_manifest.json"
-        for path in (cal, test, manifest):
+        split_audit = root / "split_audit.json"
+        for path in (cal, test, manifest, split_audit):
             if not path.exists():
                 failures.append(f"{dataset}: missing {path}")
+        if split_audit.exists():
+            audit = json.loads(split_audit.read_text(encoding="utf-8"))
+            if audit.get("status") != "PASS":
+                failures.append(f"{dataset}: split integrity audit is not PASS")
+            if int(audit.get("id_overlap_count", -1)) != 0:
+                failures.append(f"{dataset}: split audit reports ID overlap")
+            if int(audit.get("exact_prompt_overlap_count", -1)) != 0:
+                failures.append(f"{dataset}: split audit reports exact prompt overlap")
+
         if manifest.exists():
             meta = json.loads(manifest.read_text(encoding="utf-8"))
             if not meta.get("requested_revision"):

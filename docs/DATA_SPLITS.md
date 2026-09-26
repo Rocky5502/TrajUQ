@@ -62,3 +62,13 @@ Primary preparation also requires an immutable dataset revision by default.
 Every split manifest records `normalizer_version` in addition to content
 SHA-256 hashes, dataset fingerprints, source split roles, and the requested
 immutable revision. This makes prompt-format changes visible in provenance.
+
+
+## Automatic split leakage audit
+
+Every successful primary preparation writes `split_audit.json`. The audit
+verifies manifest hashes/counts, pinned revision, prompt-normalizer version,
+dataset identity, globally disjoint IDs, and **zero exact prompt overlap between
+calibration and test**. Duplicate prompts within one partition are reported as
+warnings. The primary-matrix planner requires the audit to be PASS before it
+will emit GPU commands.

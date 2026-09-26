@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Iterable
 
+from trajuq.data_integrity import audit_split_pair
 from trajuq.datasets import (
     NORMALIZER_VERSION,
     namespace_record_id,
@@ -85,7 +86,12 @@ def main() -> None:
     test_path = out_dir / "test.jsonl"
     freeze_path = out_dir / "split_manifest.json"
 
-    existing = [path for path in (cal_path, test_path, freeze_path) if path.exists()]
+    audit_path = out_dir / "split_audit.json"
+    existing = [
+        path
+        for path in (cal_path, test_path, freeze_path, audit_path)
+        if path.exists()
+    ]
     if existing and not args.overwrite:
         raise SystemExit(
             "Refusing to replace frozen split artifacts: "
@@ -162,9 +168,21 @@ def main() -> None:
     }
     freeze_path.write_text(json.dumps(freeze, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    audit = audit_split_pair(cal_path, test_path, freeze_path)
+    audit_path = out_dir / "split_audit.json"
+    audit_path.write_text(
+        json.dumps(audit, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    if audit["status"] != "PASS":
+        raise SystemExit(
+            f"Prepared split failed integrity audit; inspect {audit_path}"
+        )
+
     print(f"[TrajUQ] calibration={n_cal} -> {cal_path}")
     print(f"[TrajUQ] test={n_test} -> {test_path}")
     print(f"[TrajUQ] split manifest -> {freeze_path}")
+    print(f"[TrajUQ] split audit -> {audit_path}")
 
 
 if __name__ == "__main__":

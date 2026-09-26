@@ -1,0 +1,12 @@
+{
+  "protocol": "trajuq_pilot_manual_gate_v1",
+  "status": "FAIL",
+  "reviewed_records": 0,
+  "checks": {
+    "trajectory_semantics": false,
+    "scorer_audit": false,
+    "parity_artifact_reviewed": false,
+    "no_leakage_observed": false
+  },
+  "notes": "Template only. Do not change status by hand; use scripts/record_manual_gate.py after the human review."
+}

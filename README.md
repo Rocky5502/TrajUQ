@@ -381,7 +381,7 @@ The repository tracks the remaining gates as GitHub issues:
 - MATH-500 scorer manual-audit gate;
 - CI runner allocation.
 
-Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass.
+Do not scale to the primary model × dataset matrix until the pilot gate and model-specific telemetry gates pass. After the human review is recorded, run `python scripts/primary_readiness.py`; it hard-fails unless the 50-item pilot, manual gate, and exact parity artifacts for every primary model are PASS.
 
 ## Paper
 

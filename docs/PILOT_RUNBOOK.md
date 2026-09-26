@@ -174,3 +174,31 @@ The automated gate does not replace the required human inspection of at least te
 ## Reproducibility note
 
 The tracked model YAML remains a template with `revision: null`. The immutable revision used for a concrete run is stored in the artifact-local frozen model config and freeze manifest, preventing a pilot run from silently dirtying the repository's generic configuration.
+
+
+## G. Record the human review
+
+After actually inspecting the exported 10-record sheet and scorer behavior:
+
+```bash
+python scripts/record_manual_gate.py \
+  --review-sheet results/llada_gsm8k_pilot50_trace_review.md \
+  --reviewed-records 10 \
+  --trajectory-semantics-pass \
+  --scorer-audit-pass \
+  --parity-artifact-reviewed \
+  --no-leakage-observed \
+  --notes "Manual review notes here."
+```
+
+The command is an attestation recorder, not an automated review. Do not run it
+until those checks have actually been performed.
+
+Before launching the full 3-model primary matrix, require all primary-model
+parity artifacts plus the pilot gates:
+
+```bash
+python scripts/primary_readiness.py
+```
+
+The full matrix remains blocked unless that command returns `status=PASS`.

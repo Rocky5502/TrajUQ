@@ -67,7 +67,7 @@ Vary denoising budgets/remasking settings and measure calibration transfer. For 
 
 ## Selective-risk convention
 
-Discrete AURC is the mean selective risk over the attainable empirical coverage levels \(k/n\), \(k=1,\ldots,n\). Lower is better. Fixed-coverage risk uses the smallest attainable coverage at or above the target. This definition is frozen before primary outcomes are inspected.
+Discrete AURC is the mean selective risk over the attainable empirical coverage levels \(k/n\), \(k=1,\ldots,n\). Lower is better. Exact score ties use the expected cumulative error under a uniform random ordering within each tie group, so AURC and fixed-coverage risk cannot depend on benchmark row order. Fixed-coverage risk uses the smallest attainable coverage at or above the target. This tie-aware convention is frozen before primary outcomes are inspected.
 
 ## Confidence intervals and aggregation
 

@@ -53,3 +53,4 @@ def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
     assert "calibration_sha256" in text
     assert "test_sha256" in text
     assert "$Parity.git_clean -eq $true" in text
+    assert "$Gate.git_clean -eq $true" in text

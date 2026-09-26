@@ -63,9 +63,11 @@ particular, the following are implemented and versioned:
   revision ledger, enforces a clean matching checkout, preserves valid PASS
   artifacts, and refuses ambiguous partial evidence;
 - protocol-v1 raw/scored run audits now record the clean git checkout and commit;
-  pre-primary parity, pilot, human-review, MATH-500, and readiness gates re-hash
-  those audits against their source artifacts and require the frozen experiment
-  commit, preventing a stale PASS label from being reused;
+  pre-primary parity, pilot, human-review, MATH-500, readiness, primary execution,
+  primary analysis, repeated sampling, and adaptive compute all re-hash those
+  audits against their source artifacts and require the frozen experiment
+  commit, preventing a stale PASS label from being reused anywhere in the
+  primary evidence chain;
 - pilot and MATH-500 human review sheets are source-bound to the exact scored
   calibration artifacts they display; their recorders and primary readiness
   independently revalidate those hashes before the 18-cell matrix can launch;
@@ -153,16 +155,29 @@ After readiness passes:
 1. prepare all six immutable dataset pairs;
 2. create and archive results/primary_matrix_plan.json;
 3. dry-run scripts/execute_primary_plan.py, then execute cells from the frozen
-   plan; the executor writes a resumable SHA-verified execution state;
+   plan; reusable raw/scored evidence must have clean protocol-v1 audits from
+   the frozen experiment commit, and the executor writes a resumable
+   SHA-verified execution state;
 4. execute all 18 calibration/test cells exactly as planned;
 5. audit and score every cell without overwriting completed artifacts;
-6. create results/primary_analysis_plan.json only after all 18 scored artifacts and their audits exist; analysis-plan protocol v2 SHA-binds those inputs, the primary plan, config, and frozen experiment commit;
+6. create results/primary_analysis_plan.json only after all 18 scored artifacts
+   have clean protocol-v1 scored audits from the frozen experiment commit;
+   analysis-plan protocol v2 then SHA-binds those inputs, audits, the primary
+   plan/config, and experiment commit;
 7. dry-run scripts/execute_primary_analysis.py and then use it to resume all
    cell-level metrics, nested comparisons, ablations, and raw-risk diagnostics; the executor refuses upstream provenance drift before reading result values;
 8. aggregate the complete 18-cell primary endpoint;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
-10. freeze repeated-sampling plan protocol v2 after primary analysis predictions exist, then run the complete 18-cell five-sample comparator with scripts/execute_repeated_sampling.py; verified seed artifacts are resumable and the executor rejects drift in bound primary artifacts;
-11. freeze adaptive plan protocol v3 after all refined primary scored artifacts exist, then run RQ3 base-budget generations and all frozen 25/50/75% cap analyses with scripts/execute_adaptive_plan.py; the executor rejects drift in refined inputs/audits;
+10. freeze repeated-sampling plan protocol v2 after primary analysis predictions
+    exist, then run the complete 18-cell five-sample comparator with
+    scripts/execute_repeated_sampling.py; primary scored targets and every reused
+    seed require clean protocol-v1 audits from the frozen experiment commit, and
+    the generator/executor reject stale seed evidence;
+11. freeze adaptive plan protocol v3 after all refined primary scored artifacts
+    have clean frozen-commit audits, then run RQ3 base-budget generations and all
+    frozen 25/50/75% cap analyses with scripts/execute_adaptive_plan.py; refined
+    inputs and reusable base raw/scored artifacts must remain protocol-v1,
+    clean, commit-matched, stage-correct, and SHA-bound;
 12. optionally run FLARE same-checkpoint RQ4 after its parity/trace gates;
 13. render paper numbers only through scripts/render_results_tex.py; the renderer
     re-evaluates the frozen RQ1 gate from configs/experiments/primary.yaml and

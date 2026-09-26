@@ -159,6 +159,12 @@ execution_gates:
     action: "Run scripts/verify_cpu.ps1 on Windows or scripts/verify_cpu.sh on Linux/macOS from a clean commit."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
+  - id: revision_ledger
+    label: "Immutable model/dataset revision ledger"
+    stage: pre_primary
+    action: "Run python scripts/resolve_experiment_revisions.py after HF authentication. This freezes the experiment git commit, config hashes, model SHAs, dataset SHAs, and frozen model-config hashes before any parity run."
+    artifact: results/revision_ledger.json
+    expect: {key: status, equals: PASS}
   - id: llada_parity
     label: "LLaDA 20-prompt exact parity"
     stage: pre_primary
@@ -208,16 +214,10 @@ execution_gates:
     action: "Export and inspect the calibration-only scorer review sheet, then record the manual attestation."
     artifact: results/math500_scorer_manual_review.json
     expect: {key: status, equals: PASS}
-  - id: revision_ledger
-    label: "Immutable model/dataset revision ledger"
-    stage: pre_primary
-    action: "Run python scripts/resolve_experiment_revisions.py after authenticating to Hugging Face for GPQA."
-    artifact: results/revision_ledger.json
-    expect: {key: status, equals: PASS}
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires CPU verification and all three exact-parity artifacts to match the revision-ledger git commit and model SHAs."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan

@@ -139,7 +139,12 @@ artifacts and writes:
 - `paper/figures/generated/adaptive_accuracy_cost_tradeoff.pdf`;
 - `paper/figures/generated/result_figure_manifest.json`.
 
-The figure manifest SHA-binds the result sources used to produce the PDFs.
+Required protocol: `trajuq_paper_result_figures_v2`.
+
+The figure manifest SHA-binds the primary aggregate, frozen primary config, all
+three adaptive-cap artifacts, and each generated PDF by SHA-256 and byte count.
+`scripts/submission_readiness.py` revalidates those bindings before the final
+repository-side submission gate can pass.
 
 ## Final paper render
 

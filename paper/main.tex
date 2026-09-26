@@ -239,7 +239,7 @@ decision-only; decision plus distributional trajectory features; decision plus s
 This manuscript is currently pre-experiment.
 No numerical claim is populated until it can be traced to a frozen run artifact, code commit, model revision, dataset hash, and evaluation output.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
 \begin{tabular}{lccccc}
@@ -252,7 +252,7 @@ Decision entropy & \tbd & \tbd & \tbd & \tbd & \tbd\\
 \end{tabular}
 \caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values remain blank until frozen experiments are complete.}
 \label{tab:main}
-\end{table}
+\end{table*}
 
 \begin{table}[t]
 \centering
@@ -282,7 +282,7 @@ Random matched & \tbd & \tbd & 0\\
 \method adaptive & \tbd & \tbd & \tbd\\
 \bottomrule
 \end{tabular}
-\caption{Adaptive-compute evaluation at matched refinement cost.}
+\caption{Adaptive second-pass evaluation. The random comparator is matched to the same selected fraction; measured wall time is reported when complete.}
 \label{tab:adaptive}
 \end{table}
 

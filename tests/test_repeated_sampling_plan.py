@@ -1,4 +1,11 @@
-from scripts.plan_repeated_sampling import arg_value, repeated_generation_argv
+import hashlib
+import json
+
+from scripts.plan_repeated_sampling import (
+    arg_value,
+    repeated_generation_argv,
+    scored_audit_passes,
+)
 
 
 def llada_cell():
@@ -49,3 +56,26 @@ def test_repeated_plan_uses_all_frozen_seeds_and_nonzero_temperature():
         "2031",
     ]
     assert cmd[cmd.index("--steps") + 1] == "128"
+
+
+def test_repeated_plan_requires_frozen_scored_audit(tmp_path):
+    scored = tmp_path / "target.scored.jsonl"
+    scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    digest = hashlib.sha256(scored.read_bytes()).hexdigest()
+    audit = scored.with_suffix(scored.suffix + ".audit.json")
+    audit.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_run_audit_v1",
+                "status": "PASS",
+                "git_commit": "frozen-commit",
+                "git_clean": True,
+                "stage": "scored",
+                "sha256": digest,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert scored_audit_passes(scored, "frozen-commit")
+    assert not scored_audit_passes(scored, "other-commit")

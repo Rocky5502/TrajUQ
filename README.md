@@ -260,6 +260,10 @@ python scripts/run_generation.py \
   --sdar-temperature 0
 ```
 
+## Dream native parity
+
+A native no-hook reference runner is provided for the Dream parity gate. See `docs/DREAM_INSTRUMENTATION.md` and `scripts/run_dream_reference.py`; compare exact token IDs with `scripts/compare_run_parity.py` before reporting Dream results.
+
 ## Scientific guardrails
 
 1. **No invented results.**

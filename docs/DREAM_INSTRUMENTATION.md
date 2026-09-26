@@ -1,0 +1,72 @@
+# Dream telemetry parity gate
+
+Selected checkpoint: `Dream-org/Dream-v0-Instruct-7B`.
+
+Dream exposes `generation_tokens_hook_func` through its public `diffusion_generate` interface. TrajUQ uses that hook to observe the sampler state and logits without changing the token update returned by the hook.
+
+Hook availability is not enough: primary-paper use requires evidence that the hook sees the predictive state used for the returned generation and that telemetry does not alter output.
+
+## Frozen parity procedure
+
+Use one exact model/tokenizer revision and the same 20 non-test prompts.
+
+### 1. Native reference (no hook)
+
+```bash
+python scripts/run_dream_reference.py \
+  --model Dream-org/Dream-v0-Instruct-7B \
+  --revision <EXACT_MODEL_REVISION> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/dream_native_reference.jsonl \
+  --limit 20 \
+  --steps 128 \
+  --max-new-tokens 128 \
+  --temperature 0
+```
+
+### 2. Instrumented TrajUQ run
+
+```bash
+python scripts/run_generation.py \
+  --adapter dream \
+  --model Dream-org/Dream-v0-Instruct-7B \
+  --revision <EXACT_MODEL_REVISION> \
+  --input data/processed/gsm8k/calibration.jsonl \
+  --output runs/dream_trajuq.raw.jsonl \
+  --limit 20 \
+  --steps 128 \
+  --max-new-tokens 128
+```
+
+Audit the raw file:
+
+```bash
+python scripts/audit_run.py \
+  --run runs/dream_trajuq.raw.jsonl \
+  --stage raw \
+  --require-revision
+```
+
+### 3. Exact parity comparison
+
+```bash
+python scripts/compare_run_parity.py \
+  --reference runs/dream_native_reference.jsonl \
+  --instrumented runs/dream_trajuq.raw.jsonl \
+  --require-token-ids \
+  --output results/dream_parity.json
+```
+
+The hard gate is exact token-ID equality for all 20 prompts under the deterministic condition.
+
+## Manual telemetry audit
+
+For at least ten prompts, verify:
+- observed trajectory count is compatible with requested denoising steps;
+- logged generated-region length matches returned generated-token length;
+- entropy/confidence/margin values are finite and non-constant;
+- mask persistence decreases plausibly;
+- late revisions are not an artifact of prompt-token inclusion;
+- wall time and peak GPU memory are recorded.
+
+Only after exact parity + manual audit may Dream be used for the 50-example pilot and then primary numbers.

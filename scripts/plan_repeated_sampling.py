@@ -52,6 +52,7 @@ def repeated_generation_argv(
         str(top_p),
         "--max-new-tokens",
         arg_value(frozen, "--max-new-tokens"),
+        "--resume-verified",
     ]
 
     if adapter == "llada":

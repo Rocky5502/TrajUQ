@@ -14,6 +14,10 @@ The transparent training-free TrajUQ raw-risk score is retained as a diagnostic/
 
 A claim that the trajectory adds information requires a meaningful held-out improvement that is not confined to a single dataset/model family.
 
+## Frozen feature-family ablations
+
+Before primary outcomes are inspected, the following ablations are frozen: decision-only; decision plus distribution-trajectory features; decision plus stability features (JS drift and revisions); decision plus persistence/commitment features; the full feature set; and leave-family-out variants removing JS, revisions, or persistence. Every variant is fit only on the calibration partition and evaluated on the identical held-out test examples. Paired bootstrap deltas are always reported relative to the decision-only baseline.
+
 ## RQ2 — Calibration and selective generation
 
 Fit probability calibrators on the frozen calibration partition only. Primary calibrator: standardized logistic regression over the frozen feature vector. Isotonic regression is a nonlinear sensitivity analysis when calibration data are sufficient.

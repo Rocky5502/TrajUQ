@@ -230,6 +230,11 @@ python scripts/compare_calibrated.py \
   --n-boot 2000 \
   --output results/llada_gsm8k_nested_bootstrap.json
 
+python scripts/evaluate_feature_ablation.py \
+  --calibration runs/llada_gsm8k_cal.scored.jsonl \
+  --test runs/llada_gsm8k_test.scored.jsonl \
+  --output results/llada_gsm8k_feature_ablation.json
+
 # Training-free raw-risk sensitivity:
 python scripts/compare_methods.py \
   --input runs/llada_gsm8k_test.scored.jsonl \

@@ -72,3 +72,16 @@ integrity:
   outcome_isolation: true
   no_test_tuning: true
   no_overwrite_completed_runs: true
+
+feature_ablation:
+  frozen_groups:
+    - decision_only
+    - decision_plus_distribution
+    - decision_plus_stability
+    - decision_plus_persistence
+    - full
+    - full_without_js
+    - full_without_revisions
+    - full_without_persistence
+  comparison_baseline: decision_only
+  paired_bootstrap: true

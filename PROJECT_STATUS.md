@@ -40,19 +40,22 @@ particular, the following are implemented and versioned:
   risk-coverage metrics;
 - exact-parity harnesses for LLaDA, SDAR, and Dream, including same prompt hash,
   model/revision, seed, and adapter-specific frozen-generation provenance
-  checks; primary readiness accepts only protocol-v2 parity artifacts with
-  strict token and provenance checks enabled;
+  checks; parity protocol v3 records uniform run-level provenance, and primary
+  readiness accepts only exact 20-prompt parity artifacts bound to the frozen
+  revision-ledger git commit and model SHA;
 - frozen 18-cell primary planning and hierarchical aggregation;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation;
-- pinned MATH-500 symbolic scoring, automatic audit, deterministic calibration
-  review-sheet export, and human attestation gate;
+- pinned MATH-500 symbolic scoring, commit-bound automatic audit, deterministic
+  calibration review-sheet export, and SHA-bound human attestation gate;
 - RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation;
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
-- immutable model/dataset revision ledger;
+- revision-ledger protocol v2 binding the experiment git commit, primary/data
+  config hashes, immutable model/data SHAs, and frozen model-config hashes;
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
-- PowerShell and Bash CPU-verification entry points.
+- PowerShell and Bash CPU-verification entry points plus a one-command Windows
+  pre-primary freeze wrapper.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:
@@ -74,19 +77,32 @@ The remaining work is primarily **execution**, not paper-number invention.
 
 ### Pre-primary hard gates
 
-1. Run the clean-commit CPU verification suite and archive
-   results/cpu_verification.json. Hosted GitHub Actions is still preferred when
-   runner allocation works, but the same suite is runnable locally. See issue #6.
-2. Resolve immutable model/data SHAs and archive results/revision_ledger.json.
-3. Run LLaDA 20-prompt native-vs-instrumented exact parity. See issue #7.
-4. Run the 50-example LLaDA + GSM8K calibration pilot and complete the 10-trace
-   human review. See issue #1.
-5. Run SDAR exact parity. See issue #2.
-6. Run Dream exact parity. See issue #5.
-7. Run the automatic MATH-500 scorer audit, then a >=25-example
-   calibration-only MATH-500 scoring pilot, export the deterministic review
-   sheet, inspect it, and record the human scorer attestation. See issue #4.
-8. Require python scripts/primary_readiness.py to return status=PASS. Readiness\n   v2 rejects stale/mixed artifacts: CPU verification and all three parity files\n   must share the revision-ledger git commit, each parity file must contain\n   exactly 20 shared prompts, and its model revision must equal the ledger SHA.
+1. Select one clean experiment commit. On Windows run
+   `scripts/freeze_preprimary_windows.ps1`; it runs clean CPU verification and
+   revision-ledger v2 resolution without changing commits. Hosted GitHub Actions
+   remains preferred when runner allocation works, but issue #6 still tracks the
+   current runner-allocation failure.
+2. Require `results/cpu_verification.json` PASS and
+   `results/revision_ledger.json` protocol-v2 PASS at the same git commit.
+3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
+   ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output
+   mismatches, and zero provenance mismatches. See issue #7.
+4. Run the 50-example LLaDA + GSM8K calibration pilot. Pilot-quality protocol v2
+   binds raw/scored files by SHA-256 and the frozen git commit/model SHA. Inspect
+   at least 10 exported trajectories and record the protocol-v2 human attestation,
+   which binds the review sheet, parity artifact, and pilot-quality artifact by
+   SHA-256. See issue #1.
+5. Run SDAR exact parity protocol v3 at the same frozen commit/revision. See
+   issue #2.
+6. Run Dream exact parity protocol v3 at the same frozen commit/revision. See
+   issue #5.
+7. Require the MATH-500 automatic scorer audit protocol v2 at the frozen commit,
+   then a >=25-example calibration-only MATH-500 scoring pilot, deterministic
+   review sheet, and protocol-v2 human attestation bound to the audit/sheet
+   hashes. See issue #4.
+8. Run `python scripts/primary_readiness.py` and require protocol
+   `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
+   CPU, parity, pilot, human-review, and MATH-500 scorer artifacts.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 
@@ -156,19 +172,23 @@ git pull
 python scripts/project_status.py
 ~~~
 
-Then run the cross-platform local verification:
+Then freeze the pre-primary provenance before GPU work.
+
+Windows:
 
 ~~~powershell
-PowerShell -ExecutionPolicy Bypass -File scripts/verify_cpu.ps1
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 ~~~
 
-or:
+Linux/macOS:
 
 ~~~bash
 bash scripts/verify_cpu.sh
+python scripts/resolve_experiment_revisions.py
 ~~~
 
-Then follow docs/PILOT_RUNBOOK.md for the first GPU gate and
+Do not change commits between those commands. Then follow
+docs/PILOT_RUNBOOK.md for the first GPU gate and
 docs/PRIMARY_MATRIX_RUNBOOK.md after readiness passes.
 
 ## New-chat continuation prompt

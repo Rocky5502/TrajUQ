@@ -23,6 +23,17 @@ CONTEXT_FILES = [
     "paper/generated_results_manifest.json",
 ]
 
+REQUIRED_CONTEXT_FILES = {
+    "PROJECT_STATUS.md",
+    "NEW_CHAT_MASTER_PROMPT.md",
+    "EXPERIMENT_FREEZE_CHECKLIST.md",
+    "configs/project_status.yaml",
+    "configs/experiments/primary.yaml",
+    "docs/PILOT_RUNBOOK.md",
+    "docs/PRIMARY_MATRIX_RUNBOOK.md",
+    "paper/generated_results.tex",
+}
+
 RESULT_SUFFIXES = {".json", ".md", ".txt", ".log", ".yaml", ".yml", ".csv"}
 SECRET_PATTERNS = {
     "Hugging Face token": re.compile(r"\bhf_[A-Za-z0-9]{20,}\b"),
@@ -154,6 +165,16 @@ def build_handoff(
     commit = git_value(root, "rev-parse", "HEAD")
     status = git_value(root, "status", "--porcelain")
     git_clean = None if status is None else status == ""
+
+    missing_required = sorted(
+        rel_text
+        for rel_text in REQUIRED_CONTEXT_FILES
+        if not (root / rel_text).is_file()
+    )
+    if missing_required:
+        raise ValueError(
+            "required handoff context missing: " + ", ".join(missing_required)
+        )
 
     selected, skipped = collect_files(root, max_file_bytes)
     failures: list[str] = []

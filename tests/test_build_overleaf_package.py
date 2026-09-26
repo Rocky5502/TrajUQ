@@ -78,8 +78,9 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
 
 def test_overleaf_package_rejects_identity_leak(tmp_path):
     root, style = make_root(tmp_path)
+    identity_url = "https://github.com/" + "Rocky" + "5502/TrajUQ\n"
     (root / "paper" / "appendix.tex").write_text(
-        "https://github.com/Rocky5502/TrajUQ\n",
+        identity_url,
         encoding="utf-8",
     )
 

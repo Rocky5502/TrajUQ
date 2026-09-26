@@ -118,11 +118,12 @@ Pinned dependency:
 `math-verify[antlr4_13_2]==0.9.0`
 
 Before primary MATH-500 scoring:
-1. automatic scorer audit must pass at the frozen experiment commit;
-2. run a calibration-only scorer pilot;
-3. export a deterministic review sheet;
-4. manually inspect at least 25 diverse calibration examples;
-5. record the protocol-v2 human attestation bound to the audit/review-sheet hashes.
+1. automatic scorer audit must pass at the frozen clean experiment commit with math-verify=0.9.0 and antlr4-python3-runtime=4.13.2;
+2. revalidate the frozen MATH calibration/test split manifest and split audit;
+3. run a calibration-only scorer pilot and require its scored audit to PASS;
+4. export a deterministic review sheet carrying the exact scored-pilot and calibration-input SHA-256 values;
+5. manually inspect at least 25 diverse calibration examples;
+6. record the protocol-v2 human attestation from the same clean commit; recorder/readiness independently revalidate the audit, review sheet, scored pilot, calibration input, and scored audit.
 
 Never hand-fix final test labels. If a systematic scorer defect is discovered, fix it using calibration/dev evidence, version it, and rerun affected evaluation.
 
@@ -210,8 +211,7 @@ PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 Linux/macOS:
 
 ```bash
-bash scripts/verify_cpu.sh
-python scripts/resolve_experiment_revisions.py
+bash scripts/freeze_preprimary.sh
 ```
 
 Do not change commits between CPU verification and revision resolution.
@@ -224,12 +224,12 @@ The immutable revision ledger must exist and PASS:
 
 Then, in order:
 1. LLaDA 20-prompt exact parity v3;
-2. LLaDA + GSM8K 50-example calibration pilot;
-3. >=10-trajectory manual pilot review/attestation;
+2. LLaDA + GSM8K 50-example calibration pilot with raw/scored audit PASS artifacts;
+3. >=10-trajectory manual pilot review/attestation source-bound to the exact scored pilot;
 4. SDAR exact parity v3;
 5. Dream exact parity v3;
-6. MATH-500 automatic scorer audit + >=25-example manual calibration review;
-7. `scripts/primary_readiness.py` protocol v2 PASS;
+6. MATH-500 automatic scorer audit + 25-example calibration pilot + source-bound manual review;
+7. `scripts/primary_readiness.py` protocol v2 PASS, including parity-source hashes, pilot raw/scored audits, pilot review source, MATH scored-pilot/input/audit source checks, and clean-checkout provenance;
 8. only then create/execute the frozen 18-cell primary plan.
 
 Use the live `configs/project_status.yaml` as the authority if this order or protocol version has since changed.

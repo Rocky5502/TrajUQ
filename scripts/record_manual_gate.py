@@ -43,6 +43,18 @@ def git_clean() -> bool | None:
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
+def review_sheet_metadata(path: Path) -> dict[str, str]:
+    prefixes = {
+        "- scored artifact: ": "scored_artifact",
+        "- scored SHA-256: ": "scored_sha256",
+    }
+    found: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        for prefix, key in prefixes.items():
+            if line.startswith(prefix):
+                found[key] = line[len(prefix):].strip()
+    return found
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -78,14 +90,19 @@ def main() -> None:
     failures: list[str] = []
 
     review_sheet_sha256 = None
+    review_meta: dict[str, str] = {}
     if not review_sheet.exists():
         failures.append(f"missing review sheet: {review_sheet}")
     else:
         review_sheet_sha256 = sha256_file(review_sheet)
+        review_meta = review_sheet_metadata(review_sheet)
+        if not review_meta.get("scored_artifact") or not review_meta.get("scored_sha256"):
+            failures.append("review sheet is missing scored-artifact provenance metadata")
 
     parity_sha256 = None
     parity_status = None
     parity_protocol = None
+    parity: dict = {}
     if not parity_path.exists():
         failures.append(f"missing parity artifact: {parity_path}")
     else:
@@ -104,6 +121,7 @@ def main() -> None:
     quality_sha256 = None
     quality_status = None
     quality_protocol = None
+    quality: dict = {}
     if not quality_path.exists():
         failures.append(f"missing pilot quality artifact: {quality_path}")
     else:
@@ -128,6 +146,43 @@ def main() -> None:
             "git worktree must be clean when recording the human attestation"
         )
 
+    if parity:
+        if parity.get("git_clean") is not True:
+            failures.append("LLaDA parity artifact was not recorded from a clean checkout")
+        if commit is not None and parity.get("git_commit") != commit:
+            failures.append("LLaDA parity artifact belongs to a different git commit")
+        if int(parity.get("shared_records", 0)) != 20:
+            failures.append("LLaDA parity artifact does not cover exactly 20 prompts")
+        if int(parity.get("mismatch_count", -1)) != 0:
+            failures.append("LLaDA parity artifact has output mismatches")
+        if int(parity.get("provenance_mismatch_count", -1)) != 0:
+            failures.append("LLaDA parity artifact has provenance mismatches")
+        for path_key, hash_key, label in (
+            ("reference", "reference_sha256", "reference"),
+            ("instrumented", "instrumented_sha256", "instrumented"),
+        ):
+            bound_path = Path(str(parity.get(path_key, "")))
+            if (
+                not bound_path.exists()
+                or parity.get(hash_key) != sha256_file(bound_path)
+            ):
+                failures.append(f"LLaDA parity {label} source hash is stale")
+
+    if quality:
+        if quality.get("git_clean") is not True:
+            failures.append("pilot quality artifact was not recorded from a clean checkout")
+        if commit is not None and quality.get("git_commit") != commit:
+            failures.append("pilot quality artifact belongs to a different git commit")
+        quality_scored = Path(str(quality.get("scored", "")))
+        quality_scored_sha = str(quality.get("scored_sha256", ""))
+        if not quality_scored.exists() or quality_scored_sha != sha256_file(quality_scored):
+            failures.append("pilot quality scored source hash is stale")
+        if review_meta:
+            if review_meta.get("scored_artifact") != str(quality_scored):
+                failures.append("review sheet scored artifact differs from pilot quality")
+            if review_meta.get("scored_sha256") != quality_scored_sha:
+                failures.append("review sheet scored SHA-256 differs from pilot quality")
+
     if args.reviewed_records < 10:
         failures.append("at least 10 trajectory records must be manually reviewed")
     if not args.trajectory_semantics_pass:
@@ -149,6 +204,8 @@ def main() -> None:
         "git_clean": clean,
         "review_sheet": str(review_sheet),
         "review_sheet_sha256": review_sheet_sha256,
+        "review_scored_artifact": review_meta.get("scored_artifact"),
+        "review_scored_sha256": review_meta.get("scored_sha256"),
         "parity_artifact": str(parity_path),
         "parity_artifact_sha256": parity_sha256,
         "parity_artifact_status": parity_status,

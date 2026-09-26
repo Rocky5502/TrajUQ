@@ -487,12 +487,23 @@ def main() -> None:
         "--output",
         default="results/primary_readiness.json",
     )
+    parser.add_argument(
+        "--historical-provenance-only",
+        action="store_true",
+        help=(
+            "Revalidate frozen pre-primary artifacts without requiring the current "
+            "checkout to equal the historical experiment commit. Intended for "
+            "final submission auditing only; primary planners still require the "
+            "frozen clean experiment checkout."
+        ),
+    )
     args = parser.parse_args()
 
     parity_paths = dict(DEFAULT_PARITY)
     parity_paths.update(dict(args.parity))
-    current_commit = git_text("rev-parse", "HEAD")
-    current_status = git_text("status", "--porcelain")
+    historical = bool(args.historical_provenance_only)
+    current_commit = None if historical else git_text("rev-parse", "HEAD")
+    current_status = None if historical else git_text("status", "--porcelain")
     payload = evaluate_readiness(
         args.primary_config,
         args.pilot_quality,
@@ -502,9 +513,18 @@ def main() -> None:
         args.math500_manual_review,
         args.cpu_verification,
         args.revision_ledger,
-        enforce_current_git=True,
+        enforce_current_git=not historical,
         current_git_commit=current_commit,
-        current_git_clean=(current_status == "" if current_status is not None else None),
+        current_git_clean=(
+            None
+            if historical
+            else (current_status == "" if current_status is not None else None)
+        ),
+    )
+    payload["validation_mode"] = (
+        "historical_provenance_only"
+        if historical
+        else "frozen_current_checkout"
     )
 
     out = Path(args.output)

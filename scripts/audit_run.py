@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import subprocess
 from pathlib import Path
 
@@ -74,6 +75,103 @@ def recursive_keys(value) -> set[str]:
     return keys
 
 
+def audit_run_provenance(
+    rows: list[dict],
+    *,
+    require_revision: bool,
+) -> tuple[list[str], dict[str, list]]:
+    failures: list[str] = []
+    datasets: set[str] = set()
+    models: set[str] = set()
+    adapters: set[str] = set()
+    seeds: set[int] = set()
+    revisions: set[str] = set()
+
+    for i, row in enumerate(rows):
+        for field, values in (
+            ("dataset", datasets),
+            ("model", models),
+            ("adapter", adapters),
+        ):
+            value = row.get(field)
+            text = "" if value is None else str(value).strip()
+            if not text:
+                failures.append(f"row {i}: missing {field}")
+            else:
+                values.add(text)
+
+        prompt_hash = row.get("prompt_sha256")
+        if (
+            not isinstance(prompt_hash, str)
+            or re.fullmatch(r"[0-9a-fA-F]{64}", prompt_hash) is None
+        ):
+            failures.append(
+                f"row {i}: prompt_sha256 must be a 64-character hexadecimal digest"
+            )
+
+        seed = row.get("seed")
+        if isinstance(seed, bool):
+            failures.append(f"row {i}: seed must be integer-like")
+        else:
+            try:
+                seed_value = int(seed)
+            except (TypeError, ValueError):
+                failures.append(f"row {i}: seed must be integer-like")
+            else:
+                seeds.add(seed_value)
+
+        record_revision = row.get("metadata", {}).get("model_revision")
+        generation_revision = (
+            row.get("generation", {})
+            .get("metadata", {})
+            .get("model_revision")
+        )
+        if (
+            record_revision
+            and generation_revision
+            and str(record_revision) != str(generation_revision)
+        ):
+            failures.append(
+                f"row {i}: record/generation model revisions disagree"
+            )
+        revision = record_revision or generation_revision
+        if revision:
+            revisions.add(str(revision))
+        elif require_revision:
+            failures.append(f"row {i}: model revision is not pinned")
+
+    for label, values in (
+        ("dataset", datasets),
+        ("model", models),
+        ("adapter", adapters),
+        ("seed", seeds),
+    ):
+        if rows and len(values) != 1:
+            failures.append(
+                f"run must contain exactly one {label}; observed={sorted(values)}"
+            )
+    if len(revisions) > 1:
+        failures.append(
+            "run must contain exactly one model revision; "
+            f"observed={sorted(revisions)}"
+        )
+    if rows and require_revision and len(revisions) != 1:
+        failures.append(
+            "run requires exactly one pinned model revision"
+        )
+
+    return failures, {
+        "datasets": sorted(datasets),
+        "datasets": provenance["datasets"],
+        "models": provenance["models"],
+        "adapters": provenance["adapters"],
+        "seeds": provenance["seeds"],
+        "model_revisions": provenance["model_revisions"],
+        "seeds": sorted(seeds),
+        "model_revisions": sorted(revisions),
+    }
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -118,8 +216,6 @@ def main() -> None:
     ids: set[str] = set()
     failures: list[str] = []
     feature_names: set[str] | None = None
-    models: set[str] = set()
-    adapters: set[str] = set()
     schema_versions: set[str] = set()
 
     if not rows:
@@ -133,6 +229,12 @@ def main() -> None:
     else:
         stage = args.stage
 
+    provenance_failures, provenance = audit_run_provenance(
+        rows,
+        require_revision=args.require_revision,
+    )
+    failures.extend(provenance_failures)
+
     for i, row in enumerate(rows):
         item_id = str(row.get("example_id", ""))
         if not item_id:
@@ -140,9 +242,6 @@ def main() -> None:
         elif item_id in ids:
             failures.append(f"row {i}: duplicate example_id={item_id}")
         ids.add(item_id)
-
-        models.add(str(row.get("model")))
-        adapters.add(str(row.get("adapter")))
 
         schema_version = row.get("schema_version")
         if not schema_version:
@@ -267,14 +366,6 @@ def main() -> None:
                     f"row {i}: trajectory_semantics={semantics!r}; "
                     "expected active_unresolved_positions_v4"
                 )
-
-        if args.require_revision:
-            revision = (
-                row.get("metadata", {}).get("model_revision")
-                or row.get("generation", {}).get("metadata", {}).get("model_revision")
-            )
-            if not revision:
-                failures.append(f"row {i}: model revision is not pinned")
 
     commit = git_head()
     clean = git_clean()

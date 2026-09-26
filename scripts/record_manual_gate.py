@@ -208,8 +208,8 @@ def main() -> None:
                 failures.append("review sheet scored SHA-256 differs from pilot quality")
 
         quality_raw = Path(str(quality.get("raw", "")))
-        raw_audit_ok, raw_audit = run_audit_passes(quality_raw, "raw", commit)
-        scored_audit_ok, scored_audit = run_audit_passes(quality_scored, "scored", commit)
+        raw_audit_ok, _ = run_audit_passes(quality_raw, "raw", commit)
+        scored_audit_ok, _ = run_audit_passes(quality_scored, "scored", commit)
         if not raw_audit_ok:
             failures.append("pilot raw audit is missing, stale, or not PASS")
         if not scored_audit_ok:

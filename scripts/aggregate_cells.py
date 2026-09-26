@@ -17,6 +17,18 @@ from trajuq.aggregation import (
 from trajuq.io import read_jsonl
 
 
+AGGREGATE_METRICS = (
+    "auroc",
+    "auprc",
+    "brier",
+    "nll",
+    "ece15",
+    "aurc",
+    "risk50",
+    "risk80",
+)
+
+
 def parse_cell(value: str) -> tuple[str, str]:
     if "=" not in value:
         raise argparse.ArgumentTypeError(
@@ -161,7 +173,7 @@ def main() -> None:
                         metric,
                     ),
                 }
-                for metric in ("auroc", "auprc", "aurc")
+                for metric in AGGREGATE_METRICS
             },
         }
 
@@ -172,7 +184,7 @@ def main() -> None:
             n_boot=args.n_boot,
             seed=args.seed,
         )
-        for metric in ("auroc", "auprc", "aurc")
+        for metric in AGGREGATE_METRICS
     }
 
     payload = {

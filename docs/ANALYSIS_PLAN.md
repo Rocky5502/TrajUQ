@@ -41,6 +41,8 @@ Report:
 - risk–coverage and AURC;
 - risk at frozen coverage points.
 
+For cross-cell RQ2 summaries, report equal-cell-weight hierarchical macro differences for Brier, NLL, 15-bin ECE, AURC, and risk at 50\% and 80\% coverage, with positive improvement always defined as better (therefore baseline minus TrajUQ for lower-is-better metrics).
+
 Raw TrajUQ risk must not be described as an error probability.
 
 ## RQ3 — Adaptive compute

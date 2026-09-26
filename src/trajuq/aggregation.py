@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .evaluation import selective_curve
+from .evaluation import calibration_metrics, risk_at_coverage, selective_curve
 from .statistics import stratified_bootstrap_indices
 
 
@@ -46,6 +46,14 @@ def metric_value(y_error: np.ndarray, score: np.ndarray, metric: str) -> float:
         return float(average_precision_score(y, s))
     if metric == "aurc":
         return float(selective_curve(y, s).aurc)
+    if metric in {"brier", "nll", "ece15"}:
+        calibrated = calibration_metrics(y, s, n_bins=15)
+        key = "ece" if metric == "ece15" else metric
+        return float(calibrated[key])
+    if metric == "risk50":
+        return float(risk_at_coverage(y, s, 0.50))
+    if metric == "risk80":
+        return float(risk_at_coverage(y, s, 0.80))
     raise ValueError(f"unsupported metric {metric!r}")
 
 
@@ -59,7 +67,7 @@ def oriented_improvement(
     baseline = metric_value(y_error, baseline_score, metric)
     if metric in {"auroc", "auprc"}:
         return float(candidate - baseline)
-    if metric == "aurc":
+    if metric in {"aurc", "brier", "nll", "ece15", "risk50", "risk80"}:
         return float(baseline - candidate)
     raise ValueError(f"unsupported metric {metric!r}")
 

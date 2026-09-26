@@ -16,6 +16,18 @@ from trajuq.aggregation import (
 from trajuq.io import read_jsonl
 
 
+AGGREGATE_METRICS = (
+    "auroc",
+    "auprc",
+    "brier",
+    "nll",
+    "ece15",
+    "aurc",
+    "risk50",
+    "risk80",
+)
+
+
 def index(path: str) -> dict[str, dict]:
     rows = list(read_jsonl(path))
     out = {str(row["example_id"]): row for row in rows}
@@ -116,7 +128,7 @@ def main() -> None:
                         metric,
                     ),
                 }
-                for metric in ("auroc", "auprc", "aurc")
+                for metric in AGGREGATE_METRICS
             },
         }
 
@@ -127,7 +139,7 @@ def main() -> None:
             n_boot=args.n_boot,
             seed=args.seed,
         )
-        for metric in ("auroc", "auprc", "aurc")
+        for metric in AGGREGATE_METRICS
     }
 
     payload = {

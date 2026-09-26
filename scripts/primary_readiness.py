@@ -401,11 +401,26 @@ def evaluate_readiness(
             shared = payload.get("shared_records")
             run_provenance = payload.get("run_provenance", {})
             expected_revision = ledger_models.get(model, {}).get("resolved_sha")
+
+            reference_path = Path(str(payload.get("reference", "")))
+            instrumented_path = Path(str(payload.get("instrumented", "")))
+            reference_hash_ok = (
+                reference_path.exists()
+                and bool(payload.get("reference_sha256"))
+                and payload.get("reference_sha256") == sha256_file(reference_path)
+            )
+            instrumented_hash_ok = (
+                instrumented_path.exists()
+                and bool(payload.get("instrumented_sha256"))
+                and payload.get("instrumented_sha256") == sha256_file(instrumented_path)
+            )
+
             passed = (
                 status == "PASS"
                 and payload.get("protocol") == "trajuq_exact_parity_v3"
                 and payload.get("require_token_ids") is True
                 and payload.get("require_provenance") is True
+                and payload.get("git_clean") is True
                 and experiment_commit is not None
                 and payload.get("git_commit") == experiment_commit
                 and run_provenance.get("adapter") == model
@@ -413,6 +428,8 @@ def evaluate_readiness(
                 and int(shared or 0) == 20
                 and int(mismatch_count or 0) == 0
                 and int(provenance_mismatch_count or 0) == 0
+                and reference_hash_ok
+                and instrumented_hash_ok
             )
             parity_checks[model] = {
                 "path": path,
@@ -424,12 +441,17 @@ def evaluate_readiness(
                 "provenance_mismatch_count": provenance_mismatch_count,
                 "shared_records": shared,
                 "git_commit": payload.get("git_commit"),
+                "git_clean": payload.get("git_clean"),
+                "reference": payload.get("reference"),
+                "reference_hash_ok": reference_hash_ok,
+                "instrumented": payload.get("instrumented"),
+                "instrumented_hash_ok": instrumented_hash_ok,
                 "run_provenance": run_provenance,
                 "expected_model_revision": expected_revision,
             }
             if not passed:
                 failures.append(
-                    f"{model} parity gate is not an exact 20-prompt PASS at the frozen revision/commit"
+                    f"{model} parity gate is not an exact hash-bound 20-prompt PASS at the frozen clean revision/commit"
                 )
         except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")

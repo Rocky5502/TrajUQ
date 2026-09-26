@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import yaml
 
-from scripts.execute_primary_analysis import validate_plan_provenance
 from trajuq.aggregation import (
     PredictionCell,
     hierarchical_macro_bootstrap,
@@ -16,6 +16,11 @@ from trajuq.aggregation import (
     oriented_improvement,
 )
 from trajuq.io import read_jsonl
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_primary_analysis import validate_plan_provenance  # noqa: E402
 
 
 AGGREGATE_METRICS = (

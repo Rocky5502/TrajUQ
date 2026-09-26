@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
+from scripts.execute_adaptive_plan import validate_plan_provenance
 from trajuq.adaptive_aggregation import AdaptiveCell, hierarchical_macro_adaptive
 from trajuq.io import read_jsonl
 
@@ -31,7 +32,27 @@ def load_prediction_cell(spec: dict, fraction_key: str) -> AdaptiveCell:
     if len(ids) != len(set(ids)):
         raise SystemExit(f"{label}: duplicate adaptive prediction IDs")
 
+    expected_rows = list(
+        read_jsonl(spec["provenance"]["test"]["refined_scored"])
+    )
+    expected_ids = [str(row["example_id"]) for row in expected_rows]
+    if (
+        not expected_ids
+        or len(expected_ids) != len(set(expected_ids))
+        or set(ids) != set(expected_ids)
+    ):
+        raise SystemExit(
+            f"{label}: adaptive predictions do not exactly cover "
+            "the frozen refined test target"
+        )
+
     result = json.loads(result_path.read_text(encoding="utf-8"))
+    if result.get("protocol") != "trajuq_adaptive_evaluation_v2":
+        raise SystemExit(f"{label}: adaptive result protocol is not v2")
+    if result.get("execution_semantics") != "selective_second_pass_rerun":
+        raise SystemExit(f"{label}: adaptive result execution semantics drifted")
+    if int(result.get("n_test", -1)) != len(expected_ids):
+        raise SystemExit(f"{label}: adaptive result test count is incomplete")
     expected_fraction = float(evaluation["max_refine_fraction"])
     if not np.isclose(float(result["max_refine_fraction"]), expected_fraction):
         raise SystemExit(f"{label}: result/refine-fraction mismatch")
@@ -102,6 +123,12 @@ def main() -> None:
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
     if plan.get("status") != "PASS":
         raise SystemExit("Adaptive plan is not PASS.")
+    provenance_failures = validate_plan_provenance(plan)
+    if provenance_failures:
+        raise SystemExit(
+            "Adaptive plan provenance check failed:\n- "
+            + "\n- ".join(provenance_failures)
+        )
 
     cells_spec = plan.get("cells", [])
     expected = int(plan.get("expected_cells", 0))

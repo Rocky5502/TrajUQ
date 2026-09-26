@@ -40,6 +40,23 @@ def package_version(name: str) -> str | None:
         return None
 
 
+def dependency_failures(observed: dict[str, str | None]) -> list[dict]:
+    expected = {
+        "math-verify": EXPECTED_MATH_VERIFY_VERSION,
+        "antlr4-python3-runtime": EXPECTED_ANTLR_VERSION,
+    }
+    return [
+        {
+            "kind": "dependency",
+            "package": package,
+            "expected": version,
+            "observed": observed.get(package),
+        }
+        for package, version in expected.items()
+        if observed.get(package) != version
+    ]
+
+
 NON_EQUIVALENT_CASES = [
     (r"FINAL: \frac{1}{2}", r"\frac{2}{3}"),
     (r"FINAL: 2", r"3"),
@@ -114,26 +131,11 @@ def main() -> None:
         if bool(item["observed"]) != bool(item["expected"])
     ]
 
-    observed_math_verify = package_version("math-verify")
-    observed_antlr = package_version("antlr4-python3-runtime")
-    if observed_math_verify != EXPECTED_MATH_VERIFY_VERSION:
-        failures.append(
-            {
-                "kind": "dependency",
-                "package": "math-verify",
-                "expected": EXPECTED_MATH_VERIFY_VERSION,
-                "observed": observed_math_verify,
-            }
-        )
-    if observed_antlr != EXPECTED_ANTLR_VERSION:
-        failures.append(
-            {
-                "kind": "dependency",
-                "package": "antlr4-python3-runtime",
-                "expected": EXPECTED_ANTLR_VERSION,
-                "observed": observed_antlr,
-            }
-        )
+    observed_dependencies = {
+        "math-verify": package_version("math-verify"),
+        "antlr4-python3-runtime": package_version("antlr4-python3-runtime"),
+    }
+    failures.extend(dependency_failures(observed_dependencies))
 
     commit = git_head()
     if not commit:
@@ -144,8 +146,8 @@ def main() -> None:
         "git_commit": commit,
         "dependency": "math-verify[antlr4_13_2]==0.9.0",
         "dependency_versions": {
-            "math-verify": observed_math_verify,
-            "antlr4-python3-runtime": observed_antlr,
+            "math-verify": observed_dependencies["math-verify"],
+            "antlr4-python3-runtime": observed_dependencies["antlr4-python3-runtime"],
         },
         "expected_dependency_versions": {
             "math-verify": EXPECTED_MATH_VERIFY_VERSION,

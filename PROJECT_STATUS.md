@@ -64,7 +64,10 @@ particular, the following are implemented and versioned:
   normalizer and scorer on every sampled row with a constructed correct final
   answer, binds the clean commit/revision-ledger SHA, and stores no benchmark
   row content; readiness and every GPU entry guard reject legacy one-row proof;
-- claim-gated manuscript result rendering;
+- claim-gated manuscript result rendering protocol v2, SHA-binding eight frozen
+  sources including the complete supplementary isotonic calibration-sensitivity
+  macro; the appendix sensitivity table is artifact-derived and cannot alter the
+  RQ1 claim gate;
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus one-command strict
   pre-primary freeze wrappers for Windows and Linux/macOS; the official freeze

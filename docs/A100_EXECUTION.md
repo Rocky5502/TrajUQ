@@ -168,8 +168,14 @@ condition; do not weaken the comparator or continue to the primary matrix.
 
 ## 4. MATH-500 scorer gate
 
-Run the automatic scorer/dependency audit, frozen split preparation, CUDA
-preflight, and 25-example calibration-only scoring pilot:
+If you used the convenience command
+`bash scripts/a100_campaign_linux.sh parity-math` in Section 3, the automatic
+MATH-500 prepare and 25-example pilot stages are already complete. **Do not run
+the pilot a second time**: the guarded wrapper will correctly refuse to
+overwrite the existing raw/scored/review evidence.
+
+If instead you are running the stages manually and did not use
+`parity-math`, run:
 
 ```bash
 bash scripts/math500_gate_linux.sh prepare
@@ -374,12 +380,16 @@ python scripts/render_paper_result_figures.py
 python scripts/audit_paper.py --submission-ready
 ```
 
-After committing or stashing the final paper-side changes so the submission
-checkout is clean:
+After committing the artifact-derived final paper-side changes so the
+submission checkout is clean:
 
 ```bash
 python scripts/submission_readiness.py
 ```
+
+Do not stash those final rendered changes away before the gate; the readiness
+check must see the exact rendered manuscript and figure manifests that will be
+packaged.
 
 Do not type result numbers manually into `paper/main.tex`.
 

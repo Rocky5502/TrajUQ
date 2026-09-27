@@ -75,6 +75,38 @@ Manuscript destination:
 - artifact-derived `Ablation*` LaTeX macros in
   `paper/generated_results.tex`.
 
+## Prior-aligned single-trajectory signal diagnostics
+
+Every primary-analysis cell also produces:
+
+- `results/primary_analysis/<adapter>/<dataset>/prior_signal_diagnostic.json`;
+- `results/primary_analysis/<adapter>/<dataset>/prior_signal_predictions.jsonl`.
+
+These are frozen secondary diagnostics, not replacements for the primary
+decision-time-entropy RQ1 baseline. They calibrate two single-trajectory signal
+classes on calibration data only:
+
+1. mean normalized trajectory entropy over active unresolved positions;
+2. top-1 revision / token-flip rate.
+
+The complete cross-cell artifact is:
+
+`results/primary_analysis/macro_prior_signal_diagnostics.json`
+
+Required protocol: `trajuq_prior_aligned_signal_macro_v1`.
+
+It requires the complete frozen 18-cell set and uses equal cell weight with the
+same paired within-cell hierarchical bootstrap logic used by the primary
+comparison. The artifact supports the Appendix diagnostic comparison to
+prior-aligned signal classes; it must not be described as a reproduction of
+D-CoCoA or DiSE and does not alter the frozen RQ1 claim gate.
+
+Manuscript destination:
+
+- Appendix Table `tab:prior-signal-diagnostics`;
+- artifact-derived `PriorEntropy*` and `PriorFlipRate*` LaTeX macros in
+  `paper/generated_results.tex`.
+
 ## RQ2 five-sample comparator
 
 Primary artifact:
@@ -149,14 +181,15 @@ repository-side submission gate can pass.
 
 ## Final paper render
 
-`scripts/render_results_tex.py` consumes six SHA-bound sources:
+`scripts/render_results_tex.py` consumes seven SHA-bound sources:
 
 1. `results/primary_analysis/macro_primary.json`;
 2. `results/primary_analysis/rq1_claim_gate.json`;
 3. `results/repeated_sampling/macro_trajuq_vs_repeated.json`;
 4. `results/primary_analysis/macro_feature_ablation.json`;
-5. `results/adaptive/macro_cap_050.json`;
-6. `configs/experiments/primary.yaml`.
+5. `results/primary_analysis/macro_prior_signal_diagnostics.json`;
+6. `results/adaptive/macro_cap_050.json`;
+7. `configs/experiments/primary.yaml`.
 
 It writes:
 
@@ -179,7 +212,8 @@ primary RQ1 claim gate.
 
 1. Require all pre-primary gates to PASS.
 2. Complete and audit all 18 primary cells.
-3. Complete primary analysis, including the 18-cell feature-ablation macro.
+3. Complete primary analysis, including the 18-cell feature-ablation and
+   prior-aligned signal diagnostic macros.
 4. Freeze the RQ1 claim decision unchanged.
 5. Complete RQ2 with compute accounting.
 6. Complete RQ3 at 25/50/75% caps.

@@ -123,6 +123,8 @@ function Require-ExistingParity {
         $Parity.provenance_mismatch_count -eq 0 -and
         $Parity.run_provenance.adapter -eq $Adapter -and
         $Parity.run_provenance.model_revision -eq $Revision -and
+        $Parity.run_provenance.source_git_commit -eq $Head -and
+        $Parity.run_provenance.source_git_clean -eq $true -and
         $ReferenceHashOk -and
         $InstrumentedHashOk -and
         $InstrumentedAuditOk
@@ -171,6 +173,9 @@ function Run-SDARParity {
 
     Require-No-PartialArtifacts @($Reference, $Instrumented, "$Instrumented.audit.json", $Overhead)
 
+    Run-Step "SDAR exact-revision CUDA preflight" {
+        & $Python scripts/preflight.py --model-config results/frozen_models/sdar.yaml --data $CalData --require-cuda
+    }
     Run-Step "SDAR 20-prompt native reference" {
         & $Python scripts/run_sdar_reference.py --model $ModelId --revision $Revision --input $CalData --output $Reference --limit 20 --seed 2027 --max-new-tokens 128 --block-length 4 --denoising-steps 4 --temperature 1.0 --top-k 0 --top-p 1.0 --remasking-strategy low_confidence_dynamic --confidence-threshold 0.85
     }
@@ -217,6 +222,9 @@ function Run-DreamParity {
 
     Require-No-PartialArtifacts @($Reference, $Instrumented, "$Instrumented.audit.json", $Overhead)
 
+    Run-Step "Dream exact-revision CUDA preflight" {
+        & $Python scripts/preflight.py --model-config results/frozen_models/dream.yaml --data $CalData --require-cuda
+    }
     Run-Step "Dream 20-prompt native reference" {
         & $Python scripts/run_dream_reference.py --model $ModelId --revision $Revision --input $CalData --output $Reference --limit 20 --seed 2027 --steps 128 --max-new-tokens 128 --temperature 0 --top-p 1.0 --alg entropy --alg-temp 0.1
     }

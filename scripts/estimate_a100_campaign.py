@@ -315,7 +315,11 @@ def make_markdown(payload: dict[str, Any]) -> str:
         ),
         (
             f"RQ3 base-budget generations: "
-            f"**{payload['counts']['rq3_base_generations']}**"
+            f"**{payload['counts']['rq3_base_generations']}**  "
+        ),
+        (
+            f"Total generation calls in the estimated scope: "
+            f"**{payload['counts']['total_generation_calls']}**"
         ),
         "",
         "## Per-model projection",
@@ -354,6 +358,14 @@ def make_markdown(payload: dict[str, Any]) -> str:
                 "- P90-per-example planning projection: "
                 f"**{payload['aggregate']['p90_planning_hours']:.2f} "
                 "A100-hours**."
+            ),
+            (
+                "- Mean-timing 24/7 single-A100 duration: "
+                f"**{payload['aggregate']['mean_projection_days_24h']:.2f} days**."
+            ),
+            (
+                "- P90-planning 24/7 single-A100 duration: "
+                f"**{payload['aggregate']['p90_planning_days_24h']:.2f} days**."
             ),
             (
                 "- These are serial single-A100 hours and exclude model "
@@ -604,6 +616,11 @@ def main() -> None:
             "primary_examples": total_primary_examples,
             "rq2_auxiliary_generations": total_rq2_generations,
             "rq3_base_generations": total_rq3_generations,
+            "total_generation_calls": (
+                total_primary_examples
+                + total_rq2_generations
+                + total_rq3_generations
+            ),
         },
         "per_model": per_model,
         "aggregate": {
@@ -613,6 +630,12 @@ def main() -> None:
             "p90_planning_hours": seconds_to_hours(
                 aggregate_p90_seconds
             ),
+            "mean_projection_days_24h": seconds_to_hours(
+                aggregate_mean_seconds
+            ) / 24.0,
+            "p90_planning_days_24h": seconds_to_hours(
+                aggregate_p90_seconds
+            ) / 24.0,
         },
         "caveats": [
             (

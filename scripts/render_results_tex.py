@@ -500,8 +500,8 @@ def require_calibration_sensitivity(sensitivity: dict) -> None:
         "base_estimator": "standardized_logistic",
         "cv_folds": 5,
         "ensemble": False,
-        "min_calibration_samples": 1000,
-        "min_class_count": 5,
+        "min_calibration_samples": 250,
+        "min_class_count": 25,
     }
     if policy != expected_policy:
         raise ValueError(

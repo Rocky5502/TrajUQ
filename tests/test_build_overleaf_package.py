@@ -30,7 +30,10 @@ def make_root(tmp_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     (figures / "result.pdf").write_bytes(b"%PDF-1.4\nsynthetic\n")
-    (style / "acl.sty").write_text("% pinned style\n", encoding="utf-8")
+    (style / "acl.sty").write_text(
+        "% https://github.com/acl-org/acl-style-files/\n",
+        encoding="utf-8",
+    )
     (style / "acl_natbib.bst").write_text(
         "% pinned bst\n",
         encoding="utf-8",
@@ -59,6 +62,7 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
 
     assert first_payload["status"] == "PASS"
     assert first_payload["acl_style_commit"] == ACL_STYLE_COMMIT
+    assert first_payload["status"] == "PASS"
     assert first.read_bytes() == second.read_bytes()
 
     with zipfile.ZipFile(first) as zf:

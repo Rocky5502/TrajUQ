@@ -14,6 +14,7 @@ from trajuq.adaptive import (
 from trajuq.calibration import RiskCalibrator, cross_fitted_error_probabilities
 from trajuq.features import PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance, compact_row_binding
 
 
 PAIR_INVARIANT_GENERATION_KEYS = (
@@ -263,8 +264,26 @@ def main() -> None:
         for name, pair in test_costs.items()
     }
 
+    provenance = analysis_provenance(
+        {
+            "cal_base": args.cal_base,
+            "cal_refined": args.cal_refined,
+            "test_base": args.test_base,
+            "test_refined": args.test_refined,
+        }
+    )
+    if (
+        not provenance.get("git_commit")
+        or provenance.get("git_clean") is not True
+    ):
+        raise SystemExit(
+            "Adaptive evaluation requires a clean, resolvable frozen git checkout."
+        )
+    row_binding = compact_row_binding(provenance)
+
     payload = {
         "protocol": "trajuq_adaptive_evaluation_v2",
+        "provenance": provenance,
         "risk_source": "trajectory_plus_decision_logistic",
         "max_refine_fraction": float(args.max_refine_fraction),
         "execution_semantics": args.cost_mode,
@@ -320,6 +339,7 @@ def main() -> None:
                     "base_compute": float(args.base_compute),
                     "refined_compute": float(args.refined_compute),
                     "execution_semantics": args.cost_mode,
+                    "analysis_provenance": row_binding,
                     "base_wall_time_seconds": (
                         float(wall_base[idx]) if wall_base is not None else None
                     ),

@@ -65,6 +65,8 @@ def run_signature(rows: dict[str, dict]) -> dict[str, object]:
         "adapter": set(),
         "seed": set(),
         "model_revision": set(),
+        "source_git_commit": set(),
+        "source_git_clean": set(),
     }
     for row in rows.values():
         fields["dataset"].add(row.get("dataset"))
@@ -74,6 +76,17 @@ def run_signature(rows: dict[str, dict]) -> dict[str, object]:
         metadata = row.get("generation", {}).get("metadata", {})
         fields["model_revision"].add(
             metadata.get("model_revision") if isinstance(metadata, dict) else None
+        )
+        record_metadata = row.get("metadata", {})
+        fields["source_git_commit"].add(
+            record_metadata.get("source_git_commit")
+            if isinstance(record_metadata, dict)
+            else None
+        )
+        fields["source_git_clean"].add(
+            record_metadata.get("source_git_clean")
+            if isinstance(record_metadata, dict)
+            else None
         )
     signature: dict[str, object] = {}
     for key, values in fields.items():
@@ -142,6 +155,14 @@ def main() -> None:
     if clean is not True:
         raise SystemExit(
             "Instrumentation-overhead audit requires the frozen clean checkout."
+        )
+    if reference_signature.get("source_git_commit") != commit:
+        raise SystemExit(
+            "Instrumentation-overhead sources were generated from a different git commit."
+        )
+    if reference_signature.get("source_git_clean") is not True:
+        raise SystemExit(
+            "Instrumentation-overhead sources were not generated from a clean checkout."
         )
 
     ids = sorted(reference)

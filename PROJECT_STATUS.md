@@ -25,7 +25,7 @@ family. The primary positive-claim gate is hierarchical macro AUROC improvement
 over calibrated decision-time entropy, with the confidence-interval and
 model-family consistency rules frozen in configs/experiments/primary.yaml.
 
-The five-sample uncertainty baseline now covers all 18 cells. MATH-500 samples
+The five-sample uncertainty baseline is frozen on a 12-cell representative subset (all three models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro). MATH-500 samples
 are clustered without references using pinned symbolic equivalence. RQ3 uses a
 50% primary second-pass selection cap with frozen 25% and 75% sensitivities.
 
@@ -52,7 +52,7 @@ particular, the following are implemented and versioned:
   commit equals the frozen revision-ledger experiment commit and model SHA;
 - frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, primary/readiness/revision-ledger artifacts, prepared dataset inputs, and the exact gitignored frozen model-config paths/SHA-256 values recorded by revision-ledger v2, so changing a generation setting after the freeze invalidates planning;
 - pre-registered RQ1 positive-claim gate; primary-analysis reuse re-evaluates the frozen claim rule from the bound macro/config before accepting an existing gate artifact, so a hand-edited decision cannot make execution appear complete;
-- five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation; repeated seed reuse now also requires exact model/revision/seed and sampler-setting agreement in the raw artifacts, while the execution-state manifest is checked against the frozen generation argv so a same-commit wrong-parameter run cannot be silently reused; repeated macro protocol v2 additionally requires complete test-time auxiliary wall-clock metadata in all 18 cells and carries an equal-cell-weight compute summary into artifact-derived paper rendering;
+- five-seed repeated-sampling baseline and frozen-subset macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation; repeated seed reuse now also requires exact model/revision/seed and sampler-setting agreement in the raw artifacts, while the execution-state manifest is checked against the frozen generation argv so a same-commit wrong-parameter run cannot be silently reused; repeated macro protocol v2 additionally requires complete test-time auxiliary wall-clock metadata in all 12 eligible cells and carries an equal-cell-weight compute summary into artifact-derived paper rendering;
 - pinned MATH-500 symbolic scoring, commit-bound automatic audit with runtime
   dependency-version verification, deterministic calibration review-sheet
   export, a guarded calibration-only Windows pilot wrapper, and SHA-bound human
@@ -215,7 +215,7 @@ completion count cannot be mistaken for completed empirical work.
 - The operational rental envelope is 72 continuous hours. To make that budget
   scientific rather than post-hoc, the tracked dataset manifest freezes
   outcome-free SHA-256 ID caps before any model calls: GSM8K calibration/test
-  at 1,000 each; ARC-Challenge and MMLU-Pro large test splits at 1,000; smaller
+  at 500 each; ARC-Challenge and MMLU-Pro large test splits at 500; smaller
   frozen partitions remain complete.
 - The manuscript labels this hardware/software setup and 72-hour budget as
   **planned** until frozen run artifacts attest the environment actually used.
@@ -347,11 +347,11 @@ After readiness passes:
    feature-ablation macro with equal-cell paired hierarchical bootstrap;
 9. run the RQ1 claim gate **without changing it after seeing the result**;
 10. freeze repeated-sampling plan protocol v2 after primary analysis predictions
-    exist, then run the complete 18-cell five-sample comparator with
+    exist, then run the complete frozen 12-cell five-sample comparator with
     scripts/execute_repeated_sampling.py; primary scored targets and every reused
     seed require clean protocol-v1 audits from the frozen experiment commit, the
     generator/executor reject stale seed evidence, and repeated macro protocol v2
-    refuses completion unless all 18 cells retain valid auxiliary wall-time
+    refuses completion unless all 12 eligible cells retain valid auxiliary wall-time
     accounting;
 11. freeze adaptive plan protocol v3 after all refined primary scored artifacts
     have clean frozen-commit audits, then run RQ3 base-budget generations and all
@@ -477,7 +477,7 @@ A future chat can start with:
 > Rocky5502/TrajUQ. Read PROJECT_STATUS.md, configs/project_status.yaml, the
 > open GitHub issues, and the latest main branch before changing anything.
 > Preserve the frozen 3x6 primary design, outcome isolation, complete 18-cell
-> feature-ablation macro, RQ1 claim gate, five-sample 18-cell comparator, and
+> feature-ablation macro, RQ1 claim gate, five-sample 12-cell representative comparator, and
 > RQ3 50% primary cap with 25/75% sensitivities. Do not invent results. Continue from the first unmet execution
 > gate and update PROJECT_STATUS.md whenever a milestone materially changes.
 

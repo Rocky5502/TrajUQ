@@ -6,6 +6,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 import yaml
@@ -13,6 +14,11 @@ import yaml
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.build_overleaf_package import (  # noqa: E402
+    ACL_STYLE_COMMIT,
+    PAPER_FILES,
+    REQUIRED_RESULT_FIGURES,
+)
 from scripts.execute_adaptive_plan import (  # noqa: E402
     validate_plan_provenance as validate_adaptive_provenance,
 )
@@ -545,6 +551,120 @@ def verify_result_figures(
     }
 
 
+def verify_overleaf_package(path: Path) -> dict:
+    failures: list[str] = []
+    if not path.is_file():
+        return {
+            "status": "FAIL",
+            "path": str(path),
+            "exists": False,
+            "sha256": None,
+            "bytes": None,
+            "failures": [f"anonymous Overleaf package is missing: {path}"],
+        }
+
+    try:
+        with zipfile.ZipFile(path) as zf:
+            names = set(zf.namelist())
+            if "MANIFEST.json" not in names:
+                raise ValueError("Overleaf ZIP has no MANIFEST.json")
+            manifest = json.loads(
+                zf.read("MANIFEST.json").decode("utf-8")
+            )
+            if manifest.get("protocol") != "trajuq_overleaf_package_v1":
+                failures.append("Overleaf package protocol is not recognized")
+            if manifest.get("anonymous") is not True:
+                failures.append("Overleaf package is not marked anonymous")
+            if manifest.get("submission_ready") is not True:
+                failures.append("Overleaf package is not submission-ready")
+            if manifest.get("acl_style_commit") != ACL_STYLE_COMMIT:
+                failures.append("Overleaf package ACL style commit drifted")
+
+            required_names = {
+                *PAPER_FILES,
+                "acl.sty",
+                "acl_natbib.bst",
+                "PAPER_STATUS.md",
+                "MANIFEST.json",
+                "figures/generated/primary_auroc_improvement_matrix.pdf",
+                "figures/generated/family_macro_auroc_improvement.pdf",
+                "figures/generated/adaptive_accuracy_cost_tradeoff.pdf",
+            }
+            missing = sorted(required_names - names)
+            if missing:
+                failures.append(
+                    "Overleaf package missing required files: "
+                    + ", ".join(missing)
+                )
+
+            generated_pdf_names = {
+                name
+                for name in names
+                if name.startswith("figures/generated/")
+                and name.lower().endswith(".pdf")
+            }
+            required_pdf_names = {
+                "figures/generated/primary_auroc_improvement_matrix.pdf",
+                "figures/generated/family_macro_auroc_improvement.pdf",
+                "figures/generated/adaptive_accuracy_cost_tradeoff.pdf",
+            }
+            if generated_pdf_names != required_pdf_names:
+                failures.append(
+                    "Overleaf generated-PDF set differs from frozen result figures"
+                )
+
+            entries = manifest.get("files")
+            if not isinstance(entries, list):
+                failures.append("Overleaf package manifest files is not a list")
+                entries = []
+            by_name = {
+                str(item.get("path", "")): item
+                for item in entries
+                if isinstance(item, dict)
+            }
+            archive_payload_names = names - {"MANIFEST.json"}
+            if set(by_name) != archive_payload_names:
+                failures.append(
+                    "Overleaf package manifest file set differs from ZIP contents"
+                )
+            for name in sorted(archive_payload_names.intersection(by_name)):
+                data = zf.read(name)
+                item = by_name[name]
+                if hashlib.sha256(data).hexdigest() != str(
+                    item.get("sha256", "")
+                ):
+                    failures.append(
+                        f"Overleaf package entry hash differs: {name}"
+                    )
+                try:
+                    expected_bytes = int(item.get("bytes", -1))
+                except (TypeError, ValueError):
+                    expected_bytes = -1
+                if len(data) != expected_bytes:
+                    failures.append(
+                        f"Overleaf package entry byte count differs: {name}"
+                    )
+    except (
+        OSError,
+        zipfile.BadZipFile,
+        KeyError,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+        ValueError,
+    ) as exc:
+        failures.append(f"invalid anonymous Overleaf package: {exc}")
+
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "path": str(path),
+        "exists": True,
+        "sha256": sha256_file(path),
+        "bytes": path.stat().st_size,
+        "expected_result_figure_keys": sorted(REQUIRED_RESULT_FIGURES),
+        "failures": failures,
+    }
+
+
 def prerequisite_gate_failures(
     snapshot: dict,
     *,
@@ -632,12 +752,21 @@ def main() -> None:
         default="paper/figures/generated/result_figure_manifest.json",
     )
     parser.add_argument(
+        "--overleaf",
+        default="dist/TrajUQ_NAACL2027_ARR_Overleaf.zip",
+    )
+    parser.add_argument(
         "--supplement",
         default="dist/trajuq_anonymous_software.zip",
     )
     parser.add_argument(
         "--output",
         default="results/submission_readiness.json",
+    )
+    parser.add_argument(
+        "--skip-overleaf-build",
+        action="store_true",
+        help="Check an existing submission-ready Overleaf ZIP instead of rebuilding it.",
     )
     parser.add_argument(
         "--skip-supplement-build",
@@ -705,6 +834,24 @@ def main() -> None:
     if paper_audit.get("status") != "PASS":
         failures.append("submission-ready paper audit failed")
 
+    overleaf_path = Path(args.overleaf)
+    overleaf_build = None
+    if not args.skip_overleaf_build:
+        overleaf_build = run_json_command(
+            [
+                sys.executable,
+                "scripts/build_overleaf_package.py",
+                "--submission-ready",
+                "--output",
+                str(overleaf_path),
+            ]
+        )
+        if overleaf_build.get("status") != "PASS":
+            failures.append("submission-ready anonymous Overleaf build failed")
+
+    overleaf = verify_overleaf_package(overleaf_path)
+    failures.extend(overleaf["failures"])
+
     supplement_path = Path(args.supplement)
     supplement_build = None
     if not args.skip_supplement_build:
@@ -748,13 +895,15 @@ def main() -> None:
         "generated_results": rendered,
         "result_figures": result_figures,
         "paper_audit": paper_audit,
+        "overleaf_build": overleaf_build,
+        "overleaf": overleaf,
         "supplement_build": supplement_build,
         "supplement": supplement,
         "remaining_external_checks": [
-            "Compile the official ACL/ARR PDF with the current acl.sty.",
+            "Compile the exact recorded anonymous Overleaf source ZIP.",
             "Run the official ACL pubcheck on the final PDF.",
             "Confirm page limits, anonymity, and submission-form metadata.",
-            "Upload the exact anonymous supplement whose SHA-256 is recorded here.",
+            "Upload the exact Overleaf and anonymous supplement archives whose SHA-256 values are recorded here.",
         ],
         "failures": failures,
     }

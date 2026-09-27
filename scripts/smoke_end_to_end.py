@@ -14,7 +14,9 @@ from trajuq.schema import ExampleRecord, GenerationResult, StepSummary
 
 def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
     e = 1.0 if is_error else 0.0
-    jitter = lambda scale: rng.uniform(-scale, scale)
+
+    def jitter(scale: float) -> float:
+        return rng.uniform(-scale, scale)
     entropy_mean = 0.28 + 0.28 * e + jitter(0.04)
     entropy_p90 = 0.34 + 0.35 * e + jitter(0.04)
     entropy_final = 0.32 + 0.12 * e + jitter(0.08)

@@ -162,10 +162,10 @@ Same-checkpoint AR/diffusion disagreement is a diagnostic, not a correctness lab
 
 \section{Dataset Split Policy}
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \small
-\begin{tabular}{lll}
+\begin{tabular}{p{0.17\textwidth}p{0.36\textwidth}p{0.36\textwidth}}
 \toprule
 Dataset & Calibration & Test\\
 \midrule
@@ -181,7 +181,8 @@ MATH-500 & frozen internal holdout, full & frozen internal holdout, full\\
 complete partition produced by the declared split rule. Caps are applied
 before model calls by SHA-256 ranking of namespaced IDs with seed 2027 and never
 use labels, references, prompt text, or model outcomes.}
-\end{table}
+\label{tab:dataset-split-policy}
+\end{table*}
 
 All prepared example IDs are namespaced as
 \texttt{dataset:source-split:item-id}

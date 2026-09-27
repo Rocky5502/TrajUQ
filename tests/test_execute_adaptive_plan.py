@@ -184,15 +184,21 @@ def test_adaptive_partial_base_rejects_wrong_frozen_generation_settings(tmp_path
         "metadata": {
             "source_input": str(source),
             "model_revision": "model-sha",
+            "source_git_commit": "frozen-commit",
+            "source_git_clean": True,
         },
     }
     raw.write_text(json.dumps(row) + "\n", encoding="utf-8")
 
-    assert artifact_id_state(raw, spec) == "INVALID"
+    assert artifact_id_state(raw, spec, "frozen-commit") == "INVALID"
 
     row["generation"]["metadata"]["steps_requested"] = 32
     raw.write_text(json.dumps(row) + "\n", encoding="utf-8")
-    assert artifact_id_state(raw, spec) == "COMPLETE"
+    assert artifact_id_state(raw, spec, "frozen-commit") == "COMPLETE"
+
+    row["metadata"]["source_git_commit"] = "old-commit"
+    raw.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    assert artifact_id_state(raw, spec, "frozen-commit") == "INVALID"
 
 
 def test_adaptive_evaluation_rejects_partial_pair(tmp_path):

@@ -288,6 +288,25 @@ def base_budget_ratio(primary: dict[str, Any], adapter: str) -> float:
     )
 
 
+def repeated_prepared_example_count(
+    dataset_counts: dict[str, dict[str, int]],
+    eligible_datasets: list[str],
+) -> int:
+    missing = [
+        name for name in eligible_datasets
+        if name not in dataset_counts
+    ]
+    if missing:
+        raise ValueError(
+            "Repeated-sampling eligible datasets are missing from prepared "
+            f"counts: {missing}"
+        )
+    return sum(
+        int(dataset_counts[name]["total"])
+        for name in eligible_datasets
+    )
+
+
 def seconds_to_hours(seconds: float) -> float:
     return seconds / 3600.0
 
@@ -561,9 +580,9 @@ def main() -> None:
             example_count += cal_count + test_count
 
         ratio = base_budget_ratio(primary, adapter)
-        rq2_example_count = sum(
-            dataset_counts[name]["total"]
-            for name in repeated_eligible
+        rq2_example_count = repeated_prepared_example_count(
+            dataset_counts,
+            repeated_eligible,
         )
         primary_generations = example_count
         rq2_generations = rq2_example_count * samples

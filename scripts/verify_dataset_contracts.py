@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+from itertools import islice
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -70,7 +71,11 @@ def verify_one(
     spec: dict[str, Any],
     revision: str,
     load_dataset: Callable[..., Any],
+    sample_count: int = 4,
 ) -> dict[str, Any]:
+    if sample_count <= 0:
+        raise ValueError("sample_count must be positive")
+
     split = contract_split(spec)
     kwargs: dict[str, Any] = {
         "split": split,
@@ -83,31 +88,65 @@ def verify_one(
     else:
         stream = load_dataset(spec["hf_id"], **kwargs)
 
-    row = dict(next(iter(stream)))
-    normalized = normalize_row(name, row, 0)
+    rows = [dict(row) for row in islice(iter(stream), sample_count)]
     failures: list[str] = []
+    upstream_fields: set[str] = set()
+    scorer_names: set[str] = set()
+    smoke_passes = 0
 
-    if str(normalized.get("dataset", "")) != name:
-        failures.append("normalized dataset identity mismatch")
-    if not str(normalized.get("id", "")).strip():
-        failures.append("normalized id is empty")
-    if not str(normalized.get("prompt", "")).strip():
-        failures.append("normalized prompt is empty")
-    if normalized.get("reference") is None or not str(normalized["reference"]).strip():
-        failures.append("normalized reference is empty")
-
-    scorer = None
-    scorer_smoke_pass = False
-    if not failures:
-        output = correct_smoke_output(name, str(normalized["reference"]))
-        scorer_smoke_pass, scorer = score_record(
-            name,
-            output,
-            str(normalized["reference"]),
+    if len(rows) != sample_count:
+        failures.append(
+            f"streamed {len(rows)} contract rows; expected {sample_count}"
         )
-        if not scorer_smoke_pass:
-            failures.append("frozen scorer rejected constructed correct answer")
 
+    for idx, row in enumerate(rows):
+        upstream_fields.update(str(key) for key in row)
+        try:
+            normalized = normalize_row(name, row, idx)
+        except Exception as exc:
+            failures.append(
+                f"sample {idx}: {type(exc).__name__}: normalizer failed"
+            )
+            continue
+
+        if str(normalized.get("dataset", "")) != name:
+            failures.append(f"sample {idx}: normalized dataset identity mismatch")
+        if not str(normalized.get("id", "")).strip():
+            failures.append(f"sample {idx}: normalized id is empty")
+        if not str(normalized.get("prompt", "")).strip():
+            failures.append(f"sample {idx}: normalized prompt is empty")
+        if normalized.get("reference") is None or not str(normalized["reference"]).strip():
+            failures.append(f"sample {idx}: normalized reference is empty")
+            continue
+
+        try:
+            output = correct_smoke_output(name, str(normalized["reference"]))
+            scorer_smoke_pass, scorer = score_record(
+                name,
+                output,
+                str(normalized["reference"]),
+            )
+        except Exception as exc:
+            failures.append(
+                f"sample {idx}: {type(exc).__name__}: scorer smoke failed"
+            )
+            continue
+
+        scorer_names.add(str(scorer))
+        if not scorer_smoke_pass:
+            failures.append(
+                f"sample {idx}: frozen scorer rejected constructed correct answer"
+            )
+        else:
+            smoke_passes += 1
+
+    if len(scorer_names) > 1:
+        failures.append(
+            "scorer identity changed across contract samples: "
+            + ", ".join(sorted(scorer_names))
+        )
+
+    scorer = next(iter(scorer_names)) if len(scorer_names) == 1 else None
     return {
         "dataset": name,
         "repo_id": str(spec["hf_id"]),
@@ -115,17 +154,29 @@ def verify_one(
         "split": split,
         "resolved_revision": revision,
         "normalizer_version": NORMALIZER_VERSION,
-        "upstream_fields": sorted(str(key) for key in row),
+        "contract_sample_count": sample_count,
+        "observed_sample_count": len(rows),
+        "upstream_fields": sorted(upstream_fields),
         "normalized_contract": {
-            "id_nonempty": bool(str(normalized.get("id", "")).strip()),
-            "prompt_nonempty": bool(str(normalized.get("prompt", "")).strip()),
-            "reference_nonempty": bool(
-                normalized.get("reference") is not None
-                and str(normalized.get("reference", "")).strip()
+            "all_dataset_identities_match": not any(
+                "normalized dataset identity mismatch" in item
+                for item in failures
+            ),
+            "all_ids_nonempty": not any(
+                "normalized id is empty" in item for item in failures
+            ),
+            "all_prompts_nonempty": not any(
+                "normalized prompt is empty" in item for item in failures
+            ),
+            "all_references_nonempty": not any(
+                "normalized reference is empty" in item for item in failures
             ),
         },
         "scorer": scorer,
-        "scorer_smoke_pass": bool(scorer_smoke_pass),
+        "scorer_smoke_pass": bool(
+            len(rows) == sample_count and smoke_passes == sample_count
+        ),
+        "scorer_smoke_pass_count": smoke_passes,
         "source_row_content_stored": False,
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
@@ -151,6 +202,15 @@ def main() -> None:
     parser.add_argument(
         "--output",
         default="results/dataset_contracts.json",
+    )
+    parser.add_argument(
+        "--sample-count",
+        type=int,
+        default=4,
+        help=(
+            "Number of streamed rows per dataset used for the privacy-safe "
+            "normalizer/scorer contract smoke check."
+        ),
     )
     parser.add_argument(
         "--overwrite",
@@ -225,6 +285,7 @@ def main() -> None:
                     spec=spec,
                     revision=revision,
                     load_dataset=load_dataset,
+                    sample_count=args.sample_count,
                 )
             except Exception as exc:
                 result = {
@@ -257,6 +318,7 @@ def main() -> None:
         "dataset_manifest": str(manifest_path),
         "dataset_manifest_sha256": sha256_file(manifest_path),
         "normalizer_version": NORMALIZER_VERSION,
+        "contract_sample_count_per_dataset": int(args.sample_count),
         "expected_datasets": sorted(ledger_datasets),
         "observed_datasets": sorted(
             str(item.get("dataset")) for item in results

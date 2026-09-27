@@ -5,11 +5,18 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
 
-from trajuq.io import read_jsonl
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_primary_plan import (  # noqa: E402
+    validate_plan_provenance as validate_primary_plan_provenance,
+)
+from trajuq.io import read_jsonl  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:
@@ -174,6 +181,10 @@ def main() -> None:
         failures.append("primary matrix plan protocol is not v2")
     if plan.get("status") != "PASS":
         failures.append("primary matrix plan is not PASS")
+    failures.extend(
+        "primary plan provenance: " + failure
+        for failure in validate_primary_plan_provenance(plan)
+    )
 
     experiment_commit = str(plan.get("experiment_git_commit", ""))
     current_head = git_head()

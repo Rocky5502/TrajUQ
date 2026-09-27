@@ -306,6 +306,9 @@ PY
 }
 
 if [[ "$STAGE" == "prepare" || "$STAGE" == "all" ]]; then
+  run_step "Single-A100 machine suitability" \
+    "$PYTHON" scripts/verify_a100_machine.py
+
   split_artifacts=("$CAL_DATA" "$TEST_DATA" "$SPLIT_MANIFEST" "$SPLIT_AUDIT")
   existing=0
   for path in "${split_artifacts[@]}"; do

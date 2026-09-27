@@ -126,6 +126,13 @@ implementation:
     evidence:
       - scripts/resolve_experiment_revisions.py
       - scripts/resolve_hf_revision.py
+  - id: gated_dataset_access
+    label: "Exact-revision gated-dataset access preflight without benchmark-content logging"
+    state: DONE
+    evidence:
+      - scripts/verify_gated_dataset_access.py
+      - scripts/primary_readiness.py
+      - tests/test_primary_readiness.py
   - id: artifact_derived_paper
     label: "Config-revalidated claim-gated manuscript and result-figure renderers"
     state: DONE
@@ -221,6 +228,12 @@ execution_gates:
     stage: pre_primary
     action: "Run python scripts/resolve_experiment_revisions.py after HF authentication. This freezes the experiment git commit, config hashes, model SHAs, dataset SHAs, and frozen model-config hashes before any parity run."
     artifact: results/revision_ledger.json
+    expect: {key: status, equals: PASS}
+  - id: gated_dataset_access
+    label: "Frozen gated-dataset record access"
+    stage: pre_primary
+    action: "From the same clean frozen machine, run python scripts/verify_gated_dataset_access.py (the pre-primary freeze wrappers do this automatically). It streams one record from each gated primary dataset at the ledger-resolved SHA and stores no benchmark content. GPQA-Diamond access must PASS before parity/primary execution."
+    artifact: results/gated_dataset_access.json
     expect: {key: status, equals: PASS}
   - id: llada_parity
     label: "LLaDA 20-prompt exact parity"

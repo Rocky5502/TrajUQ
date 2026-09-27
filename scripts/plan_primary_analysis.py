@@ -401,6 +401,7 @@ def main() -> None:
                 "cell": cell_label,
                 "adapter": adapter,
                 "dataset": dataset,
+                "experiment_git_commit": experiment_commit,
                 "inputs": input_bindings[cell_label],
                 "evaluate_argv": evaluate,
                 "nested_comparison_argv": compare_nested,

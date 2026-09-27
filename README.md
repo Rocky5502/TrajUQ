@@ -231,8 +231,9 @@ BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
 ```
 
 The 72-hour supervisor inherits that original paid-rental deadline; it does not
-restart the clock after readiness. Its estimate is checked against the hours
-still remaining, then it runs the resumable stages in scientific-priority order
+restart the clock after readiness. Its estimate plus a predeclared 6-hour
+non-generation operational reserve must fit the hours still remaining, then it
+runs the resumable stages in scientific-priority order
 (primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), uses
 plan-level resident checkpoint execution for primary/RQ3/RQ2 generation, and writes an
 hourly GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable

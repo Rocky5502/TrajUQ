@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 import yaml
@@ -44,6 +45,26 @@ def git_text(*args: str) -> str | None:
         ).strip()
     except Exception:
         return None
+
+
+def installed_runtime_versions() -> dict[str, str | None]:
+    torch_version: str | None = None
+    try:
+        import torch
+
+        torch_version = str(torch.__version__)
+    except Exception:
+        pass
+
+    try:
+        transformers_version = importlib_metadata.version("transformers")
+    except importlib_metadata.PackageNotFoundError:
+        transformers_version = None
+
+    return {
+        "torch_version": torch_version,
+        "transformers_version": transformers_version,
+    }
 
 
 def run_audit_passes(
@@ -215,6 +236,7 @@ def evaluate_readiness(
     enforce_current_git: bool = False,
     current_git_commit: str | None = None,
     current_git_clean: bool | None = None,
+    current_runtime: dict[str, str | None] | None = None,
 ) -> dict:
     failures: list[str] = []
     checks: dict[str, dict] = {}
@@ -809,6 +831,7 @@ def evaluate_readiness(
         failures.append(f"MATH-500 manual scorer review unavailable/invalid: {exc}")
 
     parity_checks: dict[str, dict] = {}
+    parity_runtimes: dict[str, dict[str, str | None]] = {}
     for model in primary_models:
         path = parity_paths.get(model)
         if not path:
@@ -842,6 +865,12 @@ def evaluate_readiness(
                 instrumented_audit_path, instrumented_path, "raw", experiment_commit
             )
 
+            runtime_signature = {
+                "torch_version": run_provenance.get("torch_version"),
+                "transformers_version": run_provenance.get("transformers_version"),
+            }
+            parity_runtimes[model] = runtime_signature
+
             passed = (
                 status == "PASS"
                 and payload.get("protocol") == "trajuq_exact_parity_v3"
@@ -854,6 +883,8 @@ def evaluate_readiness(
                 and str(run_provenance.get("model_revision")) == str(expected_revision)
                 and run_provenance.get("source_git_commit") == experiment_commit
                 and run_provenance.get("source_git_clean") is True
+                and bool(runtime_signature["torch_version"])
+                and bool(runtime_signature["transformers_version"])
                 and int(shared or 0) == 20
                 and int(mismatch_count or 0) == 0
                 and int(provenance_mismatch_count or 0) == 0
@@ -882,6 +913,7 @@ def evaluate_readiness(
                 "run_provenance": run_provenance,
                 "expected_model_revision": expected_revision,
                 "expected_source_git_commit": experiment_commit,
+                "runtime_signature": runtime_signature,
             }
             if not passed:
                 failures.append(
@@ -891,6 +923,62 @@ def evaluate_readiness(
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")
 
     checks["model_parity"] = parity_checks
+
+    runtime_pairs = {
+        (
+            str(runtime.get("torch_version") or ""),
+            str(runtime.get("transformers_version") or ""),
+        )
+        for runtime in parity_runtimes.values()
+    }
+    runtime_complete = (
+        len(parity_runtimes) == len(primary_models)
+        and all(all(value for value in pair) for pair in runtime_pairs)
+    )
+    runtime_uniform = runtime_complete and len(runtime_pairs) == 1
+    frozen_runtime = (
+        next(iter(runtime_pairs))
+        if runtime_uniform
+        else None
+    )
+    if not runtime_complete:
+        failures.append(
+            "primary parity runtime provenance is incomplete"
+        )
+    elif not runtime_uniform:
+        failures.append(
+            "primary parity artifacts were produced under different runtimes"
+        )
+
+    current_runtime_match: bool | None = None
+    if current_runtime is not None:
+        observed_current = (
+            str(current_runtime.get("torch_version") or ""),
+            str(current_runtime.get("transformers_version") or ""),
+        )
+        current_runtime_match = (
+            frozen_runtime is not None
+            and observed_current == frozen_runtime
+        )
+        if not current_runtime_match:
+            failures.append(
+                "current torch/transformers runtime differs from frozen parity runtime"
+            )
+
+    checks["runtime_parity"] = {
+        "by_model": parity_runtimes,
+        "uniform": runtime_uniform,
+        "frozen": (
+            {
+                "torch_version": frozen_runtime[0],
+                "transformers_version": frozen_runtime[1],
+            }
+            if frozen_runtime is not None
+            else None
+        ),
+        "current": current_runtime,
+        "current_matches_frozen": current_runtime_match,
+    }
 
     source_bindings, missing_bound_sources = collect_readiness_source_bindings(
         primary_config,
@@ -1013,6 +1101,11 @@ def main() -> None:
             None
             if historical
             else (current_status == "" if current_status is not None else None)
+        ),
+        current_runtime=(
+            None
+            if historical
+            else installed_runtime_versions()
         ),
     )
     payload["validation_mode"] = (

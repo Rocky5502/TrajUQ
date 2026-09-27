@@ -63,7 +63,7 @@ Our evaluation is organized around four questions:
 The contributions are:
 (1) a model-agnostic telemetry schema that measures only active unresolved positions while preserving native decoding parity;
 (2) a nested test of the incremental value of frozen trajectory dynamics beyond the same per-token decision-time entropy available at commitment;
-(3) a leak-safe, held-out calibration and selective-generation protocol with paired hierarchical inference across three diffusion-model families;
+(3) a leak-safe, held-out calibration and selective-generation protocol with paired class-stratified within-cell inference across three diffusion-model families;
 (4) an adaptive second-pass compute policy whose threshold is selected only from out-of-fold calibration predictions; and
 (5) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
 
@@ -228,7 +228,7 @@ For MATH-500, sampled answers are clustered pairwise with the pinned symbolic eq
 All method comparisons are paired on identical examples.
 The pre-specified primary RQ1 endpoint is equal-cell-weight macro AUROC improvement of the trajectory model over decision-time entropy.
 AUPRC and AURC improvements are secondary.
-Confidence intervals use a hierarchical paired bootstrap that resamples examples within each model--dataset cell before macro-averaging; heterogeneous benchmarks are never pooled.
+Confidence intervals use a paired class-stratified bootstrap within each fixed model--dataset cell, followed by equal-cell macro-averaging on every replicate; heterogeneous benchmarks are never pooled.
 A positive RQ1 claim additionally requires positive point improvement in at least two of the three primary model families.
 ECE is reported with 15 bins plus 10- and 20-bin sensitivity.
 
@@ -292,7 +292,7 @@ Random matched & \AdaptiveRandomAccuracy & \AdaptiveRandomCost & 0\\
 \section{Analysis Plan}
 
 We will first test whether trajectory information improves the nested decision-entropy baseline.
-We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired hierarchical bootstrap and are reported in Appendix~\ref{tab:feature-ablation}.
+We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
 For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
 Negative results do not trigger post-hoc feature redesign on final test labels.
 

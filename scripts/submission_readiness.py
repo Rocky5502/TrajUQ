@@ -26,6 +26,10 @@ from scripts.execute_repeated_sampling import (  # noqa: E402
     validate_plan_provenance as validate_repeated_provenance,
 )
 from scripts.project_status import build_snapshot  # noqa: E402
+from scripts.render_paper_result_figures import (  # noqa: E402
+    require_complete_adaptive as require_complete_figure_adaptive,
+    require_complete_primary as require_complete_figure_primary,
+)
 from scripts.render_results_tex import (  # noqa: E402
     build_macros,
     render_tex,
@@ -425,6 +429,21 @@ def verify_result_figures(
             if len(commits) != 1:
                 raise ValueError(
                     "result-figure aggregate sources disagree on the frozen commit."
+                )
+
+            require_complete_figure_primary(primary, 18)
+            expected_caps = {
+                "cap_025": (0.25, False),
+                "cap_050": (0.50, True),
+                "cap_075": (0.75, False),
+            }
+            for key, (fraction, is_primary) in expected_caps.items():
+                require_complete_figure_adaptive(
+                    cap_payloads[key],
+                    18,
+                    fraction_key=key,
+                    expected_fraction=fraction,
+                    is_primary=is_primary,
                 )
 
             config_source = primary.get("provenance", {}).get(

@@ -965,7 +965,10 @@ def main() -> None:
             "Compile the exact recorded anonymous Overleaf source ZIP.",
             "Run the official ACL pubcheck on the final PDF.",
             "Confirm page limits, anonymity, and submission-form metadata.",
-            "Upload the exact Overleaf and anonymous supplement archives whose SHA-256 values are recorded here.",
+            (
+                "Upload the exact Overleaf and anonymous supplement archives "
+                "whose SHA-256 values are recorded here."
+            ),
         ],
         "failures": failures,
     }

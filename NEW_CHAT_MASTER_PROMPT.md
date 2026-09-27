@@ -52,8 +52,8 @@ Your job is to **continue the existing project**, not restart or redesign it.
   across its five seeds and safely resumes validated partial prefixes.
 - The operational rental envelope is 72 continuous hours. Before model calls,
   the dataset manifest freezes outcome-free SHA-256 ID caps with seed 2027:
-  GSM8K calibration/test at 1,000 each; ARC-Challenge and MMLU-Pro large test
-  splits at 1,000; smaller frozen partitions remain complete.
+  GSM8K calibration/test at 500 each; ARC-Challenge and MMLU-Pro large test
+  splits at 500; smaller frozen partitions remain complete.
 - Complete pre-primary gates, run
   `bash scripts/a100_campaign_linux.sh estimate`, then launch
   `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`.
@@ -84,9 +84,9 @@ This policy is pre-outcome and part of the experiment specification:
 
 - selection method: `sha256_id_rank_v1`;
 - selection seed: 2027;
-- GSM8K: at most 1,000 calibration + 1,000 test;
-- ARC-Challenge: full official validation + at most 1,000 test;
-- MMLU-Pro: full official validation + at most 1,000 test;
+- GSM8K: at most 500 calibration + 500 test;
+- ARC-Challenge: full official validation + at most 500 test;
+- MMLU-Pro: full official validation + at most 500 test;
 - GPQA-Diamond, TruthfulQA, MATH-500: complete deterministic internal holdouts;
 - selection uses only namespaced IDs, never labels, references, prompt text, or
   model outputs;
@@ -188,7 +188,7 @@ Use exactly five seeds:
 - 2030
 - 2031
 
-The repeated-sampling comparator covers all 18 primary cells. Its final macro is protocol `trajuq_vs_repeated_macro_v2`: all 18 cells must retain valid test-time auxiliary wall-clock metadata, and the artifact reports an equal-cell-weight mean extra seconds per example with target generation excluded. The executor and paper renderer reject incomplete compute accounting. Seed reuse additionally requires the raw artifact records and manifest to match the frozen adapter/model/revision and sampler settings; a same-commit audited seed with different temperature or adapter knobs is not reusable.
+The repeated-sampling comparator is pre-registered on 12 cells: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. ARC-Challenge and TruthfulQA remain mandatory in the full 18-cell primary/RQ3 analyses. Its final macro is protocol `trajuq_vs_repeated_macro_v2`: all 12 eligible cells must retain valid test-time auxiliary wall-clock metadata, and the artifact reports an equal-cell-weight mean extra seconds per example with target generation excluded. The executor and paper renderer reject incomplete compute accounting. Seed reuse additionally requires the raw artifact records and manifest to match the frozen adapter/model/revision and sampler settings; a same-commit audited seed with different temperature or adapter knobs is not reusable.
 
 ## 7. RQ3 adaptive compute
 
@@ -325,7 +325,7 @@ After pre-primary readiness PASS:
    calibration-sensitivity macro;
 9. execute the frozen RQ1 claim gate unchanged; the isotonic sensitivity never
    enters or changes this gate;
-10. execute the hash-bound 18-cell five-sample comparator;
+10. execute the hash-bound frozen 12-cell five-sample comparator;
 11. execute the hash-bound RQ3 25/50/75% adaptive matrix;
 12. optionally execute RQ4 only after the primary path is healthy;
 13. render manuscript results only from the eight frozen text sources (primary,

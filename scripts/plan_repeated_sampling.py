@@ -305,7 +305,7 @@ def main() -> None:
             "cells": [],
         }
         out = Path(args.output)
-        write_state = write_json_immutable(out, payload)
+        write_json_immutable(out, payload)
         print(json.dumps(payload, indent=2, sort_keys=True))
         raise SystemExit(1)
 
@@ -535,7 +535,7 @@ def main() -> None:
     }
 
     out = Path(args.output)
-    write_state = write_json_immutable(out, payload)
+    write_json_immutable(out, payload)
     print(
         json.dumps(
             {

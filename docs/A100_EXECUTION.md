@@ -52,7 +52,10 @@ hf auth login
 ```
 
 GPQA-Diamond is gated. The account used on the server must already have access
-under the upstream dataset terms.
+under the upstream dataset terms. The pre-primary freeze now proves this on the
+actual experiment machine by streaming one record at the exact ledger-resolved
+revision. It stores only access/provenance metadata, never GPQA question or
+answer content.
 
 For long executions, run inside `tmux` or an equivalent persistent shell so a
 network disconnect does not terminate the campaign. The guarded convenience
@@ -80,11 +83,13 @@ Require the final line `PRE-PRIMARY FREEZE PASS`. The freeze writes:
 
 - `results/cpu_verification.json`;
 - `results/revision_ledger.json`;
+- `results/gated_dataset_access.json`;
 - `results/frozen_models/*.yaml`;
 - `dist/trajuq_preprimary_handoff.zip`.
 
-The CPU artifact and revision ledger must both be PASS and bind the exact same
-git commit. From this point onward, do **not** edit tracked experiment code on
+The CPU artifact, revision ledger, and gated-dataset-access artifact must all
+be PASS and bind the exact same git commit; the access artifact must also bind
+the exact revision-ledger SHA-256. From this point onward, do **not** edit tracked experiment code on
 this run. If a code repair becomes necessary, invalidate the run, commit the
 repair, freeze a new commit, and regenerate affected evidence.
 

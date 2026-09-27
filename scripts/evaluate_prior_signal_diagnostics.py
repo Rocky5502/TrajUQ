@@ -17,6 +17,7 @@ from trajuq.evaluation import (
     selective_curve,
 )
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance, compact_row_binding
 
 
 SIGNALS = {
@@ -166,8 +167,17 @@ def main() -> None:
             ),
         }
 
+    provenance = analysis_provenance(
+        {
+            "calibration": args.calibration,
+            "test": args.test,
+        }
+    )
+    row_binding = compact_row_binding(provenance)
+
     payload = {
         "protocol": "trajuq_prior_aligned_signal_diagnostic_v1",
+        "provenance": provenance,
         "role": "secondary_prior_aligned_signal_class_diagnostic",
         "not_a_reproduction_of": [
             "D-CoCoA-L",
@@ -212,6 +222,7 @@ def main() -> None:
                 "p_error_top1_revision_rate": float(
                     predictions["top1_revision_rate"][index]
                 ),
+                "analysis_provenance": row_binding,
             }
             handle.write(json.dumps(record, sort_keys=True) + "\n")
 

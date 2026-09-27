@@ -107,6 +107,9 @@ implementation:
       - scripts/plan_adaptive_runs.py
       - scripts/aggregate_adaptive.py
       - src/trajuq/adaptive_aggregation.py
+      - src/trajuq/adapters/sdar.py
+      - tests/test_adaptive_provenance.py
+      - tests/test_sdar.py
   - id: resumable_adaptive_executor
     label: "Resumable adaptive RQ3 executor with frozen-commit audits, cap gates, and source-bound macro validation"
     state: DONE

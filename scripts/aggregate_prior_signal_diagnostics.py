@@ -11,7 +11,10 @@ import numpy as np
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.execute_primary_analysis import validate_plan_provenance  # noqa: E402
+from scripts.execute_primary_analysis import (  # noqa: E402
+    semantic_output_valid,
+    validate_plan_provenance,
+)
 from trajuq.aggregation import (  # noqa: E402
     PredictionCell,
     hierarchical_macro_bootstrap,
@@ -49,6 +52,21 @@ def load_cell(
     prior_path = Path(
         str(spec["outputs"]["prior_signal_predictions"])
     )
+
+    if not semantic_output_valid(spec, "predictions", trajuq_path):
+        raise SystemExit(
+            f"{label}: TrajUQ prediction artifact is stale or not "
+            "source-bound to the frozen analysis inputs"
+        )
+    if not semantic_output_valid(
+        spec,
+        "prior_signal_predictions",
+        prior_path,
+    ):
+        raise SystemExit(
+            f"{label}: prior-signal prediction artifact is stale or not "
+            "source-bound to the frozen analysis inputs"
+        )
 
     trajuq_rows = list(read_jsonl(trajuq_path))
     prior_rows = list(read_jsonl(prior_path))

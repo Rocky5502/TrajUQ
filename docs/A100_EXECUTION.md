@@ -91,12 +91,15 @@ The freeze writes:
 - `results/cpu_verification.json`;
 - `results/revision_ledger.json`;
 - `results/gated_dataset_access.json`;
+- `results/dataset_contracts.json`;
 - `results/frozen_models/*.yaml`;
 - `dist/trajuq_preprimary_handoff.zip`.
 
-The CPU artifact, revision ledger, and gated-dataset-access artifact must all
-be PASS and bind the exact same git commit; the access artifact must also bind
-the exact revision-ledger SHA-256. From this point onward, do **not** edit tracked experiment code on
+The CPU artifact, revision ledger, gated-dataset-access artifact, and live
+dataset-contract artifact must all be PASS and bind the exact same git commit.
+Both data-access artifacts must bind the exact revision-ledger SHA-256.
+`dataset_contracts.json` streams one row from each frozen primary dataset,
+checks the normalizer/scorer contract, and stores no benchmark row content. From this point onward, do **not** edit tracked experiment code on
 this run. If a code repair becomes necessary, invalidate the run, archive the existing
 private evidence, commit the repair, move to a fresh evidence workspace or
 checkout, freeze the new commit, and regenerate the full affected evidence

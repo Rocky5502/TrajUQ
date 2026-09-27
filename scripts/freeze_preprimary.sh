@@ -41,6 +41,11 @@ run_step "Resolve immutable primary model/dataset revisions" \
     --output results/revision_ledger.json \
     --frozen-model-dir results/frozen_models
 
+run_step "Verify frozen gated-dataset access" \
+  "$PYTHON" scripts/verify_gated_dataset_access.py \
+    --revision-ledger results/revision_ledger.json \
+    --output results/gated_dataset_access.json
+
 HEAD_SHA="$HEAD_SHA" "$PYTHON" - <<'PY'
 import json
 import os
@@ -49,6 +54,7 @@ from pathlib import Path
 head = os.environ["HEAD_SHA"]
 cpu = json.loads(Path("results/cpu_verification.json").read_text(encoding="utf-8"))
 ledger = json.loads(Path("results/revision_ledger.json").read_text(encoding="utf-8"))
+gated = json.loads(Path("results/gated_dataset_access.json").read_text(encoding="utf-8"))
 
 failures = []
 if cpu.get("protocol") != "trajuq_cpu_verification_v1":
@@ -71,6 +77,21 @@ if ledger.get("git_commit") != head:
         f"revision-ledger commit {ledger.get('git_commit')!r} != frozen HEAD {head!r}"
     )
 
+if gated.get("protocol") != "trajuq_gated_dataset_access_v1":
+    failures.append(f"unexpected gated-access protocol: {gated.get('protocol')!r}")
+if gated.get("status") != "PASS":
+    failures.append("gated dataset access did not PASS")
+if gated.get("git_clean") is not True:
+    failures.append("gated dataset access was not recorded from a clean worktree")
+if gated.get("git_commit") != head:
+    failures.append(
+        f"gated-access commit {gated.get('git_commit')!r} != frozen HEAD {head!r}"
+    )
+if gated.get("revision_ledger_sha256") != __import__("hashlib").sha256(
+    Path("results/revision_ledger.json").read_bytes()
+).hexdigest():
+    failures.append("gated dataset access is not bound to the current revision ledger")
+
 if failures:
     raise SystemExit("Pre-primary freeze validation failed:\n- " + "\n- ".join(failures))
 PY
@@ -92,6 +113,7 @@ printf '\nPRE-PRIMARY FREEZE PASS\n'
 printf 'Frozen commit: %s\n' "$HEAD_SHA"
 printf 'CPU artifact: results/cpu_verification.json\n'
 printf 'Revision ledger: results/revision_ledger.json\n'
+printf 'Gated dataset access: results/gated_dataset_access.json\n'
 printf 'Frozen model configs: results/frozen_models/\n'
 printf 'Private handoff: dist/trajuq_preprimary_handoff.zip\n'
 printf '\nNext: do not edit tracked experiment code. Run the first LLaDA parity gate from this same commit.\n'

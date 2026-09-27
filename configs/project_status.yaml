@@ -316,7 +316,7 @@ execution_gates:
     label: "Frozen 18-cell analysis command ledger"
     stage: analysis
     issue: 8
-    action: "Run python scripts/plan_primary_analysis.py only after all 18 scored cells have clean protocol-v1 scored audits from the frozen experiment commit. Plan protocol v2 SHA-binds those inputs/audits plus the primary plan/config and commit."
+    action: "Run python scripts/plan_primary_analysis.py only after all 18 scored cells have clean protocol-v1 scored audits from the frozen experiment commit. Planning first re-runs the complete primary-plan provenance validator (including readiness source bindings), then protocol v2 SHA-binds the scored inputs/audits plus the primary plan/config and commit."
     artifact: results/primary_analysis_plan.json
     expect: {key: status, equals: PASS}
   - id: primary_analysis_execution_complete
@@ -330,7 +330,7 @@ execution_gates:
     label: "Frozen five-sample 18-cell comparator plan"
     stage: analysis
     issue: 9
-    action: "Run python scripts/plan_repeated_sampling.py only after primary analysis predictions exist. Protocol v2 binds upstream plans/config, prompt partitions, scored targets/audits, and TrajUQ predictions by SHA-256."
+    action: "Run python scripts/plan_repeated_sampling.py only after primary analysis predictions exist. Planning revalidates the primary-analysis plan and its nested primary/readiness provenance before protocol v2 binds upstream plans/config, prompt partitions, scored targets/audits, and TrajUQ predictions by SHA-256."
     artifact: results/repeated_sampling_plan.json
     expect: {key: status, equals: PASS}
   - id: repeated_execution_complete
@@ -344,7 +344,7 @@ execution_gates:
     label: "Frozen adaptive 18-cell plan"
     stage: analysis
     issue: 10
-    action: "Run python scripts/plan_adaptive_runs.py after all refined primary scored artifacts have clean frozen-commit protocol-v1 scored audits. Protocol v3 binds the plan/config, prompt inputs, refined artifacts, and audits by SHA-256."
+    action: "Run python scripts/plan_adaptive_runs.py after all refined primary scored artifacts have clean frozen-commit protocol-v1 scored audits. Planning revalidates the primary/readiness provenance chain before protocol v3 binds the plan/config, prompt inputs, refined artifacts, and audits by SHA-256."
     artifact: results/adaptive_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: adaptive_execution_complete

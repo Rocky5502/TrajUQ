@@ -223,7 +223,8 @@ BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
 ```
 
 The 72-hour supervisor runs the resumable stages in scientific-priority order
-(primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), writes an
+(primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), uses
+plan-level resident checkpoint execution for primary/RQ3/RQ2 generation, and writes an
 hourly GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable
 stage once, and stops rather than weakening a scientific gate if the wall-clock
 budget is exhausted. It does not require an AI agent to remain connected while
@@ -428,7 +429,9 @@ python scripts/evaluate_repeated_sampling.py \
 ```
 
 The frozen repeated-sampling baseline requires exactly five seeds
-(2027--2031) on the pre-registered 12-cell subset: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. The evaluator verifies unique/matched seeds, identical
+(2027--2031) on the pre-registered 12-cell subset. The A100 campaign keeps each
+checkpoint resident across all eligible dataset/partition jobs, while each job
+still produces the same five audited seed artifacts. The subset is: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. The evaluator verifies unique/matched seeds, identical
 generation settings between calibration and test, raw outcome isolation, model
 identity, prompt hashes, and reports the auxiliary repeated-generation wall
 time. The frozen 12-cell representative aggregator emits protocol

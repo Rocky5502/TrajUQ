@@ -229,13 +229,16 @@ completion count cannot be mistaken for completed empirical work.
 
 ## Immediate remote-A100 next action
 
-The repository-side implementation is prepared for the three-day rental. First
-complete the immutable freeze and human gates, then start the shell-side
-autopilot so the GPU keeps running even when Codex is disconnected.
+The repository-side implementation is prepared for the three-day rental. On the
+rented server, record the single paid-rental deadline immediately after the
+exact commit is checked out; dependency installation, downloads, parity, human
+gates, scale, and rendering all consume that same 72-hour clock. Then complete
+the immutable freeze and human gates before starting the shell-side autopilot.
 
 ```bash
 git pull
 git status --porcelain
+python3.11 scripts/start_a100_rental_clock.py
 nvidia-smi
 python3.11 --version
 SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
@@ -254,7 +257,9 @@ Do not edit tracked experiment code after the freeze. The estimator reports the
 exact prepared-call count and serial A100 forecast from real
 LLaDA/SDAR/Dream timing traces. The autonomous supervisor logs GPU/disk/progress
 once per hour, prioritizes primary -> analysis -> RQ3 -> expensive RQ2 -> paper,
-and preserves resumable evidence if the 72-hour envelope is exhausted. Keep
+and compares the measured campaign estimate with the paid hours still remaining
+before scale. It preserves resumable evidence if the original 72-hour envelope
+is exhausted. Keep
 experiment evidence on persistent storage or copy `results/`, `runs/`,
 `data/processed/`, `logs/a100_72h/`, and the generated handoff ZIPs off the
 instance before releasing an ephemeral disk.

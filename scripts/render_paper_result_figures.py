@@ -9,6 +9,8 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+from scripts.render_results_tex import require_bound_result_provenance
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -156,7 +158,41 @@ def main() -> None:
         for key, path in adaptive_paths.items()
     }
 
-    adapters, datasets = primary_orders(Path(args.primary_config))
+    bound_commits = {
+        require_bound_result_provenance(
+            primary,
+            label="primary",
+        ),
+        *[
+            require_bound_result_provenance(
+                payload,
+                label=f"adaptive_{key}",
+            )
+            for key, payload in adaptive.items()
+        ],
+    }
+    if len(bound_commits) != 1:
+        raise ValueError(
+            "Result-figure sources disagree on the frozen experiment commit."
+        )
+
+    primary_config_path = Path(args.primary_config)
+    config_source = primary["provenance"]["sources"].get("primary_config")
+    if not isinstance(config_source, dict):
+        raise ValueError(
+            "Primary macro provenance does not bind the primary config."
+        )
+    if (
+        str(Path(str(config_source.get("path", ""))))
+        != str(primary_config_path)
+        or str(config_source.get("sha256", ""))
+        != sha256_file(primary_config_path)
+    ):
+        raise ValueError(
+            "Primary macro provenance binds a different primary config."
+        )
+
+    adapters, datasets = primary_orders(primary_config_path)
     expected = len(adapters) * len(datasets)
     require_complete_primary(primary, expected)
     expected_fractions = {
@@ -279,7 +315,6 @@ def main() -> None:
     fig.savefig(tradeoff_path, bbox_inches="tight")
     plt.close(fig)
 
-    primary_config_path = Path(args.primary_config)
     sources = {
         "primary": {
             "path": str(primary_path),

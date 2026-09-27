@@ -178,3 +178,17 @@ def test_primary_analysis_planner_revalidates_primary_plan_provenance():
 
     assert "validate_primary_plan_provenance" in text
     assert "primary plan provenance: " in text
+
+
+def test_primary_analysis_plan_wires_frozen_isotonic_sensitivity():
+    text = Path("scripts/plan_primary_analysis.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "evaluate_calibration_sensitivity.py" in text
+    assert "calibration_sensitivity.json" in text
+    assert '"calibration_sensitivity_argv"' in text
+    assert '"calibration_sensitivity_contract"' in text
+    assert "min_calibration_samples" in text
+    assert "1000" in text
+    assert "min_class_count" in text

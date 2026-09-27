@@ -12,7 +12,11 @@ def test_run_step_records_pass_and_log(tmp_path):
     )
     assert record["status"] == "PASS"
     assert record["returncode"] == 0
-    assert Path(record["log"]).read_text(encoding="utf-8").strip() == "ok"
+    log_path = Path(record["log"])
+    assert log_path.read_text(encoding="utf-8").strip() == "ok"
+    import hashlib
+
+    assert record["log_sha256"] == hashlib.sha256(log_path.read_bytes()).hexdigest()
 
 
 def test_run_step_records_failure(tmp_path):

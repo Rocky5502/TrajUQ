@@ -371,6 +371,11 @@ def main() -> None:
 
     repeated = primary["baselines"]["expensive"]["repeated_sampling"]
     samples = int(repeated["samples"])
+    seeds = [int(seed) for seed in repeated["seeds"]]
+    if samples <= 0 or len(seeds) != samples or len(set(seeds)) != samples:
+        raise SystemExit(
+            "Repeated-sampling config must have one unique seed per sample."
+        )
 
     for adapter in ("llada", "sdar", "dream"):
         adapter_cells = [
@@ -396,6 +401,22 @@ def main() -> None:
             dataset = str(cell["dataset"])
             cal_path = Path(str(cell["calibration"]["input"]))
             test_path = Path(str(cell["test"]["input"]))
+            if not cal_path.exists() or not test_path.exists():
+                raise SystemExit(
+                    f"{adapter}:{dataset}: prepared partition is missing"
+                )
+            if sha256_file(cal_path) != str(
+                cell["calibration"].get("input_sha256", "")
+            ):
+                raise SystemExit(
+                    f"{adapter}:{dataset}: calibration input drifted"
+                )
+            if sha256_file(test_path) != str(
+                cell["test"].get("input_sha256", "")
+            ):
+                raise SystemExit(
+                    f"{adapter}:{dataset}: test input drifted"
+                )
             cal_count = count_jsonl(cal_path)
             test_count = count_jsonl(test_path)
             if cal_count <= 0 or test_count <= 0:

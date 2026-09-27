@@ -59,9 +59,12 @@ overwrite partial/stale artifacts, revalidates the frozen GSM8K split and pilot
 manifest, requires exact parity-v3 with 20 shared prompts, and only then runs the
 50-example pilot. Use Python >=3.10; Ubuntu 20.04's system Python may be older.
 
-Recommended A100/Ubuntu sequence after the repository code is frozen:
+Recommended A100/Ubuntu sequence on the rented server. Start the
+paid-rental clock immediately after the exact commit is checked out, before
+dependency installation or model/data downloads:
 
 ```bash
+python3.11 scripts/start_a100_rental_clock.py
 nvidia-smi
 python --version
 bash scripts/freeze_preprimary.sh

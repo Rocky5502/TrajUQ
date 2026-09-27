@@ -207,8 +207,8 @@ function Run-DreamParity {
 
     if (Require-ExistingParity $ParityPath "dream" $Revision $Head) {
         Write-Host "Dream parity already PASS at frozen HEAD; preserving existing evidence." -ForegroundColor Green
-        if (-not (Test-Path $Overhead) -and (Test-Path $Reference) -and (Test-Path $Instrumented)) {
-            Run-Step "Dream instrumentation overhead" {
+        if ((Test-Path $Reference) -and (Test-Path $Instrumented)) {
+            Run-Step "Validate Dream instrumentation overhead" {
                 & $Python scripts/compare_instrumentation_overhead.py --reference $Reference --instrumented $Instrumented --output $Overhead
             }
         }

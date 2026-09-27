@@ -10,7 +10,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from trajuq.datasets import NORMALIZER_VERSION, normalize_row
+from trajuq.datasets import (
+    NORMALIZER_VERSION,
+    SPLIT_SELECTION_VERSION,
+    normalize_row,
+)
 from trajuq.scoring import gsm8k_reference_number, score_record
 
 
@@ -256,6 +260,29 @@ def main() -> None:
         failures.append("dataset manifest hash differs from revision ledger")
 
     definitions = manifest.get("datasets", {})
+    for name, spec in definitions.items():
+        cap_spec = spec.get("pre_generation_cap")
+        if not isinstance(cap_spec, dict):
+            failures.append(f"{name}: missing pre_generation_cap policy")
+            continue
+        if cap_spec.get("method") != SPLIT_SELECTION_VERSION:
+            failures.append(
+                f"{name}: cap method differs from {SPLIT_SELECTION_VERSION}"
+            )
+        if not str(cap_spec.get("seed", "")).strip():
+            failures.append(f"{name}: cap selection seed is missing")
+        for key in ("calibration_max", "test_max"):
+            value = cap_spec.get(key)
+            if value is None:
+                continue
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError):
+                failures.append(f"{name}: {key} is not an integer/null")
+                continue
+            if parsed <= 0:
+                failures.append(f"{name}: {key} must be positive when set")
+
     ledger_datasets = {
         str(item.get("name")): item
         for item in ledger.get("datasets", [])
@@ -318,6 +345,7 @@ def main() -> None:
         "dataset_manifest": str(manifest_path),
         "dataset_manifest_sha256": sha256_file(manifest_path),
         "normalizer_version": NORMALIZER_VERSION,
+        "selection_version": SPLIT_SELECTION_VERSION,
         "contract_sample_count_per_dataset": int(args.sample_count),
         "expected_datasets": sorted(ledger_datasets),
         "observed_datasets": sorted(

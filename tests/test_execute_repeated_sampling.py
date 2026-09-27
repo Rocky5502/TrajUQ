@@ -10,6 +10,7 @@ from scripts.execute_repeated_sampling import (
     macro_state,
     pair_state,
     validate_plan_provenance,
+    validate_repeated_scope,
 )
 
 
@@ -702,3 +703,135 @@ def test_repeated_provenance_surfaces_nested_analysis_failure(
         "primary analysis provenance: primary plan provenance" in item
         for item in failures
     )
+
+
+
+def test_repeated_scope_matches_frozen_12_cell_subset():
+    config = {
+        "models": {"primary": ["llada", "sdar", "dream"]},
+        "baselines": {
+            "expensive": {
+                "repeated_sampling": {
+                    "samples": 5,
+                    "seeds": [2027, 2028, 2029, 2030, 2031],
+                    "eligible_datasets": [
+                        "gsm8k",
+                        "math500",
+                        "gpqa_diamond",
+                        "mmlu_pro",
+                    ],
+                    "excluded_datasets": {
+                        "arc_challenge": "compute",
+                        "truthfulqa": "compute",
+                    },
+                }
+            }
+        },
+    }
+    primary_plan = {
+        "cells": [
+            {
+                "cell": f"{adapter}:{dataset}",
+                "adapter": adapter,
+                "dataset": dataset,
+            }
+            for adapter in ("llada", "sdar", "dream")
+            for dataset in (
+                "gsm8k",
+                "math500",
+                "gpqa_diamond",
+                "arc_challenge",
+                "mmlu_pro",
+                "truthfulqa",
+            )
+        ]
+    }
+    repeated_cells = [
+        cell
+        for cell in primary_plan["cells"]
+        if cell["dataset"]
+        in {"gsm8k", "math500", "gpqa_diamond", "mmlu_pro"}
+    ]
+    plan = {
+        "eligible_datasets": [
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "mmlu_pro",
+        ],
+        "excluded_datasets": {
+            "arc_challenge": "compute",
+            "truthfulqa": "compute",
+        },
+        "expected_cells": 12,
+        "cell_count": 12,
+        "samples": 5,
+        "seeds": [2027, 2028, 2029, 2030, 2031],
+        "cells": repeated_cells,
+    }
+
+    assert validate_repeated_scope(plan, config, primary_plan) == []
+
+
+def test_repeated_scope_rejects_old_18_cell_plan():
+    config = {
+        "models": {"primary": ["llada", "sdar", "dream"]},
+        "baselines": {
+            "expensive": {
+                "repeated_sampling": {
+                    "samples": 5,
+                    "seeds": [2027, 2028, 2029, 2030, 2031],
+                    "eligible_datasets": [
+                        "gsm8k",
+                        "math500",
+                        "gpqa_diamond",
+                        "mmlu_pro",
+                    ],
+                    "excluded_datasets": {
+                        "arc_challenge": "compute",
+                        "truthfulqa": "compute",
+                    },
+                }
+            }
+        },
+    }
+    primary_plan = {
+        "cells": [
+            {
+                "cell": f"{adapter}:{dataset}",
+                "adapter": adapter,
+                "dataset": dataset,
+            }
+            for adapter in ("llada", "sdar", "dream")
+            for dataset in (
+                "gsm8k",
+                "math500",
+                "gpqa_diamond",
+                "arc_challenge",
+                "mmlu_pro",
+                "truthfulqa",
+            )
+        ]
+    }
+    plan = {
+        "eligible_datasets": [
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "arc_challenge",
+            "mmlu_pro",
+            "truthfulqa",
+        ],
+        "excluded_datasets": {},
+        "expected_cells": 18,
+        "cell_count": 18,
+        "samples": 5,
+        "seeds": [2027, 2028, 2029, 2030, 2031],
+        "cells": primary_plan["cells"],
+    }
+
+    failures = validate_repeated_scope(plan, config, primary_plan)
+
+    assert any("eligible datasets differ" in item for item in failures)
+    assert any("cell set differs" in item for item in failures)
+    assert any("expected_cells differs" in item for item in failures)

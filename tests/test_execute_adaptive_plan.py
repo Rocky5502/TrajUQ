@@ -396,3 +396,87 @@ def test_adaptive_macro_rejects_consumed_source_drift(tmp_path):
     assert macro_state(plan, spec, 1) == "COMPLETE"
     predictions.write_text('{"example_id":"changed"}\n', encoding="utf-8")
     assert macro_state(plan, spec, 1) == "INVALID"
+
+
+def test_adaptive_evaluation_state_rejects_scored_source_drift(tmp_path):
+    commit = "frozen-commit"
+    source_paths = {}
+    source_sha = {}
+    for name in ("cal_base", "cal_refined", "test_base", "test_refined"):
+        path = tmp_path / f"{name}.jsonl"
+        path.write_text('{"example_id":"x"}\n', encoding="utf-8")
+        source_paths[name] = str(path)
+        source_sha[name] = _sha256(path)
+
+    provenance = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            name: {
+                "path": path,
+                "sha256": source_sha[name],
+            }
+            for name, path in source_paths.items()
+        },
+    }
+    compact = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "source_sha256": source_sha,
+    }
+
+    result = tmp_path / "result.json"
+    predictions = tmp_path / "predictions.jsonl"
+    result.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_adaptive_evaluation_v2",
+                "execution_semantics": "selective_second_pass_rerun",
+                "max_refine_fraction": 0.5,
+                "n_test": 1,
+                "provenance": provenance,
+            }
+        ),
+        encoding="utf-8",
+    )
+    predictions.write_text(
+        json.dumps(
+            {
+                "example_id": "x",
+                "analysis_provenance": compact,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spec = {
+        "result": str(result),
+        "predictions": str(predictions),
+        "max_refine_fraction": 0.5,
+    }
+
+    assert (
+        evaluation_state(
+            spec,
+            ["x"],
+            source_paths,
+            commit,
+        )
+        == "COMPLETE"
+    )
+
+    Path(source_paths["test_refined"]).write_text(
+        '{"example_id":"changed"}\n',
+        encoding="utf-8",
+    )
+    assert (
+        evaluation_state(
+            spec,
+            ["x"],
+            source_paths,
+            commit,
+        )
+        == "INVALID"
+    )

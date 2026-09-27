@@ -176,6 +176,22 @@ function Read-FrozenLedger {
         throw "CPU verification commit $($Cpu.git_commit) does not match frozen HEAD $Head."
     }
 
+    $GatedPath = "results/gated_dataset_access.json"
+    if (-not (Test-Path $GatedPath)) {
+        throw "Missing $GatedPath. Re-run scripts/freeze_preprimary_windows.ps1 before GPU execution."
+    }
+    $Gated = Get-Content $GatedPath -Raw | ConvertFrom-Json
+    $LedgerHash = (Get-FileHash $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    if (
+        $Gated.protocol -ne "trajuq_gated_dataset_access_v1" -or
+        $Gated.status -ne "PASS" -or
+        $Gated.git_clean -ne $true -or
+        $Gated.git_commit -ne $Head -or
+        $Gated.revision_ledger_sha256 -ne $LedgerHash
+    ) {
+        throw "Gated dataset access is not a clean revision-bound PASS at frozen HEAD."
+    }
+
     return $Ledger
 }
 

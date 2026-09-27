@@ -287,6 +287,10 @@ $SplitAudit = "data/processed/gsm8k/split_audit.json"
 New-Item -ItemType Directory -Force -Path results | Out-Null
 New-Item -ItemType Directory -Force -Path runs | Out-Null
 
+Run-Step "Validate frozen pre-primary evidence" {
+    & $Python scripts/validate_frozen_preprimary.py
+}
+
 $Ledger = Read-FrozenLedger $LedgerPath
 $ModelEntry = @($Ledger.models | Where-Object { $_.adapter -eq "llada" })
 $DatasetEntry = @($Ledger.datasets | Where-Object { $_.name -eq "gsm8k" })

@@ -43,6 +43,99 @@ def load_json(path: str) -> dict:
         raise SystemExit(f"Invalid JSON artifact {source}: {exc}") from exc
 
 
+def require_bound_result_provenance(
+    payload: dict,
+    *,
+    label: str,
+) -> str:
+    provenance = payload.get("provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError(f"{label} has no source-binding provenance.")
+    if provenance.get("protocol") != "trajuq_analysis_source_binding_v1":
+        raise ValueError(f"{label} source-binding protocol is not recognized.")
+    if provenance.get("git_clean") is not True:
+        raise ValueError(f"{label} was not produced from a clean checkout.")
+    commit = str(provenance.get("git_commit", ""))
+    if not commit:
+        raise ValueError(f"{label} has no frozen experiment commit.")
+
+    sources = provenance.get("sources")
+    if not isinstance(sources, dict) or not sources:
+        raise ValueError(f"{label} source-binding has no upstream files.")
+    for name, spec in sources.items():
+        if not isinstance(spec, dict):
+            raise ValueError(f"{label} provenance entry {name!r} is invalid.")
+        path = Path(str(spec.get("path", "")))
+        expected = str(spec.get("sha256", ""))
+        if not path.is_file() or not expected:
+            raise ValueError(
+                f"{label} provenance source {name!r} is missing."
+            )
+        if sha256(path) != expected:
+            raise ValueError(
+                f"{label} provenance source hash changed: {name}."
+            )
+    return commit
+
+
+def require_render_source_provenance(
+    payloads: dict[str, dict],
+    paths: dict[str, Path],
+    primary_config_path: Path,
+) -> None:
+    commits = {
+        require_bound_result_provenance(
+            payloads[label],
+            label=label,
+        )
+        for label in (
+            "primary",
+            "claim_gate",
+            "ablation",
+            "prior_signals",
+        )
+    }
+    if len(commits) != 1:
+        raise ValueError(
+            "Primary-analysis render sources disagree on the frozen experiment commit."
+        )
+
+    config_hash = sha256(primary_config_path)
+    for label in ("primary", "claim_gate"):
+        spec = payloads[label]["provenance"]["sources"].get(
+            "primary_config"
+        )
+        if not isinstance(spec, dict):
+            raise ValueError(
+                f"{label} provenance does not bind the primary config."
+            )
+        if (
+            str(Path(str(spec.get("path", ""))))
+            != str(primary_config_path)
+            or str(spec.get("sha256", "")) != config_hash
+        ):
+            raise ValueError(
+                f"{label} provenance binds a different primary config."
+            )
+
+    claim_macro = payloads["claim_gate"]["provenance"]["sources"].get(
+        "macro_primary"
+    )
+    if not isinstance(claim_macro, dict):
+        raise ValueError(
+            "RQ1 claim gate provenance does not bind the primary macro."
+        )
+    primary_path = paths["primary"]
+    if (
+        str(Path(str(claim_macro.get("path", ""))))
+        != str(primary_path)
+        or str(claim_macro.get("sha256", "")) != sha256(primary_path)
+    ):
+        raise ValueError(
+            "RQ1 claim gate provenance does not match the supplied primary macro."
+        )
+
+
 def metric_pair(primary: dict, metric: str) -> tuple[float, float]:
     node = primary.get("macro", {}).get(metric)
     if not isinstance(node, dict):
@@ -508,6 +601,11 @@ def main() -> None:
         raise SystemExit(f"Missing primary config: {primary_config_path}")
     primary_cfg = yaml.safe_load(
         primary_config_path.read_text(encoding="utf-8")
+    )
+    require_render_source_provenance(
+        payloads,
+        paths,
+        primary_config_path,
     )
     macros = build_macros(
         payloads["primary"],

@@ -132,11 +132,15 @@ def artifact_generation_contract_matches(path: Path, expected: dict) -> bool:
         return False
 
     for row in rows:
-        if (
-            str(row.get("adapter", "")) != str(expected["adapter"])
-            or str(row.get("model", "")) != str(expected["model"])
-            or int(row.get("seed", -1)) != int(expected["seed"])
-        ):
+        try:
+            top_level_matches = (
+                str(row.get("adapter", "")) == str(expected["adapter"])
+                and str(row.get("model", "")) == str(expected["model"])
+                and int(row.get("seed", -1)) == int(expected["seed"])
+            )
+        except (TypeError, ValueError):
+            return False
+        if not top_level_matches:
             return False
         metadata = row.get("generation", {}).get("metadata", {})
         for key, value in expected["metadata"].items():

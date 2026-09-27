@@ -160,6 +160,14 @@ freeze = json.loads(freeze_path.read_text(encoding="utf-8"))
 failures = []
 if split.get("requested_revision") != "$DATASET_SHA":
     failures.append("GSM8K revision differs from revision ledger")
+if split.get("source_git_clean") is not True:
+    failures.append("GSM8K split was not produced from a clean checkout")
+if split.get("source_git_commit") != "$FROZEN_COMMIT":
+    failures.append("GSM8K split source commit differs from frozen experiment commit")
+if audit.get("source_git_clean") is not True:
+    failures.append("GSM8K split audit does not attest a clean source checkout")
+if audit.get("source_git_commit") != "$FROZEN_COMMIT":
+    failures.append("GSM8K split audit source commit differs from frozen experiment commit")
 if split.get("calibration_sha256") != sha(cal):
     failures.append("calibration hash differs from split manifest")
 if split.get("test_sha256") != sha(test):

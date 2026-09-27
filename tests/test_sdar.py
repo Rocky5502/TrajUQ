@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -112,3 +114,11 @@ def test_transfer_count_rejects_negative_values():
         bounded_transfer_count(-1, 2)
     with pytest.raises(ValueError):
         bounded_transfer_count(1, -2)
+
+
+def test_sdar_adapter_uses_no_grad_for_all_model_forward_sites():
+    text = Path("src/trajuq/adapters/sdar.py").read_text(encoding="utf-8")
+
+    assert text.count("with torch.no_grad():") == 3
+    assert "forward_evals = 0\n        if prefill_length > 0:" in text
+    assert "store_kv=True,\n                )\n            forward_evals += 1" in text

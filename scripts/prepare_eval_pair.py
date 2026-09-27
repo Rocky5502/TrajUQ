@@ -74,6 +74,22 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    source_git_commit = git_text("rev-parse", "HEAD")
+    source_git_status = git_text("status", "--porcelain")
+    if not source_git_commit:
+        raise SystemExit(
+            "Unable to resolve source git commit; frozen split preparation requires git provenance."
+        )
+    if source_git_status is None:
+        raise SystemExit(
+            "Unable to inspect git worktree; frozen split preparation requires a clean checkout."
+        )
+    if source_git_status:
+        raise SystemExit(
+            "Refusing to prepare frozen splits from a dirty git checkout. Commit or stash changes first."
+        )
+    source_git_clean = True
+
     try:
         from datasets import load_dataset
     except ImportError as exc:
@@ -163,12 +179,6 @@ def main() -> None:
         n_test = write_rows(test_path, test_rows)
     else:
         raise SystemExit(f"Unknown split strategy: {strategy}")
-
-    source_git_commit = git_text("rev-parse", "HEAD")
-    source_git_status = git_text("status", "--porcelain")
-    source_git_clean = (
-        source_git_status == "" if source_git_status is not None else False
-    )
 
     freeze = {
         "dataset": args.dataset,

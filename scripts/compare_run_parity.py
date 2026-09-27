@@ -112,6 +112,41 @@ def git_clean() -> bool | None:
         return None
 
 
+def environment_provenance_errors(
+    run_provenance: dict,
+    *,
+    commit: str | None,
+    clean: bool | None,
+    require: bool,
+) -> list[dict]:
+    errors: list[dict] = []
+    if not require:
+        return errors
+    if not commit:
+        errors.append({"reason": "git_commit_unavailable"})
+    if clean is not True:
+        errors.append(
+            {"reason": "git_worktree_not_clean", "git_clean": clean}
+        )
+    source_commit = run_provenance.get("source_git_commit")
+    if commit and source_commit != commit:
+        errors.append(
+            {
+                "reason": "source_git_commit_differs_from_comparator",
+                "source_git_commit": source_commit,
+                "git_commit": commit,
+            }
+        )
+    if run_provenance.get("source_git_clean") is not True:
+        errors.append(
+            {
+                "reason": "source_git_worktree_not_clean",
+                "source_git_clean": run_provenance.get("source_git_clean"),
+            }
+        )
+    return errors
+
+
 def token_ids(row: dict) -> list[int] | None:
     generation = row.get("generation", {})
     ids = generation.get("token_ids")
@@ -436,15 +471,12 @@ def main() -> None:
 
     commit = git_head()
     clean = git_clean()
-    environment_errors: list[dict] = []
-    if args.require_provenance and not commit:
-        environment_errors.append(
-            {"reason": "git_commit_unavailable"}
-        )
-    if args.require_provenance and clean is not True:
-        environment_errors.append(
-            {"reason": "git_worktree_not_clean", "git_clean": clean}
-        )
+    environment_errors = environment_provenance_errors(
+        run_provenance,
+        commit=commit,
+        clean=clean,
+        require=args.require_provenance,
+    )
 
     status = (
         "PASS"

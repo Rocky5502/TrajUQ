@@ -6,6 +6,7 @@ import pytest
 
 from scripts.render_results_tex import (
     ABLATION_SUFFIXES,
+    CALIBRATION_SENSITIVITY_METRICS,
     PRIOR_SIGNAL_SUFFIXES,
     build_macros,
 )
@@ -140,6 +141,65 @@ def prior_signals():
     }
 
 
+def calibration_sensitivity():
+    labels = [
+        f"{adapter}:{dataset}"
+        for adapter in ("llada", "sdar", "dream")
+        for dataset in (
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "arc_challenge",
+            "mmlu_pro",
+            "truthfulqa",
+        )
+    ]
+    eligible = labels[:6]
+    skipped = labels[6:]
+    metric_node = {
+        "primary_logistic": 0.20,
+        "isotonic_sensitivity": 0.18,
+        "isotonic_minus_logistic_improvement": 0.02,
+    }
+    return {
+        "protocol": "trajuq_isotonic_calibration_sensitivity_macro_v1",
+        "role": "supplementary_calibration_sensitivity",
+        "cell_set_complete": True,
+        "expected_cells": 18,
+        "observed_cells": 18,
+        "eligibility_policy": {
+            "role": "supplementary_calibration_sensitivity",
+            "base_estimator": "standardized_logistic",
+            "cv_folds": 5,
+            "ensemble": False,
+            "min_calibration_samples": 1000,
+            "min_class_count": 5,
+        },
+        "eligible_cell_count": len(eligible),
+        "skipped_cell_count": len(skipped),
+        "eligible_cells": eligible,
+        "skipped_cells": skipped,
+        "per_cell": {
+            label: {
+                "status": (
+                    "PASS"
+                    if label in eligible
+                    else "SKIP_INSUFFICIENT_CALIBRATION"
+                ),
+                "eligible": label in eligible,
+            }
+            for label in labels
+        },
+        "macro_over_eligible_cells": {
+            view: {
+                metric: dict(metric_node)
+                for metric in CALIBRATION_SENSITIVITY_METRICS
+            }
+            for view in ("decision_entropy", "trajectory_plus_decision")
+        },
+    }
+
+
 def adaptive():
     return {
         "protocol": "trajuq_adaptive_macro_v1",
@@ -169,6 +229,7 @@ def test_result_macros_are_derived_from_complete_artifacts():
         repeated(),
         ablation(),
         prior_signals(),
+        calibration_sensitivity(),
         adaptive(),
     )
     assert macros["PrimaryTrajAUROC"] == "0.700"
@@ -177,6 +238,10 @@ def test_result_macros_are_derived_from_complete_artifacts():
     assert macros["AblationFullAUROCDelta"] == "+0.040"
     assert macros["PriorEntropyAUROC"] == "0.610"
     assert macros["PriorEntropyAUROCDelta"] == "+0.090"
+    assert macros["CalibrationEligibleCells"] == "6"
+    assert macros["CalibrationSkippedCells"] == "12"
+    assert macros["CalibrationDecisionBrierDelta"] == "+0.020"
+    assert macros["CalibrationTrajNLLIsotonic"] == "0.180"
     assert macros["AdaptiveDeltaRandom"] == "+0.040"
     assert "positive point improvement" in macros["AbstractResultSentence"]
     assert macros["PaperStateLimitationsSentence"] == ""
@@ -192,6 +257,7 @@ def test_result_renderer_rejects_partial_primary_matrix():
             repeated(),
             ablation(),
             prior_signals(),
+            calibration_sensitivity(),
             adaptive(),
         )
 
@@ -203,6 +269,7 @@ def test_result_renderer_uses_narrow_language_when_claim_gate_fails():
         repeated(),
         ablation(),
         prior_signals(),
+        calibration_sensitivity(),
         adaptive(),
     )
     assert "not met" in macros["AbstractResultSentence"]
@@ -218,6 +285,7 @@ def test_result_renderer_rejects_contradictory_claim_flag_and_decision():
             repeated(),
             ablation(),
             prior_signals(),
+            calibration_sensitivity(),
             adaptive(),
         )
 
@@ -232,6 +300,7 @@ def test_result_renderer_rejects_incomplete_repeated_compute():
             payload,
             ablation(),
             prior_signals(),
+            calibration_sensitivity(),
             adaptive(),
         )
 
@@ -246,6 +315,7 @@ def test_result_renderer_rejects_incomplete_ablation_matrix():
             repeated(),
             payload,
             prior_signals(),
+            calibration_sensitivity(),
             adaptive(),
         )
 
@@ -262,6 +332,25 @@ def test_result_renderer_rejects_incomplete_prior_signal_matrix():
             claim(),
             repeated(),
             ablation(),
+            payload,
+            calibration_sensitivity(),
+            adaptive(),
+        )
+
+
+def test_result_renderer_rejects_incomplete_calibration_sensitivity_matrix():
+    payload = calibration_sensitivity()
+    payload["cell_set_complete"] = False
+    with pytest.raises(
+        ValueError,
+        match="Calibration-sensitivity cell set is incomplete",
+    ):
+        build_macros(
+            primary(),
+            claim(),
+            repeated(),
+            ablation(),
+            prior_signals(),
             payload,
             adaptive(),
         )
@@ -282,12 +371,15 @@ def test_render_entrypoints_support_direct_execution():
         assert completed.returncode == 0, completed.stdout
 
 
-def test_result_artifact_map_matches_seven_source_renderer_contract():
+def test_result_artifact_map_matches_eight_source_renderer_contract():
     text = Path("docs/RESULT_ARTIFACT_MAP.md").read_text(encoding="utf-8")
 
-    assert "consumes seven SHA-bound sources" in text
+    assert "consumes eight SHA-bound sources" in text
     assert "macro_prior_signal_diagnostics.json" in text
     assert "trajuq_prior_aligned_signal_macro_v1" in text
     assert "PriorEntropy*" in text
     assert "PriorFlipRate*" in text
     assert "tab:prior-signal-diagnostics" in text
+    assert "macro_calibration_sensitivity.json" in text
+    assert "trajuq_isotonic_calibration_sensitivity_macro_v1" in text
+    assert "tab:calibration-sensitivity" in text

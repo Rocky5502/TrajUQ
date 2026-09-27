@@ -198,6 +198,25 @@ required action** with its expected artifact. These local snapshots separate
 implemented code from executed experimental gates, so a high engineering
 completion count cannot be mistaken for completed empirical work.
 
+## Immediate local-GPU next action
+
+The repository-side implementation is sufficiently mature to start real pre-primary
+execution now. On the Windows/local-GPU machine, use `docs/GPU_PILOT.md` as the
+canonical local runbook. The immediate sequence is:
+
+```powershell
+git pull
+git status --short
+PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
+PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
+```
+
+Do not edit tracked experiment code between the freeze and parity commands. If
+CUDA preflight/OOM prevents the frozen checkpoint from running locally, preserve
+the evidence/logs and move the same commit/revisions to the A100/Linux path
+instead of weakening the scientific configuration.
+
 ## What is still blocked / not done
 
 The remaining work is primarily **execution**, not paper-number invention.

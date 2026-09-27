@@ -132,9 +132,11 @@ BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
-The estimate stage is checked against the rental time still remaining. A mean
-projection that exceeds the remaining window stops scale; a P90-only overrun is
-reported as a planning warning rather than used to weaken the frozen science.
+The estimate stage is checked against the rental time still remaining with a
+frozen 6-hour operational reserve for model download/load overhead, CPU
+analysis/rendering, evidence export, and limited retry margin. Mean+reserve
+must fit before scale; a P90+reserve-only overrun is reported as a planning
+warning rather than used to weaken the frozen science.
 
 It prioritizes primary generation, primary analysis, and RQ3 before the
 expensive repeated-sampling comparator, writes an hourly GPU/disk/progress log,

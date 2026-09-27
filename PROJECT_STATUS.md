@@ -241,7 +241,7 @@ git status --porcelain
 python3.11 scripts/start_a100_rental_clock.py
 nvidia-smi
 python3.11 --version
-SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
+bash scripts/freeze_preprimary.sh
 bash scripts/a100_campaign_linux.sh pilot
 # complete the required 10-trace human review
 bash scripts/a100_campaign_linux.sh parity-math

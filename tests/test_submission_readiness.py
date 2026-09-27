@@ -158,6 +158,85 @@ def make_render_sources(tmp_path):
         }
     }
 
+    commit = "a" * 40
+    config = tmp_path / "primary.yaml"
+    config.write_text(yaml.safe_dump(primary_cfg), encoding="utf-8")
+    config_sha = hashlib.sha256(config.read_bytes()).hexdigest()
+
+    primary_prediction = tmp_path / "primary_prediction.jsonl"
+    ablation_prediction = tmp_path / "ablation_prediction.jsonl"
+    prior_prediction = tmp_path / "prior_prediction.jsonl"
+    for path in (
+        primary_prediction,
+        ablation_prediction,
+        prior_prediction,
+    ):
+        path.write_text('{"example_id":"x"}\n', encoding="utf-8")
+
+    primary["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "primary_config": {
+                "path": str(config),
+                "sha256": config_sha,
+            },
+            "prediction:llada_gsm8k": {
+                "path": str(primary_prediction),
+                "sha256": hashlib.sha256(
+                    primary_prediction.read_bytes()
+                ).hexdigest(),
+            },
+        },
+    }
+    ablation["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "prediction:llada:gsm8k": {
+                "path": str(ablation_prediction),
+                "sha256": hashlib.sha256(
+                    ablation_prediction.read_bytes()
+                ).hexdigest(),
+            }
+        },
+    }
+    prior_signals["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "prior_signal_prediction:llada:gsm8k": {
+                "path": str(prior_prediction),
+                "sha256": hashlib.sha256(
+                    prior_prediction.read_bytes()
+                ).hexdigest(),
+            }
+        },
+    }
+
+    primary_path = tmp_path / "primary.json"
+    primary_path.write_text(json.dumps(primary), encoding="utf-8")
+    claim["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "macro_primary": {
+                "path": str(primary_path),
+                "sha256": hashlib.sha256(
+                    primary_path.read_bytes()
+                ).hexdigest(),
+            },
+            "primary_config": {
+                "path": str(config),
+                "sha256": config_sha,
+            },
+        },
+    }
+
     payloads = {
         "primary": primary,
         "claim_gate": claim,
@@ -169,16 +248,17 @@ def make_render_sources(tmp_path):
     sources = {}
     for name, payload in payloads.items():
         path = tmp_path / f"{name}.json"
-        path.write_text(json.dumps(payload), encoding="utf-8")
+        if name == "primary":
+            path = primary_path
+        else:
+            path.write_text(json.dumps(payload), encoding="utf-8")
         sources[name] = {
             "path": str(path),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         }
-    config = tmp_path / "primary.yaml"
-    config.write_text(yaml.safe_dump(primary_cfg), encoding="utf-8")
     sources["primary_config"] = {
         "path": str(config),
-        "sha256": hashlib.sha256(config.read_bytes()).hexdigest(),
+        "sha256": config_sha,
     }
     return sources, payloads, primary_cfg
 
@@ -226,6 +306,22 @@ def test_generated_results_hash_gate_passes(tmp_path):
 
     result = verify_generated_results(manifest, generated)
     assert result["status"] == "PASS"
+
+
+def test_generated_results_gate_rejects_upstream_provenance_drift(tmp_path):
+    generated, manifest, _ = write_valid_render_bundle(tmp_path)
+    upstream = tmp_path / "primary_prediction.jsonl"
+    upstream.write_text(
+        '{"example_id":"x","changed":true}\n',
+        encoding="utf-8",
+    )
+
+    result = verify_generated_results(manifest, generated)
+    assert result["status"] == "FAIL"
+    assert any(
+        "provenance source hash changed" in item
+        for item in result["failures"]
+    )
 
 
 def test_generated_results_hash_gate_rejects_changed_source(tmp_path):

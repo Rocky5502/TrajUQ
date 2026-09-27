@@ -180,8 +180,12 @@ A100/Linux:
 ```bash
 git pull
 git status --short
-SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
+python3.11 scripts/start_a100_rental_clock.py
+bash scripts/freeze_preprimary.sh
 ```
+
+The rental clock is started before dependency installation and all subsequent
+GPU gates, so the complete paid session shares one 72-hour deadline.
 
 Windows:
 

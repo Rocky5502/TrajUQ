@@ -63,14 +63,14 @@ git checkout <EXACT_FREEZE_SHA_FROM_HANDOFF>
 git status --porcelain
 
 # Run immediately so setup/parity/human gates consume the same paid 72 h.
-python3.11 scripts/start_a100_rental_clock.py
+python3 scripts/start_a100_rental_clock.py
 cat results/a100_rental_clock.json
 git rev-parse HEAD
 
 nvidia-smi
-python3.11 --version
+python3 --version
 
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e ".[dev,math,models,analysis]"

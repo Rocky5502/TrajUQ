@@ -252,6 +252,19 @@ After pre-primary readiness PASS:
 
 Execution scripts are designed to be resumable and non-overwriting. Existing PARTIAL/INVALID artifacts must be inspected, not silently replaced.
 
+On NVIDIA A100/Linux, prefer the guarded campaign path:
+
+```bash
+bash scripts/a100_campaign_linux.sh pilot
+# manually inspect 10 pilot traces and record the human attestation
+bash scripts/a100_campaign_linux.sh parity-math
+# manually inspect all 25 MATH-500 scorer examples and record the attestation
+bash scripts/a100_campaign_linux.sh readiness
+bash scripts/a100_campaign_linux.sh all-after-readiness
+```
+
+Never modify the campaign runner to auto-attest either human-review gate.
+
 ## 12. Paper rules
 
 The paper is intentionally pre-results until real experiments exist.
@@ -275,6 +288,16 @@ only when the required frozen result artifacts exist. The final figure manifest
 must be protocol `trajuq_paper_result_figures_v2` and bind the primary/config,
 all three adaptive-cap sources, and all three generated PDF hashes.
 
+Build the anonymous Overleaf source package from the clean final paper checkout:
+
+```bash
+python scripts/build_overleaf_package.py
+```
+
+The ZIP is pinned to official ACL style commit
+`d5adc823ff0f80f98c80405ca0ab66c68e684409` and contains an anonymous
+source-snapshot hash rather than the public development git commit.
+
 Do not regress these corrections:
 - the repeated-generation table says **“TrajUQ (single trajectory)”**;
 - MATH-500 repeated voting is not disabled;
@@ -290,6 +313,10 @@ Inspect the live issue state before acting:
 - #5 — Dream native parity
 - #6 — GitHub Actions runner-allocation infrastructure
 - #7 — LLaDA native parity
+- #8 — frozen 18-cell primary matrix + RQ1/ablation analysis
+- #9 — five-sample RQ2 comparator
+- #10 — adaptive RQ3 25/50/75% matrix
+- #11 — artifact-derived paper / Overleaf / final submission gate
 
 Keep execution-gate issues open until actual result artifacts pass. Implemented support code is not evidence of execution.
 

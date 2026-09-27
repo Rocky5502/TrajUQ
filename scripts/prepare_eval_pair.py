@@ -178,41 +178,6 @@ def main() -> None:
         test_rows = list(
             official_rows(test_ds, spec["test_split"])
         )
-        source_counts["calibration_before_cap"] = len(cal_rows)
-        source_counts["test_before_cap"] = len(test_rows)
-        cal_rows = deterministic_cap_rows(
-            cal_rows,
-            dataset=args.dataset,
-            role="calibration",
-            seed=cap_seed,
-            max_examples=calibration_max,
-        )
-        test_rows = deterministic_cap_rows(
-            test_rows,
-            dataset=args.dataset,
-            role="test",
-            seed=cap_seed,
-            max_examples=test_max,
-        )
-        source_counts["source_total"] = len(cal_rows) + len(test_rows)
-        source_counts["calibration_before_cap"] = len(cal_rows)
-        source_counts["test_before_cap"] = len(test_rows)
-        cal_rows = deterministic_cap_rows(
-            cal_rows,
-            dataset=args.dataset,
-            role="calibration",
-            seed=cap_seed,
-            max_examples=calibration_max,
-        )
-        test_rows = deterministic_cap_rows(
-            test_rows,
-            dataset=args.dataset,
-            role="test",
-            seed=cap_seed,
-            max_examples=test_max,
-        )
-        n_cal = write_rows(cal_path, cal_rows)
-        n_test = write_rows(test_path, test_rows)
 
     elif strategy == "internal_holdout":
         source = load_hf(load_dataset, spec, spec["source_split"], revision)
@@ -234,10 +199,31 @@ def main() -> None:
                 cal_rows.append(norm)
             else:
                 test_rows.append(norm)
-        n_cal = write_rows(cal_path, cal_rows)
-        n_test = write_rows(test_path, test_rows)
     else:
         raise SystemExit(f"Unknown split strategy: {strategy}")
+
+    # Apply the frozen compute cap exactly once after either split strategy has
+    # produced its uncapped normalized partitions. Keeping this block shared
+    # prevents official/internal-holdout preparation from drifting.
+    source_counts["source_total"] = len(cal_rows) + len(test_rows)
+    source_counts["calibration_before_cap"] = len(cal_rows)
+    source_counts["test_before_cap"] = len(test_rows)
+    cal_rows = deterministic_cap_rows(
+        cal_rows,
+        dataset=args.dataset,
+        role="calibration",
+        seed=cap_seed,
+        max_examples=calibration_max,
+    )
+    test_rows = deterministic_cap_rows(
+        test_rows,
+        dataset=args.dataset,
+        role="test",
+        seed=cap_seed,
+        max_examples=test_max,
+    )
+    n_cal = write_rows(cal_path, cal_rows)
+    n_test = write_rows(test_path, test_rows)
 
     freeze = {
         "dataset": args.dataset,

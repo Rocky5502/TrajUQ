@@ -240,7 +240,7 @@ Do **not** launch the full 18-cell primary matrix before these gates pass.
 
 After readiness passes:
 
-1. prepare all six immutable dataset pairs;
+1. prepare all six immutable dataset pairs from the same clean frozen experiment commit; each split manifest records and is later revalidated against the frozen dataset repo/config, complete split policy, resolved SHA, and source git commit;
 2. create and archive results/primary_matrix_plan.json;
 3. run scripts/estimate_a100_campaign.py and inspect the frozen-input
    serial-A100 projection before launching the expensive matrix;

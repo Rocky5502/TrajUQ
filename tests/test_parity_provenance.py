@@ -8,6 +8,10 @@ def row(*, revision: str = "sha", prompt: str = "p", seed: int = 2027):
         "model": "model",
         "adapter": "llada",
         "seed": seed,
+        "metadata": {
+            "source_git_commit": "frozen-commit",
+            "source_git_clean": True,
+        },
         "generation": {
             "metadata": {
                 "model_revision": revision,
@@ -61,6 +65,22 @@ def test_strict_parity_requires_adapter_generation_settings():
     )
     assert any(
         item["field"] == "generation.metadata.block_length"
+        and item["reason"] == "missing_provenance"
+        for item in errors
+    )
+
+
+def test_strict_parity_requires_source_git_commit():
+    reference = row()
+    reference["metadata"].pop("source_git_commit")
+    errors = provenance_mismatches(
+        "x",
+        reference,
+        row(),
+        require=True,
+    )
+    assert any(
+        item["field"] == "metadata.source_git_commit"
         and item["reason"] == "missing_provenance"
         for item in errors
     )

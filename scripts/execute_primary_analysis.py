@@ -751,6 +751,28 @@ def aggregate_provenance_matches(
                 str(path),
                 sha256_file(path),
             )
+    elif kind == "calibration_sensitivity":
+        config_path = str(plan.get("primary_config", ""))
+        config_hash = str(plan.get("primary_config_sha256", ""))
+        if not config_path or not config_hash:
+            return False
+        sources["primary_config"] = (config_path, config_hash)
+        for cell in cells:
+            label = str(cell.get("cell", ""))
+            path = Path(
+                str(
+                    cell.get("outputs", {}).get(
+                        "calibration_sensitivity",
+                        "",
+                    )
+                )
+            )
+            if not label or not path.is_file():
+                return False
+            sources[f"cell:{label}"] = (
+                str(path),
+                sha256_file(path),
+            )
     elif kind == "ablation":
         for cell in cells:
             label = str(cell.get("cell", ""))
@@ -848,6 +870,9 @@ def claim_matches_frozen_rule(
 
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
+    calibration_sensitivity = Path(
+        str(plan["final_outputs"]["macro_calibration_sensitivity"])
+    )
     ablation = Path(str(plan["final_outputs"]["macro_feature_ablation"]))
     prior = Path(
         str(plan["final_outputs"]["macro_prior_signal_diagnostics"])
@@ -886,6 +911,61 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                         "risk50",
                         "risk80",
                     }
+                )
+                else "INVALID"
+            )
+
+    calibration_sensitivity_status = "MISSING"
+    if calibration_sensitivity.exists():
+        if not valid_json(calibration_sensitivity):
+            calibration_sensitivity_status = "INVALID"
+        else:
+            payload = json.loads(
+                calibration_sensitivity.read_text(encoding="utf-8")
+            )
+            expected_labels = {
+                str(cell.get("cell", ""))
+                for cell in plan.get("cell_analyses", [])
+            }
+            eligible = set(payload.get("eligible_cells", []))
+            skipped = set(payload.get("skipped_cells", []))
+            per_cell = payload.get("per_cell", {})
+            contracts = [
+                cell.get("calibration_sensitivity_contract", {})
+                for cell in plan.get("cell_analyses", [])
+            ]
+            one_contract = contracts[0] if contracts else {}
+            contract_consistent = bool(contracts) and all(
+                item == one_contract
+                for item in contracts
+            )
+            calibration_sensitivity_status = (
+                "COMPLETE"
+                if (
+                    payload.get("protocol")
+                    == "trajuq_isotonic_calibration_sensitivity_macro_v1"
+                    and payload.get("role")
+                    == "supplementary_calibration_sensitivity"
+                    and aggregate_provenance_matches(
+                        plan,
+                        payload,
+                        "calibration_sensitivity",
+                    )
+                    and payload.get("cell_set_complete") is True
+                    and int(payload.get("observed_cells", -1))
+                    == expected_cells
+                    and int(payload.get("expected_cells", -1))
+                    == expected_cells
+                    and int(payload.get("eligible_cell_count", -1))
+                    == len(eligible)
+                    and int(payload.get("skipped_cell_count", -1))
+                    == len(skipped)
+                    and eligible.isdisjoint(skipped)
+                    and eligible | skipped == expected_labels
+                    and set(per_cell) == expected_labels
+                    and contract_consistent
+                    and payload.get("eligibility_policy")
+                    == one_contract
                 )
                 else "INVALID"
             )
@@ -992,6 +1072,7 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "macro_primary": macro_status,
+        "macro_calibration_sensitivity": calibration_sensitivity_status,
         "macro_feature_ablation": ablation_status,
         "macro_prior_signal_diagnostics": prior_status,
         "rq1_claim_gate": claim_status,
@@ -1008,6 +1089,7 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         if len(cells) == expected
         and complete_cells == expected
         and final["macro_primary"] == "COMPLETE"
+        and final["macro_calibration_sensitivity"] == "COMPLETE"
         and final["macro_feature_ablation"] == "COMPLETE"
         and final["macro_prior_signal_diagnostics"] == "COMPLETE"
         and final["rq1_claim_gate"] == "COMPLETE"
@@ -1213,6 +1295,38 @@ def main() -> None:
         return
 
     if all_cells_complete:
+        final = macro_state(plan)
+        if final["macro_calibration_sensitivity"] == "MISSING":
+            run_command(
+                [
+                    str(value)
+                    for value in plan[
+                        "calibration_sensitivity_macro_argv"
+                    ]
+                ],
+                execute=args.execute,
+                scope="primary",
+                step="calibration_sensitivity_macro",
+                event_log=event_path,
+            )
+            if (
+                args.execute
+                and macro_state(plan)["macro_calibration_sensitivity"]
+                != "COMPLETE"
+            ):
+                write_snapshot(plan, state_path)
+                raise SystemExit(
+                    "Calibration-sensitivity macro command did not produce "
+                    "a complete artifact."
+                )
+        elif final["macro_calibration_sensitivity"] == "INVALID":
+            raise SystemExit(
+                "Existing calibration-sensitivity macro is invalid; "
+                "do not overwrite it automatically."
+            )
+        else:
+            print("[SKIP] primary calibration_sensitivity_macro: complete")
+
         final = macro_state(plan)
         if final["macro_primary"] == "MISSING":
             run_command(

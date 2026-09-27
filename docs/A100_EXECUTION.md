@@ -199,8 +199,22 @@ Do not start the 18-cell primary matrix unless
 
 ## 6. Full post-readiness campaign
 
-Once both human attestations exist and primary readiness is PASS, the complete
-remaining frozen campaign can be resumed stage-by-stage:
+Once both human attestations exist and primary readiness is PASS, first prepare
+the six frozen dataset pairs, freeze the 18-cell primary plan, and derive a
+measured compute forecast without launching the matrix:
+
+```bash
+bash scripts/a100_campaign_linux.sh estimate
+cat results/a100_compute_estimate.md
+```
+
+The estimate is bound to the clean experiment commit, exact prepared inputs, and
+audited on-GPU traces: the 50-example LLaDA pilot plus 20-prompt SDAR/Dream
+parity telemetry. It reports both a mean-timing projection and a conservative
+P90-per-example planning sum. It is operational planning metadata, not a paper
+result.
+
+Then the complete remaining frozen campaign can be resumed stage-by-stage:
 
 ```bash
 bash scripts/a100_campaign_linux.sh primary

@@ -156,3 +156,24 @@ def test_run_audit_rejects_nested_outcome_key(tmp_path):
     result = run_audit(tmp_path, record)
     assert result.returncode != 0
     assert "outcome-like metadata keys" in result.stdout
+
+
+def test_run_audit_rejects_dream_without_pre_transfer_hook_marker(tmp_path):
+    record = make_record()
+    record["adapter"] = "dream"
+    record["generation"]["metadata"].pop("telemetry_hook", None)
+
+    result = run_audit(tmp_path, record)
+    assert result.returncode != 0
+    assert "Dream telemetry_hook" in result.stdout
+
+
+def test_run_audit_accepts_dream_pre_transfer_hook_marker(tmp_path):
+    record = make_record()
+    record["adapter"] = "dream"
+    record["generation"]["metadata"]["telemetry_hook"] = (
+        "pre_transfer_generation_logits_hook"
+    )
+
+    result = run_audit(tmp_path, record)
+    assert result.returncode == 0

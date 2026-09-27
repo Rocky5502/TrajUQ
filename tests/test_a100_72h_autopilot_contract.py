@@ -28,3 +28,13 @@ def test_campaign_exposes_autopilot_stage():
 
     assert "autopilot-72h)" in text
     assert "bash scripts/a100_72h_autopilot.sh" in text
+
+
+def test_72h_autopilot_preserves_failed_stage_exit_code():
+    text = Path("scripts/a100_72h_autopilot.sh").read_text(encoding="utf-8")
+
+    assert 'if ! run_stage "$stage"' not in text
+    assert 'run_stage "$stage"' in text
+    assert 'rc=$?' in text
+    assert 'if (( rc != 0 )); then' in text
+    assert 'exit "$rc"' in text

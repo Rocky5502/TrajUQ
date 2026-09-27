@@ -146,6 +146,8 @@ Primary second-pass selection cap: **50%**.
 
 Sensitivity caps: **25%** and **75%**.
 
+For SDAR, the frozen RQ3 budgets are 2 denoising steps/block (base) versus 4 (refined). The TrajUQ adapter includes a documented partial-block transfer guard that caps requested transfers to the number of currently masked positions. It is a no-op under the native 4-step parity setting and must remain identical in base/refined provenance.
+
 Run a complete base generation, use calibration-derived risk to decide which examples receive a separate refined higher-budget run, and compare quality/accuracy against compute/time/resource cost. Never select the threshold from test labels.
 
 ## 8. Frozen statistical gate

@@ -26,6 +26,32 @@ if [[ -z "$HEAD_SHA" ]]; then
 fi
 printf 'FROZEN_GIT_COMMIT=%s\n' "$HEAD_SHA"
 
+existing_freeze_evidence=()
+for path in \
+  results/cpu_verification.json \
+  results/revision_ledger.json \
+  results/gated_dataset_access.json \
+  results/math500_scorer_audit.json
+do
+  [[ -e "$path" ]] && existing_freeze_evidence+=("$path")
+done
+if [[ -d results/cpu_verification_logs ]]; then
+  while IFS= read -r path; do
+    existing_freeze_evidence+=("$path")
+  done < <(find results/cpu_verification_logs -maxdepth 1 -type f -name '*.log' -print | sort)
+fi
+if [[ -d results/frozen_models ]]; then
+  while IFS= read -r path; do
+    existing_freeze_evidence+=("$path")
+  done < <(find results/frozen_models -maxdepth 1 -type f -name '*.yaml' -print | sort)
+fi
+if (( ${#existing_freeze_evidence[@]} > 0 )); then
+  printf '%s\n' "Refusing to start a mixed pre-primary freeze: existing immutable evidence was found." >&2
+  printf '  %s\n' "${existing_freeze_evidence[@]}" >&2
+  printf '%s\n' "Inspect/archive the existing evidence and use a fresh results target before freezing a new commit." >&2
+  exit 1
+fi
+
 if [[ "$SKIP_INSTALL" != "1" ]]; then
   run_step "Install CPU/model/data verification dependencies" \
     "$PYTHON" -m pip install -e ".[dev,math,models]"

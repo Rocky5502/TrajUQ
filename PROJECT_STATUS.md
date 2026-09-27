@@ -100,6 +100,11 @@ particular, the following are implemented and versioned:
   remaining SDAR/Dream parity gates, and the MATH-500 scorer pilot, so the full
   pre-primary GPU path can run on one frozen Linux checkout without weakening
   the Windows evidence contract;
+- a shared `scripts/validate_frozen_preprimary.py` guard now sits in every
+  supported Windows/Linux parity, pilot, MATH, and A100 campaign entry path. It
+  revalidates CPU step-log hashes, ledger/config identities, frozen model-config
+  hashes, gated access, and the complete six-dataset contract proof before GPU
+  work, preventing lower-level wrapper invocation from bypassing the freeze;
 - a canonical `docs/A100_EXECUTION.md` runbook plus
   `scripts/a100_campaign_linux.sh`, which preserves both human-review stop
   points, derives a provenance-bound A100 compute forecast before primary

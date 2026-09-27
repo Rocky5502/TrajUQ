@@ -63,6 +63,8 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
                 "adapter": "llada",
                 "model_id": "example/llada",
                 "revision": "model-sha",
+                "device": "cuda",
+                "dtype": "bfloat16",
             }
         ),
         encoding="utf-8",
@@ -246,4 +248,32 @@ def test_shared_validator_rejects_legacy_one_row_dataset_contract(tmp_path):
     assert any(
         "dataset normalizer/scorer contracts" in x
         for x in result["failures"]
+    )
+
+
+
+def test_frozen_preprimary_rejects_runtime_dtype_drift(tmp_path):
+    case = build_frozen_case(tmp_path)
+    frozen = case["frozen"]
+    payload = yaml.safe_load(frozen.read_text(encoding="utf-8"))
+    payload["dtype"] = "float16"
+    frozen.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+    ledger = json.loads(case["ledger"].read_text(encoding="utf-8"))
+    ledger["frozen_model_config_sha256"]["llada"] = sha(frozen)
+    case["ledger"].write_text(json.dumps(ledger), encoding="utf-8")
+    ledger_sha = sha(case["ledger"])
+
+    for key in ("gated", "contracts"):
+        artifact = json.loads(case[key].read_text(encoding="utf-8"))
+        artifact["revision_ledger_sha256"] = ledger_sha
+        case[key].write_text(json.dumps(artifact), encoding="utf-8")
+
+    result = validate(case)
+
+    assert result["status"] == "FAIL"
+    assert result["checks"]["frozen_model_configs"]["llada"] is False
+    assert any(
+        "frozen model config does not match revision ledger" in item
+        for item in result["failures"]
     )

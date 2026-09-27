@@ -19,6 +19,8 @@ window.
    credentials, or Overleaf credentials in the repository or logs.
 7. Prefer shell-side monitoring over repeated agent polling. A healthy GPU run
    should continue even when Codex is disconnected.
+8. Do not change `--device cuda` or `--dtype bfloat16` after freeze. They are
+   part of the raw/repeated artifact contract, not merely launch preferences.
 
 ## Pre-rental repository state
 

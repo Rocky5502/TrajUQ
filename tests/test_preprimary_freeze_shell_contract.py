@@ -8,6 +8,11 @@ def test_shell_preprimary_freeze_matches_windows_integrity_contract():
     assert "git status --porcelain" in text
     assert "git rev-parse HEAD" in text
     assert '".[dev,math,models]"' in text
+    assert "bash -n" in text
+    assert "scripts/a100_campaign_linux.sh" in text
+    assert "scripts/a100_72h_autopilot.sh" in text
+    assert "scripts/run_repeated_samples.py --help" in text
+    assert "scripts/resident_generate_plan.py --help" in text
     assert "scripts/verify_cpu.py" in text
     assert "trajuq_cpu_verification_v1" in text
     assert "scripts/resolve_experiment_revisions.py" in text

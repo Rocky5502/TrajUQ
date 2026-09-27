@@ -93,7 +93,7 @@ def _write_submission_manifests(root: Path) -> dict[str, Path]:
     (paper / "generated_results_manifest.json").write_text(
         json.dumps(
             {
-                "protocol": "trajuq_paper_results_render_v1",
+                "protocol": "trajuq_paper_results_render_v2",
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),

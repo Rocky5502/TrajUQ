@@ -82,7 +82,7 @@ SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
 Require the final line `PRE-PRIMARY FREEZE PASS`. Before writing anything,
 the official freeze wrapper refuses to start if immutable evidence from another
 freeze already exists (CPU artifact/logs, revision ledger/frozen model configs,
-gated-access proof, or the automatic MATH-500 scorer audit). Archive the old
+gated-access proof, six-dataset contract proof, or the automatic MATH-500 scorer audit). Archive the old
 private handoff/evidence or use a fresh checkout/results workspace; do not mix
 freeze commits.
 
@@ -388,7 +388,7 @@ Do not type result numbers manually into `paper/main.tex`.
 Stop rather than improvise if any of the following occurs:
 
 - dirty worktree after the experiment freeze;
-- CPU verification, revision ledger, or exact-revision gated-dataset access FAIL;
+- CPU verification, revision ledger, exact-revision gated-dataset access, or six-dataset normalizer/scorer contract FAIL;
 - model revision/data revision drift;
 - any exact-parity mismatch;
 - pilot quality or run-audit failure;

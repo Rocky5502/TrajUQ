@@ -83,7 +83,8 @@ particular, the following are implemented and versioned:
   chain, RQ2 revalidates the analysis/primary/readiness chain, and RQ3
   revalidates the primary/readiness chain during both planning and execution;
 - primary-readiness v2 additionally revalidates the revision-ledger dataset
-  manifest hash, the exact CPU-verification protocol/step sequence, raw/scored
+  manifest hash, the exact CPU-verification protocol/step sequence and per-step
+  CPU log SHA-256 bindings, raw/scored
   pilot audit SHA bindings, clean pilot-quality and MATH-500 automatic-audit
   provenance, frozen MATH dependency versions, source-bound clean-checkout
   human attestations, MATH scored-pilot audit evidence, and hash-bound parity

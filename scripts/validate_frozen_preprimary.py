@@ -267,6 +267,7 @@ def validate_frozen_preprimary(
         for item in contracts.get("results", [])
         if item.get("dataset")
     }
+    required_contract_samples = 4
     contracts_ok = (
         contracts.get("protocol") == "trajuq_dataset_contracts_v1"
         and contracts.get("status") == "PASS"
@@ -274,6 +275,9 @@ def validate_frozen_preprimary(
         and contracts.get("git_commit") == experiment_commit
         and contracts.get("revision_ledger_sha256") == ledger_sha
         and contracts.get("normalizer_version") == NORMALIZER_VERSION
+        and int(
+            contracts.get("contract_sample_count_per_dataset", 0)
+        ) >= required_contract_samples
         and declared_contracts == expected_contracts
         and observed_contracts == expected_contracts
         and set(contract_rows) == set(expected_contracts)
@@ -281,6 +285,15 @@ def validate_frozen_preprimary(
         and all(
             contract_rows[name].get("status") == "PASS"
             and contract_rows[name].get("scorer_smoke_pass") is True
+            and int(
+                contract_rows[name].get("contract_sample_count", 0)
+            ) >= required_contract_samples
+            and int(
+                contract_rows[name].get("observed_sample_count", 0)
+            ) >= required_contract_samples
+            and int(
+                contract_rows[name].get("scorer_smoke_pass_count", 0)
+            ) >= required_contract_samples
             and contract_rows[name].get("source_row_content_stored") is False
             and contract_rows[name].get("normalizer_version")
             == NORMALIZER_VERSION

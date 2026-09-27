@@ -29,6 +29,7 @@ from scripts.project_status import build_snapshot  # noqa: E402
 from scripts.render_results_tex import (  # noqa: E402
     build_macros,
     render_tex,
+    require_bound_result_provenance,
     require_render_source_provenance,
 )
 
@@ -148,6 +149,8 @@ def verify_downstream_provenance(
 def verify_generated_results(
     manifest_path: Path,
     generated_tex: Path,
+    repeated_plan_path: Path | None = None,
+    adaptive_plan_path: Path | None = None,
 ) -> dict:
     manifest = load_json(manifest_path)
     failures: list[str] = []
@@ -229,6 +232,32 @@ def verify_generated_results(
                 source_paths,
                 source_paths["primary_config"],
             )
+            for label, plan_path in (
+                ("repeated", repeated_plan_path),
+                ("adaptive", adaptive_plan_path),
+            ):
+                if plan_path is None:
+                    continue
+                if not plan_path.is_file():
+                    raise ValueError(
+                        f"{label} frozen plan is missing: {plan_path}"
+                    )
+                plan_source = render_payloads[label].get(
+                    "provenance", {}
+                ).get("sources", {}).get("plan")
+                if not isinstance(plan_source, dict):
+                    raise ValueError(
+                        f"{label} macro provenance does not bind its frozen plan."
+                    )
+                if (
+                    str(Path(str(plan_source.get("path", ""))))
+                    != str(plan_path)
+                    or str(plan_source.get("sha256", ""))
+                    != sha256_file(plan_path)
+                ):
+                    raise ValueError(
+                        f"{label} macro provenance binds a different frozen plan."
+                    )
             macros = build_macros(
                 primary,
                 claim,
@@ -310,7 +339,10 @@ def verify_generated_results(
     }
 
 
-def verify_result_figures(manifest_path: Path) -> dict:
+def verify_result_figures(
+    manifest_path: Path,
+    adaptive_plan_path: Path | None = None,
+) -> dict:
     failures: list[str] = []
     try:
         manifest = load_json(manifest_path)
@@ -348,17 +380,100 @@ def verify_result_figures(manifest_path: Path) -> dict:
             + ", ".join(missing_sources)
         )
 
+    source_paths: dict[str, Path] = {}
+    source_hashes_valid = True
     for name in sorted(required_sources.intersection(sources)):
         source = sources[name]
         if not isinstance(source, dict):
+            source_hashes_valid = False
             failures.append(f"result-figure source entry is invalid: {name}")
             continue
         path = Path(str(source.get("path", "")))
+        source_paths[name] = path
         if not path.exists():
+            source_hashes_valid = False
             failures.append(f"result-figure source missing: {name} -> {path}")
             continue
         if sha256_file(path) != str(source.get("sha256", "")):
+            source_hashes_valid = False
             failures.append(f"result-figure source hash changed: {name}")
+
+    if required_sources.issubset(source_paths) and source_hashes_valid:
+        try:
+            primary = load_json(source_paths["primary"])
+            cap_payloads = {
+                key: load_json(source_paths[key])
+                for key in ("cap_025", "cap_050", "cap_075")
+            }
+            commits = {
+                require_bound_result_provenance(
+                    primary,
+                    label="primary",
+                ),
+                *[
+                    require_bound_result_provenance(
+                        payload,
+                        label=key,
+                    )
+                    for key, payload in cap_payloads.items()
+                ],
+            }
+            if len(commits) != 1:
+                raise ValueError(
+                    "result-figure aggregate sources disagree on the frozen commit."
+                )
+
+            config_source = primary.get("provenance", {}).get(
+                "sources", {}
+            ).get("primary_config")
+            config_path = source_paths["primary_config"]
+            if not isinstance(config_source, dict):
+                raise ValueError(
+                    "primary figure source does not bind the primary config."
+                )
+            if (
+                str(Path(str(config_source.get("path", ""))))
+                != str(config_path)
+                or str(config_source.get("sha256", ""))
+                != sha256_file(config_path)
+            ):
+                raise ValueError(
+                    "primary figure source binds a different primary config."
+                )
+
+            if adaptive_plan_path is not None:
+                if not adaptive_plan_path.is_file():
+                    raise ValueError(
+                        f"adaptive frozen plan is missing: {adaptive_plan_path}"
+                    )
+                expected_plan_hash = sha256_file(adaptive_plan_path)
+                for key, payload in cap_payloads.items():
+                    plan_source = payload.get(
+                        "provenance", {}
+                    ).get("sources", {}).get("plan")
+                    if not isinstance(plan_source, dict):
+                        raise ValueError(
+                            f"{key} provenance does not bind the adaptive plan."
+                        )
+                    if (
+                        str(Path(str(plan_source.get("path", ""))))
+                        != str(adaptive_plan_path)
+                        or str(plan_source.get("sha256", ""))
+                        != expected_plan_hash
+                    ):
+                        raise ValueError(
+                            f"{key} provenance binds a different adaptive plan."
+                        )
+        except (
+            ValueError,
+            KeyError,
+            TypeError,
+            OSError,
+            json.JSONDecodeError,
+        ) as exc:
+            failures.append(
+                f"result-figure source provenance revalidation failed: {exc}"
+            )
 
     required_outputs = {
         "primary_auroc_matrix",
@@ -550,11 +665,14 @@ def main() -> None:
     rendered = verify_generated_results(
         Path(args.results_manifest),
         Path(args.generated_tex),
+        Path(args.repeated_plan),
+        Path(args.adaptive_plan),
     )
     failures.extend(rendered["failures"])
 
     result_figures = verify_result_figures(
-        Path(args.result_figure_manifest)
+        Path(args.result_figure_manifest),
+        Path(args.adaptive_plan),
     )
     failures.extend(result_figures["failures"])
 

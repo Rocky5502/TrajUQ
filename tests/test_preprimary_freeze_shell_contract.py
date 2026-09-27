@@ -13,6 +13,7 @@ def test_shell_preprimary_freeze_matches_windows_integrity_contract():
     assert "scripts/a100_72h_autopilot.sh" in text
     assert "scripts/run_repeated_samples.py --help" in text
     assert "scripts/resident_generate_plan.py --help" in text
+    assert "scripts/resident_generate_repeated_plan.py --help" in text
     assert "scripts/verify_cpu.py" in text
     assert "trajuq_cpu_verification_v1" in text
     assert "scripts/resolve_experiment_revisions.py" in text

@@ -26,7 +26,11 @@ from scripts.execute_repeated_sampling import (  # noqa: E402
     validate_plan_provenance as validate_repeated_provenance,
 )
 from scripts.project_status import build_snapshot  # noqa: E402
-from scripts.render_results_tex import build_macros, render_tex  # noqa: E402
+from scripts.render_results_tex import (  # noqa: E402
+    build_macros,
+    render_tex,
+    require_render_source_provenance,
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -211,6 +215,19 @@ def verify_generated_results(
             adaptive = load_json(source_paths["adaptive"])
             primary_cfg = yaml.safe_load(
                 source_paths["primary_config"].read_text(encoding="utf-8")
+            )
+            render_payloads = {
+                "primary": primary,
+                "claim_gate": claim,
+                "repeated": repeated,
+                "ablation": ablation,
+                "prior_signals": prior_signals,
+                "adaptive": adaptive,
+            }
+            require_render_source_provenance(
+                render_payloads,
+                source_paths,
+                source_paths["primary_config"],
             )
             macros = build_macros(
                 primary,

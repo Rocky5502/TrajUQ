@@ -87,6 +87,8 @@ def repeated_seed_contract(
     metadata = {
         "model_revision": str(args.revision),
         "temperature": float(args.temperature),
+        "requested_device": str(getattr(args, "device", "cuda")),
+        "requested_dtype": str(getattr(args, "dtype", "bfloat16")),
     }
     if args.adapter == "llada":
         metadata.update(
@@ -341,6 +343,8 @@ def run_repeated_generation(
         "adapter": args.adapter,
         "model": args.model,
         "model_revision": args.revision,
+        "requested_device": str(args.device),
+        "requested_dtype": str(args.dtype),
         "input": args.input,
         "input_sha256": sha256_file(input_path),
         "seeds": args.seeds,

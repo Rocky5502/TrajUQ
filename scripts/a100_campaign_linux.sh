@@ -9,6 +9,15 @@ fail() {
   exit 1
 }
 
+export_progress_handoff() {
+  local label="$1"
+  "$PYTHON" scripts/project_status.py
+  "$PYTHON" scripts/export_research_handoff.py \
+    --output "dist/trajuq_${label}_handoff.zip" \
+    --skip-status-refresh
+  printf '[TrajUQ] progress handoff: dist/trajuq_%s_handoff.zip\n' "$label"
+}
+
 require_clean_frozen_checkout() {
   "$PYTHON" scripts/validate_frozen_preprimary.py
   "$PYTHON" - <<'PY'
@@ -195,6 +204,7 @@ run_primary() {
   prepare_primary_and_estimate
   "$PYTHON" scripts/execute_primary_plan.py
   "$PYTHON" scripts/execute_primary_plan.py --execute
+  export_progress_handoff "primary"
 }
 
 run_analysis() {
@@ -202,6 +212,7 @@ run_analysis() {
   "$PYTHON" scripts/plan_primary_analysis.py
   "$PYTHON" scripts/execute_primary_analysis.py
   "$PYTHON" scripts/execute_primary_analysis.py --execute
+  export_progress_handoff "analysis"
 }
 
 run_rq2() {
@@ -209,6 +220,7 @@ run_rq2() {
   "$PYTHON" scripts/plan_repeated_sampling.py
   "$PYTHON" scripts/execute_repeated_sampling.py
   "$PYTHON" scripts/execute_repeated_sampling.py --execute
+  export_progress_handoff "rq2"
 }
 
 run_rq3() {
@@ -216,13 +228,14 @@ run_rq3() {
   "$PYTHON" scripts/plan_adaptive_runs.py
   "$PYTHON" scripts/execute_adaptive_plan.py
   "$PYTHON" scripts/execute_adaptive_plan.py --execute
+  export_progress_handoff "rq3"
 }
 
 run_paper_render() {
   "$PYTHON" scripts/render_results_tex.py
   "$PYTHON" scripts/render_paper_result_figures.py
   "$PYTHON" scripts/audit_paper.py
-  "$PYTHON" scripts/project_status.py
+  export_progress_handoff "paper"
   printf '%s\n'     "[TrajUQ] Result rendering complete."     "[TrajUQ] Commit the paper-side changes before submission_readiness.py."
 }
 
@@ -236,6 +249,7 @@ case "$STAGE" in
     bash scripts/pilot_linux.sh prepare
     bash scripts/pilot_linux.sh parity
     bash scripts/pilot_linux.sh pilot
+    export_progress_handoff "pilot"
     printf '%s\n'       "[TrajUQ] STOP FOR HUMAN REVIEW."       "Inspect results/llada_gsm8k_pilot50_trace_review.md."       "Record the manual pilot attestation only after actual inspection."
     ;;
 
@@ -245,17 +259,19 @@ case "$STAGE" in
     bash scripts/parity_remaining_linux.sh all
     bash scripts/math500_gate_linux.sh prepare
     bash scripts/math500_gate_linux.sh pilot
+    export_progress_handoff "parity_math"
     printf '%s\n'       "[TrajUQ] STOP FOR HUMAN MATH-500 REVIEW."       "Inspect all 25 records in results/math500_scorer_review.md."       "Record the scorer attestation only after actual inspection."
     ;;
 
   readiness)
     require_clean_frozen_checkout
     "$PYTHON" scripts/primary_readiness.py
-    "$PYTHON" scripts/project_status.py
+    export_progress_handoff "readiness"
     ;;
 
   estimate)
     prepare_primary_and_estimate
+    export_progress_handoff "estimate"
     ;;
 
   primary)

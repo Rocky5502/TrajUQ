@@ -86,6 +86,100 @@ def review_sheet_metadata(path: Path) -> dict[str, str]:
     return found
 
 
+def collect_readiness_source_bindings(
+    primary_config: str,
+    pilot_quality_path: str,
+    manual_gate_path: str,
+    parity_paths: dict[str, str],
+    math500_audit_path: str,
+    math500_manual_path: str,
+    cpu_verification_path: str,
+    revision_ledger_path: str,
+    gated_access_path: str,
+) -> tuple[list[dict[str, str]], list[str]]:
+    candidates: set[Path] = set()
+
+    def add(value: object) -> None:
+        text = str(value or "").strip()
+        if text:
+            candidates.add(Path(text))
+
+    def read_optional_json(path_text: str) -> dict:
+        path = Path(path_text)
+        if not path.is_file():
+            return {}
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+    for path_text in (
+        primary_config,
+        pilot_quality_path,
+        manual_gate_path,
+        math500_audit_path,
+        math500_manual_path,
+        cpu_verification_path,
+        revision_ledger_path,
+        gated_access_path,
+        *parity_paths.values(),
+    ):
+        add(path_text)
+
+    ledger = read_optional_json(revision_ledger_path)
+    add(ledger.get("dataset_manifest"))
+    for path_text in ledger.get("frozen_model_configs", {}).values():
+        add(path_text)
+
+    quality = read_optional_json(pilot_quality_path)
+    for key in ("raw", "scored"):
+        value = quality.get(key)
+        add(value)
+        if value:
+            artifact = Path(str(value))
+            add(artifact.with_suffix(artifact.suffix + ".audit.json"))
+
+    manual = read_optional_json(manual_gate_path)
+    for key in ("review_sheet", "parity_artifact", "pilot_quality"):
+        add(manual.get(key))
+
+    math_manual = read_optional_json(math500_manual_path)
+    for key in (
+        "review_sheet",
+        "automatic_audit",
+        "review_scored_artifact",
+        "review_input",
+    ):
+        add(math_manual.get(key))
+    math_scored = str(math_manual.get("review_scored_artifact", "")).strip()
+    if math_scored:
+        artifact = Path(math_scored)
+        add(artifact.with_suffix(artifact.suffix + ".audit.json"))
+
+    for path_text in parity_paths.values():
+        parity = read_optional_json(path_text)
+        for key in ("reference", "instrumented"):
+            add(parity.get(key))
+        instrumented = str(parity.get("instrumented", "")).strip()
+        if instrumented:
+            artifact = Path(instrumented)
+            add(artifact.with_suffix(artifact.suffix + ".audit.json"))
+
+    bindings: list[dict[str, str]] = []
+    missing: list[str] = []
+    for path in sorted(candidates, key=lambda item: str(item)):
+        if not path.is_file():
+            missing.append(str(path))
+            continue
+        bindings.append(
+            {
+                "path": str(path),
+                "sha256": sha256_file(path),
+            }
+        )
+    return bindings, missing
+
+
 def parse_override(value: str) -> tuple[str, str]:
     if "=" not in value:
         raise argparse.ArgumentTypeError("--parity must use MODEL=PATH")
@@ -638,6 +732,24 @@ def evaluate_readiness(
             failures.append(f"{model} parity artifact unavailable/invalid: {exc}")
 
     checks["model_parity"] = parity_checks
+
+    source_bindings, missing_bound_sources = collect_readiness_source_bindings(
+        primary_config,
+        pilot_quality_path,
+        manual_gate_path,
+        parity_paths,
+        math500_audit_path,
+        math500_manual_path,
+        cpu_verification_path,
+        revision_ledger_path,
+        gated_access_path,
+    )
+    if missing_bound_sources:
+        failures.append(
+            "readiness source binding is incomplete; missing files: "
+            + ", ".join(missing_bound_sources)
+        )
+
     return {
         "protocol": "trajuq_primary_readiness_v2",
         "status": "PASS" if not failures else "FAIL",
@@ -645,6 +757,7 @@ def evaluate_readiness(
         "primary_models": primary_models,
         "primary_datasets": primary_datasets,
         "experiment_git_commit": experiment_commit,
+        "source_bindings": source_bindings,
         "checks": checks,
         "failures": failures,
         "next_step": (

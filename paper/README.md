@@ -72,21 +72,23 @@ must not be linked from the anonymous review PDF.
 
 ## Final repository-side submission gate
 
-After all frozen results are rendered, first build and inspect the exact Overleaf
-package that will be uploaded:
-
-    python scripts/build_overleaf_package.py
-
-Then run:
+After all frozen results are rendered, the final repository gate builds and
+records both anonymous upload archives:
 
     python scripts/submission_readiness.py
 
-This requires every **required** project execution gate to be PASS, verifies
+The gate requires every **required** project execution gate to be PASS, verifies
 that the result-render and result-figure manifests still hash to their exact
 source artifacts/outputs, runs the manuscript audit in submission-ready mode,
-and rebuilds the
-deterministic anonymous software supplement. It records the supplement SHA-256
-in `results/submission_readiness.json`.
+builds the Overleaf source ZIP with:
 
-The remaining external checks are the official ACL/ARR PDF compile, pubcheck,
-page/anonymity inspection, and submission-form upload.
+    python scripts/build_overleaf_package.py --submission-ready
+
+and rebuilds the deterministic anonymous software supplement. The submission
+JSON records SHA-256 values for **both** archives. Submission-ready Overleaf
+packaging includes only the three result PDFs named by the validated figure
+manifest; stale or unlisted generated PDFs are excluded.
+
+The remaining external checks are compiling the exact recorded Overleaf ZIP,
+running ACL pubcheck, inspecting page/anonymity constraints, and uploading the
+exact archives whose hashes are recorded in `results/submission_readiness.json`.

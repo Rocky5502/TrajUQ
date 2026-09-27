@@ -58,6 +58,18 @@ if [[ "$SKIP_INSTALL" != "1" ]]; then
     "$PYTHON" -m pip install -e ".[dev,math,models]"
 fi
 
+run_step "A100 shell syntax verification" \
+  bash -n \
+    scripts/freeze_preprimary.sh \
+    scripts/a100_campaign_linux.sh \
+    scripts/a100_72h_autopilot.sh
+
+run_step "Repeated runner standalone import smoke" \
+  "$PYTHON" scripts/run_repeated_samples.py --help
+
+run_step "Resident generator standalone import smoke" \
+  "$PYTHON" scripts/resident_generate_plan.py --help
+
 run_step "Clean-commit CPU verification" \
   "$PYTHON" scripts/verify_cpu.py \
     --output results/cpu_verification.json \

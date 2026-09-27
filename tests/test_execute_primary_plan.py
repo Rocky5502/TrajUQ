@@ -222,6 +222,8 @@ def frozen_llada_row(example_id: str, prompt: str, source: Path) -> dict:
         "metadata": {
             "source_input": str(source),
             "model_revision": "model-sha",
+            "source_git_commit": "frozen-commit",
+            "source_git_clean": True,
         },
     }
 
@@ -249,6 +251,16 @@ def test_partial_raw_resume_rejects_wrong_revision_or_sampler_settings(tmp_path)
     row["generation"]["metadata"]["temperature"] = 0.2
     write_artifact(raw, json.dumps(row) + "\n")
     assert artifact_id_state(raw, spec) == "INVALID"
+
+
+def test_partial_raw_resume_rejects_other_source_commit(tmp_path):
+    spec, source = frozen_llada_spec(tmp_path)
+    raw = Path(spec["raw_output"])
+    row = frozen_llada_row("a", "first prompt", source)
+    row["metadata"]["source_git_commit"] = "old-commit"
+    write_artifact(raw, json.dumps(row) + "\n")
+
+    assert artifact_id_state(raw, spec, "frozen-commit") == "INVALID"
 
 
 def test_partial_raw_resume_rejects_wrong_prompt_binding(tmp_path):

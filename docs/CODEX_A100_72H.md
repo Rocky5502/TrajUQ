@@ -47,6 +47,10 @@ cd TrajUQ
 git checkout <EXACT_COMMIT_SELECTED_FOR_FREEZE>
 git status --porcelain
 
+# Start the single paid-rental deadline immediately. This uses only Python stdlib.
+python3.11 scripts/start_a100_rental_clock.py
+cat results/a100_rental_clock.json
+
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
@@ -91,12 +95,19 @@ do not weaken it.
 
 ## 72-hour autonomous execution
 
-Once readiness passes:
+Once readiness passes, launch the supervisor. It inherits the immutable
+deadline created at first server connection; it does **not** restart a new
+72-hour timer:
 
 ```bash
 BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
+
+After its estimate stage, the supervisor compares projected full-scope GPU time
+with the rental hours still remaining. If the mean projection no longer fits,
+it stops before scale. If the mean fits but the conservative P90 planning sum
+does not, it logs a warning and continues in the frozen priority order.
 
 The supervisor performs:
 

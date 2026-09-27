@@ -361,6 +361,11 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
         "git_status_porcelain",
         lambda: "",
     )
+    monkeypatch.setattr(
+        execute_repeated_sampling,
+        "validate_analysis_plan_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
 
     assert validate_plan_provenance(plan) == []
 
@@ -504,3 +509,48 @@ def test_repeated_macro_rejects_consumed_source_drift(tmp_path):
     assert macro_state(plan) == "COMPLETE"
     repeated.write_text('{"example_id":"changed"}\n', encoding="utf-8")
     assert macro_state(plan) == "INVALID"
+
+
+def test_repeated_provenance_surfaces_nested_analysis_failure(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "e" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    analysis_plan = tmp_path / "analysis_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    for path in (primary_plan, analysis_plan):
+        path.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+
+    plan = {
+        "protocol": "trajuq_repeated_sampling_plan_v2",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_analysis_plan": str(analysis_plan),
+        "primary_analysis_plan_sha256": _sha256(analysis_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cells": [],
+    }
+    monkeypatch.setattr(execute_repeated_sampling, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_repeated_sampling,
+        "git_status_porcelain",
+        lambda: "",
+    )
+    monkeypatch.setattr(
+        execute_repeated_sampling,
+        "validate_analysis_plan_provenance",
+        lambda payload, *, require_current_commit=True: [
+            "primary plan provenance: primary readiness bound source hash drifted"
+        ],
+    )
+
+    failures = validate_plan_provenance(plan)
+    assert any(
+        "primary analysis provenance: primary plan provenance" in item
+        for item in failures
+    )

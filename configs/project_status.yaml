@@ -230,6 +230,14 @@ implementation:
       - tests/test_a100_campaign_contract.py
       - tests/test_pilot_script_contract.py
       - scripts/export_research_handoff.py
+  - id: a100_machine_preflight
+    label: "Fail-fast single-A100/80GB/bfloat16 host suitability gate"
+    state: DONE
+    evidence:
+      - scripts/verify_a100_machine.py
+      - scripts/pilot_linux.sh
+      - scripts/a100_campaign_linux.sh
+      - tests/test_a100_machine_preflight_contract.py
   - id: a100_rental_clock
     label: "Immutable full paid-rental deadline from first server connection"
     state: DONE

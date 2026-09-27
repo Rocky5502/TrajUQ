@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import pytest
 
 from scripts.render_results_tex import (
@@ -261,3 +264,18 @@ def test_result_renderer_rejects_incomplete_prior_signal_matrix():
             payload,
             adaptive(),
         )
+
+
+def test_render_entrypoints_support_direct_execution():
+    for script in (
+        "scripts/render_results_tex.py",
+        "scripts/render_paper_result_figures.py",
+    ):
+        completed = subprocess.run(
+            [sys.executable, script, "--help"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stdout

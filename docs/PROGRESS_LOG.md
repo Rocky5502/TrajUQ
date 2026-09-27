@@ -101,6 +101,22 @@ their expected `results/*` artifacts exist and pass inspection.
   deterministic paper rendering.
 - Result figures are also provenance-gated before reuse.
 
+### Pre-GPU rerun/evidence hardening (2026-09-27)
+
+- Fixed the Linux Dream parity wrapper so an existing stale/FAIL
+  `results/dream_parity.json` is treated as evidence that must be inspected,
+  not silently replaced. The wrapper's non-overwrite set now matches SDAR and
+  LLaDA behavior, with a regression test for the exact Dream guard.
+- Added `trajuq.io.write_json_immutable`: deterministic JSON artifacts are
+  created once, byte-identical reruns are preserved without rewriting, and any
+  differing existing artifact raises instead of being overwritten.
+- Wired the immutable writer into all four frozen planners (primary matrix,
+  primary analysis, repeated sampling, adaptive compute), including their FAIL
+  branches. This prevents a rerun from destroying an earlier frozen plan while
+  still allowing exact deterministic resumes.
+- Added direct tests for create/preserve/reject semantics and a contract test
+  requiring every frozen planner to use the immutable writer.
+
 ### Hosted CI status
 
 GitHub Actions remains infrastructure-blocked before executable runner steps.

@@ -44,7 +44,8 @@ Your job is to **continue the existing project**, not restart or redesign it.
   `ubuntu24.04ubuntu24_cuda13.0` (Ubuntu 24.04 / CUDA 13.0), with one
   NVIDIA A100-SXM4-80GB GPU and 48 GB system memory.
 - `paper/main.tex` contains an **Experimental Environment** subsection with
-  the scientific compute description.
+  the scientific compute description; `paper/appendix.tex` expands the resource
+  accounting/provenance description.
 - Environment availability is not evidence of experiment completion. Only
   inspected, frozen `results/*` artifacts may move execution gates to PASS.
 - Prefer the guarded A100/Linux campaign for expensive execution when available;

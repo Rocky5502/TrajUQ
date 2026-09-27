@@ -8,7 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from trajuq.io import read_jsonl
+from scripts.run_generation import build_adapter, generate_record
+from trajuq.io import append_jsonl, existing_ids, read_jsonl
 
 
 DEFAULT_SEEDS = [2027, 2028, 2029, 2030, 2031]
@@ -174,6 +175,30 @@ def artifact_generation_contract_matches(path: Path, expected: dict) -> bool:
     return True
 
 
+def resumable_partial_artifact(
+    path: Path,
+    expected_ids: list[str],
+    expected_contract: dict,
+) -> bool:
+    """Accept only a clean contract-matching prefix for interruption recovery."""
+
+    if not path.exists():
+        return False
+    audit = path.with_suffix(path.suffix + ".audit.json")
+    if audit.exists():
+        return False
+    try:
+        rows = list(read_jsonl(path))
+    except Exception:
+        return False
+    if not rows or len(rows) >= len(expected_ids):
+        return False
+    ids = [str(row.get("example_id", "")) for row in rows]
+    if ids != expected_ids[: len(ids)] or len(ids) != len(set(ids)):
+        return False
+    return artifact_generation_contract_matches(path, expected_contract)
+
+
 def verified_raw_artifact(
     path: Path,
     expected_commit: str | None,
@@ -227,7 +252,21 @@ def main() -> None:
     parser.add_argument("--sdar-top-k", type=int, default=0)
     parser.add_argument("--sdar-remasking-strategy", default="low_confidence_dynamic")
     parser.add_argument("--sdar-confidence-threshold", type=float, default=0.85)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--dtype", default="bfloat16")
+    parser.add_argument("--mask-id", type=int, default=None)
+    parser.add_argument("--sdar-temperature", type=float, default=None)
+    parser.add_argument("--sdar-top-p", type=float, default=None)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--resume-partial",
+        action="store_true",
+        help=(
+            "Resume an interrupted seed only when its existing JSONL is an "
+            "exact contract-matching prefix of the frozen input and has no "
+            "audit artifact yet. The completed seed is still audited normally."
+        ),
+    )
     parser.add_argument(
         "--resume-verified",
         action="store_true",
@@ -268,6 +307,26 @@ def main() -> None:
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    rows = list(read_jsonl(input_path))
+    if args.limit is not None:
+        rows = rows[: args.limit]
+
+    resident_adapter = build_adapter(
+        args.adapter,
+        args.model,
+        args.device,
+        args.dtype,
+        args.mask_id,
+        args.revision,
+    )
+    torch = None
+    try:
+        import torch as _torch
+
+        torch = _torch
+    except ImportError:
+        pass
 
     manifest = {
         "protocol": "repeated_sampling_v1",
@@ -324,71 +383,50 @@ def main() -> None:
                 }
             )
             continue
-        if output.exists() and not args.overwrite:
-            raise SystemExit(
-                f"Refusing to overwrite unverified {output}. "
-                "Inspect/delete the artifact or use --overwrite intentionally."
-            )
+        contract = repeated_seed_contract(args, seed, commit)
+        resumed = False
         if output.exists():
-            output.unlink()
+            if args.resume_partial and resumable_partial_artifact(
+                output,
+                expected_ids,
+                contract,
+            ):
+                resumed = True
+                print(f"[TrajUQ repeated] resuming validated partial seed -> {output}")
+            elif not args.overwrite:
+                raise SystemExit(
+                    f"Refusing to overwrite unverified {output}. "
+                    "Use --resume-partial only for a validated prefix, inspect/delete "
+                    "the artifact, or use --overwrite intentionally."
+                )
+            else:
+                output.unlink()
 
-        cmd = [
-            sys.executable,
-            "scripts/run_generation.py",
-            "--adapter",
-            args.adapter,
-            "--model",
-            args.model,
-            "--revision",
-            args.revision,
-            "--input",
-            args.input,
-            "--output",
-            str(output),
-            "--seed",
-            str(seed),
-            "--temperature",
-            str(args.temperature),
-            "--top-p",
-            str(args.top_p),
-            "--steps",
-            str(args.steps),
-            "--max-new-tokens",
-            str(args.max_new_tokens),
-            "--block-length",
-            str(args.block_length),
-        ]
-        if args.limit is not None:
-            cmd += ["--limit", str(args.limit)]
+        done = existing_ids(output)
+        for index, row in enumerate(rows):
+            example_id = str(row["id"])
+            if example_id in done:
+                continue
+            record = generate_record(
+                resident_adapter,
+                args,
+                row,
+                seed=seed,
+                source_git_commit=commit,
+                source_git_clean=clean,
+                torch=torch,
+            )
+            append_jsonl(output, record.to_dict())
+            done.add(example_id)
+            print(
+                f"[TrajUQ repeated] seed={seed} "
+                f"{index + 1}/{len(rows)} wrote {example_id}"
+            )
 
-        if args.adapter == "llada":
-            cmd += [
-                "--llada-cfg-scale",
-                str(args.llada_cfg_scale),
-                "--llada-remasking",
-                args.llada_remasking,
-            ]
-        elif args.adapter == "dream":
-            cmd += [
-                "--dream-alg",
-                args.dream_alg,
-                "--dream-alg-temp",
-                str(args.dream_alg_temp),
-            ]
-        elif args.adapter == "sdar":
-            cmd += [
-                "--sdar-denoising-steps",
-                str(args.sdar_denoising_steps),
-                "--sdar-top-k",
-                str(args.sdar_top_k),
-                "--sdar-remasking-strategy",
-                args.sdar_remasking_strategy,
-                "--sdar-confidence-threshold",
-                str(args.sdar_confidence_threshold),
-            ]
-
-        print("[TrajUQ repeated]", " ".join(cmd))
-        subprocess.run(cmd, check=True)
+        if not artifact_ids_complete(output, expected_ids):
+            raise SystemExit(
+                f"Repeated seed {seed} did not cover the frozen input exactly."
+            )
         subprocess.run(
             [
                 sys.executable,
@@ -402,7 +440,11 @@ def main() -> None:
             check=True,
         )
         manifest["runs"].append(
-            {"seed": seed, "path": str(output), "status": "GENERATED"}
+            {
+                "seed": seed,
+                "path": str(output),
+                "status": "RESUMED_AND_GENERATED" if resumed else "GENERATED",
+            }
         )
 
     manifest_path = out_dir / "manifest.json"

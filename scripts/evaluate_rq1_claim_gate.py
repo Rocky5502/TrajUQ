@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from trajuq.provenance import analysis_provenance
+
 
 def evaluate_gate(macro_payload: dict, primary_cfg: dict) -> dict:
     gate = primary_cfg["statistics"]["rq1_claim_gate"]
@@ -77,6 +79,12 @@ def main() -> None:
     macro = json.loads(Path(args.macro).read_text(encoding="utf-8"))
     cfg = yaml.safe_load(Path(args.primary_config).read_text(encoding="utf-8"))
     payload = evaluate_gate(macro, cfg)
+    payload["provenance"] = analysis_provenance(
+        {
+            "macro_primary": args.macro,
+            "primary_config": args.primary_config,
+        }
+    )
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

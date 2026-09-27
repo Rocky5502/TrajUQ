@@ -50,6 +50,48 @@ def git_status_porcelain() -> str | None:
         return None
 
 
+def validate_readiness_bound_sources(readiness_path: Path) -> list[str]:
+    failures: list[str] = []
+    if not readiness_path.is_file():
+        return [f"primary readiness artifact is missing: {readiness_path}"]
+    try:
+        readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"primary readiness artifact is invalid: {exc}"]
+
+    bindings = readiness.get("source_bindings")
+    if not isinstance(bindings, list) or not bindings:
+        return ["primary readiness has no source-binding manifest"]
+
+    seen: set[str] = set()
+    for item in bindings:
+        if not isinstance(item, dict):
+            failures.append("primary readiness source binding is malformed")
+            continue
+        path_text = str(item.get("path", "")).strip()
+        expected_sha = str(item.get("sha256", "")).strip()
+        if not path_text or not expected_sha:
+            failures.append("primary readiness source binding lacks path/SHA-256")
+            continue
+        if path_text in seen:
+            failures.append(
+                f"primary readiness source binding duplicates path: {path_text}"
+            )
+            continue
+        seen.add(path_text)
+        path = Path(path_text)
+        if not path.is_file():
+            failures.append(
+                f"primary readiness bound source is missing: {path_text}"
+            )
+            continue
+        if sha256_file(path) != expected_sha:
+            failures.append(
+                f"primary readiness bound source hash drifted: {path_text}"
+            )
+    return failures
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -87,6 +129,9 @@ def validate_plan_provenance(
             failures.append(f"primary plan missing bound {key} artifact")
         elif sha256_file(path) != expected_hash:
             failures.append(f"{key} hash differs from primary plan")
+
+    readiness_path = Path(str(plan.get("readiness", "")))
+    failures.extend(validate_readiness_bound_sources(readiness_path))
 
     for adapter, spec in plan.get("model_configs", {}).items():
         path = Path(str(spec.get("path", "")))

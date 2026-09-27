@@ -4,12 +4,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import yaml
 
-from scripts.render_results_tex import require_bound_result_provenance
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.render_results_tex import require_bound_result_provenance  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:

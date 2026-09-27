@@ -167,9 +167,9 @@ and writes `results/revision_ledger.json`,
 hash-bound configs in `results/frozen_models/`. The CPU artifact, revision
 ledger, gated-access proof, and six-dataset contract proof must record the same
 clean git commit. Both data preflights bind the revision-ledger SHA-256.
-`dataset_contracts.json` streams one exact-revision row from each primary
-dataset, exercises the frozen normalizer/scorer contract, and stores no
-benchmark row content.
+`dataset_contracts.json` streams four exact-revision rows from each primary
+dataset, exercises the frozen normalizer/scorer contract on every sampled row,
+stores no benchmark row content, and is accepted only when all four rows pass.
 
 Linux/macOS guarded equivalent:
 

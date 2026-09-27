@@ -217,3 +217,10 @@ def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
     assert "scripts/render_results_tex.py" in text
     assert "scripts/render_paper_result_figures.py" in text
     assert "all-after-readiness" in text
+
+
+def test_wrappers_use_shared_frozen_preprimary_validator():
+    text = Path("scripts/pilot_windows.ps1").read_text(encoding="utf-8")
+    assert "scripts/validate_frozen_preprimary.py" in text
+    text = Path("scripts/pilot_linux.sh").read_text(encoding="utf-8")
+    assert "scripts/validate_frozen_preprimary.py" in text

@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from trajuq.data_integrity import audit_split_pair
+from trajuq.datasets import SPLIT_SELECTION_VERSION
 from trajuq.io import write_json_immutable
 
 
@@ -144,10 +145,43 @@ def validate_prepared_split_identity(
         "source_split",
         "calibration_fraction",
         "split_seed",
+        "pre_generation_cap",
     ):
         if meta.get(key) != manifest_spec.get(key):
             failures.append(
                 f"{dataset}: prepared split {key} differs from frozen dataset manifest"
+            )
+
+    if meta.get("selection_version") != SPLIT_SELECTION_VERSION:
+        failures.append(
+            f"{dataset}: prepared split selection version differs from "
+            f"{SPLIT_SELECTION_VERSION}"
+        )
+
+    cap_spec = dict(manifest_spec.get("pre_generation_cap") or {})
+    source_counts = dict(meta.get("source_counts") or {})
+    for role, manifest_key, count_key, source_key in (
+        ("calibration", "calibration_max", "n_calibration", "calibration_before_cap"),
+        ("test", "test_max", "n_test", "test_before_cap"),
+    ):
+        cap = cap_spec.get(manifest_key)
+        observed = int(meta.get(count_key, 0))
+        source_count = int(source_counts.get(source_key, observed))
+        if source_count < observed:
+            failures.append(
+                f"{dataset}: {role} source count is smaller than prepared count"
+            )
+        if cap is not None:
+            cap = int(cap)
+            expected = min(source_count, cap)
+            if observed != expected:
+                failures.append(
+                    f"{dataset}: {role} prepared count {observed} does not match "
+                    f"frozen cap expectation {expected}"
+                )
+        elif observed != source_count:
+            failures.append(
+                f"{dataset}: uncapped {role} partition was unexpectedly reduced"
             )
 
     return failures

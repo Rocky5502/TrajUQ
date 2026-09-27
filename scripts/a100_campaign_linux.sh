@@ -120,6 +120,8 @@ head = subprocess.check_output(
     text=True,
 ).strip()
 artifact_commit = payload.get("git_commit")
+if artifact_commit is None:
+    artifact_commit = payload.get("experiment_git_commit")
 if artifact_commit is not None and str(artifact_commit) != head:
     raise SystemExit(
         f"{path}: artifact commit {artifact_commit!r} != current HEAD {head!r}"
@@ -133,6 +135,7 @@ PY
 
 require_primary_readiness() {
   require_clean_frozen_checkout
+  "$PYTHON" scripts/primary_readiness.py
   require_json_pass     "results/primary_readiness.json"     "trajuq_primary_readiness_v2"
 }
 

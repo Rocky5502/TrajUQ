@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any
+from typing import Any, Iterable
 
 
 NORMALIZER_VERSION = "trajuq-prompts-v2"
+SPLIT_SELECTION_VERSION = "sha256_id_rank_v1"
 
 
 def mc_prompt(question: str, choices: list[str], labels: list[str] | None = None) -> str:
@@ -131,6 +132,48 @@ def normalize_row(name: str, row: dict[str, Any], idx: int) -> dict[str, Any]:
 def split_bucket(dataset: str, item_id: str, seed: str = "2027") -> float:
     digest = hashlib.sha256(f"{seed}:{dataset}:{item_id}".encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") / float(2**64)
+
+
+def deterministic_cap_rows(
+    rows: Iterable[dict[str, Any]],
+    *,
+    dataset: str,
+    role: str,
+    seed: str,
+    max_examples: int | None,
+) -> list[dict[str, Any]]:
+    """Select an outcome-free deterministic subset by namespaced example ID.
+
+    The selection key depends only on the declared seed, dataset, partition role,
+    and example ID. References, correctness labels, prompts, and model outputs do
+    not enter selection. Rows are returned in deterministic hash-rank order so
+    the same pinned dataset revision produces the same capped partition.
+    """
+
+    materialized = list(rows)
+    if max_examples is None:
+        return materialized
+    try:
+        cap = int(max_examples)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("max_examples must be a positive integer or null") from exc
+    if cap <= 0:
+        raise ValueError("max_examples must be a positive integer or null")
+    if len(materialized) <= cap:
+        return materialized
+
+    ranked: list[tuple[bytes, str, dict[str, Any]]] = []
+    for row in materialized:
+        item_id = str(row.get("id", "")).strip()
+        if not item_id:
+            raise ValueError("deterministic split capping requires non-empty IDs")
+        key = hashlib.sha256(
+            f"{seed}:{dataset}:{role}:{item_id}".encode("utf-8")
+        ).digest()
+        ranked.append((key, item_id, row))
+
+    ranked.sort(key=lambda item: (item[0], item[1]))
+    return [row for _, _, row in ranked[:cap]]
 
 
 def namespace_record_id(dataset: str, source_split: str, item_id: str) -> str:

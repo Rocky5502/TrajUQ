@@ -180,7 +180,7 @@ def resumable_partial_artifact(
     expected_ids: list[str],
     expected_contract: dict,
 ) -> bool:
-    """Accept only a clean contract-matching prefix for interruption recovery."""
+    """Accept only a contract-matching unaudited prefix for interruption recovery."""
 
     if not path.exists():
         return False
@@ -191,7 +191,7 @@ def resumable_partial_artifact(
         rows = list(read_jsonl(path))
     except Exception:
         return False
-    if not rows or len(rows) >= len(expected_ids):
+    if not rows or len(rows) > len(expected_ids):
         return False
     ids = [str(row.get("example_id", "")) for row in rows]
     if ids != expected_ids[: len(ids)] or len(ids) != len(set(ids)):
@@ -263,8 +263,9 @@ def main() -> None:
         action="store_true",
         help=(
             "Resume an interrupted seed only when its existing JSONL is an "
-            "exact contract-matching prefix of the frozen input and has no "
-            "audit artifact yet. The completed seed is still audited normally."
+            "exact contract-matching prefix (including a complete-but-unaudited "
+            "prefix) of the frozen input and has no audit artifact yet. The "
+            "completed seed is still audited normally."
         ),
     )
     parser.add_argument(

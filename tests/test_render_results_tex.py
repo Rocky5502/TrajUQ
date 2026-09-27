@@ -383,3 +383,6 @@ def test_result_artifact_map_matches_eight_source_renderer_contract():
     assert "macro_calibration_sensitivity.json" in text
     assert "trajuq_isotonic_calibration_sensitivity_macro_v1" in text
     assert "tab:calibration-sensitivity" in text
+    appendix = Path("paper/appendix.tex").read_text(encoding="utf-8")
+    assert "Improvement (logistic $-$ isotonic)" in appendix
+    assert "$\\Delta$ (isotonic $-$ logistic)" not in appendix

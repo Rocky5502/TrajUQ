@@ -14,9 +14,10 @@ their expected `results/*` artifacts exist and pass inspection.
 - No empirical paper number has been invented or promoted from repository code.
 - The first required runtime milestone remains the clean pre-primary freeze:
   `results/cpu_verification.json` PASS,
-  `results/revision_ledger.json` protocol-v2 PASS, and
-  `results/gated_dataset_access.json` protocol-v1 PASS at the same clean
-  commit, with gated access bound to the exact revision-ledger SHA-256.
+  `results/revision_ledger.json` protocol-v2 PASS,
+  `results/gated_dataset_access.json` protocol-v1 PASS, and
+  `results/dataset_contracts.json` protocol-v1 PASS at the same clean commit.
+  Both data preflights are bound to the exact revision-ledger SHA-256.
 
 ### Continuity and pre-primary hardening
 
@@ -44,6 +45,11 @@ their expected `results/*` artifacts exist and pass inspection.
 
 ### Frozen execution provenance
 
+- Added `trajuq_dataset_contracts_v1`: the freeze streams one row from each
+  exact-revision primary dataset, runs the real frozen normalizer and a
+  constructed-correct scorer smoke, records only schema/provenance/status, and
+  stores no benchmark row content. Primary readiness and the A100 campaign
+  require the complete six-dataset same-commit ledger-bound PASS.
 - Primary planning now re-hashes every gitignored `results/frozen_models/*.yaml`
   file and requires both its path and SHA-256 to match revision-ledger v2. A
   post-freeze change to model generation settings therefore blocks the 18-cell

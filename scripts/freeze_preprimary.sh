@@ -146,6 +146,8 @@ if failures:
     raise SystemExit("Pre-primary freeze validation failed:\n- " + "\n- ".join(failures))
 PY
 
+run_step "Validate complete frozen pre-primary evidence"   "$PYTHON" scripts/validate_frozen_preprimary.py
+
 dirty_after="$(git status --porcelain)"
 if [[ -n "$dirty_after" ]]; then
   printf '%s\n' "Tracked worktree changed during the pre-primary freeze. Do not trust the frozen artifacts." >&2

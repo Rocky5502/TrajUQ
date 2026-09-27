@@ -7,7 +7,7 @@ def test_shell_preprimary_freeze_matches_windows_integrity_contract():
     assert "set -euo pipefail" in text
     assert "git status --porcelain" in text
     assert "git rev-parse HEAD" in text
-    assert '".[dev,math,models]"' in text
+    assert '".[dev,math,models,analysis]"' in text
     assert "bash -n" in text
     assert "scripts/a100_campaign_linux.sh" in text
     assert "scripts/a100_72h_autopilot.sh" in text

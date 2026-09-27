@@ -48,10 +48,10 @@ git checkout <EXACT_COMMIT_SELECTED_FOR_FREEZE>
 git status --porcelain
 
 # Start the single paid-rental deadline immediately. This uses only Python stdlib.
-python3.11 scripts/start_a100_rental_clock.py
+python3 scripts/start_a100_rental_clock.py
 cat results/a100_rental_clock.json
 
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e ".[dev,math,models,analysis]"

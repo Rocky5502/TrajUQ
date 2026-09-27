@@ -17,13 +17,20 @@ from pathlib import Path
 
 ledger_path = Path("results/revision_ledger.json")
 gated_path = Path("results/gated_dataset_access.json")
-if not ledger_path.exists() or not gated_path.exists():
+contracts_path = Path("results/dataset_contracts.json")
+if (
+    not ledger_path.exists()
+    or not gated_path.exists()
+    or not contracts_path.exists()
+):
     raise SystemExit(
-        "Missing revision-ledger/gated-access evidence; freeze pre-primary first."
+        "Missing revision-ledger/gated-access/dataset-contract evidence; "
+        "freeze pre-primary first."
     )
 
 ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
 gated = json.loads(gated_path.read_text(encoding="utf-8"))
+contracts = json.loads(contracts_path.read_text(encoding="utf-8"))
 if ledger.get("protocol") != "trajuq_revision_ledger_v2":
     raise SystemExit("Revision ledger protocol is not v2.")
 if ledger.get("status") != "PASS":
@@ -57,6 +64,20 @@ if (
 ):
     raise SystemExit(
         "Gated dataset access is not a clean revision-bound PASS for this checkout."
+    )
+
+if (
+    contracts.get("protocol") != "trajuq_dataset_contracts_v1"
+    or contracts.get("status") != "PASS"
+    or contracts.get("git_clean") is not True
+    or contracts.get("git_commit") != head
+    or contracts.get("revision_ledger_sha256") != ledger_hash
+    or set(contracts.get("observed_datasets", []))
+       != set(contracts.get("expected_datasets", []))
+):
+    raise SystemExit(
+        "Dataset normalizer/scorer contracts are not a clean complete "
+        "revision-bound PASS for this checkout."
     )
 
 print(f"[TrajUQ] frozen checkout PASS: {head}")

@@ -18,7 +18,8 @@ bandwidth. The operational budget is **72 continuous hours**. This profile is
 sufficient to load and execute each frozen primary checkpoint one at a time;
 TrajUQ does not require multi-GPU model parallelism or training.
 
-The current generation runner is intentionally single-record and single-GPU.
+Generation remains single-GPU, but the A100 campaign uses resident checkpoint
+execution to avoid needless reloads across frozen jobs.
 Therefore one A100 is sufficient for the frozen study, and the 72-hour plan
 reduces unnecessary calls through a predeclared dataset-cap policy rather than
 changing outcomes after they are observed. The tracked manifest freezes
@@ -413,6 +414,8 @@ Only after primary analysis predictions exist:
 ```bash
 python scripts/plan_repeated_sampling.py
 python scripts/execute_repeated_sampling.py
+python scripts/resident_generate_repeated_plan.py \
+  --plan results/repeated_sampling_plan.json
 python scripts/execute_repeated_sampling.py --execute
 ```
 

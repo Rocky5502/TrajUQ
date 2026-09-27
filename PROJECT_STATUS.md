@@ -88,6 +88,7 @@ particular, the following are implemented and versioned:
   now emits coherent run-level provenance instead of the previously broken
   undefined-variable path, fails frozen audits on dirty checkouts, and writes
   immutable audit evidence;
+- Dream telemetry was corrected to the upstream pre-transfer `generation_logits_hook_func`: predictive logits are now paired with the same unresolved state before token commitment, and protocol-v1 run audits reject older post-transfer token-hook artifacts;
 - SDAR telemetry inference is fully no-grad, matching the native reference and
   counting the KV-cache prefill forward evaluation so memory/compute metadata
   are not systematically distorted;

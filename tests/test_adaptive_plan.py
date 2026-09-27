@@ -58,3 +58,9 @@ def test_adaptive_plan_binds_base_runs_to_frozen_inputs():
     assert '"generation_input_sha256"' in text
     assert '"refined_scored_sha256"' in text
     assert '"refined_audit_sha256"' in text
+
+
+def test_adaptive_planner_revalidates_primary_plan_provenance():
+    text = Path("scripts/plan_adaptive_runs.py").read_text(encoding="utf-8")
+    assert "validate_primary_plan_provenance" in text
+    assert "primary plan provenance: " in text

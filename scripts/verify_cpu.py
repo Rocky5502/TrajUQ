@@ -124,6 +124,15 @@ def main() -> None:
         )
 
     py = sys.executable
+    math500_audit_argv = [
+        py,
+        "scripts/audit_math500_scorer.py",
+        "--output",
+        "results/math500_scorer_audit.json",
+    ]
+    if args.overwrite:
+        math500_audit_argv.append("--overwrite")
+
     steps = [
         (
             "compileall",
@@ -152,12 +161,7 @@ def main() -> None:
         ),
         (
             "math500_scorer_audit",
-            [
-                py,
-                "scripts/audit_math500_scorer.py",
-                "--output",
-                "results/math500_scorer_audit.json",
-            ],
+            math500_audit_argv,
         ),
         (
             "paper_audit",

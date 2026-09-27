@@ -1,7 +1,12 @@
 import sys
 from types import SimpleNamespace
 
-from scripts.preflight import MIN_TRANSFORMERS_VERSION, probe_remote_assets, version_triplet
+from scripts.preflight import (
+    MIN_TRANSFORMERS_VERSION,
+    probe_remote_assets,
+    validate_remote_asset_contract,
+    version_triplet,
+)
 
 
 def test_version_triplet_parses_release_versions():
@@ -127,3 +132,37 @@ def test_remote_asset_probe_skips_unpinned_exploratory_config():
 
     assert failures == []
     assert payload["attempted"] is False
+
+
+def test_remote_asset_contract_requires_mask_when_declared():
+    failures = validate_remote_asset_contract(
+        {
+            "validation": {
+                "require_mask_token_id": True,
+            }
+        },
+        {
+            "attempted": True,
+            "tokenizer_loaded": True,
+            "mask_token_id": None,
+        },
+    )
+
+    assert failures == [
+        "frozen model validation requires tokenizer.mask_token_id"
+    ]
+
+
+def test_remote_asset_contract_accepts_declared_mask():
+    assert validate_remote_asset_contract(
+        {
+            "validation": {
+                "require_mask_token_id": True,
+            }
+        },
+        {
+            "attempted": True,
+            "tokenizer_loaded": True,
+            "mask_token_id": 126336,
+        },
+    ) == []

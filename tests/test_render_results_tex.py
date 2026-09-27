@@ -9,6 +9,7 @@ from scripts.render_results_tex import (
     CALIBRATION_SENSITIVITY_METRICS,
     PRIOR_SIGNAL_SUFFIXES,
     build_macros,
+    require_repeated,
 )
 
 
@@ -69,6 +70,15 @@ def repeated():
         "cell_set_complete": True,
         "expected_cells": 18,
         "observed_cells": 18,
+        "eligible_datasets": [
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "arc_challenge",
+            "mmlu_pro",
+            "truthfulqa",
+        ],
+        "excluded_datasets": {},
         "auxiliary_compute": {
             "aggregation": "equal_cell_weight_macro",
             "expected_cells": 18,
@@ -250,6 +260,8 @@ def test_result_macros_are_derived_from_complete_artifacts():
     assert macros["PrimaryTrajAUROC"] == "0.700"
     assert macros["RepeatedAUROC"] == "0.620"
     assert macros["RepeatedAuxWallTime"] == "12.34"
+    assert macros["RepeatedCellCount"] == "18"
+    assert macros["RepeatedDatasetCount"] == "6"
     assert macros["AblationFullAUROCDelta"] == "+0.040"
     assert macros["PriorEntropyAUROC"] == "0.610"
     assert macros["PriorEntropyAUROCDelta"] == "+0.090"
@@ -421,3 +433,69 @@ def test_result_artifact_map_matches_eight_source_renderer_contract():
     appendix = Path("paper/appendix.tex").read_text(encoding="utf-8")
     assert "Improvement (logistic $-$ isotonic)" in appendix
     assert "$\\Delta$ (isotonic $-$ logistic)" not in appendix
+
+
+def test_repeated_renderer_accepts_frozen_12_cell_subset_from_config():
+    payload = repeated()
+    payload["expected_cells"] = 12
+    payload["observed_cells"] = 12
+    payload["eligible_datasets"] = [
+        "gsm8k",
+        "math500",
+        "gpqa_diamond",
+        "mmlu_pro",
+    ]
+    payload["excluded_datasets"] = {
+        "arc_challenge": "frozen compute-bounded exclusion",
+        "truthfulqa": "frozen compute-bounded exclusion",
+    }
+    payload["auxiliary_compute"]["expected_cells"] = 12
+    payload["auxiliary_compute"][
+        "observed_cells_with_complete_test_wall_time"
+    ] = 12
+
+    cfg = {
+        "models": {
+            "primary": [
+                "configs/models/llada.yaml",
+                "configs/models/sdar.yaml",
+                "configs/models/dream.yaml",
+            ]
+        },
+        "baselines": {
+            "expensive": {
+                "repeated_sampling": {
+                    "eligible_datasets": [
+                        "gsm8k",
+                        "math500",
+                        "gpqa_diamond",
+                        "mmlu_pro",
+                    ]
+                }
+            }
+        },
+    }
+
+    require_repeated(payload, cfg)
+
+
+def test_repeated_renderer_rejects_scope_drift_from_frozen_config():
+    payload = repeated()
+    cfg = {
+        "models": {"primary": ["a", "b", "c"]},
+        "baselines": {
+            "expensive": {
+                "repeated_sampling": {
+                    "eligible_datasets": [
+                        "gsm8k",
+                        "math500",
+                        "gpqa_diamond",
+                        "mmlu_pro",
+                    ]
+                }
+            }
+        },
+    }
+
+    with pytest.raises(ValueError, match="eligible datasets differ"):
+        require_repeated(payload, cfg)

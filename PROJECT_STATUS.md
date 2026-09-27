@@ -109,6 +109,7 @@ particular, the following are implemented and versioned:
 - SDAR telemetry inference is fully no-grad, matching the native reference and
   counting the KV-cache prefill forward evaluation so memory/compute metadata
   are not systematically distorted;
+- GPU preflight now enforces the pinned SDAR Transformers floor (`>=4.52.4`) with a tested semantic version parser; an escaping bug that made every installed version look invalid was fixed before parity execution;
 - instrumentation-overhead protocol v2 is clean-commit and SHA-bound to the
   exact native/instrumented parity runs, immutable on disk, and revalidated by
   all parity wrappers on resume rather than trusted by filename;

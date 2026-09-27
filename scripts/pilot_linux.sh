@@ -346,7 +346,7 @@ if [[ "$STAGE" == "parity" || "$STAGE" == "all" ]]; then
   else
     require_no_existing_artifacts       "$PARITY_REFERENCE"       "$PARITY_TRAJUQ"       "$PARITY_TRAJUQ.audit.json"       "$PARITY_RESULT"       "$PARITY_OVERHEAD"
 
-    run_step "20-prompt native LLaDA reference"       "$PYTHON" scripts/run_llada_reference.py         --model "$MODEL_ID"         --revision "$MODEL_SHA"         --input "$CAL_DATA"         --output "$PARITY_REFERENCE"         --limit 20         --steps 128         --max-new-tokens 128         --block-length 128         --temperature 0
+    run_step "20-prompt native LLaDA reference"       "$PYTHON" scripts/run_llada_reference.py         --model "$MODEL_ID"         --revision "$MODEL_SHA"         --input "$CAL_DATA"         --output "$PARITY_REFERENCE"         --limit 20         --steps 128         --max-new-tokens 128         --block-length 128         --temperature 0         --device cuda --dtype bfloat16
 
     run_step "20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter llada         --model "$MODEL_ID"         --revision "$MODEL_SHA"         --input "$CAL_DATA"         --output "$PARITY_TRAJUQ"         --limit 20         --steps 128         --max-new-tokens 128         --block-length 128         --temperature 0
 

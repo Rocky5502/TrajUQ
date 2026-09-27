@@ -175,8 +175,8 @@ def isotonic_sensitivity_expected_eligibility(
         "base_estimator": "standardized_logistic",
         "cv_folds": 5,
         "ensemble": False,
-        "min_calibration_samples": 1000,
-        "min_class_count": 5,
+        "min_calibration_samples": 250,
+        "min_class_count": 25,
     }
     if contract != required:
         raise ValueError("cell isotonic sensitivity contract differs from frozen contract")

@@ -9,6 +9,7 @@ import pytest
 from scripts.estimate_a100_campaign import (
     base_budget_ratio,
     make_markdown,
+    repeated_prepared_example_count,
     validate_timing_source,
 )
 
@@ -252,4 +253,28 @@ def test_validate_timing_source_rejects_wrong_frozen_revision(tmp_path):
             expected_commit="abc",
             expected_model_id="example/dream",
             expected_model_revision="other-sha",
+        )
+
+
+def test_repeated_prepared_count_uses_only_frozen_eligible_datasets():
+    counts = {
+        "gsm8k": {"total": 1000},
+        "math500": {"total": 500},
+        "gpqa_diamond": {"total": 198},
+        "arc_challenge": {"total": 799},
+        "mmlu_pro": {"total": 570},
+        "truthfulqa": {"total": 817},
+    }
+
+    assert repeated_prepared_example_count(
+        counts,
+        ["gsm8k", "math500", "gpqa_diamond", "mmlu_pro"],
+    ) == 2268
+
+
+def test_repeated_prepared_count_rejects_missing_eligible_dataset():
+    with pytest.raises(ValueError, match="missing from prepared counts"):
+        repeated_prepared_example_count(
+            {"gsm8k": {"total": 1000}},
+            ["gsm8k", "math500"],
         )

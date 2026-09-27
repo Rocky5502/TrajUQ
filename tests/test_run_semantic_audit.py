@@ -3,6 +3,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+import scripts.audit_run as audit_run
+
 from trajuq.io import sha256_text
 from trajuq.schema import ExampleRecord, GenerationResult, StepSummary
 
@@ -107,6 +111,35 @@ def test_run_audit_rejects_other_source_commit(tmp_path):
 
     assert result.returncode != 0
     assert "source git commit differs" in result.stdout
+
+
+def test_run_audit_rejects_dirty_current_checkout(tmp_path, monkeypatch):
+    path = tmp_path / "run.jsonl"
+    output = tmp_path / "run.audit.json"
+    path.write_text(json.dumps(make_record()) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(audit_run, "git_clean", lambda: False)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "audit_run.py",
+            "--run",
+            str(path),
+            "--output",
+            str(output),
+            "--stage",
+            "raw",
+            "--require-revision",
+        ],
+    )
+
+    with pytest.raises(SystemExit):
+        audit_run.main()
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["status"] == "FAIL"
+    assert any("worktree is not clean" in item for item in payload["failures"])
 
 
 def test_run_audit_rejects_bounded_feature_violation(tmp_path):

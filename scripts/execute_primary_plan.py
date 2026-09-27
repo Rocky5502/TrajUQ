@@ -219,7 +219,10 @@ def expected_generation_contract(spec: dict[str, Any]) -> dict[str, Any] | None:
         "model": argv_value(argv, "--model"),
         "revision": argv_value(argv, "--revision"),
         "seed": int(argv_value(argv, "--seed")),
-        "generation_metadata": {},
+        "generation_metadata": {
+            "requested_device": argv_value(argv, "--device"),
+            "requested_dtype": argv_value(argv, "--dtype"),
+        },
     }
     metadata = contract["generation_metadata"]
 

@@ -19,6 +19,18 @@ def sha256_file(path: Path) -> str:
 
 
 def write_cpu_pass(path: Path, commit: str = EXPERIMENT_COMMIT) -> None:
+    steps = []
+    for name in ("compileall", "pytest"):
+        log = path.parent / f"{name}.log"
+        log.write_text(f"{name} ok\n", encoding="utf-8")
+        steps.append(
+            {
+                "name": name,
+                "status": "PASS",
+                "log": str(log),
+                "log_sha256": sha256_file(log),
+            }
+        )
     write_json(
         path,
         {
@@ -28,10 +40,7 @@ def write_cpu_pass(path: Path, commit: str = EXPERIMENT_COMMIT) -> None:
             "git_clean": True,
             "expected_steps": ["compileall", "pytest"],
             "completed_steps": ["compileall", "pytest"],
-            "steps": [
-                {"name": "compileall", "status": "PASS"},
-                {"name": "pytest", "status": "PASS"},
-            ],
+            "steps": steps,
         },
     )
 
@@ -709,3 +718,15 @@ def test_primary_readiness_rejects_run_audit_from_other_commit(tmp_path):
     result = evaluate(case)
     assert result["status"] == "FAIL"
     assert any("hash/audit-bound PASS" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_mutated_cpu_log(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    cpu = json.loads(case["cpu"].read_text(encoding="utf-8"))
+    log_path = Path(cpu["steps"][0]["log"])
+    log_path.write_text("tampered\n", encoding="utf-8")
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert result["checks"]["cpu_verification"]["log_hashes_ok"] is False
+    assert any("CPU repository verification" in item for item in result["failures"])

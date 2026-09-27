@@ -21,7 +21,10 @@ from trajuq.provenance import analysis_provenance
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.execute_primary_analysis import validate_plan_provenance  # noqa: E402
+from scripts.execute_primary_analysis import (  # noqa: E402
+    semantic_output_valid,
+    validate_plan_provenance,
+)
 
 
 AGGREGATE_METRICS = (
@@ -158,6 +161,7 @@ def main() -> None:
             f"{item['adapter']}_{item['dataset']}": {
                 "predictions": str(item["outputs"]["predictions"]),
                 "test": str(item["inputs"]["test"]["path"]),
+                "cell": item,
             }
             for item in analysis_plan.get("cell_analyses", [])
         }
@@ -184,6 +188,15 @@ def main() -> None:
                 raise SystemExit(
                     f"{label}: predictions do not exactly cover the frozen "
                     "scored test target"
+                )
+            if not semantic_output_valid(
+                expected["cell"],
+                "predictions",
+                Path(path_text),
+            ):
+                raise SystemExit(
+                    f"{label}: prediction artifact is stale or not "
+                    "source-bound to the frozen analysis inputs"
                 )
 
     cells = [load_cell(label, path) for label, path in args.cell]

@@ -177,6 +177,22 @@ def main() -> None:
         "steps": args.steps,
         "max_new_tokens": args.max_new_tokens,
         "block_length": args.block_length,
+        "adapter_generation": {
+            "llada_cfg_scale": args.llada_cfg_scale if args.adapter == "llada" else None,
+            "llada_remasking": args.llada_remasking if args.adapter == "llada" else None,
+            "dream_alg": args.dream_alg if args.adapter == "dream" else None,
+            "dream_alg_temp": args.dream_alg_temp if args.adapter == "dream" else None,
+            "sdar_denoising_steps": (
+                args.sdar_denoising_steps if args.adapter == "sdar" else None
+            ),
+            "sdar_top_k": args.sdar_top_k if args.adapter == "sdar" else None,
+            "sdar_remasking_strategy": (
+                args.sdar_remasking_strategy if args.adapter == "sdar" else None
+            ),
+            "sdar_confidence_threshold": (
+                args.sdar_confidence_threshold if args.adapter == "sdar" else None
+            ),
+        },
         "runs": [],
     }
 

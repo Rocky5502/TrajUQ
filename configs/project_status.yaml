@@ -145,7 +145,7 @@ implementation:
       - scripts/primary_readiness.py
       - tests/test_primary_readiness.py
   - id: dataset_contract_smoke
-    label: "Exact-revision live normalizer/scorer smoke for all six primary datasets without row-content retention"
+    label: "Four-row exact-revision live normalizer/scorer smoke for all six primary datasets without row-content retention"
     state: DONE
     evidence:
       - scripts/verify_dataset_contracts.py
@@ -258,7 +258,7 @@ execution_gates:
     label: "Clean-commit CPU verification suite"
     stage: pre_primary
     issue: 6
-    action: "Run scripts/freeze_preprimary_windows.ps1 on Windows or bash scripts/freeze_preprimary.sh on Linux/macOS from a clean commit. Both first refuse any pre-existing immutable freeze evidence, then run CPU verification, write the commit-bound revision ledger, verify exact-revision gated access, smoke-test all six exact-revision dataset normalizer/scorer contracts without storing row content, re-check worktree cleanliness, refresh project status, and export dist/trajuq_preprimary_handoff.zip."
+    action: "Run scripts/freeze_preprimary_windows.ps1 on Windows or bash scripts/freeze_preprimary.sh on Linux/macOS from a clean commit. Both first refuse any pre-existing immutable freeze evidence, then run CPU verification, write the commit-bound revision ledger, verify exact-revision gated access, smoke-test four rows from each of all six exact-revision dataset normalizer/scorer contracts without storing row content, re-check worktree cleanliness, refresh project status, and export dist/trajuq_preprimary_handoff.zip."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
   - id: revision_ledger
@@ -276,7 +276,7 @@ execution_gates:
   - id: dataset_contracts
     label: "Live exact-revision dataset normalizer/scorer contracts"
     stage: pre_primary
-    action: "The official freeze wrappers run python scripts/verify_dataset_contracts.py after revision resolution and gated-access verification. It streams one row from each of the six ledger-pinned primary datasets, verifies the frozen normalizer plus scorer with a constructed correct final answer, stores schema/provenance only (no benchmark row content), and must PASS at the same clean commit with the exact revision-ledger SHA."
+    action: "The official freeze wrappers run python scripts/verify_dataset_contracts.py after revision resolution and gated-access verification. It streams four rows from each of the six ledger-pinned primary datasets, verifies the frozen normalizer plus scorer on every sampled row with a constructed correct final answer, stores schema/provenance only (no benchmark row content), and must PASS at the same clean commit with the exact revision-ledger SHA. Readiness/GPU guards reject legacy one-row evidence."
     artifact: results/dataset_contracts.json
     expect: {key: status, equals: PASS}
   - id: llada_parity

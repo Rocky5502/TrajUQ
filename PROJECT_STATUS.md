@@ -87,6 +87,11 @@ particular, the following are implemented and versioned:
 - pilot and MATH-500 human review sheets are source-bound to the exact scored
   calibration artifacts they display; their recorders and primary readiness
   independently revalidate those hashes before the 18-cell matrix can launch;
+- pre-primary prepared split provenance is now enforced before GPU use on both
+  Linux/A100 and Windows: GSM8K pilot/parity and MATH-500 wrappers require the
+  split manifest and split audit to attest `source_git_clean=true` and the exact
+  frozen experiment commit, preventing an older prepared split from being reused
+  under a newer freeze merely because its dataset revision and file hashes match;
 - every generated primary/adaptive/repeated raw record is now source-commit aware:
   frozen audits and resumability reject rows from another commit, a dirty source
   checkout, a different prompt binding, revision, seed, or adapter-specific

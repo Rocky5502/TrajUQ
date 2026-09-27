@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from trajuq.datasets import NORMALIZER_VERSION
+from trajuq.io import write_json_immutable
 
 
 DEFAULT_PARITY = {
@@ -1001,8 +1002,7 @@ def main() -> None:
     )
 
     out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json_immutable(out, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     if payload["status"] != "PASS":
         raise SystemExit(1)

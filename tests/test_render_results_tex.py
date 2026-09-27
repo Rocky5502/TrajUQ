@@ -1,6 +1,10 @@
 import pytest
 
-from scripts.render_results_tex import ABLATION_SUFFIXES, build_macros
+from scripts.render_results_tex import (
+    ABLATION_SUFFIXES,
+    PRIOR_SIGNAL_SUFFIXES,
+    build_macros,
+)
 
 
 def primary():
@@ -109,6 +113,29 @@ def ablation():
     }
 
 
+def prior_signals():
+    return {
+        "protocol": "trajuq_prior_aligned_signal_macro_v1",
+        "role": "secondary_prior_aligned_signal_class_diagnostic",
+        "cell_set_complete": True,
+        "expected_cells": 18,
+        "observed_cells": 18,
+        "macro": {
+            name: {
+                metric: {
+                    "baseline_macro": 0.61,
+                    "candidate_macro": 0.70,
+                    "improvement_macro": 0.09,
+                    "improvement_ci_low": 0.02,
+                    "improvement_ci_high": 0.15,
+                }
+                for metric in ("auroc", "auprc", "aurc")
+            }
+            for name in PRIOR_SIGNAL_SUFFIXES
+        },
+    }
+
+
 def adaptive():
     return {
         "protocol": "trajuq_adaptive_macro_v1",
@@ -132,11 +159,20 @@ def adaptive():
 
 
 def test_result_macros_are_derived_from_complete_artifacts():
-    macros = build_macros(primary(), claim(), repeated(), ablation(), adaptive())
+    macros = build_macros(
+        primary(),
+        claim(),
+        repeated(),
+        ablation(),
+        prior_signals(),
+        adaptive(),
+    )
     assert macros["PrimaryTrajAUROC"] == "0.700"
     assert macros["RepeatedAUROC"] == "0.620"
     assert macros["RepeatedAuxWallTime"] == "12.34"
     assert macros["AblationFullAUROCDelta"] == "+0.040"
+    assert macros["PriorEntropyAUROC"] == "0.610"
+    assert macros["PriorEntropyAUROCDelta"] == "+0.090"
     assert macros["AdaptiveDeltaRandom"] == "+0.040"
     assert "positive point improvement" in macros["AbstractResultSentence"]
     assert macros["PaperStateLimitationsSentence"] == ""
@@ -146,11 +182,25 @@ def test_result_renderer_rejects_partial_primary_matrix():
     payload = primary()
     payload["cell_set_complete"] = False
     with pytest.raises(ValueError):
-        build_macros(payload, claim(), repeated(), ablation(), adaptive())
+        build_macros(
+            payload,
+            claim(),
+            repeated(),
+            ablation(),
+            prior_signals(),
+            adaptive(),
+        )
 
 
 def test_result_renderer_uses_narrow_language_when_claim_gate_fails():
-    macros = build_macros(primary(), claim(False), repeated(), ablation(), adaptive())
+    macros = build_macros(
+        primary(),
+        claim(False),
+        repeated(),
+        ablation(),
+        prior_signals(),
+        adaptive(),
+    )
     assert "not met" in macros["AbstractResultSentence"]
 
 
@@ -158,18 +208,56 @@ def test_result_renderer_rejects_contradictory_claim_flag_and_decision():
     payload = claim(True)
     payload["decision"] = "DO_NOT_MAKE_POSITIVE_RQ1_CLAIM"
     with pytest.raises(ValueError, match="contradicts"):
-        build_macros(primary(), payload, repeated(), ablation(), adaptive())
+        build_macros(
+            primary(),
+            payload,
+            repeated(),
+            ablation(),
+            prior_signals(),
+            adaptive(),
+        )
 
 
 def test_result_renderer_rejects_incomplete_repeated_compute():
     payload = repeated()
     payload["auxiliary_compute"]["complete"] = False
     with pytest.raises(ValueError, match="compute accounting is incomplete"):
-        build_macros(primary(), claim(), payload, ablation(), adaptive())
+        build_macros(
+            primary(),
+            claim(),
+            payload,
+            ablation(),
+            prior_signals(),
+            adaptive(),
+        )
 
 
 def test_result_renderer_rejects_incomplete_ablation_matrix():
     payload = ablation()
     payload["cell_set_complete"] = False
     with pytest.raises(ValueError, match="Feature-ablation macro cell set is incomplete"):
-        build_macros(primary(), claim(), repeated(), payload, adaptive())
+        build_macros(
+            primary(),
+            claim(),
+            repeated(),
+            payload,
+            prior_signals(),
+            adaptive(),
+        )
+
+
+def test_result_renderer_rejects_incomplete_prior_signal_matrix():
+    payload = prior_signals()
+    payload["cell_set_complete"] = False
+    with pytest.raises(
+        ValueError,
+        match="Prior-signal macro cell set is incomplete",
+    ):
+        build_macros(
+            primary(),
+            claim(),
+            repeated(),
+            ablation(),
+            payload,
+            adaptive(),
+        )

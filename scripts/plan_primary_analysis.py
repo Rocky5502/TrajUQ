@@ -296,6 +296,29 @@ def main() -> None:
 
     n_boot = int(cfg["statistics"]["bootstrap"]["n_boot"])
     seed = int(cfg["experiment"]["seed"])
+    sensitivity_methods = list(cfg.get("calibration", {}).get("sensitivity", []))
+    if sensitivity_methods != ["isotonic"]:
+        raise SystemExit(
+            "Frozen calibration sensitivity must be exactly ['isotonic']."
+        )
+    isotonic_cfg = dict(cfg.get("calibration", {}).get("isotonic", {}))
+    required_isotonic = {
+        "role": "supplementary_calibration_sensitivity",
+        "base_estimator": "standardized_logistic",
+        "cv_folds": int(isotonic_cfg.get("cv_folds", 0)),
+        "ensemble": bool(isotonic_cfg.get("ensemble", True)),
+        "min_calibration_samples": int(
+            isotonic_cfg.get("min_calibration_samples", 0)
+        ),
+        "min_class_count": int(isotonic_cfg.get("min_class_count", 0)),
+    }
+    if (
+        required_isotonic["cv_folds"] != 5
+        or required_isotonic["ensemble"] is not False
+        or required_isotonic["min_calibration_samples"] != 1000
+        or required_isotonic["min_class_count"] != 5
+    ):
+        raise SystemExit("Unexpected frozen isotonic sensitivity contract.")
     root = Path(args.output_root)
 
     analyses: list[dict] = []
@@ -328,6 +351,7 @@ def main() -> None:
         ablation_predictions = cell_root / "feature_ablation_predictions.jsonl"
         prior_diag = cell_root / "prior_signal_diagnostic.json"
         prior_predictions = cell_root / "prior_signal_predictions.jsonl"
+        calibration_sensitivity = cell_root / "calibration_sensitivity.json"
         raw_diag = cell_root / "raw_risk_diagnostic.json"
 
         evaluate = [
@@ -388,6 +412,20 @@ def main() -> None:
             "--predictions-output",
             str(prior_predictions),
         ]
+        calibration_sensitivity_argv = [
+            "python",
+            "scripts/evaluate_calibration_sensitivity.py",
+            "--calibration",
+            cal,
+            "--test",
+            test,
+            "--primary-config",
+            args.primary_config,
+            "--seed",
+            str(seed),
+            "--output",
+            str(calibration_sensitivity),
+        ]
         diagnostic = [
             "python",
             "scripts/compare_methods.py",
@@ -414,6 +452,8 @@ def main() -> None:
                 "nested_comparison_argv": compare_nested,
                 "feature_ablation_argv": ablation,
                 "prior_signal_diagnostic_argv": prior_signal_diagnostic,
+                "calibration_sensitivity_argv": calibration_sensitivity_argv,
+                "calibration_sensitivity_contract": required_isotonic,
                 "raw_risk_diagnostic_argv": diagnostic,
                 "outputs": {
                     "metrics": str(metrics),
@@ -423,6 +463,7 @@ def main() -> None:
                     "feature_ablation_predictions": str(ablation_predictions),
                     "prior_signal_diagnostic": str(prior_diag),
                     "prior_signal_predictions": str(prior_predictions),
+                    "calibration_sensitivity": str(calibration_sensitivity),
                     "raw_risk_diagnostic": str(raw_diag),
                 },
             }
@@ -491,8 +532,10 @@ def main() -> None:
             "rq1_claim_gate": str(gate_path),
         },
         "execution_order": (
-            "Run all cell analyses first, then primary macro aggregation, then "
-            "the complete feature-ablation and prior-aligned signal macros, "
+            "Run all cell analyses, including the frozen supplementary "
+            "isotonic calibration sensitivity (or an explicit eligibility skip), "
+            "then primary macro aggregation, then the complete feature-ablation "
+            "and prior-aligned signal macros, "
             "then the RQ1 claim gate. Do "
             "not omit a weak cell or rerun with altered analysis settings."
         ),

@@ -192,7 +192,23 @@ def submission_result_files(paper_dir: Path) -> dict[str, bytes]:
     return selected
 
 
-def paper_status_text(*, source_snapshot_sha256: str) -> bytes:
+def paper_status_text(
+    *,
+    source_snapshot_sha256: str,
+    submission_ready: bool,
+) -> bytes:
+    if submission_ready:
+        state = (
+            "This is a submission-ready source snapshot. Numerical macros in "
+            "`generated_results.tex` and the three generated result figures "
+            "were admitted only through their repository SHA-bound manifests."
+        )
+    else:
+        state = (
+            "This is a development source snapshot. Before experiments complete, "
+            "`generated_results.tex` may intentionally contain TBD placeholders; "
+            "the repository renderer replaces them only from gated artifacts."
+        )
     text = f"""# TrajUQ anonymous Overleaf package
 
 This package is generated from the frozen anonymous manuscript source.
@@ -200,10 +216,7 @@ This package is generated from the frozen anonymous manuscript source.
 Anonymous source snapshot SHA-256: `{source_snapshot_sha256}`
 Official ACL style commit: `{ACL_STYLE_COMMIT}`
 
-The numerical result macros are controlled by `generated_results.tex`.
-Before experiments complete, that file intentionally contains TBD placeholders.
-After all frozen result artifacts pass their gates, the repository renderer
-replaces those placeholders from SHA-bound empirical artifacts.
+{state}
 
 Do not type empirical numbers manually into `main.tex`.
 """
@@ -262,7 +275,8 @@ def build_package(
     source_snapshot_sha256 = source_snapshot.hexdigest()
 
     status = paper_status_text(
-        source_snapshot_sha256=source_snapshot_sha256
+        source_snapshot_sha256=source_snapshot_sha256,
+        submission_ready=submission_ready,
     )
     failures.extend(scan_text("PAPER_STATUS.md", status))
     files["PAPER_STATUS.md"] = status

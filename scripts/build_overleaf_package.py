@@ -22,6 +22,13 @@ PAPER_FILES = (
     "references.bib",
     "generated_results.tex",
 )
+RESULTS_MANIFEST = "generated_results_manifest.json"
+FIGURE_MANIFEST = "figures/generated/result_figure_manifest.json"
+REQUIRED_RESULT_FIGURES = {
+    "primary_auroc_matrix",
+    "family_macro_auroc",
+    "adaptive_tradeoff",
+}
 BANNED_PATTERNS = {
     "development repository owner": re.compile(
         "Rocky" + "5502",
@@ -93,6 +100,98 @@ def scan_text(name: str, data: bytes) -> list[str]:
     return failures
 
 
+def load_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid JSON manifest: {path}: {exc}") from exc
+
+
+def submission_result_files(paper_dir: Path) -> dict[str, bytes]:
+    """Return only manifest-bound generated figures for a final submission ZIP."""
+
+    generated_results = paper_dir / "generated_results.tex"
+    results_manifest_path = paper_dir / RESULTS_MANIFEST
+    figure_manifest_path = paper_dir / FIGURE_MANIFEST
+    if not results_manifest_path.is_file():
+        raise ValueError(
+            f"missing submission results manifest: {results_manifest_path}"
+        )
+    if not figure_manifest_path.is_file():
+        raise ValueError(
+            f"missing submission figure manifest: {figure_manifest_path}"
+        )
+
+    results_manifest = load_json(results_manifest_path)
+    if results_manifest.get("protocol") != "trajuq_paper_results_render_v1":
+        raise ValueError("generated-results manifest protocol is not recognized")
+    if (
+        str(results_manifest.get("output_sha256", ""))
+        != sha256_bytes(generated_results.read_bytes())
+    ):
+        raise ValueError(
+            "generated_results.tex hash differs from generated-results manifest"
+        )
+
+    generated_text = generated_results.read_text(encoding="utf-8")
+    forbidden = (
+        "PRE-RESULTS FALLBACK",
+        r"\tbd",
+        "pre-experiment manuscript",
+    )
+    remaining = [marker for marker in forbidden if marker in generated_text]
+    if remaining:
+        raise ValueError(
+            "submission-ready generated results contain placeholders: "
+            + ", ".join(remaining)
+        )
+
+    figure_manifest = load_json(figure_manifest_path)
+    if figure_manifest.get("protocol") != "trajuq_paper_result_figures_v2":
+        raise ValueError("result-figure manifest protocol is not v2")
+    outputs = figure_manifest.get("outputs")
+    if not isinstance(outputs, dict):
+        raise ValueError("result-figure manifest outputs is not an object")
+    if set(outputs) != REQUIRED_RESULT_FIGURES:
+        raise ValueError(
+            "result-figure manifest output set differs from frozen contract"
+        )
+
+    selected: dict[str, bytes] = {}
+    generated_root = (paper_dir / "figures" / "generated").resolve()
+    for name in sorted(REQUIRED_RESULT_FIGURES):
+        item = outputs[name]
+        if not isinstance(item, dict):
+            raise ValueError(f"invalid result-figure entry: {name}")
+        path = Path(str(item.get("path", "")))
+        if not path.is_absolute():
+            path = (paper_dir.parent / path).resolve()
+        else:
+            path = path.resolve()
+        if generated_root not in path.parents:
+            raise ValueError(
+                f"result figure is outside paper/figures/generated: {name}"
+            )
+        if path.suffix.lower() != ".pdf" or not path.is_file():
+            raise ValueError(f"missing/invalid result figure PDF: {name}")
+        data = path.read_bytes()
+        if not data.startswith(b"%PDF-"):
+            raise ValueError(f"invalid generated PDF figure: {path}")
+        if sha256_bytes(data) != str(item.get("sha256", "")):
+            raise ValueError(f"result figure hash differs from manifest: {name}")
+        try:
+            expected_bytes = int(item.get("bytes", -1))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"invalid result figure byte count: {name}"
+            ) from exc
+        if len(data) != expected_bytes:
+            raise ValueError(f"result figure byte count differs: {name}")
+        selected[f"figures/generated/{path.name}"] = data
+
+    return selected
+
+
 def paper_status_text(*, source_snapshot_sha256: str) -> bytes:
     text = f"""# TrajUQ anonymous Overleaf package
 
@@ -117,6 +216,7 @@ def build_package(
     output: Path,
     style_dir: Path | None = None,
     git_commit: str | None = None,
+    submission_ready: bool = False,
 ) -> dict:
     root = root.resolve()
     paper_dir = root / "paper"
@@ -142,13 +242,16 @@ def build_package(
         # contains its own acl-org GitHub URL, which is not an anonymity leak.
         files[name] = data
 
-    generated_figures = paper_dir / "figures" / "generated"
-    if generated_figures.exists():
-        for path in sorted(generated_figures.glob("*.pdf")):
-            data = path.read_bytes()
-            if not data.startswith(b"%PDF-"):
-                raise ValueError(f"invalid generated PDF figure: {path}")
-            files[f"figures/generated/{path.name}"] = data
+    if submission_ready:
+        files.update(submission_result_files(paper_dir))
+    else:
+        generated_figures = paper_dir / "figures" / "generated"
+        if generated_figures.exists():
+            for path in sorted(generated_figures.glob("*.pdf")):
+                data = path.read_bytes()
+                if not data.startswith(b"%PDF-"):
+                    raise ValueError(f"invalid generated PDF figure: {path}")
+                files[f"figures/generated/{path.name}"] = data
 
     source_snapshot = hashlib.sha256()
     for name in PAPER_FILES:
@@ -175,6 +278,7 @@ def build_package(
         "acl_style_repository": "acl-org/acl-style-files",
         "acl_style_commit": ACL_STYLE_COMMIT,
         "anonymous": True,
+        "submission_ready": bool(submission_ready),
         "files": [
             {
                 "path": name,
@@ -243,6 +347,14 @@ def main() -> None:
             "Used for offline/test builds; otherwise fetch the pinned commit."
         ),
     )
+    parser.add_argument(
+        "--submission-ready",
+        action="store_true",
+        help=(
+            "Require rendered-result and result-figure manifests and package "
+            "only their hash-verified final figure PDFs."
+        ),
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -270,6 +382,7 @@ def main() -> None:
             output=output,
             style_dir=style_dir,
             git_commit=commit,
+            submission_ready=args.submission_ready,
         )
     except ValueError as exc:
         print(

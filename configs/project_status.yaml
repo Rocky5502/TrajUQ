@@ -220,7 +220,7 @@ execution_gates:
     label: "Clean-commit CPU verification suite"
     stage: pre_primary
     issue: 6
-    action: "Run scripts/freeze_preprimary_windows.ps1 on Windows or bash scripts/freeze_preprimary.sh on Linux/macOS from a clean commit. Both run CPU verification, write the commit-bound revision ledger, re-check worktree cleanliness, refresh project status, and export dist/trajuq_preprimary_handoff.zip."
+    action: "Run scripts/freeze_preprimary_windows.ps1 on Windows or bash scripts/freeze_preprimary.sh on Linux/macOS from a clean commit. Both first refuse any pre-existing immutable freeze evidence, then run CPU verification, write the commit-bound revision ledger, verify exact-revision gated access, re-check worktree cleanliness, refresh project status, and export dist/trajuq_preprimary_handoff.zip."
     artifact: results/cpu_verification.json
     expect: {key: status, equals: PASS}
   - id: revision_ledger
@@ -287,14 +287,14 @@ execution_gates:
   - id: primary_readiness
     label: "Primary readiness hard gate"
     stage: pre_primary
-    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, hash-bound pilot raw/scored audits, source-bound pilot/MATH human attestations, MATH scored-pilot audit evidence, frozen MATH dependency versions, and all three clean exact-parity artifacts with source SHA revalidation."
+    action: "Run python scripts/primary_readiness.py and require status=PASS. Readiness v2 requires a clean current checkout matching the revision ledger, the bound dataset-manifest hash, exact CPU protocol/step completion, hash-bound pilot raw/scored audits, source-bound pilot/MATH human attestations, MATH scored-pilot audit evidence, frozen MATH dependency versions, and all three clean exact-parity artifacts with source SHA revalidation. It also emits a SHA-256 source-binding manifest covering every file it validated."
     artifact: results/primary_readiness.json
     expect: {key: status, equals: PASS}
   - id: primary_matrix_plan
     label: "Frozen 18-cell execution plan"
     stage: primary_execution
     issue: 8
-    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution."
+    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution. Planning re-hashes the readiness source-binding manifest, revision ledger, exact frozen model-config hashes/paths, split manifests/audits, and calibration/test inputs before emitting the 18-cell plan."
     artifact: results/primary_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: a100_compute_estimate

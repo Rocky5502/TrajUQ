@@ -31,7 +31,7 @@ data/processed/<dataset>/
   split_manifest.json
 ```
 
-The split manifest records counts, requested revision, Hugging Face fingerprints, and SHA-256 hashes. Freeze it before generation.
+The split manifest records the source git commit/clean-checkout state, repository/config identity, complete split policy (official/source split names, holdout fraction, split seed), counts, requested revision, Hugging Face fingerprints, and SHA-256 hashes. The primary planner rejects any prepared pair whose policy or source commit differs from the frozen experiment. Freeze it before generation.
 
 Never obtain a final test result and then alter the calibration partition, feature set, prompt template, threshold rule, or scorer.
 

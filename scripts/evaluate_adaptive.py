@@ -19,6 +19,7 @@ from trajuq.provenance import analysis_provenance, compact_row_binding
 
 PAIR_INVARIANT_GENERATION_KEYS = (
     "model_revision",
+    "mask_id",
     "gen_length",
     "max_new_tokens",
     "block_length",
@@ -31,6 +32,10 @@ PAIR_INVARIANT_GENERATION_KEYS = (
     "top_k",
     "remasking_strategy",
     "confidence_threshold",
+    "trajectory_semantics",
+    "upstream_repository",
+    "upstream_commit",
+    "partial_block_transfer_guard",
 )
 
 

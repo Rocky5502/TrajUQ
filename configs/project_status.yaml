@@ -154,6 +154,13 @@ implementation:
       - scripts/a100_campaign_linux.sh
       - docs/A100_EXECUTION.md
       - tests/test_pilot_script_contract.py
+  - id: a100_compute_estimator
+    label: "Frozen-input A100 compute forecast from audited model timing traces"
+    state: DONE
+    evidence:
+      - scripts/estimate_a100_campaign.py
+      - tests/test_estimate_a100_campaign.py
+      - docs/A100_EXECUTION.md
   - id: submission_readiness_gate
     label: "Final ARR gate separating historical experiment provenance from a clean submission checkout"
     state: DONE
@@ -276,6 +283,14 @@ execution_gates:
     issue: 8
     action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution."
     artifact: results/primary_matrix_plan.json
+    expect: {key: status, equals: PASS}
+  - id: a100_compute_estimate
+    label: "Frozen-input A100 campaign compute forecast"
+    stage: primary_execution
+    issue: 8
+    required: false
+    action: "After primary readiness PASS and primary matrix planning, run python scripts/estimate_a100_campaign.py. It uses exact prepared input counts plus audited LLaDA pilot and SDAR/Dream parity wall times to estimate serial A100-hours for primary, RQ2, and RQ3. Planning only; not a paper result."
+    artifact: results/a100_compute_estimate.json
     expect: {key: status, equals: PASS}
   - id: primary_execution_complete
     label: "All 18 primary cells fully generated, audited, and scored"

@@ -939,6 +939,56 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 item == one_contract
                 for item in contracts
             )
+            sensitivity_metrics = {
+                "brier",
+                "nll",
+                "ece",
+                "ece_10",
+                "ece_20",
+                "aurc",
+                "risk_at_50_coverage",
+                "risk_at_80_coverage",
+            }
+            macro_over_eligible = payload.get(
+                "macro_over_eligible_cells",
+                {},
+            )
+            macro_shape_ok = set(macro_over_eligible) == {
+                "decision_entropy",
+                "trajectory_plus_decision",
+            }
+            macro_values_ok = macro_shape_ok
+            if macro_shape_ok:
+                for view in (
+                    "decision_entropy",
+                    "trajectory_plus_decision",
+                ):
+                    view_node = macro_over_eligible.get(view, {})
+                    if set(view_node) != sensitivity_metrics:
+                        macro_values_ok = False
+                        break
+                    for metric in sensitivity_metrics:
+                        metric_node = view_node.get(metric, {})
+                        if set(metric_node) != {
+                            "primary_logistic",
+                            "isotonic_sensitivity",
+                            "isotonic_minus_logistic_improvement",
+                        }:
+                            macro_values_ok = False
+                            break
+                        for value in metric_node.values():
+                            if eligible:
+                                try:
+                                    if not np.isfinite(float(value)):
+                                        macro_values_ok = False
+                                except (TypeError, ValueError):
+                                    macro_values_ok = False
+                            elif value is not None:
+                                macro_values_ok = False
+                        if not macro_values_ok:
+                            break
+                    if not macro_values_ok:
+                        break
             calibration_sensitivity_status = (
                 "COMPLETE"
                 if (
@@ -966,6 +1016,7 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                     and contract_consistent
                     and payload.get("eligibility_policy")
                     == one_contract
+                    and macro_values_ok
                 )
                 else "INVALID"
             )

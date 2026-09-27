@@ -68,6 +68,105 @@ def build_adapter(
     raise SystemExit(f"Unknown adapter: {name}")
 
 
+def generate_record(
+    adapter,
+    args,
+    row: dict,
+    *,
+    seed: int,
+    source_git_commit: str | None,
+    source_git_clean: bool | None,
+    torch,
+) -> ExampleRecord:
+    """Generate one record using an already-loaded adapter.
+
+    Keeping this function separate lets repeated-sampling runs reuse the same
+    resident model across multiple seeds without changing generation semantics
+    or the raw-record schema.
+    """
+
+    prompt = row["prompt"]
+    if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+        torch.cuda.synchronize()
+
+    start = time.perf_counter()
+    if args.adapter == "dream":
+        result = adapter.generate(
+            prompt,
+            seed=seed,
+            steps=args.steps,
+            max_new_tokens=args.max_new_tokens,
+            temperature=args.temperature,
+            top_p=args.top_p,
+            alg=args.dream_alg,
+            alg_temp=args.dream_alg_temp,
+        )
+    elif args.adapter == "sdar":
+        result = adapter.generate(
+            prompt,
+            seed=seed,
+            gen_length=args.max_new_tokens,
+            block_length=args.block_length,
+            denoising_steps=args.sdar_denoising_steps,
+            temperature=(
+                args.temperature
+                if args.sdar_temperature is None
+                else args.sdar_temperature
+            ),
+            top_k=args.sdar_top_k,
+            top_p=args.top_p if args.sdar_top_p is None else args.sdar_top_p,
+            remasking_strategy=args.sdar_remasking_strategy,
+            confidence_threshold=args.sdar_confidence_threshold,
+        )
+    else:
+        result = adapter.generate(
+            prompt,
+            seed=seed,
+            steps=args.steps,
+            gen_length=args.max_new_tokens,
+            block_length=args.block_length,
+            temperature=args.temperature,
+            cfg_scale=args.llada_cfg_scale,
+            remasking=args.llada_remasking,
+        )
+
+    if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+        torch.cuda.synchronize()
+
+    result.metadata["wall_time_seconds"] = time.perf_counter() - start
+    if torch is not None:
+        result.metadata["torch_version"] = torch.__version__
+    try:
+        result.metadata["transformers_version"] = importlib_metadata.version(
+            "transformers"
+        )
+    except importlib_metadata.PackageNotFoundError:
+        result.metadata["transformers_version"] = None
+    if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
+        result.metadata["peak_gpu_memory_bytes"] = int(torch.cuda.max_memory_allocated())
+        result.metadata["gpu_name"] = torch.cuda.get_device_name()
+    result.metadata["pid"] = os.getpid()
+
+    return ExampleRecord(
+        example_id=str(row["id"]),
+        dataset=str(row.get("dataset", "unknown")),
+        prompt_sha256=sha256_text(prompt),
+        model=args.model,
+        adapter=args.adapter,
+        seed=seed,
+        generation=result,
+        correct=None,
+        reference=None,
+        metadata={
+            "source_input": str(Path(args.input)),
+            "model_revision": args.revision,
+            "source_git_commit": source_git_commit,
+            "source_git_clean": source_git_clean,
+        },
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--adapter", choices=["dream", "llada", "sdar", "flare"], required=True)
@@ -140,85 +239,14 @@ def main() -> None:
             print(f"[TrajUQ] skip completed {example_id}")
             continue
 
-        prompt = row["prompt"]
-        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
-            torch.cuda.reset_peak_memory_stats()
-            torch.cuda.synchronize()
-
-        start = time.perf_counter()
-        if args.adapter == "dream":
-            result = adapter.generate(
-                prompt,
-                seed=args.seed,
-                steps=args.steps,
-                max_new_tokens=args.max_new_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                alg=args.dream_alg,
-                alg_temp=args.dream_alg_temp,
-            )
-        elif args.adapter == "sdar":
-            result = adapter.generate(
-                prompt,
-                seed=args.seed,
-                gen_length=args.max_new_tokens,
-                block_length=args.block_length,
-                denoising_steps=args.sdar_denoising_steps,
-                temperature=(
-                    args.temperature
-                    if args.sdar_temperature is None
-                    else args.sdar_temperature
-                ),
-                top_k=args.sdar_top_k,
-                top_p=args.top_p if args.sdar_top_p is None else args.sdar_top_p,
-                remasking_strategy=args.sdar_remasking_strategy,
-                confidence_threshold=args.sdar_confidence_threshold,
-            )
-        else:
-            result = adapter.generate(
-                prompt,
-                seed=args.seed,
-                steps=args.steps,
-                gen_length=args.max_new_tokens,
-                block_length=args.block_length,
-                temperature=args.temperature,
-                cfg_scale=args.llada_cfg_scale,
-                remasking=args.llada_remasking,
-            )
-
-        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
-            torch.cuda.synchronize()
-
-        result.metadata["wall_time_seconds"] = time.perf_counter() - start
-        if torch is not None:
-            result.metadata["torch_version"] = torch.__version__
-        try:
-            result.metadata["transformers_version"] = importlib_metadata.version(
-                "transformers"
-            )
-        except importlib_metadata.PackageNotFoundError:
-            result.metadata["transformers_version"] = None
-        if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
-            result.metadata["peak_gpu_memory_bytes"] = int(torch.cuda.max_memory_allocated())
-            result.metadata["gpu_name"] = torch.cuda.get_device_name()
-        result.metadata["pid"] = os.getpid()
-
-        record = ExampleRecord(
-            example_id=example_id,
-            dataset=str(row.get("dataset", "unknown")),
-            prompt_sha256=sha256_text(prompt),
-            model=args.model,
-            adapter=args.adapter,
+        record = generate_record(
+            adapter,
+            args,
+            row,
             seed=args.seed,
-            generation=result,
-            correct=None,
-            reference=None,
-            metadata={
-                "source_input": str(Path(args.input)),
-                "model_revision": args.revision,
-                "source_git_commit": source_git_commit,
-                "source_git_clean": source_git_clean,
-            },
+            source_git_commit=source_git_commit,
+            source_git_clean=source_git_clean,
+            torch=torch,
         )
         append_jsonl(args.output, record.to_dict())
         done.add(example_id)

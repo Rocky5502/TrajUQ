@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from scripts.aggregate_repeated_baseline import load_auxiliary_compute
-from scripts.evaluate_repeated_sampling import load_sample_run
+from scripts.evaluate_repeated_sampling import feature_matrix, load_sample_run
 
 
 def row(seed: int, temperature: float = 0.2) -> dict:
@@ -28,6 +28,10 @@ def row(seed: int, temperature: float = 0.2) -> dict:
                 "top_p": 1.0,
                 "cfg_scale": 0.0,
                 "remasking": "low_confidence",
+                "mask_id": 126336,
+                "trajectory_semantics": "active_unresolved_positions_v4",
+                "upstream_repository": "ML-GSAI/LLaDA",
+                "upstream_commit": "upstream-sha",
                 "wall_time_seconds": 1.0,
             },
         },
@@ -48,6 +52,29 @@ def test_repeated_run_signature_reads_seed_and_sampling_config(tmp_path):
     assert signature["seed"] == 2027
     assert signature["temperature"] == 0.2
     assert signature["model_revision"] == "sha"
+
+
+def test_repeated_seed_pool_rejects_runtime_semantics_drift(tmp_path):
+    first = tmp_path / "seed-2027.raw.jsonl"
+    second = tmp_path / "seed-2028.raw.jsonl"
+    target_row = {
+        "example_id": "x",
+        "dataset": "gsm8k",
+        "prompt_sha256": "abc",
+        "model": "model",
+        "correct": True,
+    }
+    write(first, [row(2027)])
+    changed = row(2028)
+    changed["generation"]["metadata"]["upstream_commit"] = "different-upstream"
+    write(second, [changed])
+
+    with pytest.raises(SystemExit, match="generation settings differ"):
+        feature_matrix(
+            ["x"],
+            {"x": target_row},
+            [str(first), str(second)],
+        )
 
 
 def test_repeated_run_rejects_outcome_leakage(tmp_path):

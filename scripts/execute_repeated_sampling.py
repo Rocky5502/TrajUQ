@@ -104,6 +104,17 @@ def argv_value(argv: list[str], flag: str) -> str | None:
     return str(argv[idx + 1])
 
 
+def argv_values(argv: list[str], flag: str) -> list[str]:
+    values: list[str] = []
+    for idx, value in enumerate(argv):
+        if value != flag:
+            continue
+        if idx + 1 >= len(argv):
+            return []
+        values.append(str(argv[idx + 1]))
+    return values
+
+
 def _argv_value_or(argv: list[str], flag: str, default: str) -> str:
     value = argv_value(argv, flag)
     return default if value is None else value
@@ -450,6 +461,10 @@ def pair_state(
     first: Path,
     second: Path,
     expected_ids: list[str] | None = None,
+    *,
+    expected_commit: str | None = None,
+    evaluation_argv: list[str] | None = None,
+    expected_seeds: list[int] | None = None,
 ) -> str:
     exists = [first.exists(), second.exists()]
     if not any(exists):
@@ -473,6 +488,67 @@ def pair_state(
         return "INVALID"
     if expected_ids is not None and int(metrics.get("n_test", -1)) != len(expected_ids):
         return "INVALID"
+    if expected_seeds is not None:
+        try:
+            observed_seeds = [int(seed) for seed in metrics.get("sample_seeds", [])]
+        except (TypeError, ValueError):
+            return "INVALID"
+        if observed_seeds != [int(seed) for seed in expected_seeds]:
+            return "INVALID"
+
+    if evaluation_argv is not None:
+        if expected_commit is None:
+            return "INVALID"
+        cal_target = argv_value(evaluation_argv, "--cal-target")
+        test_target = argv_value(evaluation_argv, "--test-target")
+        output = argv_value(evaluation_argv, "--output")
+        predictions_output = argv_value(
+            evaluation_argv,
+            "--predictions-output",
+        )
+        cal_samples = argv_values(evaluation_argv, "--cal-sample")
+        test_samples = argv_values(evaluation_argv, "--test-sample")
+        if (
+            not cal_target
+            or not test_target
+            or output is None
+            or predictions_output is None
+            or Path(output) != first
+            or Path(predictions_output) != second
+            or not cal_samples
+            or not test_samples
+            or len(cal_samples) != len(test_samples)
+        ):
+            return "INVALID"
+        source_paths: dict[str, Path] = {
+            "cal_target": Path(cal_target),
+            "test_target": Path(test_target),
+            "predictions": second,
+        }
+        source_paths.update(
+            {
+                f"cal_sample:{index}": Path(path)
+                for index, path in enumerate(cal_samples)
+            }
+        )
+        source_paths.update(
+            {
+                f"test_sample:{index}": Path(path)
+                for index, path in enumerate(test_samples)
+            }
+        )
+        if any(not path.is_file() for path in source_paths.values()):
+            return "INVALID"
+        expected_sources = {
+            name: (str(path), sha256_file(path))
+            for name, path in source_paths.items()
+        }
+        if not binding_matches(
+            metrics.get("provenance", {}),
+            expected_commit=expected_commit,
+            expected_sources=expected_sources,
+        ):
+            return "INVALID"
 
     test_cost = metrics.get("auxiliary_compute", {}).get("test", {})
     for key in (
@@ -534,6 +610,9 @@ def cell_state(
         Path(str(cell["repeated_metrics"])),
         Path(str(cell["repeated_predictions"])),
         expected_test_ids,
+        expected_commit=expected_commit,
+        evaluation_argv=[str(value) for value in cell["evaluate_argv"]],
+        expected_seeds=seeds,
     )
     comparison = comparison_state(
         Path(str(cell["direct_comparison"])),
@@ -872,6 +951,12 @@ def main() -> None:
             Path(str(cell["repeated_metrics"])),
             Path(str(cell["repeated_predictions"])),
             expected_test_ids,
+            expected_commit=expected_commit,
+            evaluation_argv=[
+                str(value)
+                for value in cell["evaluate_argv"]
+            ],
+            expected_seeds=[int(seed) for seed in cell["seeds"]],
         )
         if evaluation == "MISSING":
             run_command(
@@ -885,6 +970,12 @@ def main() -> None:
                 Path(str(cell["repeated_metrics"])),
                 Path(str(cell["repeated_predictions"])),
                 expected_test_ids,
+                expected_commit=expected_commit,
+                evaluation_argv=[
+                    str(value)
+                    for value in cell["evaluate_argv"]
+                ],
+                expected_seeds=[int(seed) for seed in cell["seeds"]],
             ) != "COMPLETE":
                 write_snapshot(plan, state_path)
                 raise SystemExit(

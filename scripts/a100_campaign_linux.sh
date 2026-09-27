@@ -10,6 +10,7 @@ fail() {
 }
 
 require_clean_frozen_checkout() {
+  "$PYTHON" scripts/validate_frozen_preprimary.py
   "$PYTHON" - <<'PY'
 import json
 import subprocess

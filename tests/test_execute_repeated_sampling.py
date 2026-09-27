@@ -186,6 +186,116 @@ def test_generation_state_rejects_audited_truncated_seed(tmp_path):
     assert not state["complete"]
 
 
+def test_pair_state_requires_exact_evaluation_source_binding(tmp_path):
+    cal_target = tmp_path / "cal.scored.jsonl"
+    test_target = tmp_path / "test.scored.jsonl"
+    predictions = tmp_path / "predictions.jsonl"
+    metrics = tmp_path / "metrics.json"
+    cal_target.write_text('{"example_id":"c"}\n', encoding="utf-8")
+    test_target.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    predictions.write_text(
+        '{"example_id":"x","y_error":1,"p_error_repeated_sampling":0.8}\n',
+        encoding="utf-8",
+    )
+    cal_samples = []
+    test_samples = []
+    for seed in (2027, 2028, 2029, 2030, 2031):
+        cal_path = tmp_path / f"cal-{seed}.jsonl"
+        test_path = tmp_path / f"test-{seed}.jsonl"
+        cal_path.write_text(
+            json.dumps({"example_id": "c", "seed": seed}) + "\n",
+            encoding="utf-8",
+        )
+        test_path.write_text(
+            json.dumps({"example_id": "x", "seed": seed}) + "\n",
+            encoding="utf-8",
+        )
+        cal_samples.append(cal_path)
+        test_samples.append(test_path)
+
+    sources = {
+        "cal_target": cal_target,
+        "test_target": test_target,
+        "predictions": predictions,
+        **{
+            f"cal_sample:{index}": path
+            for index, path in enumerate(cal_samples)
+        },
+        **{
+            f"test_sample:{index}": path
+            for index, path in enumerate(test_samples)
+        },
+    }
+    metrics.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_repeated_sampling_baseline_v2",
+                "sample_count": 5,
+                "sample_seeds": [2027, 2028, 2029, 2030, 2031],
+                "n_test": 1,
+                "auxiliary_compute": {
+                    "test": {
+                        "mean_auxiliary_wall_time_seconds_per_example": 5.0,
+                        "p90_auxiliary_wall_time_seconds_per_example": 6.0,
+                    }
+                },
+                "provenance": {
+                    "protocol": "trajuq_analysis_source_binding_v1",
+                    "git_commit": "frozen-commit",
+                    "git_clean": True,
+                    "sources": {
+                        name: {
+                            "path": str(path),
+                            "sha256": _sha256(path),
+                        }
+                        for name, path in sources.items()
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    argv = [
+        "python",
+        "scripts/evaluate_repeated_sampling.py",
+        "--cal-target",
+        str(cal_target),
+    ]
+    for path in cal_samples:
+        argv.extend(["--cal-sample", str(path)])
+    argv.extend(["--test-target", str(test_target)])
+    for path in test_samples:
+        argv.extend(["--test-sample", str(path)])
+    argv.extend(
+        [
+            "--output",
+            str(metrics),
+            "--predictions-output",
+            str(predictions),
+        ]
+    )
+
+    assert pair_state(
+        metrics,
+        predictions,
+        ["x"],
+        expected_commit="frozen-commit",
+        evaluation_argv=argv,
+        expected_seeds=[2027, 2028, 2029, 2030, 2031],
+    ) == "COMPLETE"
+
+    test_samples[0].write_text('{"changed":true}\n', encoding="utf-8")
+    assert pair_state(
+        metrics,
+        predictions,
+        ["x"],
+        expected_commit="frozen-commit",
+        evaluation_argv=argv,
+        expected_seeds=[2027, 2028, 2029, 2030, 2031],
+    ) == "INVALID"
+
+
 def test_pair_state_rejects_partial_outputs(tmp_path):
     metrics = tmp_path / "metrics.json"
     predictions = tmp_path / "predictions.jsonl"

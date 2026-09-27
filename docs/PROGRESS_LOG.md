@@ -13,8 +13,10 @@ their expected `results/*` artifacts exist and pass inspection.
 - Primary design remains frozen at 3 model families x 6 datasets = 18 cells.
 - No empirical paper number has been invented or promoted from repository code.
 - The first required runtime milestone remains the clean pre-primary freeze:
-  `results/cpu_verification.json` PASS plus
-  `results/revision_ledger.json` protocol-v2 PASS at the same clean commit.
+  `results/cpu_verification.json` PASS,
+  `results/revision_ledger.json` protocol-v2 PASS, and
+  `results/gated_dataset_access.json` protocol-v1 PASS at the same clean
+  commit, with gated access bound to the exact revision-ledger SHA-256.
 
 ### Continuity and pre-primary hardening
 

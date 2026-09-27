@@ -135,6 +135,7 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
             "git_clean": True,
             "revision_ledger_sha256": ledger_sha,
             "normalizer_version": NORMALIZER_VERSION,
+            "contract_sample_count_per_dataset": 4,
             "expected_datasets": ["gsm8k"],
             "observed_datasets": ["gsm8k"],
             "results": [
@@ -143,6 +144,9 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
                     "repo_id": "openai/gsm8k",
                     "resolved_revision": "dataset-sha",
                     "normalizer_version": NORMALIZER_VERSION,
+                    "contract_sample_count": 4,
+                    "observed_sample_count": 4,
+                    "scorer_smoke_pass_count": 4,
                     "scorer_smoke_pass": True,
                     "source_row_content_stored": False,
                     "status": "PASS",
@@ -219,3 +223,20 @@ def test_shared_validator_rejects_dirty_checkout(tmp_path):
 
     assert result["status"] == "FAIL"
     assert "current git worktree is not clean" in result["failures"]
+
+
+def test_shared_validator_rejects_legacy_one_row_dataset_contract(tmp_path):
+    case = build_frozen_case(tmp_path)
+    payload = json.loads(case["contracts"].read_text(encoding="utf-8"))
+    payload["contract_sample_count_per_dataset"] = 1
+    payload["results"][0]["contract_sample_count"] = 1
+    payload["results"][0]["observed_sample_count"] = 1
+    payload["results"][0]["scorer_smoke_pass_count"] = 1
+    write_json(case["contracts"], payload)
+
+    result = validate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "dataset normalizer/scorer contracts" in x
+        for x in result["failures"]
+    )

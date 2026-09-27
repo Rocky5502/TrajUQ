@@ -110,10 +110,13 @@ BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
-After its estimate stage, the supervisor compares projected full-scope GPU time
-with the rental hours still remaining. If the mean projection no longer fits,
-it stops before scale. If the mean fits but the conservative P90 planning sum
-does not, it logs a warning and continues in the frozen priority order.
+After its estimate stage, the supervisor compares projected full-scope
+generation time plus the frozen 6-hour operational reserve with the rental
+hours still remaining. The reserve covers model download/load overhead, CPU
+analysis/rendering, evidence export, and limited retry margin omitted from the
+generation timing projection. If mean+reserve no longer fits, it stops before
+scale. If mean+reserve fits but P90+reserve does not, it logs a warning and
+continues in the frozen priority order.
 
 The supervisor performs:
 

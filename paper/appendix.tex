@@ -5,9 +5,12 @@ It is intentionally detailed so that model-specific implementation choices canno
 
 \section{Execution Environment and Resource Accounting}
 
-Primary scale and transfer experiments are executed on a Linux server using the
+The planned scale/transfer profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
-CUDA~13.0), one NVIDIA A100-SXM4-80GB GPU, and 48~GB of system memory.
+CUDA~13.0), 16 CPU cores, 48~GB of system memory, and one
+NVIDIA A100-SXM4-80GB GPU. Because this appendix is still pre-experiment, those
+resources are a declared execution plan, not a claim that a run has completed;
+the final paper must report the environment attested by the frozen artifacts.
 The experiment freeze records the source commit, immutable model and dataset
 revisions, frozen model configurations, and dependency-sensitive scorer
 requirements before expensive execution.

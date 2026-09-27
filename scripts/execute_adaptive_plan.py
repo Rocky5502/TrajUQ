@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from trajuq.io import read_jsonl
+from trajuq.provenance import binding_matches
 
 
 BASE_STEPS = (
@@ -331,7 +332,59 @@ def evaluation_state(
     return "COMPLETE"
 
 
-def macro_state(spec: dict[str, Any], expected_cells: int) -> str:
+def adaptive_macro_provenance_matches(
+    plan: dict[str, Any],
+    spec: dict[str, Any],
+    payload: dict,
+) -> bool:
+    # Lightweight unit fixtures may omit the frozen-plan protocol.
+    if plan.get("protocol") != "trajuq_adaptive_matrix_plan_v3":
+        return True
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    plan_path = str(plan.get("_plan_path", ""))
+    fraction_key = str(spec.get("fraction_key", ""))
+    if (
+        not expected_commit
+        or not plan_path
+        or not Path(plan_path).is_file()
+        or not fraction_key
+    ):
+        return False
+
+    sources: dict[str, tuple[str, str]] = {
+        "plan": (plan_path, sha256_file(Path(plan_path))),
+    }
+    for cell in plan.get("cells", []):
+        label = str(cell.get("cell", ""))
+        evaluation = cell.get("evaluations", {}).get(fraction_key, {})
+        bindings = {
+            f"refined_scored:{label}": cell.get("provenance", {})
+            .get("test", {})
+            .get("refined_scored"),
+            f"adaptive_result:{label}": evaluation.get("result"),
+            f"adaptive_predictions:{label}": evaluation.get("predictions"),
+        }
+        if not label:
+            return False
+        for name, raw_path in bindings.items():
+            path = Path(str(raw_path or ""))
+            if not path.is_file():
+                return False
+            sources[name] = (str(path), sha256_file(path))
+
+    return binding_matches(
+        payload.get("provenance", {}),
+        expected_commit=expected_commit,
+        expected_sources=sources,
+    )
+
+
+def macro_state(
+    plan: dict[str, Any],
+    spec: dict[str, Any],
+    expected_cells: int,
+) -> str:
     output = Path(str(spec["output"]))
     if not output.exists():
         return "MISSING"
@@ -350,6 +403,7 @@ def macro_state(spec: dict[str, Any], expected_cells: int) -> str:
         == float(spec.get("max_refine_fraction", -2.0))
         and bool(payload.get("is_primary_fraction"))
         == bool(spec.get("primary"))
+        and adaptive_macro_provenance_matches(plan, spec, payload)
     )
     return "COMPLETE" if complete else "INVALID"
 
@@ -403,7 +457,7 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
     for key in fraction_keys:
         spec = dict(plan["macro_aggregation"][key])
         spec["fraction_key"] = key
-        macros[key] = macro_state(spec, expected)
+        macros[key] = macro_state(plan, spec, expected)
 
     status = (
         "COMPLETE"
@@ -565,6 +619,7 @@ def main() -> None:
     if not plan_path.exists():
         raise SystemExit(f"Missing adaptive plan: {plan_path}")
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    plan["_plan_path"] = str(plan_path)
     if plan.get("status") != "PASS":
         raise SystemExit("Adaptive plan is not PASS.")
 

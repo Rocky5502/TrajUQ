@@ -19,6 +19,7 @@ from trajuq.aggregation import (  # noqa: E402
     oriented_improvement,
 )
 from trajuq.io import read_jsonl  # noqa: E402
+from trajuq.provenance import analysis_provenance  # noqa: E402
 
 
 SIGNALS = {
@@ -207,8 +208,19 @@ def main() -> None:
             for metric in METRICS
         }
 
+    provenance_sources: dict[str, Path] = {}
+    for spec in specs:
+        label = str(spec["cell"])
+        provenance_sources[f"trajuq_prediction:{label}"] = Path(
+            str(spec["outputs"]["predictions"])
+        )
+        provenance_sources[f"prior_signal_prediction:{label}"] = Path(
+            str(spec["outputs"]["prior_signal_predictions"])
+        )
+
     payload = {
         "protocol": "trajuq_prior_aligned_signal_macro_v1",
+        "provenance": analysis_provenance(provenance_sources),
         "role": "secondary_prior_aligned_signal_class_diagnostic",
         "comparison": "trajuq_vs_prior_aligned_single_trajectory_signals",
         "delta_direction": "positive_means_trajuq_is_better",

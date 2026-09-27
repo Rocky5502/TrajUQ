@@ -5,6 +5,7 @@ experiment:
 
 compute_budget:
   target_wall_clock_hours: 72
+  operational_reserve_hours: 6
   target_gpu_count: 1
   target_gpu_class: NVIDIA_A100_SXM4_80GB
   execution_priority:
@@ -18,8 +19,11 @@ compute_budget:
   continuous_execution: true
   note: >
     The three-day single-A100 envelope is an operational budget, not a claim
-    that runtime is known in advance. Dataset caps are frozen pre-outcome;
-    scientific gates are never weakened to satisfy the wall-clock target.
+    that runtime is known in advance. Six hours are reserved pre-outcome for
+    model-load/download overhead, CPU analysis/rendering, evidence export, and
+    limited retry margin that the generation timing estimator excludes.
+    Dataset caps are frozen pre-outcome; scientific gates are never weakened
+    to satisfy the wall-clock target.
 
 models:
   primary:

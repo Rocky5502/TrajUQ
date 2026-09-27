@@ -264,16 +264,19 @@ After pre-primary readiness PASS:
 5. complete all 18 generation/audit/scoring cells;
 6. create `results/primary_analysis_plan.json` only after scored artifacts and audits exist;
 7. dry-run then execute `scripts/execute_primary_analysis.py`;
-8. aggregate the complete 18-cell primary endpoint, frozen feature-ablation macro,
-   and prior-aligned signal diagnostic macro;
-9. execute the frozen RQ1 claim gate unchanged;
+8. aggregate the complete 18-cell primary endpoint, frozen feature-ablation
+   macro, prior-aligned signal diagnostic macro, and supplementary isotonic
+   calibration-sensitivity macro;
+9. execute the frozen RQ1 claim gate unchanged; the isotonic sensitivity never
+   enters or changes this gate;
 10. execute the hash-bound 18-cell five-sample comparator;
 11. execute the hash-bound RQ3 25/50/75% adaptive matrix;
 12. optionally execute RQ4 only after the primary path is healthy;
-13. render manuscript results only from the seven frozen text sources (primary,
-   RQ1, ablation, prior-signal, repeated, adaptive-50%, primary config), then
-   render the SHA-bound aggregate result figures from the primary and
-   25/50/75% adaptive macros.
+13. render manuscript results only from the eight frozen text sources (primary,
+   RQ1, ablation, prior-signal, isotonic calibration sensitivity, repeated,
+   adaptive-50%, primary config), producing
+   `trajuq_paper_results_render_v2`; then render the SHA-bound aggregate result
+   figures from the primary and 25/50/75% adaptive macros.
 
 Execution scripts are designed to be resumable and non-overwriting. Existing PARTIAL/INVALID artifacts must be inspected, not silently replaced.
 
@@ -289,6 +292,13 @@ bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
 bash scripts/a100_campaign_linux.sh all-after-readiness
 ```
+
+Every successful expensive A100 stage refreshes project status and emits a
+privacy-scanned stage-specific continuation ZIP under `dist/` (pilot,
+parity-math, readiness, estimate, primary, analysis, RQ2, RQ3, and paper).
+These bundles intentionally exclude raw run JSONL and processed benchmark rows;
+they preserve continuity but never substitute for the underlying frozen
+`results/*` evidence.
 
 Never modify the campaign runner to auto-attest either human-review gate.
 
@@ -311,9 +321,12 @@ python scripts/render_paper_result_figures.py
 python scripts/audit_paper.py --submission-ready
 python scripts/submission_readiness.py
 ```
-only when the required frozen result artifacts exist. The final figure manifest
-must be protocol `trajuq_paper_result_figures_v2` and bind the primary/config,
-all three adaptive-cap sources, and all three generated PDF hashes.
+only when the required frozen result artifacts exist. The generated-results
+manifest must be protocol `trajuq_paper_results_render_v2` and bind all eight
+frozen text sources, including the supplementary isotonic calibration-
+sensitivity macro. The final figure manifest must be protocol
+`trajuq_paper_result_figures_v2` and bind the primary/config, all three
+adaptive-cap sources, and all three generated PDF hashes.
 
 Build the anonymous Overleaf source package from the clean final paper checkout:
 

@@ -24,6 +24,7 @@ def write_jsonl(path: Path, adapter: str, times: list[float]) -> None:
             {
                 "example_id": f"x:{index}",
                 "adapter": adapter,
+                "model": f"example/{adapter}",
                 "metadata": {
                     "source_git_commit": "abc",
                     "source_git_clean": True,
@@ -77,11 +78,14 @@ def test_validate_timing_source_summarizes_audited_trace(tmp_path):
         "llada",
         raw,
         expected_commit="abc",
+        expected_model_id="example/llada",
+        expected_model_revision="model-sha",
     )
 
     assert result["records"] == 5
     assert result["source_git_commit"] == "abc"
     assert result["source_git_clean"] is True
+    assert result["model_id"] == "example/llada"
     assert result["model_revision"] == "model-sha"
     assert result["wall_time_seconds"]["mean"] == pytest.approx(3.0)
     assert result["wall_time_seconds"]["p50"] == pytest.approx(3.0)
@@ -210,4 +214,36 @@ def test_validate_timing_source_rejects_dirty_row_provenance(tmp_path):
             "llada",
             raw,
             expected_commit="abc",
+        )
+
+
+def test_validate_timing_source_rejects_wrong_frozen_model(tmp_path):
+    raw = tmp_path / "sdar.raw.jsonl"
+    audit = raw.with_suffix(raw.suffix + ".audit.json")
+    write_jsonl(raw, "sdar", [0.4, 0.5])
+    write_audit(audit, raw, commit="abc")
+
+    with pytest.raises(ValueError, match="model ID"):
+        validate_timing_source(
+            "sdar",
+            raw,
+            expected_commit="abc",
+            expected_model_id="JetLM/SDAR-1.7B-Chat",
+            expected_model_revision="model-sha",
+        )
+
+
+def test_validate_timing_source_rejects_wrong_frozen_revision(tmp_path):
+    raw = tmp_path / "dream.raw.jsonl"
+    audit = raw.with_suffix(raw.suffix + ".audit.json")
+    write_jsonl(raw, "dream", [0.8, 0.9])
+    write_audit(audit, raw, commit="abc")
+
+    with pytest.raises(ValueError, match="model revision"):
+        validate_timing_source(
+            "dream",
+            raw,
+            expected_commit="abc",
+            expected_model_id="example/dream",
+            expected_model_revision="other-sha",
         )

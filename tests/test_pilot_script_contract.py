@@ -34,9 +34,22 @@ def test_preprimary_freeze_exports_private_handoff():
     assert "trajuq_cpu_verification_v1" in text
     assert "$Cpu.git_clean -ne $true" in text
     assert "$DirtyAfterFreeze" in text
+    assert "scripts/verify_gated_dataset_access.py" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
     assert "scripts/export_research_handoff.py" in text
     assert "dist/trajuq_preprimary_handoff.zip" in text
     assert "--skip-status-refresh" in text
+
+
+def test_linux_preprimary_freeze_checks_gated_dataset_access():
+    text = Path("scripts/freeze_preprimary.sh").read_text(encoding="utf-8")
+
+    assert "scripts/verify_gated_dataset_access.py" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
+    assert "revision_ledger_sha256" in text
+    assert "PRE-PRIMARY FREEZE PASS" in text
 
 
 def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():

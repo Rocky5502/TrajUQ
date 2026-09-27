@@ -140,6 +140,10 @@ def repeated_manifest_matches_argv(
             str(payload.get("adapter", "")) == adapter
             and str(payload.get("model", "")) == model
             and str(payload.get("model_revision", "")) == revision
+            and str(payload.get("requested_device", ""))
+            == _argv_value_or(argv, "--device", "cuda")
+            and str(payload.get("requested_dtype", ""))
+            == _argv_value_or(argv, "--dtype", "bfloat16")
             and [int(seed) for seed in payload.get("seeds", [])] == seeds
             and float(payload.get("temperature")) == float(
                 _argv_value_or(argv, "--temperature", "0.2")

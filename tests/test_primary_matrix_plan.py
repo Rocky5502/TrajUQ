@@ -4,6 +4,7 @@ import yaml
 
 from scripts.plan_primary_matrix import (
     generation_args,
+    validate_prepared_split_identity,
     validate_readiness_source_bindings,
 )
 
@@ -95,3 +96,85 @@ def test_primary_planner_requires_readiness_source_manifest():
     assert validate_readiness_source_bindings({}) == [
         "primary readiness has no source-binding manifest"
     ]
+
+
+def test_prepared_split_identity_matches_frozen_dataset_policy():
+    spec = {
+        "hf_id": "openai/gsm8k",
+        "config": "main",
+        "strategy": "official",
+        "calibration_split": "train",
+        "test_split": "test",
+        "source_split": None,
+        "calibration_fraction": None,
+        "split_seed": None,
+    }
+    meta = {
+        **spec,
+        "requested_revision": "dataset-sha",
+    }
+    ledger = {
+        "repo_id": "openai/gsm8k",
+        "resolved_sha": "dataset-sha",
+    }
+
+    assert validate_prepared_split_identity(
+        "gsm8k", meta, spec, ledger
+    ) == []
+
+
+def test_prepared_split_identity_rejects_policy_drift():
+    spec = {
+        "hf_id": "Idavidrein/gpqa",
+        "config": "gpqa_diamond",
+        "strategy": "internal_holdout",
+        "calibration_split": None,
+        "test_split": None,
+        "source_split": "train",
+        "calibration_fraction": 0.30,
+        "split_seed": "2027",
+    }
+    meta = {
+        **spec,
+        "requested_revision": "dataset-sha",
+        "calibration_fraction": 0.20,
+        "split_seed": "other-seed",
+    }
+    ledger = {
+        "repo_id": "Idavidrein/gpqa",
+        "resolved_sha": "dataset-sha",
+    }
+
+    failures = validate_prepared_split_identity(
+        "gpqa_diamond", meta, spec, ledger
+    )
+    assert any("calibration_fraction differs" in item for item in failures)
+    assert any("split_seed differs" in item for item in failures)
+
+
+def test_prepared_split_identity_rejects_repo_and_revision_drift():
+    spec = {
+        "hf_id": "openai/gsm8k",
+        "config": "main",
+        "strategy": "official",
+        "calibration_split": "train",
+        "test_split": "test",
+        "source_split": None,
+        "calibration_fraction": None,
+        "split_seed": None,
+    }
+    meta = {
+        **spec,
+        "hf_id": "other/gsm8k",
+        "requested_revision": "wrong-sha",
+    }
+    ledger = {
+        "repo_id": "openai/gsm8k",
+        "resolved_sha": "dataset-sha",
+    }
+
+    failures = validate_prepared_split_identity(
+        "gsm8k", meta, spec, ledger
+    )
+    assert any("repo_id differs" in item for item in failures)
+    assert any("revision differs" in item for item in failures)

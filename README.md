@@ -230,6 +230,11 @@ stage once, and stops rather than weakening a scientific gate if the wall-clock
 budget is exhausted. It does not require an AI agent to remain connected while
 the GPU process is healthy.
 
+The frozen generation ledger now records `--device cuda` and
+`--dtype bfloat16` explicitly. Raw primary/adaptive records and repeated-seed
+reuse bind those requested runtime settings, so evidence produced under a
+different requested dtype/device is not silently reused.
+
 The two human-review boundaries are deliberate and cannot be bypassed by either
 campaign runner.
 

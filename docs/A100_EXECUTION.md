@@ -10,24 +10,25 @@ Python >=3.10 is required; Python 3.11 is recommended when available. Always
 replace `<EXACT_FREEZE_SHA_FROM_HANDOFF>` with the exact commit nominated in
 the current project handoff; do not run the experiment from a moving branch.
 
-## Rental profile and first-day strategy
+## Rental profile and 72-hour strategy
 
 The planned rental profile is one NVIDIA A100-SXM4-80GB GPU, 16 CPU cores,
 48 GB host RAM, a 200 GB system disk, and approximately 250 Mbps network
-bandwidth. This profile is sufficient to load and execute each frozen primary
-checkpoint one at a time; TrajUQ does not require multi-GPU model parallelism
-or training.
+bandwidth. The operational budget is **72 continuous hours**. This profile is
+sufficient to load and execute each frozen primary checkpoint one at a time;
+TrajUQ does not require multi-GPU model parallelism or training.
 
 The current generation runner is intentionally single-record and single-GPU.
-Therefore one A100 is sufficient for scientific completion but the full
-campaign is serial. Buying more GPUs would improve wall-clock time only if the
-frozen cells are explicitly partitioned across independent workers; one normal
-TrajUQ process does not automatically consume multiple GPUs.
+Therefore one A100 is sufficient for the frozen study, and the 72-hour plan
+reduces unnecessary calls through a predeclared dataset-cap policy rather than
+changing outcomes after they are observed. The tracked manifest freezes
+outcome-free SHA-256 ID ranking with seed 2027: GSM8K calibration/test are
+capped at 1,000 each; ARC-Challenge and MMLU-Pro retain their smaller
+calibration splits and cap the large test split at 1,000; the three smaller
+single-split benchmarks keep their complete frozen holdouts.
 
-Do not prepay for a long rental before measuring the actual server. Start with
-one day. During that first rental, aim to complete the pre-primary freeze,
-LLaDA parity/pilot, the two human review stops, SDAR/Dream parity, the MATH-500
-gate, primary readiness, and then:
+Before scale, complete the pre-primary freeze, LLaDA parity/pilot, both human
+review stops, SDAR/Dream parity, the MATH-500 gate, primary readiness, and then:
 
 ```bash
 bash scripts/a100_campaign_linux.sh estimate
@@ -37,7 +38,10 @@ cat results/a100_compute_estimate.md
 The estimator is the authoritative planning surface after real timing traces
 exist. It reports the exact frozen generation-call count plus mean-timing and
 P90-planning A100-hours and equivalent 24/7 single-A100 days. It excludes model
-download/load startup, CPU analysis, failed retries, and optional RQ4.
+download/load startup, CPU analysis, failed retries, and optional RQ4. The
+72-hour budget never authorizes weakening a scientific gate; if measured
+throughput is slower than expected, the supervisor preserves resumable evidence
+and reports the incomplete stage.
 
 A 200 GB system disk is expected to be workable for the three checkpoints,
 Python environment, prepared data, and experiment artifacts, but disk use is
@@ -105,8 +109,17 @@ bash scripts/a100_campaign_linux.sh status
 It never bypasses human-review gates. The `pilot` stage stops for the manual
 10-trace review; `parity-math` requires that pilot attestation and then stops
 again for the 25-example MATH-500 review. Only after
-`results/primary_readiness.json` is protocol-v2 PASS may
-`all-after-readiness` launch the full frozen campaign.
+`results/primary_readiness.json` is protocol-v2 PASS may scale execution
+start. For the three-day rental, launch the autonomous supervisor:
+
+```bash
+BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+  bash scripts/a100_campaign_linux.sh autopilot-72h
+```
+
+It prioritizes primary generation, primary analysis, and RQ3 before the
+expensive repeated-sampling comparator, writes an hourly GPU/disk/progress log,
+and does not require Codex or another agent to remain connected continuously.
 
 Every successful campaign milestone now refreshes the machine-readable project
 status and writes a privacy-scanned continuation bundle under `dist/`:

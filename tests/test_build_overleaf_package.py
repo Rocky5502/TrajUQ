@@ -55,7 +55,7 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
         style_dir=style,
         git_commit="a" * 40,
     )
-    second_payload = build_package(
+    build_package(
         root=root,
         output=second,
         style_dir=style,

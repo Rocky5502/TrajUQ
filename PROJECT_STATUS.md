@@ -44,7 +44,7 @@ particular, the following are implemented and versioned:
   state, and SHA-256 bindings to both reference and instrumented JSONL; primary
   readiness re-hashes that evidence and accepts only exact 20-prompt artifacts
   bound to the frozen revision-ledger git commit and model SHA;
-- frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, configs, frozen model configs, and prepared dataset inputs;
+- frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, primary/readiness/revision-ledger artifacts, prepared dataset inputs, and the exact gitignored frozen model-config paths/SHA-256 values recorded by revision-ledger v2, so changing a generation setting after the freeze invalidates planning;
 - pre-registered RQ1 positive-claim gate;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation; repeated macro protocol v2 additionally requires complete test-time auxiliary wall-clock metadata in all 18 cells and carries an equal-cell-weight compute summary into artifact-derived paper rendering;
 - pinned MATH-500 symbolic scoring, commit-bound automatic audit with runtime

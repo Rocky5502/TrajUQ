@@ -78,6 +78,29 @@ def test_base_partition_requires_both_audited_files(tmp_path):
     assert base_partition_state(spec)["complete"]
 
 
+def test_complete_resident_adaptive_raw_hands_off_to_audit_and_score(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "base.raw.jsonl"
+    scored = tmp_path / "base.scored.jsonl"
+    write_input(source, ["a", "b"])
+    raw.write_text(
+        '{"example_id":"a"}\n{"example_id":"b"}\n',
+        encoding="utf-8",
+    )
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    assert artifact_id_state(raw, spec, "frozen-commit") == "COMPLETE"
+    assert not command_needed("generate", spec, "frozen-commit")
+    assert command_needed("audit_raw", spec, "frozen-commit")
+    assert command_needed("score", spec, "frozen-commit")
+    assert command_needed("audit_scored", spec, "frozen-commit")
+    assert not base_partition_state(spec, "frozen-commit")["complete"]
+
+
 def test_adaptive_partial_raw_prefix_resumes_but_is_not_complete(tmp_path):
     source = tmp_path / "input.jsonl"
     raw = tmp_path / "base.raw.jsonl"

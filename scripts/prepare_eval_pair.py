@@ -56,6 +56,39 @@ def load_hf(load_dataset, spec: dict, split: str, revision: str | None):
     return load_dataset(spec["hf_id"], **kwargs)
 
 
+def apply_frozen_caps(
+    calibration_rows: list[dict],
+    test_rows: list[dict],
+    *,
+    dataset: str,
+    seed: str,
+    calibration_max: int | None,
+    test_max: int | None,
+) -> tuple[list[dict], list[dict], dict[str, int]]:
+    """Apply the frozen outcome-free cap once and preserve uncapped counts."""
+
+    source_counts = {
+        "source_total": len(calibration_rows) + len(test_rows),
+        "calibration_before_cap": len(calibration_rows),
+        "test_before_cap": len(test_rows),
+    }
+    capped_calibration = deterministic_cap_rows(
+        calibration_rows,
+        dataset=dataset,
+        role="calibration",
+        seed=seed,
+        max_examples=calibration_max,
+    )
+    capped_test = deterministic_cap_rows(
+        test_rows,
+        dataset=dataset,
+        role="test",
+        seed=seed,
+        max_examples=test_max,
+    )
+    return capped_calibration, capped_test, source_counts
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Prepare frozen calibration/test JSONL without tuning on the final test partition."
@@ -205,22 +238,13 @@ def main() -> None:
     # Apply the frozen compute cap exactly once after either split strategy has
     # produced its uncapped normalized partitions. Keeping this block shared
     # prevents official/internal-holdout preparation from drifting.
-    source_counts["source_total"] = len(cal_rows) + len(test_rows)
-    source_counts["calibration_before_cap"] = len(cal_rows)
-    source_counts["test_before_cap"] = len(test_rows)
-    cal_rows = deterministic_cap_rows(
+    cal_rows, test_rows, source_counts = apply_frozen_caps(
         cal_rows,
-        dataset=args.dataset,
-        role="calibration",
-        seed=cap_seed,
-        max_examples=calibration_max,
-    )
-    test_rows = deterministic_cap_rows(
         test_rows,
         dataset=args.dataset,
-        role="test",
         seed=cap_seed,
-        max_examples=test_max,
+        calibration_max=calibration_max,
+        test_max=test_max,
     )
     n_cal = write_rows(cal_path, cal_rows)
     n_test = write_rows(test_path, test_rows)

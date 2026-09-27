@@ -213,6 +213,24 @@ def verify_generated_results(
             ablation = load_json(source_paths["ablation"])
             prior_signals = load_json(source_paths["prior_signals"])
             adaptive = load_json(source_paths["adaptive"])
+            aggregate_payloads = {
+                "primary": primary,
+                "claim_gate": claim,
+                "repeated": repeated,
+                "ablation": ablation,
+                "prior_signals": prior_signals,
+                "adaptive": adaptive,
+            }
+            stale_bindings = [
+                name
+                for name, payload in aggregate_payloads.items()
+                if not binding_sources_intact(payload.get("provenance", {}))
+            ]
+            if stale_bindings:
+                raise ValueError(
+                    "aggregate source binding is missing, dirty, or stale: "
+                    + ", ".join(sorted(stale_bindings))
+                )
             primary_cfg = yaml.safe_load(
                 source_paths["primary_config"].read_text(encoding="utf-8")
             )

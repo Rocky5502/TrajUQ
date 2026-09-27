@@ -38,3 +38,24 @@ def test_72h_autopilot_preserves_failed_stage_exit_code():
     assert 'rc=$?' in text
     assert 'if (( rc != 0 )); then' in text
     assert 'exit "$rc"' in text
+
+
+
+def test_72h_autopilot_inherits_single_paid_rental_deadline():
+    text = Path("scripts/a100_72h_autopilot.sh").read_text(encoding="utf-8")
+
+    assert "results/a100_rental_clock.json" in text
+    assert "trajuq_a100_rental_clock_v1" in text
+    assert "Rental clock commit differs from current frozen HEAD" in text
+    assert "BUDGET_HOURS=" in text
+    assert 'START_EPOCH="$(date +%s)"' not in text
+    assert "check_estimate_against_remaining_budget" in text
+    assert "BUDGET_FORECAST_FAIL" in text
+    assert "mean projection exceeds the remaining paid-rental" in text
+
+
+def test_campaign_exposes_rental_start_stage():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    assert "rental-start)" in text
+    assert "scripts/start_a100_rental_clock.py" in text

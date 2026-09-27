@@ -135,6 +135,12 @@ def generate_record(
         torch.cuda.synchronize()
 
     result.metadata["wall_time_seconds"] = time.perf_counter() - start
+    result.metadata["requested_device"] = str(
+        getattr(args, "device", "cuda")
+    )
+    result.metadata["requested_dtype"] = str(
+        getattr(args, "dtype", "bfloat16")
+    )
     if torch is not None:
         result.metadata["torch_version"] = torch.__version__
     try:

@@ -17,6 +17,37 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def repeated_argv(input_path: Path, output_dir: Path) -> list[str]:
+    return [
+        "python",
+        "scripts/run_repeated_samples.py",
+        "--adapter",
+        "llada",
+        "--model",
+        "example/llada",
+        "--revision",
+        "model-sha",
+        "--input",
+        str(input_path),
+        "--output-dir",
+        str(output_dir),
+        "--temperature",
+        "0.2",
+        "--top-p",
+        "1.0",
+        "--max-new-tokens",
+        "128",
+        "--steps",
+        "128",
+        "--block-length",
+        "128",
+        "--llada-cfg-scale",
+        "0.0",
+        "--llada-remasking",
+        "low_confidence",
+    ]
+
+
 def write_input(path: Path, ids: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -67,9 +98,27 @@ def write_manifest(
         "protocol": "repeated_sampling_v1",
         "git_commit": commit,
         "git_clean": True,
+        "adapter": "llada",
+        "model": "example/llada",
+        "model_revision": "model-sha",
         "input": str(input_path),
         "input_sha256": _sha256(input_path),
         "seeds": seeds,
+        "temperature": 0.2,
+        "top_p": 1.0,
+        "steps": 128,
+        "max_new_tokens": 128,
+        "block_length": 128,
+        "adapter_generation": {
+            "llada_cfg_scale": 0.0,
+            "llada_remasking": "low_confidence",
+            "dream_alg": None,
+            "dream_alg_temp": None,
+            "sdar_denoising_steps": None,
+            "sdar_top_k": None,
+            "sdar_remasking_strategy": None,
+            "sdar_confidence_threshold": None,
+        },
         "runs": [
             {
                 "seed": seed,
@@ -88,14 +137,7 @@ def write_manifest(
 def test_generation_state_requires_every_seed_and_manifest(tmp_path):
     source = tmp_path / "input.jsonl"
     write_input(source, ["x"])
-    argv = [
-        "python",
-        "scripts/run_repeated_samples.py",
-        "--input",
-        str(source),
-        "--output-dir",
-        str(tmp_path),
-    ]
+    argv = repeated_argv(source, tmp_path)
     write_raw(tmp_path / "seed-2027.raw.jsonl")
     write_raw(tmp_path / "seed-2028.raw.jsonl")
     assert not generation_state(
@@ -111,17 +153,27 @@ def test_generation_state_requires_every_seed_and_manifest(tmp_path):
     assert state["complete"]
 
 
+def test_generation_state_rejects_wrong_sampler_settings(tmp_path):
+    source = tmp_path / "input.jsonl"
+    write_input(source, ["x"])
+    argv = repeated_argv(source, tmp_path)
+    write_raw(tmp_path / "seed-2027.raw.jsonl")
+    write_manifest(tmp_path, source, [2027])
+
+    manifest = tmp_path / "manifest.json"
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["temperature"] = 0.9
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    state = generation_state(argv, [2027], "frozen-commit")
+    assert not state["manifest_valid"]
+    assert not state["complete"]
+
+
 def test_generation_state_rejects_audited_truncated_seed(tmp_path):
     source = tmp_path / "input.jsonl"
     write_input(source, ["a", "b"])
-    argv = [
-        "python",
-        "scripts/run_repeated_samples.py",
-        "--input",
-        str(source),
-        "--output-dir",
-        str(tmp_path),
-    ]
+    argv = repeated_argv(source, tmp_path)
     write_raw(
         tmp_path / "seed-2027.raw.jsonl",
         ids=["a"],
@@ -220,22 +272,8 @@ def test_execution_snapshot_waits_for_macro(tmp_path):
                 "adapter": "llada",
                 "dataset": "gsm8k",
                 "seeds": [2027],
-                "calibration_generation_argv": [
-                    "python",
-                    "x",
-                    "--input",
-                    str(cal_input),
-                    "--output-dir",
-                    str(cal),
-                ],
-                "test_generation_argv": [
-                    "python",
-                    "x",
-                    "--input",
-                    str(test_input),
-                    "--output-dir",
-                    str(test),
-                ],
+                "calibration_generation_argv": repeated_argv(cal_input, cal),
+                "test_generation_argv": repeated_argv(test_input, test),
                 "provenance": {
                     "test": {
                         "scored_target": str(scored_target),

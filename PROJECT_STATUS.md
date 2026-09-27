@@ -116,6 +116,9 @@ particular, the following are implemented and versioned:
   claims;
 - a deterministic anonymous Overleaf packager pinned to the official ACL style
   commit, with identity/path scanning and an internal SHA-256 source manifest;
+  submission-ready mode requires the rendered-results and figure manifests,
+  includes only the three hash-approved result PDFs, and rejects stale source/
+  figure archives; final submission readiness records the exact ZIP SHA-256;
 - artifact-derived paper-state language so pre-experiment disclaimers disappear
   automatically only after complete frozen results are rendered;
 - primary-analysis cell outputs now carry protocol-v1 source bindings to the
@@ -257,8 +260,10 @@ After readiness passes:
     then run scripts/submission_readiness.py. The submission gate revalidates the
     historical experiment artifacts without requiring the paper commit to equal
     the experiment commit, while separately requiring the current submission
-    checkout to be clean. It also re-checks source hashes, anonymity, and the
-    deterministic software supplement before ACL pubcheck/upload.
+    checkout to be clean. It re-checks source hashes/anonymity, builds a
+    submission-ready Overleaf ZIP containing only manifest-bound result figures,
+    rebuilds the deterministic software supplement, and records SHA-256 values
+    for both archives before ACL pubcheck/upload.
 
 A negative RQ1 claim gate is a valid scientific result. Do not redesign the
 test analysis because a frozen result is weak.

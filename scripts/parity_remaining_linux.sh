@@ -233,7 +233,7 @@ run_dream() {
   if parity_passes dream "$DREAM_SHA" "$parity"; then
     printf 'Dream parity already PASS and hash-valid; preserving evidence.\n'
   else
-    require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$overhead"
+    require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"
     run_step "Dream 20-prompt native reference"       "$PYTHON" scripts/run_dream_reference.py         --model "$DREAM_MODEL" --revision "$DREAM_SHA"         --input "$CAL_DATA" --output "$ref" --limit 20 --seed 2027         --steps 128 --max-new-tokens 128 --temperature 0 --top-p 1.0         --alg entropy --alg-temp 0.1
     run_step "Dream 20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter dream --model "$DREAM_MODEL" --revision "$DREAM_SHA"         --input "$CAL_DATA" --output "$inst" --limit 20 --seed 2027         --steps 128 --max-new-tokens 128 --temperature 0 --top-p 1.0         --dream-alg entropy --dream-alg-temp 0.1
     run_step "Audit Dream parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst" --stage raw --require-revision

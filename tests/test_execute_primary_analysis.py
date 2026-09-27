@@ -6,6 +6,7 @@ import scripts.execute_primary_analysis as execute_primary_analysis
 from trajuq.features import FROZEN_FEATURE_GROUPS
 from scripts.execute_primary_analysis import (
     aggregate_provenance_matches,
+    claim_matches_frozen_rule,
     execution_snapshot,
     output_valid,
     semantic_output_valid,
@@ -393,6 +394,66 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
     )
     snapshot = execution_snapshot(plan)
     assert snapshot["status"] == "COMPLETE"
+
+
+def test_claim_reuse_rejects_hand_edited_positive_decision(tmp_path):
+    macro = tmp_path / "macro.json"
+    config = tmp_path / "primary.yaml"
+    macro.write_text(
+        json.dumps(
+            {
+                "cell_set_complete": True,
+                "macro": {
+                    "auroc": {
+                        "improvement_macro": 0.01,
+                        "improvement_ci_low": -0.02,
+                        "improvement_ci_high": 0.04,
+                        "positive_model_families": 3,
+                        "n_model_families": 3,
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    config.write_text(
+        "statistics:\n"
+        "  primary_endpoint: hierarchical_macro_auroc_improvement\n"
+        "  rq1_claim_gate:\n"
+        "    macro_auroc_ci_low_gt_zero: true\n"
+        "    min_positive_model_families: 2\n",
+        encoding="utf-8",
+    )
+    plan = {
+        "protocol": "trajuq_primary_analysis_plan_v2",
+        "primary_config": str(config),
+        "final_outputs": {"macro_primary": str(macro)},
+    }
+    edited = {
+        "primary_endpoint": "hierarchical_macro_auroc_improvement",
+        "decision": "SUPPORT_POSITIVE_RQ1_CLAIM",
+        "claim_supported": True,
+        "frozen_rules": {
+            "macro_auroc_ci_low_gt_zero": True,
+            "min_positive_model_families": 2,
+        },
+        "observed": {
+            "macro_auroc_improvement": 0.01,
+            "macro_auroc_ci_low": -0.02,
+            "macro_auroc_ci_high": 0.04,
+            "positive_model_families": 3,
+            "n_model_families": 3,
+        },
+        "conditions": {
+            "complete_frozen_cell_set": True,
+            "macro_auroc_improvement_positive": True,
+            "macro_auroc_ci_low_gt_zero": True,
+            "positive_model_families_at_least_minimum": True,
+            "three_primary_model_families_present": True,
+        },
+    }
+
+    assert not claim_matches_frozen_rule(plan, edited)
 
 
 def test_analysis_provenance_rejects_scored_input_drift(

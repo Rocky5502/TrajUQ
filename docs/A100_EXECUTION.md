@@ -170,6 +170,12 @@ frozen checkout:
 bash scripts/a100_campaign_linux.sh parity-math
 ```
 
+Before launching those GPU stages, the campaign revalidates the pilot human
+attestation against the current review-sheet SHA, pilot-quality SHA, raw/scored
+pilot files and audits, LLaDA parity JSON, native/instrumented parity sources,
+and instrumented audit at the frozen commit. A stale or hand-edited PASS
+attestation is a stop condition.
+
 This runs the remaining SDAR/Dream parity gates and the automated MATH-500
 prepare/pilot work. The underlying parity-only command remains:
 

@@ -209,28 +209,32 @@ completion count cannot be mistaken for completed empirical work.
   system disk, and approximately 250 Mbps selected bandwidth. These are
   pre-execution resource selections, not verified run facts.
 - One A100 80GB is sufficient for the three frozen primary checkpoints because
-  they are loaded/executed sequentially; the current generation runner is
-  single-record/single-GPU, so additional GPUs would reduce wall-clock only
-  through explicit cell-level parallel workers rather than automatic scaling.
-- The manuscript now labels this hardware/software setup as **planned** until
-  frozen run artifacts attest the environment actually used.
+  they are loaded/executed sequentially. The repeated-sampling runner now keeps
+  one checkpoint resident across all five seeds for a partition, avoiding
+  repeated model reloads.
+- The operational rental envelope is 72 continuous hours. To make that budget
+  scientific rather than post-hoc, the tracked dataset manifest freezes
+  outcome-free SHA-256 ID caps before any model calls: GSM8K calibration/test
+  at 1,000 each; ARC-Challenge and MMLU-Pro large test splits at 1,000; smaller
+  frozen partitions remain complete.
+- The manuscript labels this hardware/software setup and 72-hour budget as
+  **planned** until frozen run artifacts attest the environment actually used.
 - For expensive execution, use the guarded A100/Linux campaign as the primary
   path. The Windows workspace remains the canonical local development,
   synchronization, and evidence-inspection location.
 
 ## Immediate remote-A100 next action
 
-The repository-side implementation is sufficiently mature to start real
-pre-primary execution on the rented A100. Do not commit to a multi-day rental
-before measuring the actual machine: start with one day, reach the readiness
-gate, and generate the provenance-bound compute estimate.
+The repository-side implementation is prepared for the three-day rental. First
+complete the immutable freeze and human gates, then start the shell-side
+autopilot so the GPU keeps running even when Codex is disconnected.
 
 ```bash
 git pull
 git status --porcelain
 nvidia-smi
 python3.11 --version
-bash scripts/freeze_preprimary.sh
+SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
 bash scripts/a100_campaign_linux.sh pilot
 # complete the required 10-trace human review
 bash scripts/a100_campaign_linux.sh parity-math
@@ -238,14 +242,18 @@ bash scripts/a100_campaign_linux.sh parity-math
 bash scripts/a100_campaign_linux.sh readiness
 bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
+BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+  bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
-Do not edit tracked experiment code after the freeze. The estimator now reports
-the exact frozen generation-call count, serial A100-hours, and equivalent 24/7
-single-A100 days from real LLaDA/SDAR/Dream timing traces. Keep experiment
-evidence on persistent storage or copy `results/`, `runs/`,
-`data/processed/`, and the generated handoff ZIPs off the instance before
-releasing an ephemeral disk.
+Do not edit tracked experiment code after the freeze. The estimator reports the
+exact prepared-call count and serial A100 forecast from real
+LLaDA/SDAR/Dream timing traces. The autonomous supervisor logs GPU/disk/progress
+once per hour, prioritizes primary -> analysis -> RQ3 -> expensive RQ2 -> paper,
+and preserves resumable evidence if the 72-hour envelope is exhausted. Keep
+experiment evidence on persistent storage or copy `results/`, `runs/`,
+`data/processed/`, `logs/a100_72h/`, and the generated handoff ZIPs off the
+instance before releasing an ephemeral disk.
 
 ## What is still blocked / not done
 

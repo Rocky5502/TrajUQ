@@ -51,13 +51,20 @@ Your job is to **continue the existing project**, not restart or redesign it.
   checkpoints. Primary/RQ3 generation uses resident model execution, and the
   repeated-sampling A100 path keeps each checkpoint resident across all eligible
   dataset/partition jobs while safely resuming validated per-seed prefixes.
-- The operational rental envelope is 72 continuous hours. Before model calls,
+- The operational rental envelope is one 72-hour paid clock started immediately
+  after the exact rented-server commit is checked out. Setup, downloads, parity,
+  both human gates, scale, and rendering all consume the same deadline. Before
+  model calls,
   the dataset manifest freezes outcome-free SHA-256 ID caps with seed 2027:
   GSM8K calibration/test at 500 each; ARC-Challenge and MMLU-Pro large test
   splits at 500; smaller frozen partitions remain complete.
 - Complete pre-primary gates, run
   `bash scripts/a100_campaign_linux.sh estimate`, then launch
-  `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`.
+  Run `python3.11 scripts/start_a100_rental_clock.py` immediately after the
+  rented-server checkout. Later launch
+  `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`;
+  the supervisor inherits the original deadline and checks its estimate against
+  the hours still remaining.
   The supervisor prioritizes primary -> analysis -> RQ3 -> expensive RQ2 ->
   paper and logs GPU/disk/progress hourly without requiring the agent to remain
   connected.

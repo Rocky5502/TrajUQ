@@ -78,6 +78,27 @@ def probe_remote_assets(
     return payload, failures
 
 
+def validate_remote_asset_contract(
+    cfg: dict,
+    remote_assets: dict[str, object],
+) -> list[str]:
+    failures: list[str] = []
+    validation = cfg.get("validation", {})
+    if not isinstance(validation, dict):
+        return failures
+    if (
+        validation.get("require_mask_token_id") is True
+        and remote_assets.get("attempted") is True
+        and remote_assets.get("tokenizer_loaded") is True
+        and remote_assets.get("mask_token_id") is None
+    ):
+        failures.append(
+            "frozen model validation requires tokenizer.mask_token_id"
+        )
+    return failures
+
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fail-fast preflight before a frozen GPU experiment.")
     parser.add_argument("--model-config", required=True)
@@ -116,17 +137,7 @@ def main() -> None:
 
     remote_assets, remote_failures = probe_remote_assets(cfg)
     failures.extend(remote_failures)
-    validation = cfg.get("validation", {})
-    if (
-        isinstance(validation, dict)
-        and validation.get("require_mask_token_id") is True
-        and remote_assets.get("attempted") is True
-        and remote_assets.get("tokenizer_loaded") is True
-        and remote_assets.get("mask_token_id") is None
-    ):
-        failures.append(
-            "frozen model validation requires tokenizer.mask_token_id"
-        )
+    failures.extend(validate_remote_asset_contract(cfg, remote_assets))
 
     rows = list(read_jsonl(data_path))
     ids = [str(r.get("id", "")) for r in rows]

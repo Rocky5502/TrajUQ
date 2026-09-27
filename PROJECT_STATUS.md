@@ -37,7 +37,11 @@ particular, the following are implemented and versioned:
 - schema-v4 active/unresolved trajectory instrumentation and frozen features;
 - raw/scored outcome isolation, prompt-hash checking, and artifact audits;
 - held-out risk calibration, discrimination, calibration, and tie-aware
-  risk-coverage metrics;
+  risk-coverage metrics; standardized logistic remains the primary calibrator,
+  while a frozen supplementary isotonic sensitivity uses five-fold stratified
+  out-of-fold post-calibration with `ensemble=False`, a >=1000-example and
+  >=5-per-class eligibility rule, explicit ineligible-cell skips, and a
+  source-bound complete-18-cell sensitivity macro that never enters the RQ1 gate;
 - exact-parity harnesses for LLaDA, SDAR, and Dream, including same prompt hash,
   model/revision, seed, and adapter-specific frozen-generation provenance
   checks; parity protocol v3 records uniform run-level provenance, clean-checkout

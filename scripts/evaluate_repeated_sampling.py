@@ -30,6 +30,8 @@ REPEATED_FEATURES = [
 
 SIGNATURE_METADATA_KEYS = [
     "model_revision",
+    "requested_device",
+    "requested_dtype",
     "mask_id",
     "steps_requested",
     "max_new_tokens",

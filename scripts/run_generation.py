@@ -3,11 +3,28 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import time
 from pathlib import Path
 
 from trajuq.io import append_jsonl, existing_ids, read_jsonl, sha256_text
 from trajuq.schema import ExampleRecord
+
+
+def git_text(*args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def git_clean() -> bool | None:
+    status = git_text("status", "--porcelain")
+    return None if status is None else status == ""
 
 
 def build_adapter(
@@ -94,6 +111,9 @@ def main() -> None:
     rows = list(read_jsonl(args.input))
     if args.limit is not None:
         rows = rows[: args.limit]
+
+    source_git_commit = git_text("rev-parse", "HEAD")
+    source_git_clean = git_clean()
 
     done = existing_ids(args.output)
     adapter = build_adapter(
@@ -188,6 +208,8 @@ def main() -> None:
             metadata={
                 "source_input": str(Path(args.input)),
                 "model_revision": args.revision,
+                "source_git_commit": source_git_commit,
+                "source_git_clean": source_git_clean,
             },
         )
         append_jsonl(args.output, record.to_dict())

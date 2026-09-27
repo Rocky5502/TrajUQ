@@ -306,6 +306,11 @@ def test_adaptive_provenance_rejects_refined_input_drift(
         "git_status_porcelain",
         lambda: "",
     )
+    monkeypatch.setattr(
+        execute_adaptive_plan,
+        "validate_primary_plan_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
 
     assert validate_plan_provenance(plan) == []
 
@@ -479,4 +484,46 @@ def test_adaptive_evaluation_state_rejects_scored_source_drift(tmp_path):
             commit,
         )
         == "INVALID"
+    )
+
+
+def test_adaptive_provenance_surfaces_nested_primary_failure(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "f" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+
+    plan = {
+        "protocol": "trajuq_adaptive_matrix_plan_v3",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cells": [],
+    }
+    monkeypatch.setattr(execute_adaptive_plan, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_adaptive_plan,
+        "git_status_porcelain",
+        lambda: "",
+    )
+    monkeypatch.setattr(
+        execute_adaptive_plan,
+        "validate_primary_plan_provenance",
+        lambda payload, *, require_current_commit=True: [
+            "primary readiness bound source hash drifted"
+        ],
+    )
+
+    failures = validate_plan_provenance(plan)
+    assert any(
+        "primary plan provenance: primary readiness bound source hash drifted"
+        in item
+        for item in failures
     )

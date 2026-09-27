@@ -126,6 +126,11 @@ def collect_readiness_source_bindings(
     ):
         add(path_text)
 
+    cpu_payload = read_optional_json(cpu_verification_path)
+    for step in cpu_payload.get("steps", []):
+        if isinstance(step, dict):
+            add(step.get("log"))
+
     ledger = read_optional_json(revision_ledger_path)
     add(ledger.get("dataset_manifest"))
     for path_text in ledger.get("frozen_model_configs", {}).values():
@@ -390,6 +395,27 @@ def evaluate_readiness(
         expected_cpu_steps = list(cpu.get("expected_steps", []))
         completed_cpu_steps = list(cpu.get("completed_steps", []))
         observed_cpu_step_names = [step.get("name") for step in cpu_steps]
+        cpu_log_checks: list[dict[str, object]] = []
+        for step in cpu_steps:
+            log_path = Path(str(step.get("log", "")))
+            expected_log_sha = str(step.get("log_sha256", ""))
+            log_ok = (
+                log_path.is_file()
+                and bool(expected_log_sha)
+                and sha256_file(log_path) == expected_log_sha
+            )
+            cpu_log_checks.append(
+                {
+                    "name": step.get("name"),
+                    "path": str(log_path),
+                    "expected_sha256": expected_log_sha,
+                    "ok": log_ok,
+                }
+            )
+        cpu_logs_ok = (
+            len(cpu_log_checks) == len(cpu_steps)
+            and all(bool(item["ok"]) for item in cpu_log_checks)
+        )
         cpu_pass = (
             cpu.get("protocol") == "trajuq_cpu_verification_v1"
             and cpu.get("status") == "PASS"
@@ -398,6 +424,7 @@ def evaluate_readiness(
             and observed_cpu_step_names == expected_cpu_steps
             and len(cpu_steps) == len(expected_cpu_steps)
             and all(step.get("status") == "PASS" for step in cpu_steps)
+            and cpu_logs_ok
             and experiment_commit is not None
             and cpu.get("git_commit") == experiment_commit
         )
@@ -410,6 +437,8 @@ def evaluate_readiness(
             "expected_steps": expected_cpu_steps,
             "completed_steps": completed_cpu_steps,
             "observed_step_names": observed_cpu_step_names,
+            "log_hashes_ok": cpu_logs_ok,
+            "logs": cpu_log_checks,
         }
         if not cpu_pass:
             failures.append(

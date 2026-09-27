@@ -295,6 +295,7 @@ def row_matches_generation_contract(
     input_row: dict[str, Any],
     spec: dict[str, Any],
     contract: dict[str, Any],
+    expected_commit: str | None = None,
 ) -> bool:
     prompt = input_row.get("prompt")
     if prompt is None:
@@ -327,6 +328,11 @@ def row_matches_generation_contract(
         != str(Path(str(spec["input"])))
     ):
         return False
+    if expected_commit is not None and (
+        str(record_metadata.get("source_git_commit", "")) != expected_commit
+        or record_metadata.get("source_git_clean") is not True
+    ):
+        return False
 
     return all(
         value_matches(generation_metadata.get(key), expected)
@@ -334,7 +340,11 @@ def row_matches_generation_contract(
     )
 
 
-def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
+def artifact_id_state(
+    path: Path,
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> str:
     if not path.exists():
         return "MISSING"
     try:
@@ -357,6 +367,7 @@ def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
                 input_rows[index],
                 spec,
                 contract,
+                expected_commit,
             )
             for index, row in enumerate(rows)
             if index < len(input_rows)
@@ -405,8 +416,8 @@ def partition_state(
     scored = Path(str(spec["scored_output"]))
     raw_exists = raw.exists()
     scored_exists = scored.exists()
-    raw_id_state = artifact_id_state(raw, spec)
-    scored_id_state = artifact_id_state(scored, spec)
+    raw_id_state = artifact_id_state(raw, spec, expected_commit)
+    scored_id_state = artifact_id_state(scored, spec, expected_commit)
     raw_audit_pass = audit_passes(raw, "raw", expected_commit)
     scored_audit_pass = audit_passes(scored, "scored", expected_commit)
     return {
@@ -499,7 +510,7 @@ def command_needed(
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
-        state = artifact_id_state(raw, spec)
+        state = artifact_id_state(raw, spec, expected_commit)
         if state == "INVALID":
             raise ValueError(
                 f"raw artifact is not an exact prefix of the frozen input: {raw}"
@@ -508,7 +519,7 @@ def command_needed(
     if step == "audit_raw":
         return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
-        state = artifact_id_state(scored, spec)
+        state = artifact_id_state(scored, spec, expected_commit)
         if state in {"PREFIX", "INVALID"}:
             raise ValueError(
                 f"partial/invalid scored artifact requires inspection before rerun: {scored}"

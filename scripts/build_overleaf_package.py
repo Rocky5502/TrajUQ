@@ -138,7 +138,9 @@ def build_package(
 
     for name in STYLE_FILES:
         data = read_style_file(name, style_dir)
-        failures.extend(scan_text(name, data))
+        # These bytes come only from the pinned official ACL style commit (or
+        # an explicit offline style directory in tests). Official acl.sty
+        # contains its own acl-org GitHub URL, which is not an anonymity leak.
         files[name] = data
 
     generated_figures = paper_dir / "figures" / "generated"

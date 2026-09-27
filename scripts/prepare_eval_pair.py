@@ -11,6 +11,8 @@ from typing import Iterable
 from trajuq.data_integrity import audit_split_pair
 from trajuq.datasets import (
     NORMALIZER_VERSION,
+    SPLIT_SELECTION_VERSION,
+    deterministic_cap_rows,
     namespace_record_id,
     normalize_row,
     split_bucket,
@@ -130,6 +132,30 @@ def main() -> None:
     fingerprints: dict[str, str | None] = {}
     strategy = spec["strategy"]
 
+    cap_spec = dict(spec.get("pre_generation_cap") or {})
+    cap_method = str(cap_spec.get("method", SPLIT_SELECTION_VERSION))
+    cap_seed = str(cap_spec.get("seed", spec.get("split_seed", "2027")))
+    calibration_max = cap_spec.get("calibration_max")
+    test_max = cap_spec.get("test_max")
+    if cap_method != SPLIT_SELECTION_VERSION:
+        raise SystemExit(
+            "Unsupported pre-generation cap method: "
+            f"{cap_method!r}; expected {SPLIT_SELECTION_VERSION!r}"
+        )
+    for role, value in (
+        ("calibration_max", calibration_max),
+        ("test_max", test_max),
+    ):
+        if value is not None:
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError) as exc:
+                raise SystemExit(f"{role} must be a positive integer or null") from exc
+            if parsed <= 0:
+                raise SystemExit(f"{role} must be a positive integer or null")
+
+    source_counts: dict[str, int] = {}
+
     if strategy == "official":
         cal_ds = load_hf(load_dataset, spec, spec["calibration_split"], revision)
         test_ds = load_hf(load_dataset, spec, spec["test_split"], revision)
@@ -146,14 +172,47 @@ def main() -> None:
                 norm.setdefault("metadata", {})["source_split"] = split_name
                 yield norm
 
-        n_cal = write_rows(
-            cal_path,
-            official_rows(cal_ds, spec["calibration_split"]),
+        cal_rows = list(
+            official_rows(cal_ds, spec["calibration_split"])
         )
-        n_test = write_rows(
-            test_path,
-            official_rows(test_ds, spec["test_split"]),
+        test_rows = list(
+            official_rows(test_ds, spec["test_split"])
         )
+        source_counts["calibration_before_cap"] = len(cal_rows)
+        source_counts["test_before_cap"] = len(test_rows)
+        cal_rows = deterministic_cap_rows(
+            cal_rows,
+            dataset=args.dataset,
+            role="calibration",
+            seed=cap_seed,
+            max_examples=calibration_max,
+        )
+        test_rows = deterministic_cap_rows(
+            test_rows,
+            dataset=args.dataset,
+            role="test",
+            seed=cap_seed,
+            max_examples=test_max,
+        )
+        source_counts["source_total"] = len(cal_rows) + len(test_rows)
+        source_counts["calibration_before_cap"] = len(cal_rows)
+        source_counts["test_before_cap"] = len(test_rows)
+        cal_rows = deterministic_cap_rows(
+            cal_rows,
+            dataset=args.dataset,
+            role="calibration",
+            seed=cap_seed,
+            max_examples=calibration_max,
+        )
+        test_rows = deterministic_cap_rows(
+            test_rows,
+            dataset=args.dataset,
+            role="test",
+            seed=cap_seed,
+            max_examples=test_max,
+        )
+        n_cal = write_rows(cal_path, cal_rows)
+        n_test = write_rows(test_path, test_rows)
 
     elif strategy == "internal_holdout":
         source = load_hf(load_dataset, spec, spec["source_split"], revision)
@@ -193,6 +252,14 @@ def main() -> None:
         "calibration_fraction": spec.get("calibration_fraction"),
         "split_seed": spec.get("split_seed"),
         "normalizer_version": NORMALIZER_VERSION,
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "pre_generation_cap": {
+            "method": cap_method,
+            "seed": cap_seed,
+            "calibration_max": calibration_max,
+            "test_max": test_max,
+        },
+        "source_counts": source_counts,
         "requested_revision": revision,
         "fingerprints": fingerprints,
         "n_calibration": n_cal,

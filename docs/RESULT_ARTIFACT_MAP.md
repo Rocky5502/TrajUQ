@@ -137,6 +137,8 @@ claim gate.
 
 ## RQ2 five-sample comparator
 
+Scope: the frozen 12-cell representative subset (3 models × GSM8K, MATH-500, GPQA-Diamond, MMLU-Pro). ARC-Challenge and TruthfulQA remain in primary/RQ3 but are excluded from this secondary comparator before outcomes.
+
 Primary artifact:
 
 `results/repeated_sampling/macro_trajuq_vs_repeated.json`
@@ -145,7 +147,7 @@ Required protocol: `trajuq_vs_repeated_macro_v2`.
 
 Required properties:
 
-- complete 18-cell set;
+- complete frozen 12-cell repeated-sampling set;
 - exactly five auxiliary samples per cell;
 - seeds 2027--2031;
 - complete test-time auxiliary wall-clock accounting in all cells;
@@ -156,7 +158,7 @@ Manuscript destination:
 
 - main Table `tab:repeated`;
 - `Repeated*` metric macros;
-- `RepeatedAuxWallTime` compute macro.
+- `RepeatedAuxWallTime`, `RepeatedCellCount`, and `RepeatedDatasetCount` macros.
 
 The target generation itself is excluded from the reported auxiliary repeated
 generation cost, as recorded in the artifact definition.

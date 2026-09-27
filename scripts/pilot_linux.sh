@@ -233,6 +233,8 @@ ok = (
     and int(p.get("provenance_mismatch_count", -1)) == 0
     and p.get("run_provenance", {}).get("adapter") == "llada"
     and p.get("run_provenance", {}).get("model_revision") == "$MODEL_SHA"
+    and p.get("run_provenance", {}).get("source_git_commit") == "$FROZEN_COMMIT"
+    and p.get("run_provenance", {}).get("source_git_clean") is True
     and p.get("reference_sha256") == sha(ref)
     and p.get("instrumented_sha256") == sha(inst)
     and audit.get("protocol") == "trajuq_run_audit_v1"

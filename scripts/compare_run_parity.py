@@ -135,6 +135,11 @@ def generation_metadata(row: dict) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+def record_metadata(row: dict) -> dict:
+    value = row.get("metadata", {})
+    return value if isinstance(value, dict) else {}
+
+
 def provenance_mismatches(
     item_id: str,
     reference: dict,
@@ -168,6 +173,46 @@ def provenance_mismatches(
                     "instrumented": right,
                 }
             )
+
+    left_record_meta = record_metadata(reference)
+    right_record_meta = record_metadata(instrumented)
+    for key in ("source_git_commit", "source_git_clean"):
+        left = left_record_meta.get(key)
+        right = right_record_meta.get(key)
+        if require and (left is None or right is None):
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "missing_provenance",
+                    "field": f"metadata.{key}",
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+            continue
+        if left is not None and right is not None and left != right:
+            mismatches.append(
+                {
+                    "id": item_id,
+                    "reason": "provenance_mismatch",
+                    "field": f"metadata.{key}",
+                    "reference": left,
+                    "instrumented": right,
+                }
+            )
+    if require and (
+        left_record_meta.get("source_git_clean") is not True
+        or right_record_meta.get("source_git_clean") is not True
+    ):
+        mismatches.append(
+            {
+                "id": item_id,
+                "reason": "source_checkout_not_clean",
+                "field": "metadata.source_git_clean",
+                "reference": left_record_meta.get("source_git_clean"),
+                "instrumented": right_record_meta.get("source_git_clean"),
+            }
+        )
 
     left_meta = generation_metadata(reference)
     right_meta = generation_metadata(instrumented)
@@ -251,6 +296,48 @@ def summarize_run_provenance(
             }
         )
     summary["model_revision"] = next(iter(revisions)) if len(revisions) == 1 else None
+
+    source_commits = {
+        record_metadata(reference[item_id]).get("source_git_commit")
+        for item_id in shared
+    } | {
+        record_metadata(instrumented[item_id]).get("source_git_commit")
+        for item_id in shared
+    }
+    source_commits.discard(None)
+    if require and len(source_commits) != 1:
+        errors.append(
+            {
+                "id": "__run__",
+                "reason": "non_uniform_run_provenance",
+                "field": "metadata.source_git_commit",
+                "values": sorted(str(value) for value in source_commits),
+            }
+        )
+    summary["source_git_commit"] = (
+        next(iter(source_commits)) if len(source_commits) == 1 else None
+    )
+
+    source_clean_values = {
+        record_metadata(reference[item_id]).get("source_git_clean")
+        for item_id in shared
+    } | {
+        record_metadata(instrumented[item_id]).get("source_git_clean")
+        for item_id in shared
+    }
+    source_clean_values.discard(None)
+    if require and source_clean_values != {True}:
+        errors.append(
+            {
+                "id": "__run__",
+                "reason": "non_uniform_run_provenance",
+                "field": "metadata.source_git_clean",
+                "values": sorted(str(value) for value in source_clean_values),
+            }
+        )
+    summary["source_git_clean"] = (
+        True if source_clean_values == {True} else None
+    )
     return summary, errors
 
 

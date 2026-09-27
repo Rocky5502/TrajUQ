@@ -220,7 +220,7 @@ clock immediately after checking out the exact server commit, before dependency
 installation, downloads, parity, or human gates:
 
 ```bash
-python3.11 scripts/start_a100_rental_clock.py
+python3 scripts/start_a100_rental_clock.py
 ```
 
 Once readiness is PASS, run:

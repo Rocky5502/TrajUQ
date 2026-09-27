@@ -6,7 +6,7 @@ from trajuq.trajectory import TrajectoryAccumulator
 
 
 class DreamAdapter(BaseAdapter):
-    """Adapter for Dream checkpoints exposing generation_tokens_hook_func."""
+    """Adapter for Dream checkpoints using the pre-transfer generation_logits_hook_func."""
 
     name = "dream"
 

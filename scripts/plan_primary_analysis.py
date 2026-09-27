@@ -470,9 +470,20 @@ def main() -> None:
         )
 
     macro_path = root / "macro_primary.json"
+    calibration_sensitivity_macro_path = (
+        root / "macro_calibration_sensitivity.json"
+    )
     ablation_macro_path = root / "macro_feature_ablation.json"
     prior_signal_macro_path = root / "macro_prior_signal_diagnostics.json"
     gate_path = root / "rq1_claim_gate.json"
+    calibration_sensitivity_macro_argv = [
+        "python",
+        "scripts/aggregate_calibration_sensitivity.py",
+        "--plan",
+        args.output,
+        "--output",
+        str(calibration_sensitivity_macro_path),
+    ]
     ablation_macro_argv = [
         "python",
         "scripts/aggregate_feature_ablation.py",
@@ -522,11 +533,17 @@ def main() -> None:
         "cell_count": len(analyses),
         "cell_analyses": analyses,
         "macro_aggregation_argv": aggregation_args,
+        "calibration_sensitivity_macro_argv": (
+            calibration_sensitivity_macro_argv
+        ),
         "feature_ablation_macro_argv": ablation_macro_argv,
         "prior_signal_macro_argv": prior_signal_macro_argv,
         "rq1_claim_gate_argv": gate_argv,
         "final_outputs": {
             "macro_primary": str(macro_path),
+            "macro_calibration_sensitivity": str(
+                calibration_sensitivity_macro_path
+            ),
             "macro_feature_ablation": str(ablation_macro_path),
             "macro_prior_signal_diagnostics": str(prior_signal_macro_path),
             "rq1_claim_gate": str(gate_path),
@@ -534,7 +551,8 @@ def main() -> None:
         "execution_order": (
             "Run all cell analyses, including the frozen supplementary "
             "isotonic calibration sensitivity (or an explicit eligibility skip), "
-            "then primary macro aggregation, then the complete feature-ablation "
+            "then the complete sensitivity macro and primary macro aggregation, "
+            "then the complete feature-ablation "
             "and prior-aligned signal macros, "
             "then the RQ1 claim gate. Do "
             "not omit a weak cell or rerun with altered analysis settings."

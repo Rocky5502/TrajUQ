@@ -239,6 +239,15 @@ implementation:
       - NEW_CHAT_MASTER_PROMPT.md
       - scripts/export_research_handoff.py
       - tests/test_export_research_handoff.py
+  - id: dream_pretransfer_telemetry
+    label: "Dream telemetry bound to the pre-transfer logits hook with stale post-transfer artifact rejection"
+    state: DONE
+    evidence:
+      - src/trajuq/adapters/dream.py
+      - scripts/audit_run.py
+      - tests/test_dream_contract.py
+      - tests/test_run_semantic_audit.py
+      - docs/DREAM_INSTRUMENTATION.md
   - id: guarded_preprimary_wrappers
     label: "Frozen-state guarded parity/pilot/MATH wrappers with clean commit-bound run-audit and human-review source bindings"
     state: DONE

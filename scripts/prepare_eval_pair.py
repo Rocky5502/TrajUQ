@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Iterable
 
@@ -14,6 +15,17 @@ from trajuq.datasets import (
     normalize_row,
     split_bucket,
 )
+
+
+def git_text(*args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
 
 
 def file_sha256(path: Path) -> str:
@@ -152,8 +164,16 @@ def main() -> None:
     else:
         raise SystemExit(f"Unknown split strategy: {strategy}")
 
+    source_git_commit = git_text("rev-parse", "HEAD")
+    source_git_status = git_text("status", "--porcelain")
+    source_git_clean = (
+        source_git_status == "" if source_git_status is not None else False
+    )
+
     freeze = {
         "dataset": args.dataset,
+        "source_git_commit": source_git_commit,
+        "source_git_clean": source_git_clean,
         "hf_id": spec["hf_id"],
         "config": spec.get("config"),
         "strategy": strategy,

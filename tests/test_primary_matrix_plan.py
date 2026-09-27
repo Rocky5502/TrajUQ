@@ -2,7 +2,10 @@ from pathlib import Path
 
 import yaml
 
-from scripts.plan_primary_matrix import generation_args
+from scripts.plan_primary_matrix import (
+    generation_args,
+    validate_readiness_source_bindings,
+)
 
 
 def test_generation_args_cover_all_primary_adapters():
@@ -66,3 +69,29 @@ def test_primary_planner_revalidates_split_and_revision_provenance():
     assert "frozen model config path differs from revision ledger" in text
     assert '"split_manifest_sha256"' in text
     assert '"split_audit_sha256"' in text
+
+
+def test_primary_planner_rejects_drift_in_readiness_bound_source(tmp_path):
+    source = tmp_path / "parity.json"
+    source.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    import hashlib
+
+    readiness = {
+        "source_bindings": [
+            {
+                "path": str(source),
+                "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            }
+        ]
+    }
+    assert validate_readiness_source_bindings(readiness) == []
+
+    source.write_text('{"status":"FAIL"}\n', encoding="utf-8")
+    failures = validate_readiness_source_bindings(readiness)
+    assert any("bound source hash drifted" in item for item in failures)
+
+
+def test_primary_planner_requires_readiness_source_manifest():
+    assert validate_readiness_source_bindings({}) == [
+        "primary readiness has no source-binding manifest"
+    ]

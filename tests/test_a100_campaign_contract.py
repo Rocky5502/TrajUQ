@@ -55,3 +55,22 @@ def test_a100_parity_math_revalidates_source_bound_human_pilot_gate():
         'require_json_pass       "results/llada_gsm8k_pilot50_manual_review.json"'
         not in parity_math
     )
+
+
+def test_a100_campaign_revalidates_primary_readiness_sources():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    block_start = text.index("require_primary_readiness()")
+    block_end = text.index("require_pilot_manual_gate()")
+    block = text[block_start:block_end]
+
+    assert "scripts/primary_readiness.py" in block
+    assert "results/primary_readiness.json" in block
+    assert "trajuq_primary_readiness_v2" in block
+
+
+def test_generic_campaign_gate_accepts_experiment_commit_field():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    assert 'payload.get("experiment_git_commit")' in text
+    assert "artifact commit" in text

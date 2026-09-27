@@ -21,6 +21,8 @@ def row(seed: int, temperature: float = 0.2) -> dict:
             "text": "FINAL: 1",
             "metadata": {
                 "model_revision": "sha",
+                "requested_device": "cuda",
+                "requested_dtype": "bfloat16",
                 "steps_requested": 128,
                 "gen_length": 128,
                 "block_length": 128,
@@ -52,6 +54,8 @@ def test_repeated_run_signature_reads_seed_and_sampling_config(tmp_path):
     assert signature["seed"] == 2027
     assert signature["temperature"] == 0.2
     assert signature["model_revision"] == "sha"
+    assert signature["requested_device"] == "cuda"
+    assert signature["requested_dtype"] == "bfloat16"
 
 
 def test_repeated_seed_pool_rejects_runtime_semantics_drift(tmp_path):

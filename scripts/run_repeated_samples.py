@@ -8,8 +8,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.run_generation import build_adapter, generate_record
-from trajuq.io import append_jsonl, existing_ids, read_jsonl
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.run_generation import build_adapter, generate_record  # noqa: E402
+from trajuq.io import append_jsonl, existing_ids, read_jsonl  # noqa: E402
 
 
 DEFAULT_SEEDS = [2027, 2028, 2029, 2030, 2031]

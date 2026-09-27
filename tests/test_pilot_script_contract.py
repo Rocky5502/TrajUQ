@@ -176,6 +176,8 @@ def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
     assert "scripts/pilot_linux.sh pilot" in text
     assert "STOP FOR HUMAN REVIEW" in text
     assert "trajuq_pilot_manual_gate_v2" in text
+    assert "artifact commit" in text
+    assert "artifact was not recorded from a clean checkout" in text
     assert "scripts/parity_remaining_linux.sh all" in text
     assert "scripts/math500_gate_linux.sh prepare" in text
     assert "scripts/math500_gate_linux.sh pilot" in text

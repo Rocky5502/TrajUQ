@@ -1,5 +1,7 @@
 import numpy as np
+import pytest
 
+from trajuq.adapters.sdar import bounded_transfer_count
 from trajuq.schema import StepSummary
 from trajuq.trajectory import TrajectoryFeaturePayload, merge_trajectory_payloads
 
@@ -96,3 +98,17 @@ def test_merge_block_payloads_recomputes_global_percentiles_and_slopes():
     assert features["trajectory_steps"] == 4.0
     assert [s.step for s in summaries] == [0, 1, 2, 3]
     assert features["entropy_slope"] > 0
+
+
+def test_reduced_step_transfer_count_never_exceeds_remaining_masks():
+    assert bounded_transfer_count(2, 1) == 1
+    assert bounded_transfer_count(2, 2) == 2
+    assert bounded_transfer_count(2, 3) == 2
+    assert bounded_transfer_count(1, 0) == 0
+
+
+def test_transfer_count_rejects_negative_values():
+    with pytest.raises(ValueError):
+        bounded_transfer_count(-1, 2)
+    with pytest.raises(ValueError):
+        bounded_transfer_count(1, -2)

@@ -35,7 +35,7 @@ def test_rental_clock_script_is_immutable_and_commit_bound():
         encoding="utf-8"
     )
     assert "trajuq_a100_rental_clock_v1" in text
-    assert "git status" in text
+    assert 'git_text("status", "--porcelain")' in text
     assert "git_commit" in text
     assert "Existing rental clock" in text
     assert "do not silently restart time" in text

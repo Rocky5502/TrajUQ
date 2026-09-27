@@ -10,7 +10,7 @@ import subprocess
 from pathlib import Path
 
 from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, write_json_immutable
 from trajuq.schema import SCHEMA_VERSION
 
 
@@ -79,6 +79,7 @@ def audit_run_provenance(
     rows: list[dict],
     *,
     require_revision: bool,
+    expected_git_commit: str | None = None,
 ) -> tuple[list[str], dict[str, list]]:
     failures: list[str] = []
     datasets: set[str] = set()
@@ -86,6 +87,8 @@ def audit_run_provenance(
     adapters: set[str] = set()
     seeds: set[int] = set()
     revisions: set[str] = set()
+    source_commits: set[str] = set()
+    source_clean_values: set[bool] = set()
 
     for i, row in enumerate(rows):
         for field, values in (
@@ -146,6 +149,39 @@ def audit_run_provenance(
         if revision:
             revisions.add(str(revision))
 
+        record_metadata = row.get("metadata", {})
+        source_commit = (
+            record_metadata.get("source_git_commit")
+            if isinstance(record_metadata, dict)
+            else None
+        )
+        source_clean = (
+            record_metadata.get("source_git_clean")
+            if isinstance(record_metadata, dict)
+            else None
+        )
+        if source_commit:
+            source_commits.add(str(source_commit))
+        if isinstance(source_clean, bool):
+            source_clean_values.add(source_clean)
+
+        if require_revision:
+            if not source_commit:
+                failures.append(
+                    f"row {i}: source git commit is missing from record metadata"
+                )
+            elif (
+                expected_git_commit is not None
+                and str(source_commit) != str(expected_git_commit)
+            ):
+                failures.append(
+                    f"row {i}: source git commit differs from current frozen commit"
+                )
+            if source_clean is not True:
+                failures.append(
+                    f"row {i}: source git worktree was not recorded clean"
+                )
+
     for label, values in (
         ("dataset", datasets),
         ("model", models),
@@ -166,15 +202,24 @@ def audit_run_provenance(
             "run requires exactly one pinned model revision"
         )
 
+    if rows and require_revision and len(source_commits) != 1:
+        failures.append(
+            "run requires exactly one source git commit; "
+            f"observed={sorted(source_commits)}"
+        )
+    if rows and require_revision and source_clean_values != {True}:
+        failures.append(
+            "run requires every row to originate from a clean source checkout"
+        )
+
     return failures, {
         "datasets": sorted(datasets),
-        "datasets": provenance["datasets"],
-        "models": provenance["models"],
-        "adapters": provenance["adapters"],
-        "seeds": provenance["seeds"],
-        "model_revisions": provenance["model_revisions"],
+        "models": sorted(models),
+        "adapters": sorted(adapters),
         "seeds": sorted(seeds),
         "model_revisions": sorted(revisions),
+        "source_git_commits": sorted(source_commits),
+        "source_git_clean_values": sorted(source_clean_values),
     }
 
 
@@ -235,9 +280,13 @@ def main() -> None:
     else:
         stage = args.stage
 
+    commit = git_head()
+    clean = git_clean()
+
     provenance_failures, provenance = audit_run_provenance(
         rows,
         require_revision=args.require_revision,
+        expected_git_commit=(commit if args.require_revision else None),
     )
     failures.extend(provenance_failures)
 
@@ -373,9 +422,6 @@ def main() -> None:
                     "expected active_unresolved_positions_v4"
                 )
 
-    commit = git_head()
-    clean = git_clean()
-
     audit = {
         "protocol": "trajuq_run_audit_v1",
         "git_commit": commit,
@@ -385,8 +431,7 @@ def main() -> None:
         "sha256": sha256_file(path),
         "records": len(rows),
         "unique_ids": len(ids),
-        "models": sorted(models),
-        "adapters": sorted(adapters),
+        **provenance,
         "schema_versions": sorted(schema_versions),
         "expected_schema_version": SCHEMA_VERSION,
         "feature_count": len(feature_names or set()),
@@ -396,7 +441,7 @@ def main() -> None:
     }
 
     out = Path(args.output) if args.output else path.with_suffix(path.suffix + ".audit.json")
-    out.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json_immutable(out, audit)
     print(json.dumps(audit, indent=2, sort_keys=True))
     if failures:
         raise SystemExit(1)

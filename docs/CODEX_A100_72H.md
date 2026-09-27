@@ -63,6 +63,12 @@ hf auth login
 Authentication is interactive/operator-owned. Do not ask the user to paste
 secrets into chat.
 
+Before model downloads/generation, the Linux pilot runs
+`scripts/verify_a100_machine.py`. PASS requires exactly one visible CUDA GPU,
+an A100-class name, at least 75 GiB VRAM, bfloat16 support, at least 40 GiB host
+RAM, at least 80 GiB free disk, healthy `nvidia-smi`, and a clean frozen
+checkout. The PASS artifact is required again at readiness/scale.
+
 ## Hard gates before autonomous scale
 
 ```bash

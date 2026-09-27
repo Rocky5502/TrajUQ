@@ -752,3 +752,108 @@ def test_result_figure_manifest_rejects_malformed_entries(tmp_path):
         "output entry is invalid: primary_auroc_matrix" in item
         for item in result["failures"]
     )
+
+
+def test_generated_results_gate_binds_exact_rq2_rq3_plans(tmp_path):
+    generated, manifest, _ = write_valid_render_bundle(tmp_path)
+    repeated_plan = tmp_path / "repeated_plan.json"
+    adaptive_plan = tmp_path / "adaptive_plan.json"
+
+    result = verify_generated_results(
+        manifest,
+        generated,
+        repeated_plan,
+        adaptive_plan,
+    )
+    assert result["status"] == "PASS"
+
+    wrong_repeated = tmp_path / "wrong_repeated_plan.json"
+    wrong_repeated.write_bytes(repeated_plan.read_bytes())
+    result = verify_generated_results(
+        manifest,
+        generated,
+        wrong_repeated,
+        adaptive_plan,
+    )
+    assert result["status"] == "FAIL"
+    assert any(
+        "repeated macro provenance binds a different frozen plan" in item
+        for item in result["failures"]
+    )
+
+
+def test_result_figure_gate_binds_exact_adaptive_plan(tmp_path):
+    sources, payloads, _ = make_render_sources(tmp_path)
+    primary_path = tmp_path / "primary.json"
+    adaptive_plan = tmp_path / "adaptive_plan.json"
+
+    cap_paths = {}
+    for key, fraction, is_primary in (
+        ("cap_025", 0.25, False),
+        ("cap_050", 0.50, True),
+        ("cap_075", 0.75, False),
+    ):
+        payload = json.loads(json.dumps(payloads["adaptive"]))
+        payload["fraction_key"] = key
+        payload["max_refine_fraction"] = fraction
+        payload["is_primary_fraction"] = is_primary
+        path = tmp_path / f"{key}.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        cap_paths[key] = path
+
+    output_paths = {}
+    for name in (
+        "primary_auroc_matrix",
+        "family_macro_auroc",
+        "adaptive_tradeoff",
+    ):
+        path = tmp_path / f"{name}.pdf"
+        path.write_bytes(b"%PDF-1.4\nsynthetic-test\n")
+        output_paths[name] = path
+
+    source_paths = {
+        "primary": primary_path,
+        "primary_config": tmp_path / "primary.yaml",
+        **cap_paths,
+    }
+    manifest = tmp_path / "strict_result_figure_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_paper_result_figures_v2",
+                "expected_cells": 18,
+                "sources": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(
+                            path.read_bytes()
+                        ).hexdigest(),
+                    }
+                    for name, path in source_paths.items()
+                },
+                "outputs": {
+                    name: {
+                        "path": str(path),
+                        "sha256": hashlib.sha256(
+                            path.read_bytes()
+                        ).hexdigest(),
+                        "bytes": path.stat().st_size,
+                    }
+                    for name, path in output_paths.items()
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = verify_result_figures(manifest, adaptive_plan)
+    assert result["status"] == "PASS"
+
+    wrong_adaptive = tmp_path / "wrong_adaptive_plan.json"
+    wrong_adaptive.write_bytes(adaptive_plan.read_bytes())
+    result = verify_result_figures(manifest, wrong_adaptive)
+    assert result["status"] == "FAIL"
+    assert any(
+        "provenance binds a different adaptive plan" in item
+        for item in result["failures"]
+    )

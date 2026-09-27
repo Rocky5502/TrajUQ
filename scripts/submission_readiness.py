@@ -551,7 +551,12 @@ def verify_result_figures(
     }
 
 
-def verify_overleaf_package(path: Path) -> dict:
+def verify_overleaf_package(
+    path: Path,
+    *,
+    paper_dir: Path | None = None,
+    result_figure_manifest: Path | None = None,
+) -> dict:
     failures: list[str] = []
     if not path.is_file():
         return {
@@ -644,6 +649,59 @@ def verify_overleaf_package(path: Path) -> dict:
                     failures.append(
                         f"Overleaf package entry byte count differs: {name}"
                     )
+
+            if paper_dir is not None:
+                for name in PAPER_FILES:
+                    current = paper_dir / name
+                    if not current.is_file():
+                        failures.append(
+                            f"current paper source missing for Overleaf check: {current}"
+                        )
+                        continue
+                    if name not in names or zf.read(name) != current.read_bytes():
+                        failures.append(
+                            f"Overleaf package paper source is stale: {name}"
+                        )
+
+            if result_figure_manifest is not None:
+                if not result_figure_manifest.is_file():
+                    failures.append(
+                        "current result-figure manifest missing for Overleaf check"
+                    )
+                else:
+                    figure_manifest = load_json(result_figure_manifest)
+                    outputs = figure_manifest.get("outputs", {})
+                    if not isinstance(outputs, dict):
+                        failures.append(
+                            "current result-figure manifest outputs is invalid"
+                        )
+                    else:
+                        for key in sorted(REQUIRED_RESULT_FIGURES):
+                            item = outputs.get(key)
+                            if not isinstance(item, dict):
+                                failures.append(
+                                    f"current result-figure manifest missing: {key}"
+                                )
+                                continue
+                            source_path = Path(str(item.get("path", "")))
+                            if not source_path.is_file():
+                                failures.append(
+                                    f"current result figure missing: {key}"
+                                )
+                                continue
+                            archive_name = (
+                                "figures/generated/" + source_path.name
+                            )
+                            if (
+                                archive_name not in names
+                                or hashlib.sha256(
+                                    zf.read(archive_name)
+                                ).hexdigest()
+                                != str(item.get("sha256", ""))
+                            ):
+                                failures.append(
+                                    f"Overleaf package result figure is stale: {key}"
+                                )
     except (
         OSError,
         zipfile.BadZipFile,
@@ -849,7 +907,11 @@ def main() -> None:
         if overleaf_build.get("status") != "PASS":
             failures.append("submission-ready anonymous Overleaf build failed")
 
-    overleaf = verify_overleaf_package(overleaf_path)
+    overleaf = verify_overleaf_package(
+        overleaf_path,
+        paper_dir=Path("paper"),
+        result_figure_manifest=Path(args.result_figure_manifest),
+    )
     failures.extend(overleaf["failures"])
 
     supplement_path = Path(args.supplement)

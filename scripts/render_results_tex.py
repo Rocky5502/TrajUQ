@@ -5,11 +5,15 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import yaml
 
-from scripts.evaluate_rq1_claim_gate import evaluate_gate
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.evaluate_rq1_claim_gate import evaluate_gate  # noqa: E402
 
 
 PRIOR_SIGNAL_SUFFIXES = {

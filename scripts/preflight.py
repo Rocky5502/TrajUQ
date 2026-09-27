@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
+from importlib import metadata
 from pathlib import Path
 
 import yaml
@@ -19,6 +21,16 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+MIN_TRANSFORMERS_VERSION = (4, 52, 4)
+
+
+def version_triplet(value: str) -> tuple[int, int, int] | None:
+    match = re.match(r"^(\\d+)\\.(\\d+)\\.(\\d+)", value)
+    if not match:
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fail-fast preflight before a frozen GPU experiment.")
     parser.add_argument("--model-config", required=True)
@@ -28,6 +40,18 @@ def main() -> None:
     args = parser.parse_args()
 
     failures: list[str] = []
+    transformers_version: str | None = None
+    try:
+        transformers_version = metadata.version("transformers")
+        observed = version_triplet(transformers_version)
+        if observed is None or observed < MIN_TRANSFORMERS_VERSION:
+            failures.append(
+                "transformers runtime is too old: "
+                f"{transformers_version!r}; require >=4.52.4 for the pinned SDAR runtime"
+            )
+    except metadata.PackageNotFoundError:
+        failures.append("transformers is not installed; require >=4.52.4")
+
     cfg_path = Path(args.model_config)
     data_path = Path(args.data)
     if not cfg_path.exists():
@@ -76,6 +100,10 @@ def main() -> None:
         "data": str(data_path),
         "data_sha256": sha256(data_path),
         "records": len(rows),
+        "runtime": {
+            "transformers": transformers_version,
+            "minimum_transformers": "4.52.4",
+        },
         "cuda": cuda_payload,
         "failures": failures,
     }

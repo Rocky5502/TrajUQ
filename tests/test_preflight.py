@@ -1,4 +1,7 @@
-from scripts.preflight import MIN_TRANSFORMERS_VERSION, version_triplet
+import sys
+from types import SimpleNamespace
+
+from scripts.preflight import MIN_TRANSFORMERS_VERSION, probe_remote_assets, version_triplet
 
 
 def test_version_triplet_parses_release_versions():
@@ -19,3 +22,108 @@ def test_transformers_floor_contract():
 
 def test_version_triplet_rejects_unparseable_value():
     assert version_triplet("unknown") is None
+
+
+def test_remote_asset_probe_uses_exact_revision(monkeypatch):
+    calls = []
+
+    class FakeConfig:
+        @classmethod
+        def from_pretrained(cls, model_id, **kwargs):
+            calls.append(("config", model_id, kwargs))
+            return object()
+
+    class FakeTokenizerInstance:
+        mask_token_id = 42
+
+    class FakeTokenizer:
+        @classmethod
+        def from_pretrained(cls, model_id, **kwargs):
+            calls.append(("tokenizer", model_id, kwargs))
+            return FakeTokenizerInstance()
+
+    monkeypatch.setitem(
+        sys.modules,
+        "transformers",
+        SimpleNamespace(
+            AutoConfig=FakeConfig,
+            AutoTokenizer=FakeTokenizer,
+        ),
+    )
+
+    payload, failures = probe_remote_assets(
+        {
+            "model_id": "example/model",
+            "revision": "resolved-sha",
+            "trust_remote_code": True,
+        }
+    )
+
+    assert failures == []
+    assert payload["attempted"] is True
+    assert payload["config_loaded"] is True
+    assert payload["tokenizer_loaded"] is True
+    assert payload["mask_token_id"] == 42
+    assert calls == [
+        (
+            "config",
+            "example/model",
+            {
+                "revision": "resolved-sha",
+                "trust_remote_code": True,
+            },
+        ),
+        (
+            "tokenizer",
+            "example/model",
+            {
+                "revision": "resolved-sha",
+                "trust_remote_code": True,
+            },
+        ),
+    ]
+
+
+def test_remote_asset_probe_fails_closed(monkeypatch):
+    class BrokenConfig:
+        @classmethod
+        def from_pretrained(cls, model_id, **kwargs):
+            raise RuntimeError("remote config unavailable")
+
+    class FakeTokenizer:
+        @classmethod
+        def from_pretrained(cls, model_id, **kwargs):
+            return object()
+
+    monkeypatch.setitem(
+        sys.modules,
+        "transformers",
+        SimpleNamespace(
+            AutoConfig=BrokenConfig,
+            AutoTokenizer=FakeTokenizer,
+        ),
+    )
+
+    payload, failures = probe_remote_assets(
+        {
+            "model_id": "example/model",
+            "revision": "resolved-sha",
+        }
+    )
+
+    assert payload["attempted"] is True
+    assert payload["config_loaded"] is False
+    assert failures
+    assert "remote config unavailable" in failures[0]
+
+
+def test_remote_asset_probe_skips_unpinned_exploratory_config():
+    payload, failures = probe_remote_assets(
+        {
+            "model_id": "example/model",
+            "revision": None,
+        }
+    )
+
+    assert failures == []
+    assert payload["attempted"] is False

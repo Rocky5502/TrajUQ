@@ -76,6 +76,12 @@ python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e ".[dev,math,models,analysis]"
 ```
 
+The guarded Linux pilot also writes
+`results/a100_machine_preflight.json` and refuses to continue unless exactly
+one visible A100 is present with at least 75 GiB VRAM, bfloat16 support, at
+least 40 GiB host RAM, at least 80 GiB free disk, healthy `nvidia-smi`, and a
+clean checkout. That PASS artifact is required again before readiness/scale.
+
 Verify the runtime before spending GPU time:
 
 ```bash

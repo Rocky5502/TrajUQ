@@ -1,3 +1,4 @@
+from pathlib import Path
 import subprocess
 import sys
 
@@ -279,3 +280,14 @@ def test_render_entrypoints_support_direct_execution():
             check=False,
         )
         assert completed.returncode == 0, completed.stdout
+
+
+def test_result_artifact_map_matches_seven_source_renderer_contract():
+    text = Path("docs/RESULT_ARTIFACT_MAP.md").read_text(encoding="utf-8")
+
+    assert "consumes seven SHA-bound sources" in text
+    assert "macro_prior_signal_diagnostics.json" in text
+    assert "trajuq_prior_aligned_signal_macro_v1" in text
+    assert "PriorEntropy*" in text
+    assert "PriorFlipRate*" in text
+    assert "tab:prior-signal-diagnostics" in text

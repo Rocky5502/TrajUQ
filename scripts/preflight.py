@@ -116,6 +116,17 @@ def main() -> None:
 
     remote_assets, remote_failures = probe_remote_assets(cfg)
     failures.extend(remote_failures)
+    validation = cfg.get("validation", {})
+    if (
+        isinstance(validation, dict)
+        and validation.get("require_mask_token_id") is True
+        and remote_assets.get("attempted") is True
+        and remote_assets.get("tokenizer_loaded") is True
+        and remote_assets.get("mask_token_id") is None
+    ):
+        failures.append(
+            "frozen model validation requires tokenizer.mask_token_id"
+        )
 
     rows = list(read_jsonl(data_path))
     ids = [str(r.get("id", "")) for r in rows]

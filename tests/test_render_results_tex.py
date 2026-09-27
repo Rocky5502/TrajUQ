@@ -179,6 +179,21 @@ def calibration_sensitivity():
         "skipped_cell_count": len(skipped),
         "eligible_cells": eligible,
         "skipped_cells": skipped,
+        "aggregation": (
+            "equal_weight_over_pre_registered_eligible_cells_only; all frozen "
+            "ineligible cells remain explicit skips"
+        ),
+        "delta_direction": (
+            "positive means isotonic improves a lower-is-better metric "
+            "relative to the primary logistic calibrator"
+        ),
+        "metrics": list(CALIBRATION_SENSITIVITY_METRICS),
+        "provenance": {
+            "sources": {
+                f"cell:{label}": {}
+                for label in labels
+            }
+        },
         "per_cell": {
             label: {
                 "status": (
@@ -344,6 +359,26 @@ def test_result_renderer_rejects_incomplete_calibration_sensitivity_matrix():
     with pytest.raises(
         ValueError,
         match="Calibration-sensitivity cell set is incomplete",
+    ):
+        build_macros(
+            primary(),
+            claim(),
+            repeated(),
+            ablation(),
+            prior_signals(),
+            payload,
+            adaptive(),
+        )
+
+
+def test_result_renderer_rejects_calibration_source_cell_drift():
+    payload = calibration_sensitivity()
+    payload["provenance"]["sources"].pop(
+        next(iter(payload["provenance"]["sources"]))
+    )
+    with pytest.raises(
+        ValueError,
+        match="provenance cell set differs",
     ):
         build_macros(
             primary(),

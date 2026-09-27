@@ -793,7 +793,7 @@ def main() -> None:
     output.write_text(render_tex(macros, sources), encoding="utf-8")
 
     manifest = {
-        "protocol": "trajuq_paper_results_render_v1",
+        "protocol": "trajuq_paper_results_render_v2",
         "output": str(output),
         "output_sha256": sha256(output),
         "sources": {

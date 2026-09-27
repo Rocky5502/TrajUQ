@@ -62,6 +62,17 @@ implementation:
     evidence:
       - scripts/audit_run.py
       - scripts/score_outputs.py
+  - id: runtime_binding
+    label: "Frozen CUDA/bfloat16 command and raw-artifact runtime binding"
+    state: DONE
+    evidence:
+      - scripts/plan_primary_matrix.py
+      - scripts/run_generation.py
+      - scripts/execute_primary_plan.py
+      - scripts/run_repeated_samples.py
+      - scripts/execute_repeated_sampling.py
+      - tests/test_execute_primary_plan.py
+      - tests/test_repeated_resume.py
   - id: dataset_cap_policy
     label: "Pre-outcome SHA-256 ID-ranked dataset caps for the 72-hour A100 envelope"
     state: DONE

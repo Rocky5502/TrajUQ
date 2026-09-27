@@ -25,7 +25,7 @@ MIN_TRANSFORMERS_VERSION = (4, 52, 4)
 
 
 def version_triplet(value: str) -> tuple[int, int, int] | None:
-    match = re.match(r"^(\\d+)\\.(\\d+)\\.(\\d+)", value)
+    match = re.match(r"^(\d+)\.(\d+)\.(\d+)", value)
     if not match:
         return None
     return tuple(int(part) for part in match.groups())

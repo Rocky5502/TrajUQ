@@ -160,10 +160,13 @@ PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
 ```
 
 It requires a clean worktree, runs the complete CPU verification suite, resolves
-all primary model/data repositories to immutable Hugging Face SHAs, and writes
-`results/revision_ledger.json` plus hash-bound configs in
-`results/frozen_models/`. The CPU artifact and revision ledger must record the
-same git commit.
+all primary model/data repositories to immutable Hugging Face SHAs, verifies
+record-level access to every gated primary dataset at those exact revisions,
+and writes `results/revision_ledger.json`,
+`results/gated_dataset_access.json`, plus hash-bound configs in
+`results/frozen_models/`. The CPU artifact, revision ledger, and gated-access
+proof must record the same clean git commit; the access proof also binds the
+revision-ledger SHA-256 and stores no gated benchmark content.
 
 Linux/macOS guarded equivalent:
 
@@ -171,8 +174,9 @@ Linux/macOS guarded equivalent:
 bash scripts/freeze_preprimary.sh
 ```
 
-Both freeze wrappers require a clean checkout, run CPU verification and immutable
-revision resolution without changing commits, re-check cleanliness afterward,
+Both freeze wrappers require a clean checkout, run CPU verification, immutable
+revision resolution, and exact-revision gated-data access verification without
+changing commits, re-check cleanliness afterward,
 refresh the project-status snapshot, and export a privacy-scanned private
 pre-primary handoff bundle. Primary readiness v2 later requires all three
 parity-v3 artifacts to match this ledger git commit and their ledger-resolved

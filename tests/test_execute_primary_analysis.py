@@ -17,6 +17,54 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _analysis_binding(
+    commit: str,
+    calibration: Path,
+    test: Path,
+) -> dict:
+    return {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "calibration": {
+                "path": str(calibration),
+                "sha256": _sha256(calibration),
+            },
+            "test": {
+                "path": str(test),
+                "sha256": _sha256(test),
+            },
+        },
+    }
+
+
+def _test_only_binding(commit: str, test: Path) -> dict:
+    return {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "test": {
+                "path": str(test),
+                "sha256": _sha256(test),
+            },
+        },
+    }
+
+
+def _row_binding(provenance: dict) -> dict:
+    return {
+        "protocol": provenance["protocol"],
+        "git_commit": provenance["git_commit"],
+        "git_clean": provenance["git_clean"],
+        "source_sha256": {
+            name: spec["sha256"]
+            for name, spec in provenance["sources"].items()
+        },
+    }
+
+
 def test_output_valid_json_and_jsonl(tmp_path):
     metrics = tmp_path / "metrics.json"
     predictions = tmp_path / "predictions.jsonl"
@@ -69,6 +117,7 @@ def test_semantic_output_rejects_truncated_predictions(tmp_path):
 
 
 def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
+    commit = "a" * 40
     cal = tmp_path / "calibration.scored.jsonl"
     test = tmp_path / "test.scored.jsonl"
     cal.write_text(
@@ -79,6 +128,9 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         '{"example_id":"x","correct":false}\n',
         encoding="utf-8",
     )
+    provenance = _analysis_binding(commit, cal, test)
+    row_binding = _row_binding(provenance)
+    test_only_provenance = _test_only_binding(commit, test)
 
     outputs = {
         "metrics": tmp_path / "metrics.json",
@@ -94,6 +146,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         json.dumps(
             {
                 "protocol": "trajuq_heldout_evaluation_v1",
+                "provenance": provenance,
                 "decision_entropy_baseline": {
                     "n_calibration": 1,
                     "n_test": 1,
@@ -107,13 +160,20 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         encoding="utf-8",
     )
     outputs["predictions"].write_text(
-        '{"example_id":"x"}\n',
+        json.dumps(
+            {
+                "example_id": "x",
+                "analysis_provenance": row_binding,
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     outputs["nested_bootstrap"].write_text(
         json.dumps(
             {
                 "protocol": "trajuq_nested_calibrated_comparison_v1",
+                "provenance": provenance,
                 "n_calibration": 1,
                 "n_test": 1,
                 "metrics": {"auroc": {}, "auprc": {}, "aurc": {}},
@@ -125,6 +185,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         json.dumps(
             {
                 "protocol": "frozen_feature_family_ablation_v1",
+                "provenance": provenance,
                 "baseline": "decision_only",
                 "group_order": list(FROZEN_FEATURE_GROUPS),
                 "n_calibration": 1,
@@ -152,6 +213,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                     name: 0.5
                     for name in FROZEN_FEATURE_GROUPS
                 },
+                "analysis_provenance": row_binding,
             }
         )
         + "\n",
@@ -161,6 +223,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         json.dumps(
             {
                 "protocol": "trajuq_prior_aligned_signal_diagnostic_v1",
+                "provenance": provenance,
                 "role": "secondary_prior_aligned_signal_class_diagnostic",
                 "signal_order": [
                     "trajectory_entropy",
@@ -190,6 +253,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                 "correct": False,
                 "p_error_trajectory_entropy": 0.6,
                 "p_error_top1_revision_rate": 0.7,
+                "analysis_provenance": row_binding,
             }
         )
         + "\n",
@@ -199,6 +263,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         json.dumps(
             {
                 "protocol": "trajuq_raw_risk_diagnostic_v1",
+                "provenance": test_only_provenance,
                 "n": 1,
                 "metrics": {"auroc": {}, "auprc": {}, "aurc": {}},
             }
@@ -218,9 +283,16 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                 "cell": "llada:gsm8k",
                 "adapter": "llada",
                 "dataset": "gsm8k",
+                "experiment_git_commit": commit,
                 "inputs": {
-                    "calibration": {"path": str(cal)},
-                    "test": {"path": str(test)},
+                    "calibration": {
+                        "path": str(cal),
+                        "sha256": _sha256(cal),
+                    },
+                    "test": {
+                        "path": str(test),
+                        "sha256": _sha256(test),
+                    },
                 },
                 "outputs": {key: str(value) for key, value in outputs.items()},
             }
@@ -567,3 +639,50 @@ def test_prior_signal_prediction_semantics_reject_bad_probability(tmp_path):
         "prior_signal_predictions",
         pred,
     )
+
+
+def test_semantic_output_rejects_stale_commit_binding(tmp_path):
+    commit = "a" * 40
+    cal = tmp_path / "calibration.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    metrics = tmp_path / "metrics.json"
+    cal.write_text(
+        '{"example_id":"c","correct":true}\n',
+        encoding="utf-8",
+    )
+    test.write_text(
+        '{"example_id":"t","correct":false}\n',
+        encoding="utf-8",
+    )
+    stale = _analysis_binding("b" * 40, cal, test)
+    metrics.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_heldout_evaluation_v1",
+                "provenance": stale,
+                "decision_entropy_baseline": {
+                    "n_calibration": 1,
+                    "n_test": 1,
+                },
+                "trajectory_plus_decision_logistic": {
+                    "n_calibration": 1,
+                    "n_test": 1,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    cell = {
+        "experiment_git_commit": commit,
+        "inputs": {
+            "calibration": {
+                "path": str(cal),
+                "sha256": _sha256(cal),
+            },
+            "test": {
+                "path": str(test),
+                "sha256": _sha256(test),
+            },
+        },
+    }
+    assert not semantic_output_valid(cell, "metrics", metrics)

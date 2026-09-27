@@ -209,7 +209,13 @@ def main() -> None:
     if not failures:
         for name in expected_names:
             spec = definitions[name]
-            revision = str(ledger_datasets[name].get("resolved_sha", "")).strip()
+            ledger_row = ledger_datasets[name]
+            if str(ledger_row.get("repo_id", "")) != str(spec.get("hf_id", "")):
+                failures.append(
+                    f"{name}: revision-ledger repo_id differs from dataset manifest"
+                )
+                continue
+            revision = str(ledger_row.get("resolved_sha", "")).strip()
             if not revision:
                 failures.append(f"{name}: missing resolved dataset revision")
                 continue

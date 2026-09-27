@@ -447,7 +447,12 @@ case "$STAGE" in
     run_paper_render
     ;;
 
+  autopilot-72h)
+    require_primary_readiness
+    bash scripts/a100_72h_autopilot.sh
+    ;;
+
   *)
-    fail "Unknown stage '$STAGE'. Use status|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness."
+    fail "Unknown stage '$STAGE'. Use status|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness|autopilot-72h."
     ;;
 esac

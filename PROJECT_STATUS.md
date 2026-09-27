@@ -198,6 +198,22 @@ required action** with its expected artifact. These local snapshots separate
 implemented code from executed experimental gates, so a high engineering
 completion count cannot be mistaken for completed empirical work.
 
+## Execution workspace and compute environment
+
+- Private local Windows workspace: `G:\\NAACL Project2`. This path is for
+  continuation/operations only and must not appear in the anonymous manuscript
+  or submission artifacts.
+- Primary scale/transfer GPU execution environment: Linux server,
+  `ubuntu24.04ubuntu24_cuda13.0` (Ubuntu 24.04 / CUDA 13.0), one
+  NVIDIA A100-SXM4-80GB GPU, and 48 GB system memory.
+- The manuscript records this hardware/software setup in
+  `paper/main.tex` under **Experimental Environment**. It does not claim an
+  experiment PASS merely from environment availability; empirical status is
+  controlled only by the frozen `results/*` artifacts.
+- For expensive execution, prefer the guarded A100/Linux campaign wrappers when
+  practical. The Windows workspace remains the canonical local development and
+  evidence-inspection location requested by the project owner.
+
 ## Immediate local-GPU next action
 
 The repository-side implementation is sufficiently mature to start real pre-primary

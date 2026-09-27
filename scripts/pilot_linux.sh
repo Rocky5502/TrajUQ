@@ -55,13 +55,15 @@ from pathlib import Path
 head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 cpu_path = Path("results/cpu_verification.json")
 ledger_path = Path("results/revision_ledger.json")
-if not cpu_path.exists() or not ledger_path.exists():
+gated_path = Path("results/gated_dataset_access.json")
+if not cpu_path.exists() or not ledger_path.exists() or not gated_path.exists():
     raise SystemExit(
-        "Missing frozen CPU/revision artifacts. Run bash scripts/freeze_preprimary.sh first."
+        "Missing frozen CPU/revision/gated-access artifacts. Run bash scripts/freeze_preprimary.sh first."
     )
 
 cpu = json.loads(cpu_path.read_text(encoding="utf-8"))
 ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+gated = json.loads(gated_path.read_text(encoding="utf-8"))
 failures = []
 if cpu.get("protocol") != "trajuq_cpu_verification_v1":
     failures.append("CPU verification protocol is not v1")
@@ -75,6 +77,14 @@ if ledger.get("status") != "PASS":
     failures.append("revision ledger is not PASS")
 if ledger.get("git_commit") != head:
     failures.append("revision ledger commit differs from HEAD")
+if gated.get("protocol") != "trajuq_gated_dataset_access_v1" or gated.get("status") != "PASS":
+    failures.append("gated dataset access is not protocol-v1 PASS")
+if gated.get("git_clean") is not True or gated.get("git_commit") != head:
+    failures.append("gated dataset access is not clean/bound to HEAD")
+if gated.get("revision_ledger_sha256") != __import__("hashlib").sha256(
+    ledger_path.read_bytes()
+).hexdigest():
+    failures.append("gated dataset access is not bound to the current revision ledger")
 if failures:
     raise SystemExit("Frozen-state validation failed:\n- " + "\n- ".join(failures))
 PY

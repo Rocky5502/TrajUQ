@@ -163,6 +163,7 @@ def test_markdown_labels_estimate_as_planning_only():
             "primary_examples": 100,
             "rq2_auxiliary_generations": 500,
             "rq3_base_generations": 100,
+            "total_generation_calls": 700,
         },
         "per_model": [
             {
@@ -182,6 +183,8 @@ def test_markdown_labels_estimate_as_planning_only():
         "aggregate": {
             "mean_projection_hours": 6.25,
             "p90_planning_hours": 8.0,
+            "mean_projection_days_24h": 6.25 / 24.0,
+            "p90_planning_days_24h": 8.0 / 24.0,
         },
     }
 
@@ -189,7 +192,10 @@ def test_markdown_labels_estimate_as_planning_only():
 
     assert "Planning estimate only" in text
     assert "not an empirical paper result" in text
+    assert "700" in text
     assert "6.25 A100-hours" in text
+    assert "0.26 days" in text
+    assert "0.33 days" in text
     assert "not a statistical 90% confidence bound" in text
 
 

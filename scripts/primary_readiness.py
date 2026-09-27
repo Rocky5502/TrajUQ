@@ -447,13 +447,26 @@ def evaluate_readiness(
             for item in contracts.get("results", [])
             if item.get("dataset")
         }
+        required_contract_samples = 4
         contract_rows_ok = (
             set(contract_rows) == set(expected_contract_names)
+            and int(
+                contracts.get("contract_sample_count_per_dataset", 0)
+            ) >= required_contract_samples
             and all(
                 contract_rows[name].get("status") == "PASS"
                 and str(contract_rows[name].get("repo_id", ""))
                 == str(ledger_datasets.get(name, {}).get("repo_id", ""))
                 and contract_rows[name].get("scorer_smoke_pass") is True
+                and int(
+                    contract_rows[name].get("contract_sample_count", 0)
+                ) >= required_contract_samples
+                and int(
+                    contract_rows[name].get("observed_sample_count", 0)
+                ) >= required_contract_samples
+                and int(
+                    contract_rows[name].get("scorer_smoke_pass_count", 0)
+                ) >= required_contract_samples
                 and contract_rows[name].get("source_row_content_stored") is False
                 and str(contract_rows[name].get("resolved_revision", ""))
                 == str(ledger_datasets.get(name, {}).get("resolved_sha", ""))
@@ -485,6 +498,10 @@ def evaluate_readiness(
             "git_commit": contracts.get("git_commit"),
             "git_clean": contracts.get("git_clean"),
             "normalizer_version": contracts.get("normalizer_version"),
+            "required_sample_count_per_dataset": required_contract_samples,
+            "contract_sample_count_per_dataset": contracts.get(
+                "contract_sample_count_per_dataset"
+            ),
             "expected_datasets": expected_contract_names,
             "observed_datasets": observed_contract_names,
             "failure_count": contracts.get("failure_count"),

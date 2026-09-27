@@ -277,6 +277,31 @@ def evaluate_readiness(
         elif sha256_file(dataset_manifest_path) != expected_dataset_manifest_sha:
             ledger_pass = False
             failures.append("dataset manifest hash differs from revision ledger")
+        else:
+            try:
+                dataset_manifest = json.loads(
+                    dataset_manifest_path.read_text(encoding="utf-8")
+                )
+                dataset_definitions = dict(
+                    dataset_manifest.get("datasets", {})
+                )
+                for name, row in ledger_datasets.items():
+                    spec = dataset_definitions.get(name)
+                    if not isinstance(spec, dict):
+                        ledger_pass = False
+                        failures.append(
+                            f"{name}: dataset manifest definition is missing"
+                        )
+                    elif str(row.get("repo_id", "")) != str(
+                        spec.get("hf_id", "")
+                    ):
+                        ledger_pass = False
+                        failures.append(
+                            f"{name}: revision-ledger repo_id differs from dataset manifest"
+                        )
+            except (OSError, json.JSONDecodeError, TypeError) as exc:
+                ledger_pass = False
+                failures.append(f"dataset manifest invalid: {exc}")
 
         if enforce_current_git:
             if not current_git_commit:
@@ -307,8 +332,21 @@ def evaluate_readiness(
                 failures.append(f"{model}: frozen model config hash differs from revision ledger")
             try:
                 frozen = yaml.safe_load(frozen_path.read_text(encoding="utf-8"))
+                ledger_model = ledger_models.get(model, {})
+                if str(frozen.get("adapter", "")) != str(model):
+                    ledger_pass = False
+                    failures.append(
+                        f"{model}: frozen config adapter differs from revision ledger"
+                    )
+                if str(frozen.get("model_id", "")) != str(
+                    ledger_model.get("model_id", "")
+                ):
+                    ledger_pass = False
+                    failures.append(
+                        f"{model}: frozen config model_id differs from revision ledger"
+                    )
                 if str(frozen.get("revision")) != str(
-                    ledger_models.get(model, {}).get("resolved_sha")
+                    ledger_model.get("resolved_sha")
                 ):
                     ledger_pass = False
                     failures.append(
@@ -412,6 +450,8 @@ def evaluate_readiness(
             set(contract_rows) == set(expected_contract_names)
             and all(
                 contract_rows[name].get("status") == "PASS"
+                and str(contract_rows[name].get("repo_id", ""))
+                == str(ledger_datasets.get(name, {}).get("repo_id", ""))
                 and contract_rows[name].get("scorer_smoke_pass") is True
                 and contract_rows[name].get("source_row_content_stored") is False
                 and str(contract_rows[name].get("resolved_revision", ""))
@@ -485,7 +525,8 @@ def evaluate_readiness(
             and all(bool(item["ok"]) for item in cpu_log_checks)
         )
         cpu_pass = (
-            cpu.get("protocol") == "trajuq_cpu_verification_v1"
+            bool(expected_cpu_steps)
+            and cpu.get("protocol") == "trajuq_cpu_verification_v1"
             and cpu.get("status") == "PASS"
             and cpu.get("git_clean") is True
             and completed_cpu_steps == expected_cpu_steps

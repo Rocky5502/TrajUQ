@@ -203,6 +203,8 @@ def validate_frozen_preprimary(
                     == str(row.get("model_id", ""))
                     and str(frozen.get("revision", ""))
                     == str(row.get("resolved_sha", ""))
+                    and str(frozen.get("device", "")) == "cuda"
+                    and str(frozen.get("dtype", "")) == "bfloat16"
                 )
             except (OSError, yaml.YAMLError, TypeError):
                 ok = False

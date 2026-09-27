@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 
 from scripts.primary_readiness import evaluate_readiness
+from trajuq.datasets import NORMALIZER_VERSION
 
 
 EXPERIMENT_COMMIT = "abc123frozen"
@@ -78,6 +79,46 @@ def write_gated_access_pass(
                     "record_accessed": True,
                 }
                 for item in gated
+            ],
+            "failure_count": 0,
+            "failures": [],
+        },
+    )
+
+
+def write_dataset_contracts_pass(
+    path: Path,
+    ledger_path: Path,
+    *,
+    commit: str = EXPERIMENT_COMMIT,
+) -> None:
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    datasets = list(ledger.get("datasets", []))
+    names = sorted(str(item["name"]) for item in datasets)
+    write_json(
+        path,
+        {
+            "protocol": "trajuq_dataset_contracts_v1",
+            "status": "PASS",
+            "git_commit": commit,
+            "git_clean": True,
+            "revision_ledger": str(ledger_path),
+            "revision_ledger_sha256": sha256_file(ledger_path),
+            "normalizer_version": NORMALIZER_VERSION,
+            "expected_datasets": names,
+            "observed_datasets": names,
+            "results": [
+                {
+                    "dataset": str(item["name"]),
+                    "repo_id": str(item["repo_id"]),
+                    "resolved_revision": str(item["resolved_sha"]),
+                    "normalizer_version": NORMALIZER_VERSION,
+                    "scorer_smoke_pass": True,
+                    "source_row_content_stored": False,
+                    "status": "PASS",
+                    "failures": [],
+                }
+                for item in datasets
             ],
             "failure_count": 0,
             "failures": [],
@@ -223,6 +264,7 @@ def build_case(
     ledger = tmp_path / "ledger.json"
     cpu = tmp_path / "cpu.json"
     gated_access = tmp_path / "gated_access.json"
+    dataset_contracts = tmp_path / "dataset_contracts.json"
     quality = tmp_path / "quality.json"
     manual = tmp_path / "manual.json"
     math_audit = tmp_path / "math_audit.json"
@@ -232,6 +274,7 @@ def build_case(
     revisions = write_revision_ledger(ledger, config, models)
     write_cpu_pass(cpu)
     write_gated_access_pass(gated_access, ledger)
+    write_dataset_contracts_pass(dataset_contracts, ledger)
 
     parity: dict[str, str] = {}
     for model in models:
@@ -396,6 +439,7 @@ def build_case(
         "ledger": ledger,
         "cpu": cpu,
         "gated_access": gated_access,
+        "dataset_contracts": dataset_contracts,
         "quality": quality,
         "manual": manual,
         "math_audit": math_audit,
@@ -415,6 +459,7 @@ def evaluate(case: dict) -> dict:
         str(case["cpu"]),
         str(case["ledger"]),
         str(case["gated_access"]),
+        str(case["dataset_contracts"]),
     )
 
 
@@ -427,6 +472,7 @@ def test_primary_readiness_passes_only_with_all_bound_gates(tmp_path):
     bound_paths = {item["path"] for item in result["source_bindings"]}
     assert str(case["cpu"]) in bound_paths
     assert str(case["ledger"]) in bound_paths
+    assert str(case["dataset_contracts"]) in bound_paths
     assert str(case["quality"]) in bound_paths
     assert str(case["manual"]) in bound_paths
     assert str(case["math_audit"]) in bound_paths
@@ -730,3 +776,31 @@ def test_primary_readiness_rejects_mutated_cpu_log(tmp_path):
     assert result["status"] == "FAIL"
     assert result["checks"]["cpu_verification"]["log_hashes_ok"] is False
     assert any("CPU repository verification" in item for item in result["failures"])
+
+
+def test_primary_readiness_rejects_missing_dataset_contract_gate(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    case["dataset_contracts"].unlink()
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "dataset contract artifact unavailable" in item
+        for item in result["failures"]
+    )
+
+
+def test_primary_readiness_rejects_dataset_contract_revision_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    payload = json.loads(
+        case["dataset_contracts"].read_text(encoding="utf-8")
+    )
+    payload["results"][0]["resolved_revision"] = "other-revision"
+    write_json(case["dataset_contracts"], payload)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "normalizer/scorer contracts" in item
+        for item in result["failures"]
+    )

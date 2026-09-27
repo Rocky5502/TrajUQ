@@ -141,6 +141,7 @@ def repeated_generation_argv(
         "--max-new-tokens",
         arg_value(frozen, "--max-new-tokens"),
         "--resume-verified",
+        "--resume-partial",
     ]
 
     if adapter == "llada":

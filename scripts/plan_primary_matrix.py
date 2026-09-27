@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from trajuq.data_integrity import audit_split_pair
+from trajuq.io import write_json_immutable
 
 
 DEFAULT_FROZEN_MODELS = {
@@ -382,11 +383,7 @@ def main() -> None:
             "cells": [],
         }
         out = Path(args.output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(
-            json.dumps(payload, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        write_state = write_json_immutable(out, payload)
         print(json.dumps(payload, indent=2, sort_keys=True))
         raise SystemExit(1)
 
@@ -500,11 +497,7 @@ def main() -> None:
     }
 
     out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    write_state = write_json_immutable(out, payload)
     print(
         json.dumps(
             {

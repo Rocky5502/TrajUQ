@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from .datasets import NORMALIZER_VERSION
+from .datasets import NORMALIZER_VERSION, SPLIT_SELECTION_VERSION
 from .io import read_jsonl
 
 
@@ -103,6 +103,56 @@ def audit_split_pair(
             f"normalizer_version={manifest.get('normalizer_version')!r}; "
             f"expected {NORMALIZER_VERSION!r}"
         )
+    if manifest.get("selection_version") != SPLIT_SELECTION_VERSION:
+        failures.append(
+            f"selection_version={manifest.get('selection_version')!r}; "
+            f"expected {SPLIT_SELECTION_VERSION!r}"
+        )
+
+    cap_spec = manifest.get("pre_generation_cap")
+    if not isinstance(cap_spec, dict):
+        failures.append("split manifest has no pre_generation_cap object")
+        cap_spec = {}
+    elif cap_spec.get("method") != SPLIT_SELECTION_VERSION:
+        failures.append("split manifest cap method is not the frozen hash-rank method")
+    if not str(cap_spec.get("seed", "")).strip():
+        failures.append("split manifest cap seed is missing")
+
+    source_counts = manifest.get("source_counts")
+    if not isinstance(source_counts, dict):
+        failures.append("split manifest has no source_counts object")
+        source_counts = {}
+
+    for role, rows, cap_key, source_key in (
+        ("calibration", cal, "calibration_max", "calibration_before_cap"),
+        ("test", test, "test_max", "test_before_cap"),
+    ):
+        source_count = source_counts.get(source_key)
+        try:
+            source_count = int(source_count)
+        except (TypeError, ValueError):
+            failures.append(f"{role}: invalid source count before cap")
+            continue
+        if source_count < len(rows):
+            failures.append(f"{role}: source count before cap is smaller than output")
+        cap = cap_spec.get(cap_key)
+        if cap is None:
+            expected_count = source_count
+        else:
+            try:
+                cap = int(cap)
+            except (TypeError, ValueError):
+                failures.append(f"{role}: invalid frozen cap")
+                continue
+            if cap <= 0:
+                failures.append(f"{role}: frozen cap must be positive")
+                continue
+            expected_count = min(source_count, cap)
+        if len(rows) != expected_count:
+            failures.append(
+                f"{role}: prepared count {len(rows)} differs from frozen cap "
+                f"expectation {expected_count}"
+            )
     if not manifest.get("requested_revision"):
         failures.append("dataset revision is not pinned in split manifest")
     if not str(manifest.get("source_git_commit", "")).strip():
@@ -127,6 +177,9 @@ def audit_split_pair(
         "source_git_commit": manifest.get("source_git_commit"),
         "source_git_clean": manifest.get("source_git_clean"),
         "normalizer_version": manifest.get("normalizer_version"),
+        "selection_version": manifest.get("selection_version"),
+        "pre_generation_cap": manifest.get("pre_generation_cap"),
+        "source_counts": manifest.get("source_counts"),
         "calibration_records": len(cal),
         "test_records": len(test),
         "id_overlap_count": len(id_overlap),

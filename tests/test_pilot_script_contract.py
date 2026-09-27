@@ -132,6 +132,9 @@ def test_linux_a100_pilot_wrapper_matches_frozen_contract():
     assert "results/frozen_models/llada.yaml" in text
     assert "scripts/prepare_eval_pair.py" in text
     assert "scripts/preflight.py" in text
+    assert "scripts/verify_a100_machine.py" in text
+    assert "--device cuda" in text
+    assert "--dtype bfloat16" in text
     assert "scripts/freeze_manifest.py" in text
     assert "scripts/run_llada_reference.py" in text
     assert "scripts/run_generation.py" in text
@@ -158,6 +161,8 @@ def test_linux_remaining_parity_wrapper_is_guarded():
     assert "git status --porcelain" in text
     assert "scripts/run_sdar_reference.py" in text
     assert "scripts/run_dream_reference.py" in text
+    assert "--device cuda" in text
+    assert "--dtype bfloat16" in text
     assert "scripts/compare_run_parity.py" in text
     assert "--require-token-ids" in text
     assert "--require-provenance" in text
@@ -189,6 +194,8 @@ def test_linux_math500_wrapper_is_guarded():
     assert "antlr4-python3-runtime" in text
     assert "4.13.2" in text
     assert "scripts/prepare_eval_pair.py" in text
+    assert "--device cuda" in text
+    assert "--dtype bfloat16" in text
     assert "scripts/export_math500_scorer_review.py" in text
     assert "review %s" in text
     assert "will not overwrite evidence" in text

@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-from trajuq.datasets import NORMALIZER_VERSION
+from trajuq.datasets import NORMALIZER_VERSION, SPLIT_SELECTION_VERSION
 
 
 def sha256_file(path: Path) -> str:
@@ -165,6 +165,25 @@ def validate_frozen_preprimary(
             failures.append(
                 f"{name}: revision-ledger repo_id differs from dataset manifest"
             )
+        cap_spec = spec.get("pre_generation_cap")
+        if not isinstance(cap_spec, dict):
+            failures.append(f"{name}: dataset cap policy is missing")
+            continue
+        if cap_spec.get("method") != SPLIT_SELECTION_VERSION:
+            failures.append(f"{name}: dataset cap method is not frozen")
+        if not str(cap_spec.get("seed", "")).strip():
+            failures.append(f"{name}: dataset cap seed is missing")
+        for key in ("calibration_max", "test_max"):
+            value = cap_spec.get(key)
+            if value is None:
+                continue
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError):
+                failures.append(f"{name}: {key} is invalid")
+                continue
+            if parsed <= 0:
+                failures.append(f"{name}: {key} must be positive")
 
     frozen_paths = ledger.get("frozen_model_configs", {})
     frozen_hashes = ledger.get("frozen_model_config_sha256", {})
@@ -275,6 +294,7 @@ def validate_frozen_preprimary(
         and contracts.get("git_commit") == experiment_commit
         and contracts.get("revision_ledger_sha256") == ledger_sha
         and contracts.get("normalizer_version") == NORMALIZER_VERSION
+        and contracts.get("selection_version") == SPLIT_SELECTION_VERSION
         and int(
             contracts.get("contract_sample_count_per_dataset", 0)
         ) >= required_contract_samples

@@ -131,6 +131,74 @@ def make_render_sources(tmp_path):
             for name in PRIOR_SIGNAL_SUFFIXES
         },
     }
+    sensitivity_labels = [
+        f"{adapter}:{dataset}"
+        for adapter in ("llada", "sdar", "dream")
+        for dataset in (
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "arc_challenge",
+            "mmlu_pro",
+            "truthfulqa",
+        )
+    ]
+    sensitivity_eligible = sensitivity_labels[:6]
+    sensitivity_skipped = sensitivity_labels[6:]
+    sensitivity_metric = {
+        "primary_logistic": 0.20,
+        "isotonic_sensitivity": 0.18,
+        "isotonic_minus_logistic_improvement": 0.02,
+    }
+    calibration_sensitivity = {
+        "protocol": "trajuq_isotonic_calibration_sensitivity_macro_v1",
+        "role": "supplementary_calibration_sensitivity",
+        "cell_set_complete": True,
+        "expected_cells": 18,
+        "observed_cells": 18,
+        "eligibility_policy": {
+            "role": "supplementary_calibration_sensitivity",
+            "base_estimator": "standardized_logistic",
+            "cv_folds": 5,
+            "ensemble": False,
+            "min_calibration_samples": 1000,
+            "min_class_count": 5,
+        },
+        "eligible_cell_count": len(sensitivity_eligible),
+        "skipped_cell_count": len(sensitivity_skipped),
+        "eligible_cells": sensitivity_eligible,
+        "skipped_cells": sensitivity_skipped,
+        "per_cell": {
+            label: {
+                "status": (
+                    "PASS"
+                    if label in sensitivity_eligible
+                    else "SKIP_INSUFFICIENT_CALIBRATION"
+                ),
+                "eligible": label in sensitivity_eligible,
+            }
+            for label in sensitivity_labels
+        },
+        "macro_over_eligible_cells": {
+            view: {
+                metric: dict(sensitivity_metric)
+                for metric in (
+                    "brier",
+                    "nll",
+                    "ece",
+                    "ece_10",
+                    "ece_20",
+                    "aurc",
+                    "risk_at_50_coverage",
+                    "risk_at_80_coverage",
+                )
+            }
+            for view in (
+                "decision_entropy",
+                "trajectory_plus_decision",
+            )
+        },
+    }
     adaptive = {
         "protocol": "trajuq_adaptive_macro_v1",
         "execution_semantics": "selective_second_pass_rerun",
@@ -170,12 +238,14 @@ def make_render_sources(tmp_path):
     prior_prediction = tmp_path / "prior_prediction.jsonl"
     repeated_source = tmp_path / "repeated_plan.json"
     adaptive_source = tmp_path / "adaptive_plan.json"
+    calibration_sensitivity_source = tmp_path / "calibration_sensitivity_cell.json"
     for path in (
         primary_prediction,
         ablation_prediction,
         prior_prediction,
         repeated_source,
         adaptive_source,
+        calibration_sensitivity_source,
     ):
         path.write_text('{"example_id":"x"}\n', encoding="utf-8")
 
@@ -235,6 +305,23 @@ def make_render_sources(tmp_path):
             }
         },
     }
+    calibration_sensitivity["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "primary_config": {
+                "path": str(config),
+                "sha256": config_sha,
+            },
+            "cell:llada:gsm8k": {
+                "path": str(calibration_sensitivity_source),
+                "sha256": hashlib.sha256(
+                    calibration_sensitivity_source.read_bytes()
+                ).hexdigest(),
+            },
+        },
+    }
     adaptive["provenance"] = {
         "protocol": "trajuq_analysis_source_binding_v1",
         "git_commit": commit,
@@ -275,6 +362,7 @@ def make_render_sources(tmp_path):
         "repeated": repeated,
         "ablation": ablation,
         "prior_signals": prior_signals,
+        "calibration_sensitivity": calibration_sensitivity,
         "adaptive": adaptive,
     }
     sources = {}
@@ -303,6 +391,7 @@ def write_valid_render_bundle(tmp_path):
         payloads["repeated"],
         payloads["ablation"],
         payloads["prior_signals"],
+        payloads["calibration_sensitivity"],
         payloads["adaptive"],
         primary_cfg,
     )
@@ -319,7 +408,7 @@ def write_valid_render_bundle(tmp_path):
     manifest.write_text(
         json.dumps(
             {
-                "protocol": "trajuq_paper_results_render_v1",
+                "protocol": "trajuq_paper_results_render_v2",
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),
@@ -473,7 +562,7 @@ def test_generated_results_gate_rejects_pre_results_placeholder(tmp_path):
     manifest.write_text(
         json.dumps(
             {
-                "protocol": "trajuq_paper_results_render_v1",
+                "protocol": "trajuq_paper_results_render_v2",
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),
@@ -644,7 +733,7 @@ def test_generated_results_gate_rejects_missing_required_sources(tmp_path):
     manifest.write_text(
         json.dumps(
             {
-                "protocol": "trajuq_paper_results_render_v1",
+                "protocol": "trajuq_paper_results_render_v2",
                 "output_sha256": hashlib.sha256(
                     generated.read_bytes()
                 ).hexdigest(),

@@ -99,6 +99,48 @@ def validate_readiness_source_bindings(readiness: dict) -> list[str]:
     return failures
 
 
+def validate_prepared_split_identity(
+    dataset: str,
+    meta: dict,
+    manifest_spec: dict,
+    ledger_row: dict,
+) -> list[str]:
+    failures: list[str] = []
+
+    expected_repo = str(ledger_row.get("repo_id", ""))
+    if not expected_repo:
+        failures.append(f"{dataset}: revision ledger has no dataset repo_id")
+    elif str(meta.get("hf_id", "")) != expected_repo:
+        failures.append(
+            f"{dataset}: prepared split repo_id differs from revision ledger"
+        )
+
+    expected_revision = str(ledger_row.get("resolved_sha", ""))
+    if not expected_revision:
+        failures.append(f"{dataset}: missing resolved dataset SHA in revision ledger")
+    elif str(meta.get("requested_revision", "")) != expected_revision:
+        failures.append(
+            f"{dataset}: prepared split revision differs from revision ledger"
+        )
+
+    for key in (
+        "hf_id",
+        "config",
+        "strategy",
+        "calibration_split",
+        "test_split",
+        "source_split",
+        "calibration_fraction",
+        "split_seed",
+    ):
+        if meta.get(key) != manifest_spec.get(key):
+            failures.append(
+                f"{dataset}: prepared split {key} differs from frozen dataset manifest"
+            )
+
+    return failures
+
+
 def generation_args(cfg: dict) -> list[str]:
     adapter = str(cfg["adapter"])
     g = cfg.get("generation", {})
@@ -236,6 +278,41 @@ def main() -> None:
                             "revision ledger commit differs from primary readiness"
                         )
 
+    dataset_manifest_definitions: dict[str, dict] = {}
+    dataset_manifest_path_text = str(
+        revision_ledger.get("dataset_manifest", "")
+    ).strip()
+    if revision_ledger and not dataset_manifest_path_text:
+        failures.append("revision ledger does not identify its dataset manifest")
+    elif dataset_manifest_path_text:
+        dataset_manifest_path = Path(dataset_manifest_path_text)
+        if not dataset_manifest_path.is_file():
+            failures.append(
+                f"missing dataset manifest bound by revision ledger: {dataset_manifest_path}"
+            )
+        else:
+            try:
+                dataset_manifest_payload = json.loads(
+                    dataset_manifest_path.read_text(encoding="utf-8")
+                )
+                dataset_manifest_definitions = dict(
+                    dataset_manifest_payload.get("datasets", {})
+                )
+            except (OSError, json.JSONDecodeError, TypeError) as exc:
+                failures.append(f"invalid dataset manifest JSON: {exc}")
+            else:
+                expected_manifest_sha = str(
+                    revision_ledger.get("dataset_manifest_sha256", "")
+                )
+                if (
+                    not expected_manifest_sha
+                    or sha256_file(dataset_manifest_path)
+                    != expected_manifest_sha
+                ):
+                    failures.append(
+                        "dataset manifest hash differs from revision ledger"
+                    )
+
     primary_path = Path(args.primary_config)
     if not primary_path.exists():
         failures.append(f"missing primary config: {primary_path}")
@@ -349,18 +426,21 @@ def main() -> None:
             failures.append(f"{dataset}: split audit reports exact prompt overlap")
 
         requested_revision = meta.get("requested_revision")
-        expected_dataset_revision = ledger_datasets.get(dataset, {}).get(
-            "resolved_sha"
-        )
         if not requested_revision:
             failures.append(f"{dataset}: dataset revision is not pinned")
-        if not expected_dataset_revision:
+        manifest_spec = dataset_manifest_definitions.get(dataset)
+        if not isinstance(manifest_spec, dict):
             failures.append(
-                f"{dataset}: missing resolved dataset SHA in revision ledger"
+                f"{dataset}: missing frozen dataset definition in dataset manifest"
             )
-        elif str(requested_revision) != str(expected_dataset_revision):
-            failures.append(
-                f"{dataset}: prepared split revision differs from revision ledger"
+        else:
+            failures.extend(
+                validate_prepared_split_identity(
+                    dataset,
+                    meta,
+                    manifest_spec,
+                    ledger_datasets.get(dataset, {}),
+                )
             )
         if int(meta.get("n_calibration", 0)) <= 0:
             failures.append(f"{dataset}: empty calibration partition")

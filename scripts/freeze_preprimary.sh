@@ -31,6 +31,7 @@ for path in \
   results/cpu_verification.json \
   results/revision_ledger.json \
   results/gated_dataset_access.json \
+  results/dataset_contracts.json \
   results/math500_scorer_audit.json
 do
   [[ -e "$path" ]] && existing_freeze_evidence+=("$path")
@@ -72,6 +73,11 @@ run_step "Verify frozen gated-dataset access" \
     --revision-ledger results/revision_ledger.json \
     --output results/gated_dataset_access.json
 
+run_step "Verify exact-revision dataset normalizer/scorer contracts" \
+  "$PYTHON" scripts/verify_dataset_contracts.py \
+    --revision-ledger results/revision_ledger.json \
+    --output results/dataset_contracts.json
+
 HEAD_SHA="$HEAD_SHA" "$PYTHON" - <<'PY'
 import json
 import os
@@ -81,6 +87,7 @@ head = os.environ["HEAD_SHA"]
 cpu = json.loads(Path("results/cpu_verification.json").read_text(encoding="utf-8"))
 ledger = json.loads(Path("results/revision_ledger.json").read_text(encoding="utf-8"))
 gated = json.loads(Path("results/gated_dataset_access.json").read_text(encoding="utf-8"))
+contracts = json.loads(Path("results/dataset_contracts.json").read_text(encoding="utf-8"))
 
 failures = []
 if cpu.get("protocol") != "trajuq_cpu_verification_v1":
@@ -118,6 +125,23 @@ if gated.get("revision_ledger_sha256") != __import__("hashlib").sha256(
 ).hexdigest():
     failures.append("gated dataset access is not bound to the current revision ledger")
 
+if contracts.get("protocol") != "trajuq_dataset_contracts_v1":
+    failures.append(f"unexpected dataset-contract protocol: {contracts.get('protocol')!r}")
+if contracts.get("status") != "PASS":
+    failures.append("dataset contracts did not PASS")
+if contracts.get("git_clean") is not True:
+    failures.append("dataset contracts were not recorded from a clean worktree")
+if contracts.get("git_commit") != head:
+    failures.append(
+        f"dataset-contract commit {contracts.get('git_commit')!r} != frozen HEAD {head!r}"
+    )
+if contracts.get("revision_ledger_sha256") != __import__("hashlib").sha256(
+    Path("results/revision_ledger.json").read_bytes()
+).hexdigest():
+    failures.append("dataset contracts are not bound to the current revision ledger")
+if set(contracts.get("observed_datasets", [])) != set(contracts.get("expected_datasets", [])):
+    failures.append("dataset-contract coverage is incomplete")
+
 if failures:
     raise SystemExit("Pre-primary freeze validation failed:\n- " + "\n- ".join(failures))
 PY
@@ -140,6 +164,7 @@ printf 'Frozen commit: %s\n' "$HEAD_SHA"
 printf 'CPU artifact: results/cpu_verification.json\n'
 printf 'Revision ledger: results/revision_ledger.json\n'
 printf 'Gated dataset access: results/gated_dataset_access.json\n'
+printf 'Dataset contracts: results/dataset_contracts.json\n'
 printf 'Frozen model configs: results/frozen_models/\n'
 printf 'Private handoff: dist/trajuq_preprimary_handoff.zip\n'
 printf '\nNext: do not edit tracked experiment code. Run the first LLaDA parity gate from this same commit.\n'

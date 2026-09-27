@@ -216,10 +216,12 @@ MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used 
 
 \subsection{Experimental Environment}
 
-Primary GPU execution is performed on a Linux server using the
+The planned primary GPU execution profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
-CUDA~13.0), equipped with one NVIDIA A100-SXM4-80GB GPU and 48~GB of
-system memory.
+CUDA~13.0), with 16 CPU cores, 48~GB of system memory, and one
+NVIDIA A100-SXM4-80GB GPU. This is a pre-execution resource plan rather than
+evidence that the campaign has run; the final manuscript will retain only the
+environment actually attested by frozen run artifacts.
 All model and dataset revisions, software dependencies, generation settings,
 and source-checkout provenance are frozen before the corresponding primary
 artifacts are produced.

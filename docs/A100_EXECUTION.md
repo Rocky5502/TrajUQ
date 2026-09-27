@@ -61,6 +61,10 @@ git clone https://github.com/Rocky5502/TrajUQ.git
 cd TrajUQ
 git checkout <EXACT_FREEZE_SHA_FROM_HANDOFF>
 git status --porcelain
+
+# Run immediately so setup/parity/human gates consume the same paid 72 h.
+python3.11 scripts/start_a100_rental_clock.py
+cat results/a100_rental_clock.json
 git rev-parse HEAD
 
 nvidia-smi
@@ -113,12 +117,18 @@ It never bypasses human-review gates. The `pilot` stage stops for the manual
 10-trace review; `parity-math` requires that pilot attestation and then stops
 again for the 25-example MATH-500 review. Only after
 `results/primary_readiness.json` is protocol-v2 PASS may scale execution
-start. For the three-day rental, launch the autonomous supervisor:
+start. For the three-day rental, launch the autonomous supervisor after the human
+gates. The supervisor reuses the deadline already started before setup; it
+never grants a fresh 72 hours:
 
 ```bash
 BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
+
+The estimate stage is checked against the rental time still remaining. A mean
+projection that exceeds the remaining window stops scale; a P90-only overrun is
+reported as a planning warning rather than used to weaken the frozen science.
 
 It prioritizes primary generation, primary analysis, and RQ3 before the
 expensive repeated-sampling comparator, writes an hourly GPU/disk/progress log,

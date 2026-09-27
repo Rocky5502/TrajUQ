@@ -191,6 +191,8 @@ ok=(
     and int(p.get("provenance_mismatch_count",-1))==0
     and p.get("run_provenance",{}).get("adapter")==adapter
     and p.get("run_provenance",{}).get("model_revision")==revision
+    and p.get("run_provenance",{}).get("source_git_commit")==commit
+    and p.get("run_provenance",{}).get("source_git_clean") is True
     and p.get("reference_sha256")==sha(ref)
     and p.get("instrumented_sha256")==sha(inst)
     and audit.get("protocol")=="trajuq_run_audit_v1"
@@ -214,6 +216,7 @@ run_sdar() {
     printf 'SDAR parity already PASS and hash-valid; preserving evidence.\n'
   else
     require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"
+    run_step "SDAR exact-revision CUDA preflight"       "$PYTHON" scripts/preflight.py         --model-config results/frozen_models/sdar.yaml         --data "$CAL_DATA"         --require-cuda
     run_step "SDAR 20-prompt native reference"       "$PYTHON" scripts/run_sdar_reference.py         --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$ref" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --denoising-steps 4         --temperature 1.0 --top-k 0 --top-p 1.0         --remasking-strategy low_confidence_dynamic --confidence-threshold 0.85
     run_step "SDAR 20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter sdar --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$inst" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --sdar-denoising-steps 4         --temperature 1.0 --sdar-top-k 0 --top-p 1.0         --sdar-remasking-strategy low_confidence_dynamic         --sdar-confidence-threshold 0.85
     run_step "Audit SDAR parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst" --stage raw --require-revision
@@ -236,6 +239,7 @@ run_dream() {
     printf 'Dream parity already PASS and hash-valid; preserving evidence.\n'
   else
     require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"
+    run_step "Dream exact-revision CUDA preflight"       "$PYTHON" scripts/preflight.py         --model-config results/frozen_models/dream.yaml         --data "$CAL_DATA"         --require-cuda
     run_step "Dream 20-prompt native reference"       "$PYTHON" scripts/run_dream_reference.py         --model "$DREAM_MODEL" --revision "$DREAM_SHA"         --input "$CAL_DATA" --output "$ref" --limit 20 --seed 2027         --steps 128 --max-new-tokens 128 --temperature 0 --top-p 1.0         --alg entropy --alg-temp 0.1
     run_step "Dream 20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter dream --model "$DREAM_MODEL" --revision "$DREAM_SHA"         --input "$CAL_DATA" --output "$inst" --limit 20 --seed 2027         --steps 128 --max-new-tokens 128 --temperature 0 --top-p 1.0         --dream-alg entropy --dream-alg-temp 0.1
     run_step "Audit Dream parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst" --stage raw --require-revision

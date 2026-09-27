@@ -207,7 +207,10 @@ def validate_prepared_split_identity(
 def generation_args(cfg: dict) -> list[str]:
     adapter = str(cfg["adapter"])
     g = cfg.get("generation", {})
-    args: list[str] = []
+    args: list[str] = [
+        "--device", str(cfg.get("device", "cuda")),
+        "--dtype", str(cfg.get("dtype", "bfloat16")),
+    ]
 
     if adapter == "llada":
         args += [

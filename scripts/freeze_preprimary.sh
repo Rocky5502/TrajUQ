@@ -70,6 +70,9 @@ run_step "Repeated runner standalone import smoke" \
 run_step "Resident generator standalone import smoke" \
   "$PYTHON" scripts/resident_generate_plan.py --help
 
+run_step "Resident repeated generator standalone import smoke" \
+  "$PYTHON" scripts/resident_generate_repeated_plan.py --help
+
 run_step "Clean-commit CPU verification" \
   "$PYTHON" scripts/verify_cpu.py \
     --output results/cpu_verification.json \

@@ -259,26 +259,64 @@ def require_claim_gate(
             )
 
 
-def require_repeated(repeated: dict) -> None:
+def require_repeated(
+    repeated: dict,
+    primary_cfg: dict | None = None,
+) -> None:
     if repeated.get("protocol") != "trajuq_vs_repeated_macro_v2":
         raise ValueError("Repeated-sampling macro protocol is not recognized.")
     if repeated.get("comparison") != "single_trajectory_trajuq_vs_five_sample_baseline":
         raise ValueError("Repeated-sampling comparison contract is not recognized.")
     if repeated.get("cell_set_complete") is not True:
         raise ValueError("Repeated-sampling macro cell set is incomplete.")
-    if int(repeated.get("expected_cells", -1)) != 18:
-        raise ValueError("Repeated-sampling macro expected cell count is not 18.")
-    if int(repeated.get("observed_cells", -1)) != 18:
-        raise ValueError("Repeated-sampling macro observed cell count is not 18.")
+
+    expected_cells = int(repeated.get("expected_cells", -1))
+    observed_cells = int(repeated.get("observed_cells", -1))
+    if expected_cells <= 0:
+        raise ValueError("Repeated-sampling macro expected cell count is invalid.")
+    if observed_cells != expected_cells:
+        raise ValueError("Repeated-sampling macro observed cell count is incomplete.")
+
+    eligible = repeated.get("eligible_datasets")
+    if not isinstance(eligible, list) or not eligible:
+        raise ValueError("Repeated-sampling macro has no frozen eligible dataset set.")
+    eligible = [str(name) for name in eligible]
+    if len(eligible) != len(set(eligible)):
+        raise ValueError("Repeated-sampling eligible dataset set contains duplicates.")
+
+    if primary_cfg is not None:
+        repeated_cfg = (
+            primary_cfg.get("baselines", {})
+            .get("expensive", {})
+            .get("repeated_sampling", {})
+        )
+        cfg_eligible = [
+            str(name)
+            for name in repeated_cfg.get("eligible_datasets", [])
+        ]
+        if eligible != cfg_eligible:
+            raise ValueError(
+                "Repeated-sampling eligible datasets differ from frozen primary config."
+            )
+        model_count = len(
+            primary_cfg.get("models", {}).get("primary", [])
+        )
+        cfg_expected = model_count * len(cfg_eligible)
+        if expected_cells != cfg_expected:
+            raise ValueError(
+                "Repeated-sampling expected cell count differs from frozen config."
+            )
 
     compute = repeated.get("auxiliary_compute", {})
     if compute.get("aggregation") != "equal_cell_weight_macro":
         raise ValueError("Repeated-sampling compute aggregation is not frozen.")
     if compute.get("complete") is not True:
         raise ValueError("Repeated-sampling compute accounting is incomplete.")
-    if int(compute.get("expected_cells", -1)) != 18:
-        raise ValueError("Repeated-sampling compute expected cell count is not 18.")
-    if int(compute.get("observed_cells_with_complete_test_wall_time", -1)) != 18:
+    if int(compute.get("expected_cells", -1)) != expected_cells:
+        raise ValueError("Repeated-sampling compute expected cell count drifted.")
+    if int(
+        compute.get("observed_cells_with_complete_test_wall_time", -1)
+    ) != expected_cells:
         raise ValueError("Repeated-sampling compute coverage is incomplete.")
     if int(compute.get("sample_count", -1)) != 5:
         raise ValueError("Repeated-sampling compute accounting is not five-sample.")
@@ -562,7 +600,7 @@ def build_macros(
 ) -> dict[str, str]:
     require_primary(primary)
     require_claim_gate(claim, primary, primary_cfg)
-    require_repeated(repeated)
+    require_repeated(repeated, primary_cfg)
     require_ablation(ablation)
     require_prior_signals(prior_signals)
     require_calibration_sensitivity(calibration_sensitivity)
@@ -597,6 +635,10 @@ def build_macros(
         ]
     )
     macros["RepeatedAuxWallTime"] = f"{repeated_seconds:.2f}"
+    macros["RepeatedCellCount"] = str(int(repeated["expected_cells"]))
+    macros["RepeatedDatasetCount"] = str(
+        len(repeated["eligible_datasets"])
+    )
 
     for group, suffix in ABLATION_SUFFIXES.items():
         metrics = ablation["groups"][group]["metrics"]

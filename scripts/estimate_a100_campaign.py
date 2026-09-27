@@ -316,6 +316,7 @@ def budget_assessment(
     target_hours: float,
     mean_hours: float,
     p90_hours: float,
+    reserve_hours: float = 0.0,
 ) -> dict[str, Any]:
     if not math.isfinite(target_hours) or target_hours <= 0:
         raise ValueError("target wall-clock hours must be finite and positive")
@@ -323,9 +324,13 @@ def budget_assessment(
         raise ValueError("mean projection hours must be finite and non-negative")
     if not math.isfinite(p90_hours) or p90_hours < 0:
         raise ValueError("p90 planning hours must be finite and non-negative")
+    if not math.isfinite(reserve_hours) or reserve_hours < 0:
+        raise ValueError("operational reserve hours must be finite and non-negative")
 
-    mean_fits = mean_hours <= target_hours
-    p90_fits = p90_hours <= target_hours
+    mean_with_reserve = mean_hours + reserve_hours
+    p90_with_reserve = p90_hours + reserve_hours
+    mean_fits = mean_with_reserve <= target_hours
+    p90_fits = p90_with_reserve <= target_hours
     if p90_fits:
         decision = "FULL_SCOPE_P90_PLANNING_FITS"
     elif mean_fits:
@@ -335,8 +340,11 @@ def budget_assessment(
 
     return {
         "target_wall_clock_hours": float(target_hours),
+        "operational_reserve_hours": float(reserve_hours),
         "mean_projection_hours": float(mean_hours),
         "p90_planning_hours": float(p90_hours),
+        "mean_plus_reserve_hours": float(mean_with_reserve),
+        "p90_plus_reserve_hours": float(p90_with_reserve),
         "mean_fits_budget": bool(mean_fits),
         "p90_planning_fits_budget": bool(p90_fits),
         "decision": decision,
@@ -378,13 +386,17 @@ def make_markdown(payload: dict[str, Any]) -> str:
             f"**{payload['budget_assessment']['target_wall_clock_hours']:.2f} h**  "
         ),
         (
+            f"Operational reserve: "
+            f"**{payload['budget_assessment']['operational_reserve_hours']:.2f} h**  "
+        ),
+        (
             f"Budget assessment: "
             f"**{payload['budget_assessment']['decision']}**  "
         ),
         (
-            "Mean fits budget: "
+            "Mean + reserve fits budget: "
             f"**{payload['budget_assessment']['mean_fits_budget']}**; "
-            "P90 planning sum fits budget: "
+            "P90 planning sum + reserve fits budget: "
             f"**{payload['budget_assessment']['p90_planning_fits_budget']}**"
         ),
         "",
@@ -683,16 +695,18 @@ def main() -> None:
     p90_planning_hours = seconds_to_hours(
         aggregate_p90_seconds
     )
+    compute_budget = primary.get("compute_budget", {})
     target_wall_clock_hours = float(
-        primary.get("compute_budget", {}).get(
-            "target_wall_clock_hours",
-            0,
-        )
+        compute_budget.get("target_wall_clock_hours", 0)
+    )
+    operational_reserve_hours = float(
+        compute_budget.get("operational_reserve_hours", 0)
     )
     planning_budget = budget_assessment(
         target_hours=target_wall_clock_hours,
         mean_hours=mean_projection_hours,
         p90_hours=p90_planning_hours,
+        reserve_hours=operational_reserve_hours,
     )
 
     payload = {

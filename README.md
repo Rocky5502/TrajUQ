@@ -213,10 +213,23 @@ bash scripts/a100_campaign_linux.sh parity-math
 bash scripts/a100_campaign_linux.sh readiness
 bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
-bash scripts/a100_campaign_linux.sh all-after-readiness
 ```
 
-The two human-review boundaries are deliberate and cannot be bypassed by the
+For the predeclared three-day single-A100 rental, once readiness is PASS run:
+
+```bash
+BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+  bash scripts/a100_campaign_linux.sh autopilot-72h
+```
+
+The 72-hour supervisor runs the resumable stages in scientific-priority order
+(primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), writes an
+hourly GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable
+stage once, and stops rather than weakening a scientific gate if the wall-clock
+budget is exhausted. It does not require an AI agent to remain connected while
+the GPU process is healthy.
+
+The two human-review boundaries are deliberate and cannot be bypassed by either
 campaign runner.
 
 ## Prepare a frozen benchmark pair
@@ -240,7 +253,15 @@ data/processed/gsm8k/
 └── split_manifest.json
 ```
 
-The processed benchmark directory is gitignored. The split manifest records requested revision, dataset fingerprints, counts, and SHA-256 hashes.
+The processed benchmark directory is gitignored. The split manifest records the
+requested revision, dataset fingerprints, uncapped source counts, frozen
+pre-generation cap policy, selected counts, and SHA-256 hashes. The current
+three-day profile uses outcome-free SHA-256 ID ranking with seed 2027:
+GSM8K calibration/test are capped at 1,000 each; ARC-Challenge and MMLU-Pro
+retain their smaller calibration splits and cap the larger test split at 1,000;
+GPQA-Diamond, TruthfulQA, and MATH-500 keep their complete frozen holdouts.
+The selection rule never consults references, correctness, prompt text, or
+model outputs.
 
 ## Preflight and freeze
 

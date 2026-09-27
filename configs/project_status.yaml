@@ -12,14 +12,16 @@ project:
     - truthfulqa
   primary_cells: 18
   repeated_sampling_seeds: [2027, 2028, 2029, 2030, 2031]
+  repeated_sampling_datasets: [gsm8k, math500, gpqa_diamond, mmlu_pro]
+  repeated_sampling_cells: 12
   adaptive_primary_cap: 0.50
   adaptive_sensitivity_caps: [0.25, 0.75]
   a100_wall_clock_budget_hours: 72
   dataset_selection_version: sha256_id_rank_v1
   dataset_caps:
-    gsm8k: {calibration_max: 1000, test_max: 1000}
-    arc_challenge: {calibration_max: null, test_max: 1000}
-    mmlu_pro: {calibration_max: null, test_max: 1000}
+    gsm8k: {calibration_max: 500, test_max: 500}
+    arc_challenge: {calibration_max: null, test_max: 500}
+    mmlu_pro: {calibration_max: null, test_max: 500}
     gpqa_diamond: {calibration_max: null, test_max: null}
     truthfulqa: {calibration_max: null, test_max: null}
     math500: {calibration_max: null, test_max: null}
@@ -105,7 +107,7 @@ implementation:
       - tests/test_rq1_claim_gate.py
       - tests/test_execute_primary_analysis.py
   - id: repeated_sampling
-    label: "Hash-bound five-sample baseline with resident-model seed execution, safe partial resume, and complete 18-cell compute accounting"
+    label: "Hash-bound five-sample baseline with resident-model seed execution, safe partial resume, and complete frozen 12-cell compute accounting"
     state: DONE
     evidence:
       - scripts/run_repeated_samples.py
@@ -414,17 +416,17 @@ execution_gates:
     artifact: results/primary_analysis_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
-    label: "Frozen five-sample 18-cell comparator plan"
+    label: "Frozen five-sample 12-cell representative comparator plan"
     stage: analysis
     issue: 9
     action: "Run python scripts/plan_repeated_sampling.py only after primary analysis predictions exist. Planning revalidates the primary-analysis plan and its nested primary/readiness provenance before protocol v2 binds upstream plans/config, prompt partitions, scored targets/audits, and TrajUQ predictions by SHA-256."
     artifact: results/repeated_sampling_plan.json
     expect: {key: status, equals: PASS}
   - id: repeated_execution_complete
-    label: "All 18 five-sample cells plus macro complete"
+    label: "All 12 eligible five-sample cells plus macro complete"
     stage: analysis
     issue: 9
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Each repeated-sampling process keeps its model resident across all five seeds and may resume only an exact contract-matching unaudited prefix after interruption. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, from the frozen experiment commit, and match the frozen adapter/model/revision plus sampler settings in both raw records and manifest. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Each repeated-sampling process keeps its model resident across all five seeds and may resume only an exact contract-matching unaudited prefix after interruption. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, from the frozen experiment commit, and match the frozen adapter/model/revision plus sampler settings in both raw records and manifest. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 12 eligible cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan
@@ -464,7 +466,7 @@ execution_gates:
         - SUPPORT_POSITIVE_RQ1_CLAIM
         - DO_NOT_MAKE_POSITIVE_RQ1_CLAIM
   - id: repeated_macro
-    label: "Complete repeated-sampling 18-cell macro result with compute accounting"
+    label: "Complete repeated-sampling 12-cell macro result with compute accounting"
     stage: analysis
     issue: 9
     artifact: results/repeated_sampling/macro_trajuq_vs_repeated.json

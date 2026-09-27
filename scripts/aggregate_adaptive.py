@@ -10,7 +10,11 @@ import numpy as np
 
 from trajuq.adaptive_aggregation import AdaptiveCell, hierarchical_macro_adaptive
 from trajuq.io import read_jsonl
-from trajuq.provenance import analysis_provenance
+from trajuq.provenance import (
+    analysis_provenance,
+    binding_matches,
+    compact_binding_matches,
+)
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -18,7 +22,11 @@ if __package__ in {None, ""}:
 from scripts.execute_adaptive_plan import validate_plan_provenance  # noqa: E402
 
 
-def load_prediction_cell(spec: dict, fraction_key: str) -> AdaptiveCell:
+def load_prediction_cell(
+    spec: dict,
+    fraction_key: str,
+    expected_commit: str | None = None,
+) -> AdaptiveCell:
     label = str(spec["cell"])
     evaluation = spec.get("evaluations", {}).get(fraction_key)
     if evaluation is None:
@@ -53,6 +61,49 @@ def load_prediction_cell(spec: dict, fraction_key: str) -> AdaptiveCell:
         )
 
     result = json.loads(result_path.read_text(encoding="utf-8"))
+
+    if expected_commit is not None:
+        source_paths = {
+            "cal_base": str(spec["calibration_base"]["scored_output"]),
+            "cal_refined": str(
+                spec["provenance"]["calibration"]["refined_scored"]
+            ),
+            "test_base": str(spec["test_base"]["scored_output"]),
+            "test_refined": str(
+                spec["provenance"]["test"]["refined_scored"]
+            ),
+        }
+        expected_sources: dict[str, tuple[str, str]] = {}
+        expected_sha256: dict[str, str] = {}
+        for name, raw_path in source_paths.items():
+            path = Path(raw_path)
+            if not path.is_file():
+                raise SystemExit(
+                    f"{label}: adaptive evaluation source missing: {path}"
+                )
+            digest = __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+            expected_sources[name] = (str(path), digest)
+            expected_sha256[name] = digest
+        if not binding_matches(
+            result.get("provenance", {}),
+            expected_commit=expected_commit,
+            expected_sources=expected_sources,
+        ):
+            raise SystemExit(
+                f"{label}: adaptive result source binding is stale"
+            )
+        if any(
+            not compact_binding_matches(
+                row.get("analysis_provenance", {}),
+                expected_commit=expected_commit,
+                expected_sha256=expected_sha256,
+            )
+            for row in rows
+        ):
+            raise SystemExit(
+                f"{label}: adaptive prediction source binding is stale"
+            )
+
     if result.get("protocol") != "trajuq_adaptive_evaluation_v2":
         raise SystemExit(f"{label}: adaptive result protocol is not v2")
     if result.get("execution_semantics") != "selective_second_pass_rerun":
@@ -155,8 +206,15 @@ def main() -> None:
     if len(pairs) != len(set(pairs)):
         raise SystemExit("Adaptive plan contains duplicate model-dataset cells.")
 
+    experiment_commit = str(plan.get("experiment_git_commit", ""))
+    if not experiment_commit:
+        raise SystemExit("Adaptive plan has no frozen experiment commit.")
     cells = [
-        load_prediction_cell(spec, args.fraction_key)
+        load_prediction_cell(
+            spec,
+            args.fraction_key,
+            experiment_commit,
+        )
         for spec in cells_spec
     ]
     result = hierarchical_macro_adaptive(

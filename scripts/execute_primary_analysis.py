@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import yaml
 
 if __package__ in {None, ""}:
@@ -39,6 +40,11 @@ CELL_STEPS = (
         "prior_signal_diagnostic",
         "prior_signal_diagnostic_argv",
         ("prior_signal_diagnostic", "prior_signal_predictions"),
+    ),
+    (
+        "calibration_sensitivity",
+        "calibration_sensitivity_argv",
+        ("calibration_sensitivity",),
     ),
     ("raw_risk_diagnostic", "raw_risk_diagnostic_argv", ("raw_risk_diagnostic",)),
 )
@@ -137,6 +143,67 @@ def expected_analysis_sources(
         str(test["sha256"]),
     )
     return sources
+
+
+def calibration_error_class_counts(
+    cell: dict[str, Any],
+) -> tuple[dict[str, int], int, int]:
+    path = Path(str(cell["inputs"]["calibration"]["path"]))
+    rows = list(read_jsonl(path))
+    if not rows:
+        raise ValueError("empty calibration artifact")
+    labels: list[int] = []
+    for row in rows:
+        correct = row.get("correct")
+        if not isinstance(correct, bool):
+            raise ValueError("calibration correctness must be boolean")
+        labels.append(0 if correct else 1)
+    counts = {
+        str(label): labels.count(label)
+        for label in sorted(set(labels))
+    }
+    min_count = min(counts.values()) if counts else 0
+    return counts, min_count, len(labels)
+
+
+def isotonic_sensitivity_expected_eligibility(
+    cell: dict[str, Any],
+) -> tuple[bool, dict[str, int], int, int]:
+    contract = cell.get("calibration_sensitivity_contract", {})
+    required = {
+        "role": "supplementary_calibration_sensitivity",
+        "base_estimator": "standardized_logistic",
+        "cv_folds": 5,
+        "ensemble": False,
+        "min_calibration_samples": 1000,
+        "min_class_count": 5,
+    }
+    if contract != required:
+        raise ValueError("cell isotonic sensitivity contract differs from frozen contract")
+
+    counts, observed_min, n_calibration = calibration_error_class_counts(cell)
+    eligible = (
+        set(counts) == {"0", "1"}
+        and n_calibration >= int(contract["min_calibration_samples"])
+        and observed_min >= int(contract["min_class_count"])
+        and observed_min >= int(contract["cv_folds"])
+    )
+    return eligible, counts, observed_min, n_calibration
+
+
+def finite_metric_block(
+    block: dict[str, Any],
+    *,
+    required: set[str],
+) -> bool:
+    try:
+        for name in required:
+            value = float(block[name])
+            if not np.isfinite(value):
+                return False
+    except (KeyError, TypeError, ValueError):
+        return False
+    return True
 
 
 def json_provenance_matches(
@@ -356,6 +423,106 @@ def semantic_output_valid(
                 for name in PRIOR_SIGNAL_NAMES
             )
         )
+    if key == "calibration_sensitivity":
+        try:
+            eligible, class_counts, observed_min, expected_n_cal = (
+                isotonic_sensitivity_expected_eligibility(cell)
+            )
+        except (
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+            TypeError,
+            KeyError,
+        ):
+            return False
+
+        contract = cell.get("calibration_sensitivity_contract", {})
+        eligibility = payload.get("eligibility", {})
+        method = payload.get("method", {})
+        common_ok = (
+            payload.get("protocol")
+            == "trajuq_isotonic_calibration_sensitivity_v1"
+            and payload.get("role")
+            == "supplementary_calibration_sensitivity"
+            and json_provenance_matches(cell, payload)
+            and int(payload.get("n_calibration", -1)) == expected_n_cal
+            and int(payload.get("n_test", -1)) == n_test
+            and eligibility.get("eligible") is eligible
+            and int(
+                eligibility.get("min_calibration_samples_required", -1)
+            )
+            == int(contract["min_calibration_samples"])
+            and int(eligibility.get("min_class_count_required", -1))
+            == int(contract["min_class_count"])
+            and int(eligibility.get("cv_folds_requested", -1))
+            == int(contract["cv_folds"])
+            and eligibility.get("observed_class_counts") == class_counts
+            and int(eligibility.get("observed_min_class_count", -1))
+            == observed_min
+            and method.get("base_estimator")
+            == contract["base_estimator"]
+            and method.get("isotonic_cv")
+            == "stratified_out_of_fold"
+            and method.get("ensemble") is contract["ensemble"]
+            and method.get("test_labels_used_for_fit") is False
+        )
+        if not common_ok:
+            return False
+
+        if not eligible:
+            return (
+                payload.get("status")
+                == "SKIP_INSUFFICIENT_CALIBRATION"
+                and "decision_entropy" not in payload
+                and "trajectory_plus_decision" not in payload
+            )
+
+        if payload.get("status") != "PASS":
+            return False
+        folds = payload.get("effective_cv_folds", {})
+        if (
+            int(folds.get("decision_entropy", -1)) != int(contract["cv_folds"])
+            or int(folds.get("trajectory_plus_decision", -1))
+            != int(contract["cv_folds"])
+        ):
+            return False
+
+        required_probability_metrics = {
+            "brier",
+            "nll",
+            "ece",
+            "ece_10",
+            "ece_20",
+            "aurc",
+            "risk_at_50_coverage",
+            "risk_at_80_coverage",
+        }
+        for view_name in ("decision_entropy", "trajectory_plus_decision"):
+            view = payload.get(view_name, {})
+            logistic = view.get("primary_logistic", {})
+            isotonic = view.get("isotonic_sensitivity", {})
+            improvement = view.get(
+                "isotonic_minus_logistic_improvement",
+                {},
+            )
+            if not finite_metric_block(
+                logistic,
+                required=required_probability_metrics,
+            ):
+                return False
+            if not finite_metric_block(
+                isotonic,
+                required=required_probability_metrics,
+            ):
+                return False
+            if not finite_metric_block(
+                improvement,
+                required=required_probability_metrics,
+            ):
+                return False
+        return True
+
     if key == "raw_risk_diagnostic":
         return (
             payload.get("protocol") == "trajuq_raw_risk_diagnostic_v1"

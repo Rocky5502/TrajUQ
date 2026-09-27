@@ -230,6 +230,14 @@ implementation:
       - tests/test_a100_campaign_contract.py
       - tests/test_pilot_script_contract.py
       - scripts/export_research_handoff.py
+  - id: a100_rental_clock
+    label: "Immutable full paid-rental deadline from first server connection"
+    state: DONE
+    evidence:
+      - scripts/start_a100_rental_clock.py
+      - scripts/a100_72h_autopilot.sh
+      - tests/test_a100_rental_clock.py
+      - tests/test_a100_72h_autopilot_contract.py
   - id: a100_72h_autopilot
     label: "Deadline-aware single-A100 autonomous supervisor with hourly shell-side monitoring"
     state: DONE

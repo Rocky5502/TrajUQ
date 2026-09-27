@@ -119,6 +119,14 @@ implementation:
       - tests/test_execute_repeated_sampling.py
       - tests/test_repeated_artifact_contract.py
       - tests/test_repeated_resume.py
+  - id: resident_repeated_generation
+    label: "Plan-level resident RQ2 generation across all eligible partitions"
+    state: DONE
+    evidence:
+      - scripts/resident_generate_repeated_plan.py
+      - scripts/run_repeated_samples.py
+      - tests/test_resident_generate_repeated_plan.py
+      - tests/test_a100_campaign_contract.py
   - id: resumable_repeated_executor
     label: "Resumable five-sample executor with frozen-commit seed-audit reuse and source-bound macro validation"
     state: DONE

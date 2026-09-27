@@ -40,15 +40,20 @@ function Test-RunAuditPass {
 function Read-FrozenState {
     $LedgerPath = "results/revision_ledger.json"
     $CpuPath = "results/cpu_verification.json"
+    $GatedPath = "results/gated_dataset_access.json"
     if (-not (Test-Path $LedgerPath)) {
         throw "Missing $LedgerPath. Run scripts/freeze_preprimary_windows.ps1 first."
     }
     if (-not (Test-Path $CpuPath)) {
         throw "Missing $CpuPath. Run scripts/freeze_preprimary_windows.ps1 first."
     }
+    if (-not (Test-Path $GatedPath)) {
+        throw "Missing $GatedPath. Run scripts/freeze_preprimary_windows.ps1 first."
+    }
 
     $Ledger = Get-Content $LedgerPath -Raw | ConvertFrom-Json
     $Cpu = Get-Content $CpuPath -Raw | ConvertFrom-Json
+    $Gated = Get-Content $GatedPath -Raw | ConvertFrom-Json
     $Head = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or -not $Head) {
         throw "Unable to resolve current git commit."
@@ -71,6 +76,16 @@ function Read-FrozenState {
     }
     if ($Ledger.git_commit -ne $Head -or $Cpu.git_commit -ne $Head) {
         throw "Frozen CPU/revision artifacts do not match current HEAD $Head."
+    }
+    $LedgerHash = (Get-FileHash $LedgerPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if (
+        $Gated.protocol -ne "trajuq_gated_dataset_access_v1" -or
+        $Gated.status -ne "PASS" -or
+        $Gated.git_clean -ne $true -or
+        $Gated.git_commit -ne $Head -or
+        $Gated.revision_ledger_sha256 -ne $LedgerHash
+    ) {
+        throw "Gated dataset access is not a clean revision-bound PASS at current HEAD."
     }
 
     return @{

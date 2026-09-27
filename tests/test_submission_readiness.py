@@ -166,10 +166,14 @@ def make_render_sources(tmp_path):
     primary_prediction = tmp_path / "primary_prediction.jsonl"
     ablation_prediction = tmp_path / "ablation_prediction.jsonl"
     prior_prediction = tmp_path / "prior_prediction.jsonl"
+    repeated_source = tmp_path / "repeated_plan.json"
+    adaptive_source = tmp_path / "adaptive_plan.json"
     for path in (
         primary_prediction,
         ablation_prediction,
         prior_prediction,
+        repeated_source,
+        adaptive_source,
     ):
         path.write_text('{"example_id":"x"}\n', encoding="utf-8")
 
@@ -212,6 +216,32 @@ def make_render_sources(tmp_path):
                 "path": str(prior_prediction),
                 "sha256": hashlib.sha256(
                     prior_prediction.read_bytes()
+                ).hexdigest(),
+            }
+        },
+    }
+    repeated["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "plan": {
+                "path": str(repeated_source),
+                "sha256": hashlib.sha256(
+                    repeated_source.read_bytes()
+                ).hexdigest(),
+            }
+        },
+    }
+    adaptive["provenance"] = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "plan": {
+                "path": str(adaptive_source),
+                "sha256": hashlib.sha256(
+                    adaptive_source.read_bytes()
                 ).hexdigest(),
             }
         },

@@ -14,6 +14,7 @@ from trajuq.provenance import (
     analysis_provenance,
     binding_matches,
     compact_binding_matches,
+    sha256_file,
 )
 
 if __package__ in {None, ""}:
@@ -81,7 +82,7 @@ def load_prediction_cell(
                 raise SystemExit(
                     f"{label}: adaptive evaluation source missing: {path}"
                 )
-            digest = __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+            digest = sha256_file(path)
             expected_sources[name] = (str(path), digest)
             expected_sha256[name] = digest
         if not binding_matches(

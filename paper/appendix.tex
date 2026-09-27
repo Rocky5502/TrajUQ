@@ -169,9 +169,9 @@ Same-checkpoint AR/diffusion disagreement is a diagnostic, not a correctness lab
 \toprule
 Dataset & Calibration & Test\\
 \midrule
-GSM8K & official train, cap 1,000 & official test, cap 1,000\\
-ARC-Challenge & official validation, full & official test, cap 1,000\\
-MMLU-Pro & official validation, full & official test, cap 1,000\\
+GSM8K & official train, cap 500 & official test, cap 500\\
+ARC-Challenge & official validation, full & official test, cap 500\\
+MMLU-Pro & official validation, full & official test, cap 500\\
 GPQA-Diamond & frozen internal holdout, full & frozen internal holdout, full\\
 TruthfulQA & frozen internal holdout, full & frozen internal holdout, full\\
 MATH-500 & frozen internal holdout, full & frozen internal holdout, full\\
@@ -273,6 +273,7 @@ Top-1 revision / flip rate & \PriorFlipRateAUROC & \PriorFlipRateTrajAUROC & \Pr
 \section{Repeated-Sampling Baseline}
 
 The expensive baseline draws five independent generations under a frozen sampling configuration.
+Because this comparator multiplies generation cost by five, it is pre-registered on a representative $3\times4$ subset: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. ARC-Challenge and TruthfulQA remain in the complete 18-cell primary and adaptive analyses but are excluded from this secondary comparator before any model outcome is observed to preserve the fixed 72-hour single-A100 envelope.
 Without consulting labels, final answers are canonicalized and summarized by:
 variation ratio, normalized vote entropy, and unique-answer fraction.
 These features are calibrated on the calibration partition.

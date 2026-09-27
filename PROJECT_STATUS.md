@@ -162,9 +162,10 @@ particular, the following are implemented and versioned:
   or machine without packaging raw run JSONL or processed benchmark rows;
 - `scripts/estimate_a100_campaign.py`, which binds exact 18-cell prepared-input
   counts to audited LLaDA/SDAR/Dream GPU timing traces, verifies each timing
-  row's source commit/clean state and model revision against the frozen run
-  audit, and reports serial primary/RQ2/RQ3 A100-hour planning estimates without
-  turning them into paper claims;
+  row's source commit/clean state, model ID, and model revision against both the
+  frozen run audit and the corresponding primary-plan family, and reports serial
+  primary/RQ2/RQ3 A100-hour planning estimates without turning them into paper
+  claims;
 - a deterministic anonymous Overleaf packager pinned to the official ACL style
   commit, with identity/path scanning and an internal SHA-256 source manifest;
   submission-ready mode requires the rendered-results and figure manifests,

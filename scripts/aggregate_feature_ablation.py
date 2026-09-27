@@ -11,7 +11,10 @@ import numpy as np
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.execute_primary_analysis import validate_plan_provenance  # noqa: E402
+from scripts.execute_primary_analysis import (  # noqa: E402
+    semantic_output_valid,
+    validate_plan_provenance,
+)
 from trajuq.aggregation import (  # noqa: E402
     PredictionCell,
     hierarchical_macro_bootstrap,
@@ -31,6 +34,16 @@ def load_cell(spec: dict) -> tuple[list[str], np.ndarray, dict[str, np.ndarray]]
     label = str(spec["cell"])
     pred_path = Path(str(spec["outputs"]["feature_ablation_predictions"]))
     target_path = Path(str(spec["inputs"]["test"]["path"]))
+
+    if not semantic_output_valid(
+        spec,
+        "feature_ablation_predictions",
+        pred_path,
+    ):
+        raise SystemExit(
+            f"{label}: ablation prediction artifact is stale or not "
+            "source-bound to the frozen analysis inputs"
+        )
 
     rows = list(read_jsonl(pred_path))
     target_rows = list(read_jsonl(target_path))

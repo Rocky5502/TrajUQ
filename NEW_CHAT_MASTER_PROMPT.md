@@ -317,12 +317,17 @@ all three adaptive-cap sources, and all three generated PDF hashes.
 Build the anonymous Overleaf source package from the clean final paper checkout:
 
 ```bash
-python scripts/build_overleaf_package.py
+python scripts/build_overleaf_package.py --submission-ready
 ```
 
+Submission-ready mode requires the rendered-results and result-figure manifests,
+packages only the three manifest-approved result PDFs, and rejects stale hashes.
 The ZIP is pinned to official ACL style commit
 `d5adc823ff0f80f98c80405ca0ab66c68e684409` and contains an anonymous
-source-snapshot hash rather than the public development git commit.
+source-snapshot hash rather than the public development git commit. The final
+`scripts/submission_readiness.py` gate rebuilds/verifies this exact Overleaf
+archive and the anonymous software supplement and records SHA-256 values for
+both; upload those exact archives.
 
 Do not regress these corrections:
 - the repeated-generation table says **“TrajUQ (single trajectory)”**;

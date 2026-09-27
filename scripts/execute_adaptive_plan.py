@@ -14,6 +14,8 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.execute_primary_plan import (  # noqa: E402
+    expected_generation_contract,
+    row_matches_generation_contract,
     validate_plan_provenance as validate_primary_plan_provenance,
 )
 from trajuq.io import read_jsonl  # noqa: E402
@@ -131,10 +133,24 @@ def artifact_example_ids(path: Path) -> list[str]:
 def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
     if not path.exists():
         return "MISSING"
-    expected = expected_input_ids(spec)
     try:
+        expected = expected_input_ids(spec)
         observed = artifact_example_ids(path)
-    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        contract = expected_generation_contract(spec)
+        if contract is not None:
+            input_rows = list(read_jsonl(spec["input"]))
+            rows = list(read_jsonl(path))
+            if len(rows) > len(input_rows) or any(
+                not row_matches_generation_contract(
+                    row,
+                    input_rows[index],
+                    spec,
+                    contract,
+                )
+                for index, row in enumerate(rows)
+            ):
+                return "INVALID"
+    except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError):
         return "INVALID"
     if observed == expected:
         return "COMPLETE"

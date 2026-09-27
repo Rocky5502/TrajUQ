@@ -2,9 +2,9 @@
 
 Selected checkpoint: `Dream-org/Dream-v0-Instruct-7B`.
 
-Dream exposes `generation_tokens_hook_func` through its public `diffusion_generate` interface. TrajUQ uses that hook to observe the sampler state and logits without changing the token update returned by the hook.
+Dream exposes both `generation_logits_hook_func` and `generation_tokens_hook_func` through its public `diffusion_generate` interface. The upstream loop invokes the logits hook after computing the shifted predictive logits from the current masked state and **before token transfer**, whereas the token hook runs after transfer. TrajUQ therefore records telemetry only in `generation_logits_hook_func`, pairing each predictive distribution with the same pre-transfer unresolved state, and returns the logits unchanged.
 
-Hook availability is not enough: primary-paper use requires evidence that the hook sees the predictive state used for the returned generation and that telemetry does not alter output.
+This timing is required for the frozen decision-time baseline: a token committed on step (t) must retain the uncertainty from its last unresolved observation at step (t). Observing through the post-transfer token hook would incorrectly drop newly committed tokens from that decision state. Hook availability is still not enough: primary-paper use requires exact output parity to prove that telemetry does not alter generation.
 
 ## Frozen parity procedure
 

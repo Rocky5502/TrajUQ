@@ -87,8 +87,13 @@ particular, the following are implemented and versioned:
   the Windows evidence contract;
 - a canonical `docs/A100_EXECUTION.md` runbook plus
   `scripts/a100_campaign_linux.sh`, which preserves both human-review stop
-  points and can resumably execute primary -> analysis -> RQ2 -> RQ3 -> paper
-  after primary readiness PASS;
+  points, derives a provenance-bound A100 compute forecast before primary
+  execution, and can resumably execute primary -> analysis -> RQ2 -> RQ3 ->
+  paper after primary readiness PASS;
+- `scripts/estimate_a100_campaign.py`, which binds exact 18-cell prepared-input
+  counts to audited LLaDA/SDAR/Dream GPU timing traces and reports serial
+  primary/RQ2/RQ3 A100-hour planning estimates without turning them into paper
+  claims;
 - a deterministic anonymous Overleaf packager pinned to the official ACL style
   commit, with identity/path scanning and an internal SHA-256 source manifest;
 - artifact-derived paper-state language so pre-experiment disclaimers disappear
@@ -172,7 +177,9 @@ After readiness passes:
 
 1. prepare all six immutable dataset pairs;
 2. create and archive results/primary_matrix_plan.json;
-3. dry-run scripts/execute_primary_plan.py, then execute cells from the frozen
+3. run scripts/estimate_a100_campaign.py and inspect the frozen-input
+   serial-A100 projection before launching the expensive matrix;
+4. dry-run scripts/execute_primary_plan.py, then execute cells from the frozen
    plan; reusable raw/scored evidence must have clean protocol-v1 audits from
    the frozen experiment commit, and the executor writes a resumable
    SHA-verified execution state;
@@ -304,8 +311,10 @@ For the NVIDIA A100 80GB server, follow `docs/A100_EXECUTION.md` as the
 canonical copy/paste path. The guarded campaign shortcut is
 `scripts/a100_campaign_linux.sh`: use `pilot`, complete the human pilot
 attestation, use `parity-math`, complete the MATH-500 attestation, require
-`readiness` PASS, then use `all-after-readiness`. Both freeze wrappers
-enforce one clean experiment commit and export the private pre-primary handoff.
+`readiness` PASS, run `estimate` and inspect
+`results/a100_compute_estimate.md`, then use `all-after-readiness`. Both
+freeze wrappers enforce one clean experiment commit and export the private
+pre-primary handoff.
 
 ## New-chat continuation prompt
 

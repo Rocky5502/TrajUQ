@@ -102,11 +102,15 @@ The supervisor performs:
 2. complete capped 18-cell primary generation/scoring;
 3. complete primary analysis and frozen statistics;
 4. RQ3 adaptive-compute matrix;
-5. five-seed repeated-sampling RQ2 comparator;
+5. five-seed repeated-sampling RQ2 comparator on the frozen 12-cell representative subset;
 6. artifact-derived paper result rendering and paper audit.
 
 This ordering protects the core paper before the expensive repeated-sampling
-comparator.
+comparator. The repeated comparator is pre-registered on 12 cells: all three
+primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro.
+ARC-Challenge and TruthfulQA remain mandatory in the full 18-cell primary and
+RQ3 analyses. Large source roles are capped at 500 before model calls using the
+frozen SHA-256 ID-ranking policy.
 
 The supervisor:
 

@@ -114,8 +114,10 @@ python scripts/render_paper_result_figures.py
 
 Require `paper/figures/generated/result_figure_manifest.json` protocol v2;
 it binds the primary/config sources, all three adaptive-cap artifacts, and all
-three generated PDF hashes. Commit or stash all final tracked paper changes so
-the submission worktree is clean.
+three generated PDF hashes. Commit the final artifact-derived tracked paper changes so
+the submission worktree is clean. Do not stash the rendered manuscript or
+result-manifest changes away before the final gate; they must remain present for
+hash/provenance validation and packaging.
 
 Then run the final repository gate:
 

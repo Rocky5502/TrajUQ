@@ -36,6 +36,7 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] Every primary parity artifact covers exactly 20 shared prompts with zero output/provenance mismatches.
 - [ ] Every primary parity artifact matches the revision-ledger git commit and model SHA.
 - [ ] Pilot output matches the exact state whose trajectory was logged.
+- [ ] `results/a100_machine_preflight.json` is protocol `trajuq_a100_machine_preflight_v1` and PASS on the frozen commit: exactly one visible A100, >=75 GiB VRAM, bfloat16 support, >=40 GiB host RAM, >=80 GiB free disk, healthy `nvidia-smi`.
 - [ ] Frozen model configs require `device: cuda` and `dtype: bfloat16`; the A100 reports CUDA available and bfloat16 support.
 - [ ] Precision, CUDA, PyTorch, Transformers, and GPU recorded.
 

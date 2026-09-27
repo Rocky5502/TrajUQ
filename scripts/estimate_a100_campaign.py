@@ -100,6 +100,8 @@ def validate_timing_source(
     path: Path,
     *,
     expected_commit: str,
+    expected_model_id: str | None = None,
+    expected_model_revision: str | None = None,
 ) -> dict[str, Any]:
     if not path.exists():
         raise ValueError(f"{adapter}: missing timing source {path}")
@@ -138,11 +140,13 @@ def validate_timing_source(
     times: list[float] = []
     peak_memory: list[int] = []
     adapters: set[str] = set()
+    model_ids: set[str] = set()
     source_commits: set[str] = set()
     source_clean_values: set[bool] = set()
     model_revisions: set[str] = set()
     for index, row in enumerate(rows):
         adapters.add(str(row.get("adapter", "")))
+        model_ids.add(str(row.get("model", "")).strip())
         record_metadata = row.get("metadata", {})
         if not isinstance(record_metadata, dict):
             raise ValueError(
@@ -198,6 +202,17 @@ def validate_timing_source(
         raise ValueError(
             f"{adapter}: timing source adapters are {sorted(adapters)}"
         )
+    if "" in model_ids or len(model_ids) != 1:
+        raise ValueError(
+            f"{adapter}: timing source model IDs are not uniform: "
+            f"{sorted(model_ids)}"
+        )
+    observed_model_id = next(iter(model_ids))
+    if expected_model_id is not None and observed_model_id != expected_model_id:
+        raise ValueError(
+            f"{adapter}: timing source model ID {observed_model_id!r} differs "
+            f"from frozen primary model {expected_model_id!r}"
+        )
     if source_commits != {expected_commit}:
         raise ValueError(
             f"{adapter}: timing source commit(s) {sorted(source_commits)} "
@@ -225,6 +240,15 @@ def validate_timing_source(
             f"{adapter}: timing source model revisions are not uniform: "
             f"{sorted(model_revisions)}"
         )
+    observed_revision = next(iter(model_revisions))
+    if (
+        expected_model_revision is not None
+        and observed_revision != expected_model_revision
+    ):
+        raise ValueError(
+            f"{adapter}: timing source model revision {observed_revision!r} "
+            f"differs from frozen primary revision {expected_model_revision!r}"
+        )
 
     return {
         "path": str(path),
@@ -234,7 +258,8 @@ def validate_timing_source(
         "records": len(rows),
         "source_git_commit": next(iter(source_commits)),
         "source_git_clean": True,
-        "model_revision": next(iter(model_revisions)),
+        "model_id": observed_model_id,
+        "model_revision": observed_revision,
         "wall_time_seconds": {
             "mean": statistics.fmean(times),
             "p50": statistics.median(times),
@@ -448,10 +473,29 @@ def main() -> None:
                 f"{len(adapter_cells)}"
             )
 
+        frozen_model_ids = {
+            str(cell.get("model_id", ""))
+            for cell in adapter_cells
+        }
+        frozen_model_revisions = {
+            str(cell.get("model_revision", ""))
+            for cell in adapter_cells
+        }
+        if len(frozen_model_ids) != 1 or "" in frozen_model_ids:
+            raise SystemExit(
+                f"{adapter}: primary plan model IDs are not uniform"
+            )
+        if len(frozen_model_revisions) != 1 or "" in frozen_model_revisions:
+            raise SystemExit(
+                f"{adapter}: primary plan model revisions are not uniform"
+            )
+
         timing = validate_timing_source(
             adapter,
             timing_sources[adapter],
             expected_commit=expected_commit,
+            expected_model_id=next(iter(frozen_model_ids)),
+            expected_model_revision=next(iter(frozen_model_revisions)),
         )
         mean_seconds = float(timing["wall_time_seconds"]["mean"])
         p90_seconds = float(timing["wall_time_seconds"]["p90"])

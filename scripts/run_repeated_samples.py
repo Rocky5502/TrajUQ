@@ -316,21 +316,10 @@ def main() -> None:
     if args.limit is not None:
         rows = rows[: args.limit]
 
-    resident_adapter = build_adapter(
-        args.adapter,
-        args.model,
-        args.device,
-        args.dtype,
-        args.mask_id,
-        args.revision,
-    )
+    # Load the checkpoint lazily. Fully verified reruns and complete-but-
+    # unaudited recovery should not spend GPU time loading a model unnecessarily.
+    resident_adapter = None
     torch = None
-    try:
-        import torch as _torch
-
-        torch = _torch
-    except ImportError:
-        pass
 
     manifest = {
         "protocol": "repeated_sampling_v1",
@@ -407,10 +396,30 @@ def main() -> None:
                 output.unlink()
 
         done = existing_ids(output)
+        if len(done) < len(expected_ids) and resident_adapter is None:
+            resident_adapter = build_adapter(
+                args.adapter,
+                args.model,
+                args.device,
+                args.dtype,
+                args.mask_id,
+                args.revision,
+            )
+            try:
+                import torch as _torch
+
+                torch = _torch
+            except ImportError:
+                torch = None
+
         for index, row in enumerate(rows):
             example_id = str(row["id"])
             if example_id in done:
                 continue
+            if resident_adapter is None:
+                raise SystemExit(
+                    "Internal error: missing resident adapter for incomplete seed."
+                )
             record = generate_record(
                 resident_adapter,
                 args,

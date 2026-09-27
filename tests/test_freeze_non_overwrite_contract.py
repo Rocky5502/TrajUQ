@@ -65,3 +65,18 @@ def test_official_freeze_wrappers_preflight_all_core_evidence_before_running():
         assert "results/cpu_verification_logs" in text
         assert "results/frozen_models" in text
         assert "Refusing to start a mixed pre-primary freeze" in text
+
+
+
+def test_windows_and_linux_freezes_smoke_standalone_generation_entrypoints():
+    windows = Path("scripts/freeze_preprimary_windows.ps1").read_text(
+        encoding="utf-8"
+    )
+    linux = Path("scripts/freeze_preprimary.sh").read_text(
+        encoding="utf-8"
+    )
+
+    for text in (windows, linux):
+        assert "scripts/run_repeated_samples.py --help" in text
+        assert "scripts/resident_generate_plan.py --help" in text
+        assert "scripts/resident_generate_repeated_plan.py --help" in text

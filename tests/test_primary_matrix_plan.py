@@ -61,5 +61,8 @@ def test_primary_planner_revalidates_split_and_revision_provenance():
     assert "saved split audit is stale" in text
     assert "prepared split revision differs from revision ledger" in text
     assert '"revision_ledger_sha256"' in text
+    assert "frozen model config hash differs from revision ledger" in text
+    assert "frozen_model_config_sha256" in text
+    assert "frozen model config path differs from revision ledger" in text
     assert '"split_manifest_sha256"' in text
     assert '"split_audit_sha256"' in text

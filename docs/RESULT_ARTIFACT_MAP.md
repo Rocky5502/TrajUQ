@@ -110,6 +110,31 @@ Manuscript destination:
 - artifact-derived `PriorEntropy*` and `PriorFlipRate*` LaTeX macros in
   `paper/generated_results.tex`.
 
+## Supplementary isotonic calibration sensitivity
+
+The complete cross-cell artifact is:
+
+`results/primary_analysis/macro_calibration_sensitivity.json`
+
+Required protocol: `trajuq_isotonic_calibration_sensitivity_macro_v1`.
+
+It partitions all 18 frozen cells into pre-registered eligible cells and
+explicit `SKIP_INSUFFICIENT_CALIBRATION` cells. Equal-cell means are computed
+only over the eligible subset, whose eligibility is recomputed from the frozen
+calibration artifacts. The renderer exposes Brier, NLL, ECE, and AURC for the
+decision-entropy and trajectory-plus-decision views under primary logistic and
+supplementary isotonic calibration. Positive rendered deltas mean improvement
+for these lower-is-better metrics.
+
+Manuscript destination:
+
+- Appendix Table `tab:calibration-sensitivity`;
+- artifact-derived `Calibration*` LaTeX macros in
+  `paper/generated_results.tex`.
+
+This sensitivity is supplementary and never changes the frozen RQ1 endpoint or
+claim gate.
+
 ## RQ2 five-sample comparator
 
 Primary artifact:
@@ -184,15 +209,16 @@ repository-side submission gate can pass.
 
 ## Final paper render
 
-`scripts/render_results_tex.py` consumes seven SHA-bound sources:
+`scripts/render_results_tex.py` consumes eight SHA-bound sources:
 
 1. `results/primary_analysis/macro_primary.json`;
 2. `results/primary_analysis/rq1_claim_gate.json`;
 3. `results/repeated_sampling/macro_trajuq_vs_repeated.json`;
 4. `results/primary_analysis/macro_feature_ablation.json`;
 5. `results/primary_analysis/macro_prior_signal_diagnostics.json`;
-6. `results/adaptive/macro_cap_050.json`;
-7. `configs/experiments/primary.yaml`.
+6. `results/primary_analysis/macro_calibration_sensitivity.json`;
+7. `results/adaptive/macro_cap_050.json`;
+8. `configs/experiments/primary.yaml`.
 
 It writes:
 
@@ -215,8 +241,9 @@ primary RQ1 claim gate.
 
 1. Require all pre-primary gates to PASS.
 2. Complete and audit all 18 primary cells.
-3. Complete primary analysis, including the 18-cell feature-ablation and
-   prior-aligned signal diagnostic macros.
+3. Complete primary analysis, including the 18-cell feature-ablation,
+   prior-aligned signal diagnostic, and supplementary isotonic calibration-
+   sensitivity macros.
 4. Freeze the RQ1 claim decision unchanged.
 5. Complete RQ2 with compute accounting.
 6. Complete RQ3 at 25/50/75% caps.

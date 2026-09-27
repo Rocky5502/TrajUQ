@@ -103,7 +103,8 @@ python scripts/render_results_tex.py
 The renderer re-evaluates the RQ1 claim gate from
 `configs/experiments/primary.yaml` and writes a manifest that SHA-binds the
 primary macro, claim gate, repeated-sampling macro, complete feature-ablation
-macro, adaptive primary-cap macro, and primary config.
+macro, prior-aligned signal diagnostic macro, adaptive primary-cap macro, and
+primary config.
 
 Then render the frozen aggregate result figures:
 
@@ -137,19 +138,21 @@ python scripts/audit_paper.py --submission-ready
 
 Then separately run the official ACL pubcheck on the compiled PDF.
 
-Build the exact anonymous Overleaf source package:
+The final readiness command builds the exact anonymous Overleaf source package
+in submission-ready mode and the anonymous software archive. The equivalent
+standalone Overleaf command is:
 
 ```bash
-python scripts/build_overleaf_package.py
+python scripts/build_overleaf_package.py --submission-ready
 ```
 
-Inspect its `MANIFEST.json`, anonymous source-snapshot SHA-256, ACL-style
-commit, and included file hashes before importing/uploading it to Overleaf.
+Submission-ready mode requires the result manifests and includes only the three
+manifest-approved generated result PDFs. Inspect its `MANIFEST.json`,
+anonymous source-snapshot SHA-256, ACL-style commit, and included file hashes.
 The development git commit is intentionally not embedded in the anonymous ZIP.
 
-Build the anonymous software archive with
-`python scripts/build_anonymous_supplement.py` and inspect its MANIFEST.json
-before upload.
+`results/submission_readiness.json` records SHA-256 values for the exact
+Overleaf and anonymous software archives. Upload those exact archives.
 
 Before upload verify:
 

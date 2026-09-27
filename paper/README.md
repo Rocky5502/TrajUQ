@@ -35,7 +35,7 @@ The committed `generated_results.tex` is a pre-results fallback containing TBD m
 
     python scripts/render_results_tex.py
 
-The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation macro, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation macros, and emits `paper/generated_results_manifest.json` with SHA-256 bindings to six sources: primary, RQ1 gate, repeated sampling, feature ablations, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim.
+The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation macro, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation macros, and emits `paper/generated_results_manifest.json` with SHA-256 bindings to seven sources: primary, RQ1 gate, repeated sampling, feature ablations, prior-aligned signal diagnostics, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim.
 
 After all three adaptive-cap macros exist, also run:
 

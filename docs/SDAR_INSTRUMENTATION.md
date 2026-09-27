@@ -31,6 +31,12 @@ Accordingly, the hard parity gate uses the upstream-native stochastic path at `t
 
 TrajUQ also exposes `temperature=0` argmax as an explicit research control, but that control is not called upstream-native SDAR and is not used for the native parity claim.
 
+### Reduced-step RQ3 partial-block guard
+
+The pinned upstream sampler computes a nominal transfer count from the full block length. Under the native frozen setting (`block_length=4`, `denoising_steps=4`), the count is one token per step and the guard is a no-op. TrajUQ's pre-registered RQ3 base control uses only two denoising steps, so the nominal count is two. If the first decode block is partially occupied by prompt tokens, fewer than two mask tokens can remain; an uncapped `topk` can then select `-inf` prompt positions.
+
+The instrumented adapter therefore caps the requested transfer count by the number of currently masked positions before selecting tokens. This does not alter the native 4-step parity path, but prevents prompt-tail mutation in the reduced-step RQ3 control. Base/refined adaptive provenance requires the same guard metadata on both runs.
+
 ## Exact blockwise feature aggregation
 
 SDAR denoises one active block at a time. Each block exports mergeable sufficient statistics: unresolved-position entropy/margin/JS samples, per-step event/count statistics, per-token decision-time confidence, and commitment times.

@@ -24,8 +24,13 @@ def write_jsonl(path: Path, adapter: str, times: list[float]) -> None:
             {
                 "example_id": f"x:{index}",
                 "adapter": adapter,
+                "metadata": {
+                    "source_git_commit": "abc",
+                    "source_git_clean": True,
+                },
                 "generation": {
                     "metadata": {
+                        "model_revision": "model-sha",
                         "wall_time_seconds": seconds,
                         "peak_gpu_memory_bytes": 1024 + index,
                     }
@@ -53,6 +58,8 @@ def write_audit(
         "git_commit": commit,
         "git_clean": clean,
         "sha256": sha256_file(source),
+        "source_git_commits": [commit],
+        "source_git_clean_values": [True],
     }
     path.write_text(
         json.dumps(payload, indent=2) + "\n",
@@ -73,6 +80,9 @@ def test_validate_timing_source_summarizes_audited_trace(tmp_path):
     )
 
     assert result["records"] == 5
+    assert result["source_git_commit"] == "abc"
+    assert result["source_git_clean"] is True
+    assert result["model_revision"] == "model-sha"
     assert result["wall_time_seconds"]["mean"] == pytest.approx(3.0)
     assert result["wall_time_seconds"]["p50"] == pytest.approx(3.0)
     assert result["wall_time_seconds"]["p90"] == pytest.approx(4.6)
@@ -102,6 +112,17 @@ def test_validate_timing_source_rejects_wrong_commit(tmp_path):
     raw = tmp_path / "sdar.raw.jsonl"
     audit = raw.with_suffix(raw.suffix + ".audit.json")
     write_jsonl(raw, "sdar", [0.4, 0.5])
+    rows = [
+        json.loads(line)
+        for line in raw.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    for row in rows:
+        row["metadata"]["source_git_commit"] = "old"
+    raw.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
     write_audit(audit, raw, commit="old")
 
     with pytest.raises(ValueError, match="commit differs"):
@@ -166,3 +187,27 @@ def test_markdown_labels_estimate_as_planning_only():
     assert "not an empirical paper result" in text
     assert "6.25 A100-hours" in text
     assert "not a statistical 90% confidence bound" in text
+
+
+def test_validate_timing_source_rejects_dirty_row_provenance(tmp_path):
+    raw = tmp_path / "llada.raw.jsonl"
+    audit = raw.with_suffix(raw.suffix + ".audit.json")
+    write_jsonl(raw, "llada", [1.0, 2.0])
+    rows = [
+        json.loads(line)
+        for line in raw.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    rows[0]["metadata"]["source_git_clean"] = False
+    raw.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    write_audit(audit, raw, commit="abc")
+
+    with pytest.raises(ValueError, match="not generated from a clean checkout"):
+        validate_timing_source(
+            "llada",
+            raw,
+            expected_commit="abc",
+        )

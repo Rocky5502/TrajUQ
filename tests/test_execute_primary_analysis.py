@@ -478,6 +478,11 @@ def test_analysis_provenance_rejects_scored_input_drift(
         "git_status_porcelain",
         lambda: "",
     )
+    monkeypatch.setattr(
+        execute_primary_analysis,
+        "validate_primary_plan_provenance",
+        lambda payload, *, require_current_commit=True: [],
+    )
 
     assert validate_plan_provenance(plan) == []
 
@@ -734,3 +739,45 @@ def test_aggregate_provenance_rejects_prediction_drift(tmp_path):
         encoding="utf-8",
     )
     assert not aggregate_provenance_matches(plan, payload, "primary")
+
+
+def test_analysis_provenance_surfaces_nested_primary_plan_failure(
+    tmp_path,
+    monkeypatch,
+):
+    commit = "d" * 40
+    primary_plan = tmp_path / "primary_plan.json"
+    primary_config = tmp_path / "primary.yaml"
+    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+
+    plan = {
+        "protocol": "trajuq_primary_analysis_plan_v2",
+        "status": "PASS",
+        "experiment_git_commit": commit,
+        "primary_plan": str(primary_plan),
+        "primary_plan_sha256": _sha256(primary_plan),
+        "primary_config": str(primary_config),
+        "primary_config_sha256": _sha256(primary_config),
+        "cell_analyses": [],
+    }
+    monkeypatch.setattr(execute_primary_analysis, "git_head", lambda: commit)
+    monkeypatch.setattr(
+        execute_primary_analysis,
+        "git_status_porcelain",
+        lambda: "",
+    )
+    monkeypatch.setattr(
+        execute_primary_analysis,
+        "validate_primary_plan_provenance",
+        lambda payload, *, require_current_commit=True: [
+            "primary readiness bound source hash drifted: results/llada_parity.json"
+        ],
+    )
+
+    failures = validate_plan_provenance(plan)
+    assert any(
+        "primary plan provenance: primary readiness bound source hash drifted"
+        in item
+        for item in failures
+    )

@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import numpy as np
 
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, write_json_immutable
 
 
 def index(path: str) -> dict[str, dict]:
@@ -21,6 +23,67 @@ def index(path: str) -> dict[str, dict]:
             raise SystemExit(f"{path}: duplicate example_id={item_id}")
         out[item_id] = row
     return out
+
+
+def sha256_file(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_head() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def git_clean() -> bool | None:
+    try:
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+        return status.strip() == ""
+    except Exception:
+        return None
+
+
+def run_signature(rows: dict[str, dict]) -> dict[str, object]:
+    if not rows:
+        raise ValueError("overhead source run contains zero records")
+    fields: dict[str, set[object]] = {
+        "dataset": set(),
+        "model": set(),
+        "adapter": set(),
+        "seed": set(),
+        "model_revision": set(),
+    }
+    for row in rows.values():
+        fields["dataset"].add(row.get("dataset"))
+        fields["model"].add(row.get("model"))
+        fields["adapter"].add(row.get("adapter"))
+        fields["seed"].add(row.get("seed"))
+        metadata = row.get("generation", {}).get("metadata", {})
+        fields["model_revision"].add(
+            metadata.get("model_revision") if isinstance(metadata, dict) else None
+        )
+    signature: dict[str, object] = {}
+    for key, values in fields.items():
+        if None in values or len(values) != 1:
+            raise ValueError(
+                f"overhead source has non-uniform/missing {key}: "
+                f"{sorted(str(value) for value in values)}"
+            )
+        signature[key] = next(iter(values))
+    return signature
 
 
 def metric(row: dict, name: str):
@@ -61,6 +124,26 @@ def main() -> None:
     if set(reference) != set(instrumented):
         raise SystemExit("Reference/instrumented ID sets differ")
 
+    try:
+        reference_signature = run_signature(reference)
+        instrumented_signature = run_signature(instrumented)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    if reference_signature != instrumented_signature:
+        raise SystemExit(
+            "Reference/instrumented run provenance differs: "
+            f"{reference_signature} != {instrumented_signature}"
+        )
+
+    commit = git_head()
+    clean = git_clean()
+    if not commit:
+        raise SystemExit("Instrumentation-overhead audit requires a resolvable git commit.")
+    if clean is not True:
+        raise SystemExit(
+            "Instrumentation-overhead audit requires the frozen clean checkout."
+        )
+
     ids = sorted(reference)
     native_time = []
     traj_time = []
@@ -91,8 +174,17 @@ def main() -> None:
     )
 
     payload = {
-        "protocol": "instrumentation_overhead_v1",
+        "protocol": "trajuq_instrumentation_overhead_v2",
+        "git_commit": commit,
+        "git_clean": clean,
+        "reference": str(Path(args.reference)),
+        "reference_sha256": sha256_file(args.reference),
+        "instrumented": str(Path(args.instrumented)),
+        "instrumented_sha256": sha256_file(args.instrumented),
+        "run_provenance": reference_signature,
         "n": len(ids),
+        "n_boot": int(args.n_boot),
+        "seed": int(args.seed),
         "time_seconds": {
             "native_mean": float(native_time_arr.mean()),
             "instrumented_mean": float(traj_time_arr.mean()),
@@ -117,8 +209,7 @@ def main() -> None:
         }
 
     out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json_immutable(out, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
 
 

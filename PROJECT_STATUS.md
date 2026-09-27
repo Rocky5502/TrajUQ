@@ -135,8 +135,13 @@ The remaining work is primarily **execution**, not paper-number invention.
    Both run clean CPU verification and revision-ledger v2 resolution without
    changing commits. Hosted GitHub Actions is currently infrastructure-blocked
    before executable steps; issue #6 tracks that runner-allocation failure.
-2. Require `results/cpu_verification.json` PASS and
-   `results/revision_ledger.json` protocol-v2 PASS at the same git commit.
+2. Require `results/cpu_verification.json` PASS,
+   `results/revision_ledger.json` protocol-v2 PASS, and
+   `results/gated_dataset_access.json` protocol-v1 PASS at the same clean git
+   commit. The gated-access proof streams one record from every gated primary
+   dataset (currently GPQA-Diamond) at the ledger-resolved SHA and stores no
+   benchmark question/answer content. All parity/pilot/MATH wrappers revalidate
+   this proof and its revision-ledger SHA before GPU work.
 3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
    ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output
    mismatches, zero provenance mismatches, a clean comparator checkout, and
@@ -175,9 +180,9 @@ The remaining work is primarily **execution**, not paper-number invention.
    math-verify=0.9.0 and antlr4-python3-runtime=4.13.2. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
-   CPU, parity, pilot raw/scored audits, pilot review sources, MATH-500
-   scorer/dependency/review sources, dataset-manifest, commit, and dirty-worktree
-   state.
+   CPU, gated-dataset access, parity, pilot raw/scored audits, pilot review
+   sources, MATH-500 scorer/dependency/review sources, dataset-manifest, commit,
+   and dirty-worktree state.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 

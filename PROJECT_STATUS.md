@@ -55,10 +55,11 @@ particular, the following are implemented and versioned:
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
 - revision-ledger protocol v2 binding the experiment git commit, primary/data
   config hashes, immutable model/data SHAs, and frozen model-config hashes;
-- exact-revision dataset-contract protocol v1 that streams one row from each
+- exact-revision dataset-contract protocol v1 that streams four rows from each
   of the six primary datasets on the frozen machine, exercises the frozen
-  normalizer and scorer with a constructed correct final answer, binds the
-  clean commit/revision-ledger SHA, and stores no benchmark row content;
+  normalizer and scorer on every sampled row with a constructed correct final
+  answer, binds the clean commit/revision-ledger SHA, and stores no benchmark
+  row content; readiness and every GPU entry guard reject legacy one-row proof;
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus one-command strict
@@ -186,9 +187,9 @@ The remaining work is primarily **execution**, not paper-number invention.
    `results/gated_dataset_access.json` protocol-v1 PASS, and
    `results/dataset_contracts.json` protocol-v1 PASS at the same clean git
    commit. The gated-access proof streams one record from every gated primary
-   dataset (currently GPQA-Diamond). The dataset-contract proof streams one row
+   dataset (currently GPQA-Diamond). The dataset-contract proof streams four rows
    from each of all six exact-revision primary datasets and exercises the frozen
-   normalizer/scorer. Neither artifact stores benchmark question/answer content,
+   normalizer/scorer on every sampled row. Neither artifact stores benchmark question/answer content,
    and both must bind the exact revision-ledger SHA before GPU work.
 3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
    ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output

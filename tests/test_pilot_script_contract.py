@@ -235,3 +235,19 @@ def test_wrappers_use_shared_frozen_preprimary_validator():
     assert "scripts/validate_frozen_preprimary.py" in text
     text = Path("scripts/pilot_linux.sh").read_text(encoding="utf-8")
     assert "scripts/validate_frozen_preprimary.py" in text
+
+
+def test_llada_parity_reuse_requires_source_bound_run_provenance():
+    windows = Path("scripts/pilot_windows.ps1").read_text(encoding="utf-8")
+    linux = Path("scripts/pilot_linux.sh").read_text(encoding="utf-8")
+
+    assert "$Parity.run_provenance.source_git_commit -eq $Commit" in windows
+    assert "$Parity.run_provenance.source_git_clean -eq $true" in windows
+    assert (
+        'p.get("run_provenance", {}).get("source_git_commit") == "$FROZEN_COMMIT"'
+        in linux
+    )
+    assert (
+        'p.get("run_provenance", {}).get("source_git_clean") is True'
+        in linux
+    )

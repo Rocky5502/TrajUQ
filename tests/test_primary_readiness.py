@@ -414,6 +414,14 @@ def test_primary_readiness_passes_only_with_all_bound_gates(tmp_path):
     result = evaluate(case)
     assert result["status"] == "PASS"
     assert result["experiment_git_commit"] == EXPERIMENT_COMMIT
+    assert result["source_bindings"]
+    bound_paths = {item["path"] for item in result["source_bindings"]}
+    assert str(case["cpu"]) in bound_paths
+    assert str(case["ledger"]) in bound_paths
+    assert str(case["quality"]) in bound_paths
+    assert str(case["manual"]) in bound_paths
+    assert str(case["math_audit"]) in bound_paths
+    assert str(case["math_manual"]) in bound_paths
     assert not result["failures"]
 
 

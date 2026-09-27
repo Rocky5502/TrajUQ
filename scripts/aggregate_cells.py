@@ -16,6 +16,7 @@ from trajuq.aggregation import (
     oriented_improvement,
 )
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -260,8 +261,17 @@ def main() -> None:
         for metric in AGGREGATE_METRICS
     }
 
+    provenance_sources = {
+        "primary_config": primary_cfg,
+        **{
+            f"prediction:{label}": Path(path)
+            for label, path in args.cell
+        },
+    }
+
     payload = {
         "protocol": "hierarchical_within_cell_macro_bootstrap_v1",
+        "provenance": analysis_provenance(provenance_sources),
         "delta_direction": "positive_means_trajuq_is_better",
         "cell_weighting": "equal_weight_per_model_dataset_cell",
         "resampling": "class_stratified_within_each_cell_paired",

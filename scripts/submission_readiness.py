@@ -208,7 +208,11 @@ def verify_generated_results(
             )
 
     expected_rendered_text: str | None = None
-    if required_sources.issubset(source_paths) and source_hashes_valid:
+    if (
+        adaptive_plan_path is not None
+        and required_sources.issubset(source_paths)
+        and source_hashes_valid
+    ):
         try:
             primary = load_json(source_paths["primary"])
             claim = load_json(source_paths["claim_gate"])

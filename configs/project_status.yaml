@@ -168,11 +168,13 @@ implementation:
     evidence:
       - scripts/build_anonymous_supplement.py
   - id: overleaf_package
-    label: "Deterministic anonymous Overleaf package pinned to official ACL style"
+    label: "Manifest-bound submission-ready anonymous Overleaf package pinned to official ACL style"
     state: DONE
     evidence:
       - scripts/build_overleaf_package.py
+      - scripts/submission_readiness.py
       - tests/test_build_overleaf_package.py
+      - tests/test_submission_readiness.py
       - paper/README.md
   - id: a100_campaign
     label: "Guarded staged A100 campaign runner with explicit human-review stops"
@@ -189,11 +191,14 @@ implementation:
       - tests/test_estimate_a100_campaign.py
       - docs/A100_EXECUTION.md
   - id: submission_readiness_gate
-    label: "Final ARR gate separating historical experiment provenance from a clean submission checkout"
+    label: "Final ARR gate revalidating provenance and recording exact Overleaf/software archive hashes"
     state: DONE
     evidence:
       - scripts/submission_readiness.py
+      - scripts/build_overleaf_package.py
+      - scripts/build_anonymous_supplement.py
       - tests/test_submission_readiness.py
+      - tests/test_build_overleaf_package.py
   - id: cpu_verification
     label: "Cross-platform CPU verification scripts"
     state: DONE

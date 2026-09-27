@@ -203,6 +203,8 @@ bash scripts/a100_campaign_linux.sh pilot
 bash scripts/a100_campaign_linux.sh parity-math
 # human 25-example MATH-500 review + attestation
 bash scripts/a100_campaign_linux.sh readiness
+bash scripts/a100_campaign_linux.sh estimate
+cat results/a100_compute_estimate.md
 bash scripts/a100_campaign_linux.sh all-after-readiness
 ```
 

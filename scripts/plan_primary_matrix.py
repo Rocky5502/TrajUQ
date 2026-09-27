@@ -104,6 +104,7 @@ def validate_prepared_split_identity(
     meta: dict,
     manifest_spec: dict,
     ledger_row: dict,
+    experiment_commit: str | None = None,
 ) -> list[str]:
     failures: list[str] = []
 
@@ -121,6 +122,17 @@ def validate_prepared_split_identity(
     elif str(meta.get("requested_revision", "")) != expected_revision:
         failures.append(
             f"{dataset}: prepared split revision differs from revision ledger"
+        )
+
+    if meta.get("source_git_clean") is not True:
+        failures.append(
+            f"{dataset}: prepared split was not produced from a clean checkout"
+        )
+    if experiment_commit is not None and str(
+        meta.get("source_git_commit", "")
+    ) != str(experiment_commit):
+        failures.append(
+            f"{dataset}: prepared split source commit differs from frozen experiment commit"
         )
 
     for key in (
@@ -440,6 +452,7 @@ def main() -> None:
                     meta,
                     manifest_spec,
                     ledger_datasets.get(dataset, {}),
+                    readiness.get("experiment_git_commit"),
                 )
             )
         if int(meta.get("n_calibration", 0)) <= 0:

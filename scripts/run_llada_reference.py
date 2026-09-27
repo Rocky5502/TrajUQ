@@ -5,6 +5,7 @@ import argparse
 import json
 import subprocess
 import time
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 from trajuq.io import read_jsonl, sha256_text
@@ -289,6 +290,9 @@ def main() -> None:
                             else None
                         ),
                         "torch_version": torch.__version__,
+                        "transformers_version": importlib_metadata.version(
+                            "transformers"
+                        ),
                     },
                 },
             }

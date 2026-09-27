@@ -246,7 +246,7 @@ if [[ "$STAGE" == "pilot" || "$STAGE" == "all" ]]; then
   assert_frozen_pair
   require_no_existing_artifacts     "$RAW" "$RAW.audit.json"     "$SCORED" "$SCORED.audit.json"     "$REVIEW" "$MANUAL"
 
-  run_step "25-example LLaDA MATH-500 calibration pilot"     "$PYTHON" scripts/run_generation.py       --adapter llada       --model "$MODEL_ID"       --revision "$MODEL_SHA"       --input "$CAL_DATA"       --output "$RAW"       --limit 25       --seed 2027       --steps 128       --max-new-tokens 128       --block-length 128       --temperature 0       --llada-cfg-scale 0       --llada-remasking low_confidence
+  run_step "25-example LLaDA MATH-500 calibration pilot"     "$PYTHON" scripts/run_generation.py       --adapter llada       --model "$MODEL_ID"       --revision "$MODEL_SHA"       --input "$CAL_DATA"       --output "$RAW"       --limit 25       --seed 2027       --steps 128       --max-new-tokens 128       --block-length 128       --temperature 0       --llada-cfg-scale 0       --llada-remasking low_confidence       --device cuda --dtype bfloat16
 
   run_step "Audit raw MATH-500 scorer pilot"     "$PYTHON" scripts/audit_run.py --run "$RAW" --stage raw --require-revision
   run_step "Score MATH-500 calibration pilot"     "$PYTHON" scripts/score_outputs.py       --run "$RAW" --input "$CAL_DATA" --output "$SCORED"

@@ -105,6 +105,7 @@ def evaluate_readiness(
     math500_manual_path: str = "results/math500_scorer_manual_review.json",
     cpu_verification_path: str = "results/cpu_verification.json",
     revision_ledger_path: str = "results/revision_ledger.json",
+    gated_access_path: str = "results/gated_dataset_access.json",
     *,
     enforce_current_git: bool = False,
     current_git_commit: str | None = None,
@@ -133,6 +134,7 @@ def evaluate_readiness(
 
     experiment_commit: str | None = None
     ledger_models: dict[str, dict] = {}
+    ledger_datasets: dict[str, dict] = {}
     try:
         ledger = load_json(revision_ledger_path)
         experiment_commit = ledger.get("git_commit")
@@ -229,6 +231,64 @@ def evaluate_readiness(
             failures.append("immutable revision ledger is not a valid frozen PASS")
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"revision ledger unavailable/invalid: {exc}")
+
+    try:
+        gated = load_json(gated_access_path)
+        expected_gated_names = sorted(
+            name
+            for name, item in ledger_datasets.items()
+            if item.get("gated") is True
+        )
+        observed_gated_names = sorted(
+            str(name)
+            for name in gated.get("gated_dataset_names", [])
+        )
+        observed_gated_rows = {
+            str(item.get("name")): item
+            for item in gated.get("datasets", [])
+            if item.get("name")
+        }
+        gated_rows_ok = (
+            set(observed_gated_rows) == set(expected_gated_names)
+            and all(
+                observed_gated_rows[name].get("status") == "PASS"
+                and observed_gated_rows[name].get("record_accessed") is True
+                and str(observed_gated_rows[name].get("resolved_sha", ""))
+                == str(ledger_datasets[name].get("resolved_sha", ""))
+                for name in expected_gated_names
+            )
+        )
+        ledger_path = Path(revision_ledger_path)
+        gated_pass = (
+            gated.get("protocol") == "trajuq_gated_dataset_access_v1"
+            and gated.get("status") == "PASS"
+            and gated.get("git_clean") is True
+            and experiment_commit is not None
+            and gated.get("git_commit") == experiment_commit
+            and ledger_path.is_file()
+            and gated.get("revision_ledger_sha256") == sha256_file(ledger_path)
+            and observed_gated_names == expected_gated_names
+            and int(gated.get("failure_count", 1)) == 0
+            and gated_rows_ok
+        )
+        checks["gated_dataset_access"] = {
+            "path": gated_access_path,
+            "status": gated.get("status"),
+            "protocol": gated.get("protocol"),
+            "git_commit": gated.get("git_commit"),
+            "git_clean": gated.get("git_clean"),
+            "expected_gated_datasets": expected_gated_names,
+            "observed_gated_datasets": observed_gated_names,
+            "failure_count": gated.get("failure_count"),
+            "revision_ledger_sha256": gated.get("revision_ledger_sha256"),
+            "rows_ok": gated_rows_ok,
+        }
+        if not gated_pass:
+            failures.append(
+                "gated primary dataset access is not a clean revision-bound PASS"
+            )
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"gated dataset access artifact unavailable/invalid: {exc}")
 
     try:
         cpu = load_json(cpu_verification_path)
@@ -612,6 +672,10 @@ def main() -> None:
         default="results/revision_ledger.json",
     )
     parser.add_argument(
+        "--gated-dataset-access",
+        default="results/gated_dataset_access.json",
+    )
+    parser.add_argument(
         "--pilot-quality",
         default="results/llada_gsm8k_pilot50_gate.json",
     )
@@ -664,6 +728,7 @@ def main() -> None:
         args.math500_manual_review,
         args.cpu_verification,
         args.revision_ledger,
+        args.gated_dataset_access,
         enforce_current_git=not historical,
         current_git_commit=current_commit,
         current_git_clean=(

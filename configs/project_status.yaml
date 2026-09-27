@@ -30,11 +30,15 @@ implementation:
       - src/trajuq/features.py
       - configs/experiments/primary.yaml
   - id: calibration
-    label: "Held-out logistic/isotonic calibration and error probabilities"
+    label: "Held-out primary logistic calibration plus frozen source-bound isotonic sensitivity"
     state: DONE
     evidence:
       - src/trajuq/calibration.py
       - scripts/evaluate_run.py
+      - scripts/evaluate_calibration_sensitivity.py
+      - scripts/aggregate_calibration_sensitivity.py
+      - tests/test_calibration.py
+      - tests/test_execute_primary_analysis.py
   - id: selective_risk
     label: "Tie-aware AURC and risk-at-coverage metrics"
     state: DONE
@@ -60,7 +64,7 @@ implementation:
       - scripts/execute_primary_plan.py
       - tests/test_execute_primary_plan.py
   - id: primary_analysis
-    label: "Frozen-audit-bound 18-cell analysis ledger with primary and feature-ablation hierarchical macros"
+    label: "Frozen-audit-bound 18-cell analysis ledger with primary, isotonic-sensitivity, and feature-ablation macros"
     state: DONE
     evidence:
       - scripts/plan_primary_analysis.py

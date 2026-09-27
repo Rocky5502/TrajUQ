@@ -189,6 +189,9 @@ def test_primary_analysis_plan_wires_frozen_isotonic_sensitivity():
     assert "calibration_sensitivity.json" in text
     assert '"calibration_sensitivity_argv"' in text
     assert '"calibration_sensitivity_contract"' in text
+    assert "aggregate_calibration_sensitivity.py" in text
+    assert "macro_calibration_sensitivity.json" in text
+    assert '"calibration_sensitivity_macro_argv"' in text
     assert "min_calibration_samples" in text
     assert "1000" in text
     assert "min_class_count" in text

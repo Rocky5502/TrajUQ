@@ -8,13 +8,49 @@ MAX_STAGE_ATTEMPTS="${MAX_STAGE_ATTEMPTS:-2}"
 LOG_ROOT="${LOG_ROOT:-logs/a100_72h}"
 STATE_PATH="${STATE_PATH:-results/a100_72h_autopilot_state.json}"
 STAGE_FILE="${STAGE_FILE:-results/a100_72h_current_stage.txt}"
+RENTAL_CLOCK_PATH="${RENTAL_CLOCK_PATH:-results/a100_rental_clock.json}"
 
 mkdir -p "$LOG_ROOT" results
-START_EPOCH="$(date +%s)"
-BUDGET_SECONDS="$((BUDGET_HOURS * 3600))"
-DEADLINE_EPOCH="$((START_EPOCH + BUDGET_SECONDS))"
 HEAD_SHA="$(git rev-parse HEAD)"
 MONITOR_PID=""
+
+if [[ ! -f "$RENTAL_CLOCK_PATH" ]]; then
+  printf '[TrajUQ 72h] missing rental clock: %s\n' "$RENTAL_CLOCK_PATH" >&2
+  printf '%s\n' 'Run python scripts/start_a100_rental_clock.py immediately after connecting to the rented server.' >&2
+  exit 1
+fi
+
+read -r START_EPOCH DEADLINE_EPOCH CLOCK_HOURS < <(
+  "$PYTHON" - "$RENTAL_CLOCK_PATH" "$HEAD_SHA" "$BUDGET_HOURS" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+head = sys.argv[2]
+requested_hours = int(sys.argv[3])
+payload = json.loads(path.read_text(encoding="utf-8"))
+if payload.get("protocol") != "trajuq_a100_rental_clock_v1":
+    raise SystemExit("Rental clock protocol is not v1.")
+if payload.get("status") != "ACTIVE":
+    raise SystemExit("Rental clock status is not ACTIVE.")
+if payload.get("git_clean") is not True:
+    raise SystemExit("Rental clock was not recorded from a clean checkout.")
+if str(payload.get("git_commit", "")) != head:
+    raise SystemExit("Rental clock commit differs from current frozen HEAD.")
+clock_hours = int(payload.get("target_wall_clock_hours", -1))
+if clock_hours != requested_hours:
+    raise SystemExit(
+        f"BUDGET_HOURS={requested_hours} differs from frozen rental clock={clock_hours}."
+    )
+start = int(payload.get("start_epoch", 0))
+deadline = int(payload.get("deadline_epoch", 0))
+if start <= 0 or deadline <= start:
+    raise SystemExit("Rental clock has invalid start/deadline epochs.")
+print(start, deadline, clock_hours)
+PY
+)
+BUDGET_SECONDS="$((CLOCK_HOURS * 3600))"
 
 write_state() {
   local status="$1"
@@ -67,6 +103,44 @@ path.parent.mkdir(parents=True, exist_ok=True)
 tmp = path.with_suffix(path.suffix + ".tmp")
 tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 tmp.replace(path)
+PY
+}
+
+check_estimate_against_remaining_budget() {
+  local remaining
+  remaining="$(remaining_seconds)"
+  "$PYTHON" - results/a100_compute_estimate.json "$remaining" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+remaining_seconds = int(sys.argv[2])
+payload = json.loads(path.read_text(encoding="utf-8"))
+if payload.get("protocol") != "trajuq_a100_compute_estimate_v1":
+    raise SystemExit("A100 estimate protocol is not v1.")
+if payload.get("status") != "PASS":
+    raise SystemExit("A100 estimate is not PASS.")
+remaining_hours = remaining_seconds / 3600.0
+mean_hours = float(payload["aggregate"]["mean_projection_hours"])
+p90_hours = float(payload["aggregate"]["p90_planning_hours"])
+print(
+    "[TrajUQ 72h] remaining rental hours="
+    f"{remaining_hours:.2f}; projected mean={mean_hours:.2f}; "
+    f"P90 planning sum={p90_hours:.2f}"
+)
+if mean_hours > remaining_hours:
+    raise SystemExit(
+        "Frozen full scope mean projection exceeds the remaining paid-rental "
+        "window. Stop before scale; do not silently weaken scientific gates."
+    )
+if p90_hours > remaining_hours:
+    print(
+        "[TrajUQ 72h] WARNING: mean projection fits but conservative P90 "
+        "planning sum exceeds remaining rental time."
+    )
+else:
+    print("[TrajUQ 72h] conservative P90 planning sum fits remaining rental time.")
 PY
 }
 
@@ -193,6 +267,15 @@ for stage in estimate primary analysis rq3 rq2 paper; do
   run_stage "$stage"
   rc=$?
   set -e
+  if (( rc == 0 )) && [[ "$stage" == "estimate" ]]; then
+    set +e
+    check_estimate_against_remaining_budget
+    rc=$?
+    set -e
+    if (( rc != 0 )); then
+      write_state "BUDGET_FORECAST_FAIL" "$stage" "$rc"
+    fi
+  fi
   if (( rc != 0 )); then
     if [[ "$(remaining_seconds)" -le 0 ]]; then
       printf '[TrajUQ 72h] rental budget exhausted during %s. Artifacts remain resumable.\n' "$stage" >&2

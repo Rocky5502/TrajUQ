@@ -23,8 +23,8 @@ Therefore one A100 is sufficient for the frozen study, and the 72-hour plan
 reduces unnecessary calls through a predeclared dataset-cap policy rather than
 changing outcomes after they are observed. The tracked manifest freezes
 outcome-free SHA-256 ID ranking with seed 2027: GSM8K calibration/test are
-capped at 1,000 each; ARC-Challenge and MMLU-Pro retain their smaller
-calibration splits and cap the large test split at 1,000; the three smaller
+capped at 500 each; ARC-Challenge and MMLU-Pro retain their smaller
+calibration splits and cap the large test split at 500; the three smaller
 single-split benchmarks keep their complete frozen holdouts.
 
 Before scale, complete the pre-primary freeze, LLaDA parity/pilot, both human
@@ -416,8 +416,8 @@ python scripts/execute_repeated_sampling.py
 python scripts/execute_repeated_sampling.py --execute
 ```
 
-This executes the frozen five-seed (2027--2031) comparator over all 18 cells.
-Repeated macro protocol v2 is fail-closed on compute accounting: every cell must
+This executes the frozen five-seed (2027--2031) comparator over the pre-registered 12-cell subset (all three models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro). ARC-Challenge and TruthfulQA remain in the complete 18-cell primary/RQ3 analyses.
+Repeated macro protocol v2 is fail-closed on compute accounting: every eligible cell must
 retain valid test-time auxiliary wall-clock metadata, and the final artifact
 reports the equal-cell-weight mean extra seconds per example with target
 generation excluded. Do not report the comparator as a free baseline.

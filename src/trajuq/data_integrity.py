@@ -123,14 +123,47 @@ def audit_split_pair(
         failures.append("split manifest has no source_counts object")
         source_counts = {}
 
+    parsed_source_counts: dict[str, int] = {}
+    for key in (
+        "source_total",
+        "calibration_before_cap",
+        "test_before_cap",
+    ):
+        value = source_counts.get(key)
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            failures.append(f"invalid source count: {key}")
+            continue
+        if parsed < 0:
+            failures.append(f"source count must be non-negative: {key}")
+            continue
+        parsed_source_counts[key] = parsed
+
+    if all(
+        key in parsed_source_counts
+        for key in (
+            "source_total",
+            "calibration_before_cap",
+            "test_before_cap",
+        )
+    ):
+        expected_source_total = (
+            parsed_source_counts["calibration_before_cap"]
+            + parsed_source_counts["test_before_cap"]
+        )
+        if parsed_source_counts["source_total"] != expected_source_total:
+            failures.append(
+                "source_total differs from calibration_before_cap + "
+                "test_before_cap"
+            )
+
     for role, rows, cap_key, source_key in (
         ("calibration", cal, "calibration_max", "calibration_before_cap"),
         ("test", test, "test_max", "test_before_cap"),
     ):
-        source_count = source_counts.get(source_key)
-        try:
-            source_count = int(source_count)
-        except (TypeError, ValueError):
+        source_count = parsed_source_counts.get(source_key)
+        if source_count is None:
             failures.append(f"{role}: invalid source count before cap")
             continue
         if source_count < len(rows):

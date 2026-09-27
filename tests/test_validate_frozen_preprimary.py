@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 
 from scripts.validate_frozen_preprimary import validate_frozen_preprimary
-from trajuq.datasets import NORMALIZER_VERSION
+from trajuq.datasets import NORMALIZER_VERSION, SPLIT_SELECTION_VERSION
 
 
 def sha(path: Path) -> str:
@@ -45,6 +45,12 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
                         "strategy": "official",
                         "calibration_split": "train",
                         "test_split": "test",
+                        "pre_generation_cap": {
+                            "method": SPLIT_SELECTION_VERSION,
+                            "seed": "2027",
+                            "calibration_max": 1000,
+                            "test_max": 1000,
+                        },
                     }
                 }
             }
@@ -135,6 +141,7 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
             "git_clean": True,
             "revision_ledger_sha256": ledger_sha,
             "normalizer_version": NORMALIZER_VERSION,
+            "selection_version": SPLIT_SELECTION_VERSION,
             "contract_sample_count_per_dataset": 4,
             "expected_datasets": ["gsm8k"],
             "observed_datasets": ["gsm8k"],

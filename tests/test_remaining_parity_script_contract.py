@@ -66,6 +66,8 @@ def test_remaining_parity_wrapper_revalidates_source_and_split_hashes():
     assert "split_audit.json" in text
     assert "zero-overlap PASS" in text
     assert "trajuq_split_pair_audit_v1" in text
+    assert "source_git_commit" in text
+    assert "source_git_clean" in text
     assert "$Audit.requested_revision -ne $DatasetSha" in text
     assert "function Test-RunAuditPass" in text
     assert '$InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"' in text
@@ -77,3 +79,12 @@ def test_wrappers_use_shared_frozen_preprimary_validator():
     assert "scripts/validate_frozen_preprimary.py" in text
     text = Path("scripts/parity_remaining_linux.sh").read_text(encoding="utf-8")
     assert "scripts/validate_frozen_preprimary.py" in text
+
+
+def test_linux_remaining_parity_rejects_split_from_other_commit():
+    text = Path("scripts/parity_remaining_linux.sh").read_text(encoding="utf-8")
+
+    assert 'meta.get("source_git_clean") is True' in text
+    assert 'meta.get("source_git_commit")=="$FROZEN_COMMIT"' in text
+    assert 'audit.get("source_git_clean") is True' in text
+    assert 'audit.get("source_git_commit")=="$FROZEN_COMMIT"' in text

@@ -87,6 +87,11 @@ particular, the following are implemented and versioned:
 - pilot and MATH-500 human review sheets are source-bound to the exact scored
   calibration artifacts they display; their recorders and primary readiness
   independently revalidate those hashes before the 18-cell matrix can launch;
+- the A100 `parity-math` transition revalidates the human pilot attestation
+  recursively against its current review sheet, pilot quality artifact, pilot
+  raw/scored files and audits, LLaDA parity artifact, native/instrumented parity
+  sources, and instrumented audit before spending GPU time on SDAR/Dream/MATH;
+  a stale human PASS label can no longer unlock later pre-primary stages;
 - pre-primary prepared split provenance is now enforced before GPU use on both
   Linux/A100 and Windows: GSM8K pilot/parity and MATH-500 wrappers require the
   split manifest and split audit to attest `source_git_clean=true` and the exact

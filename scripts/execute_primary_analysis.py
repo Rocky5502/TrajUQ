@@ -11,6 +11,7 @@ from typing import Any
 
 from trajuq.features import FROZEN_FEATURE_GROUPS
 from trajuq.io import read_jsonl
+from trajuq.provenance import binding_matches, compact_binding_matches
 
 
 PRIOR_SIGNAL_NAMES = {"trajectory_entropy", "top1_revision_rate"}
@@ -108,6 +109,68 @@ def expected_partition_ids(cell: dict[str, Any], partition: str) -> list[str]:
     return artifact_example_ids(path)
 
 
+def expected_analysis_sources(
+    cell: dict[str, Any],
+    *,
+    include_calibration: bool = True,
+) -> dict[str, tuple[str, str]]:
+    sources: dict[str, tuple[str, str]] = {}
+    if include_calibration:
+        cal = cell["inputs"]["calibration"]
+        sources["calibration"] = (
+            str(cal["path"]),
+            str(cal["sha256"]),
+        )
+    test = cell["inputs"]["test"]
+    sources["test"] = (
+        str(test["path"]),
+        str(test["sha256"]),
+    )
+    return sources
+
+
+def json_provenance_matches(
+    cell: dict[str, Any],
+    payload: dict,
+    *,
+    include_calibration: bool = True,
+) -> bool:
+    expected_commit = str(cell.get("experiment_git_commit", ""))
+    if not expected_commit:
+        return False
+    return binding_matches(
+        payload.get("provenance", {}),
+        expected_commit=expected_commit,
+        expected_sources=expected_analysis_sources(
+            cell,
+            include_calibration=include_calibration,
+        ),
+    )
+
+
+def row_provenance_matches(
+    cell: dict[str, Any],
+    row: dict,
+    *,
+    include_calibration: bool = True,
+) -> bool:
+    expected_commit = str(cell.get("experiment_git_commit", ""))
+    if not expected_commit:
+        return False
+    expected_sources = expected_analysis_sources(
+        cell,
+        include_calibration=include_calibration,
+    )
+    return compact_binding_matches(
+        row.get("analysis_provenance", {}),
+        expected_commit=expected_commit,
+        expected_sha256={
+            name: digest
+            for name, (_, digest) in expected_sources.items()
+        },
+    )
+
+
 def semantic_output_valid(
     cell: dict[str, Any],
     key: str,
@@ -125,8 +188,12 @@ def semantic_output_valid(
 
     if key == "predictions":
         try:
-            return artifact_example_ids(path) == test_ids
-        except (OSError, json.JSONDecodeError, ValueError, TypeError):
+            rows = list(read_jsonl(path))
+            return (
+                artifact_example_ids(path) == test_ids
+                and all(row_provenance_matches(cell, row) for row in rows)
+            )
+        except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError):
             return False
 
     if key == "feature_ablation_predictions":
@@ -138,6 +205,8 @@ def semantic_output_valid(
             target_rows = list(read_jsonl(Path(str(cell["inputs"]["test"]["path"]))))
             target_by_id = {str(row["example_id"]): row for row in target_rows}
             for row in rows:
+                if not row_provenance_matches(cell, row):
+                    return False
                 item_id = str(row["example_id"])
                 target = target_by_id[item_id]
                 expected_y = 0 if bool(target["correct"]) else 1
@@ -178,6 +247,8 @@ def semantic_output_valid(
                 "p_error_top1_revision_rate",
             }
             for row in rows:
+                if not row_provenance_matches(cell, row):
+                    return False
                 item_id = str(row["example_id"])
                 target = target_by_id[item_id]
                 expected_y = 0 if bool(target["correct"]) else 1
@@ -210,6 +281,7 @@ def semantic_output_valid(
     if key == "metrics":
         return (
             payload.get("protocol") == "trajuq_heldout_evaluation_v1"
+            and json_provenance_matches(cell, payload)
             and int(
                 payload.get("decision_entropy_baseline", {}).get("n_calibration", -1)
             )
@@ -237,6 +309,7 @@ def semantic_output_valid(
         return (
             payload.get("protocol")
             == "trajuq_nested_calibrated_comparison_v1"
+            and json_provenance_matches(cell, payload)
             and int(payload.get("n_calibration", -1)) == n_cal
             and int(payload.get("n_test", -1)) == n_test
             and set(payload.get("metrics", {})) >= {"auroc", "auprc", "aurc"}
@@ -245,6 +318,7 @@ def semantic_output_valid(
         expected_groups = list(FROZEN_FEATURE_GROUPS)
         return (
             payload.get("protocol") == "frozen_feature_family_ablation_v1"
+            and json_provenance_matches(cell, payload)
             and int(payload.get("n_calibration", -1)) == n_cal
             and int(payload.get("n_test", -1)) == n_test
             and payload.get("baseline") == "decision_only"
@@ -258,6 +332,7 @@ def semantic_output_valid(
         return (
             payload.get("protocol")
             == "trajuq_prior_aligned_signal_diagnostic_v1"
+            and json_provenance_matches(cell, payload)
             and payload.get("role")
             == "secondary_prior_aligned_signal_class_diagnostic"
             and int(payload.get("n_calibration", -1)) == n_cal
@@ -274,6 +349,11 @@ def semantic_output_valid(
     if key == "raw_risk_diagnostic":
         return (
             payload.get("protocol") == "trajuq_raw_risk_diagnostic_v1"
+            and json_provenance_matches(
+                cell,
+                payload,
+                include_calibration=False,
+            )
             and int(payload.get("n", -1)) == n_test
             and set(payload.get("metrics", {})) >= {"auroc", "auprc", "aurc"}
         )

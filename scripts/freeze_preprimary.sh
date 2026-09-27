@@ -55,7 +55,7 @@ fi
 
 if [[ "$SKIP_INSTALL" != "1" ]]; then
   run_step "Install CPU/model/data verification dependencies" \
-    "$PYTHON" -m pip install -e ".[dev,math,models]"
+    "$PYTHON" -m pip install -e ".[dev,math,models,analysis]"
 fi
 
 run_step "A100 shell syntax verification" \

@@ -413,9 +413,47 @@ def require_calibration_sensitivity(sensitivity: dict) -> None:
         raise ValueError(
             "Calibration-sensitivity skipped-cell count is inconsistent."
         )
-    if len(eligible | skipped) != 18 or set(per_cell) != eligible | skipped:
+    labels = eligible | skipped
+    if len(labels) != 18 or set(per_cell) != labels:
         raise ValueError(
             "Calibration-sensitivity does not partition the full 18-cell set."
+        )
+
+    if (
+        sensitivity.get("aggregation")
+        != (
+            "equal_weight_over_pre_registered_eligible_cells_only; all frozen "
+            "ineligible cells remain explicit skips"
+        )
+    ):
+        raise ValueError(
+            "Calibration-sensitivity aggregation policy differs from frozen contract."
+        )
+    if (
+        sensitivity.get("delta_direction")
+        != (
+            "positive means isotonic improves a lower-is-better metric "
+            "relative to the primary logistic calibrator"
+        )
+    ):
+        raise ValueError(
+            "Calibration-sensitivity delta direction differs from frozen contract."
+        )
+    if sensitivity.get("metrics") != list(CALIBRATION_SENSITIVITY_METRICS):
+        raise ValueError(
+            "Calibration-sensitivity declared metric list differs from frozen contract."
+        )
+
+    provenance_sources = sensitivity.get("provenance", {}).get("sources", {})
+    expected_cell_sources = {f"cell:{label}" for label in labels}
+    observed_cell_sources = {
+        str(name)
+        for name in provenance_sources
+        if str(name).startswith("cell:")
+    }
+    if observed_cell_sources != expected_cell_sources:
+        raise ValueError(
+            "Calibration-sensitivity provenance cell set differs from rendered cells."
         )
 
     policy = sensitivity.get("eligibility_policy", {})

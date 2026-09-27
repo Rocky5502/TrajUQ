@@ -238,6 +238,12 @@ the frozen normalizer and scorer on every sampled row with a constructed correct
 final answer, stores no benchmark row content, and is rejected if it only contains
 legacy one-row evidence.
 
+Before any GPU parity/pilot/MATH call, preserved prepared splits must also
+attest `source_git_clean=true` and `source_git_commit` equal to the frozen
+experiment commit in both `split_manifest.json` and `split_audit.json`.
+Do not reuse a split produced by another code commit merely because its dataset
+revision and content hashes happen to match.
+
 Then, in order:
 1. LLaDA 20-prompt exact parity v3;
 2. LLaDA + GSM8K 50-example calibration pilot with raw/scored audit PASS artifacts;

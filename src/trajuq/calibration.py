@@ -4,9 +4,70 @@ from dataclasses import dataclass
 
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+
+def standardized_logistic_pipeline(random_state: int = 2027) -> Pipeline:
+    return Pipeline(
+        [
+            ("scale", StandardScaler()),
+            (
+                "clf",
+                LogisticRegression(
+                    random_state=random_state,
+                    max_iter=2000,
+                ),
+            ),
+        ]
+    )
+
+
+def fit_isotonic_logistic_sensitivity(
+    x: np.ndarray,
+    y_error: np.ndarray,
+    *,
+    n_splits: int = 5,
+    random_state: int = 2027,
+) -> tuple[CalibratedClassifierCV, int]:
+    """Fit leak-safe isotonic post-calibration of the primary logistic model.
+
+    The base standardized logistic classifier is calibrated from out-of-fold
+    decision scores via CalibratedClassifierCV(ensemble=False), then refit on
+    all calibration examples for test prediction. No test labels are used.
+    """
+
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y_error, dtype=int)
+    if x.ndim == 1:
+        x = x[:, None]
+    if len(x) != len(y):
+        raise ValueError("x and y_error must have equal length")
+    labels, counts = np.unique(y, return_counts=True)
+    if len(labels) < 2:
+        raise ValueError("Isotonic sensitivity requires both error classes.")
+    folds = min(int(n_splits), int(counts.min()))
+    if folds < 2:
+        raise ValueError(
+            "Isotonic sensitivity requires at least two examples in each class."
+        )
+
+    splitter = StratifiedKFold(
+        n_splits=folds,
+        shuffle=True,
+        random_state=random_state,
+    )
+    model = CalibratedClassifierCV(
+        estimator=standardized_logistic_pipeline(random_state),
+        method="isotonic",
+        cv=splitter,
+        ensemble=False,
+    )
+    model.fit(x, y)
+    return model, folds
 
 
 @dataclass
@@ -16,18 +77,7 @@ class RiskCalibrator:
 
     def __post_init__(self) -> None:
         if self.method == "logistic":
-            self.model = Pipeline(
-                [
-                    ("scale", StandardScaler()),
-                    (
-                        "clf",
-                        LogisticRegression(
-                            random_state=self.random_state,
-                            max_iter=2000,
-                        ),
-                    ),
-                ]
-            )
+            self.model = standardized_logistic_pipeline(self.random_state)
         elif self.method == "isotonic":
             self.model = IsotonicRegression(out_of_bounds="clip")
         else:

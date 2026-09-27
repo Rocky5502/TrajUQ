@@ -74,3 +74,14 @@ def test_generic_campaign_gate_accepts_experiment_commit_field():
 
     assert 'payload.get("experiment_git_commit")' in text
     assert "artifact commit" in text
+
+
+def test_a100_rq2_uses_plan_level_resident_generation_before_canonical_executor():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    assert "scripts/plan_repeated_sampling.py" in text
+    assert "scripts/resident_generate_repeated_plan.py" in text
+    assert "scripts/execute_repeated_sampling.py --execute" in text
+    assert text.index("scripts/resident_generate_repeated_plan.py") < text.index(
+        "scripts/execute_repeated_sampling.py --execute"
+    )

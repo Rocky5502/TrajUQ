@@ -18,6 +18,7 @@ from trajuq.evaluation import (
 )
 from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance, compact_row_binding
 
 
 def load_xy(path: str, names: list[str]):
@@ -112,8 +113,17 @@ def main() -> None:
     if not np.array_equal(y_cal_b, y_cal_t) or not np.array_equal(y_test_b, y_test_t):
         raise SystemExit("Correctness labels differ between feature views")
 
+    provenance = analysis_provenance(
+        {
+            "calibration": args.calibration,
+            "test": args.test,
+        }
+    )
+    row_binding = compact_row_binding(provenance)
+
     results = {
         "protocol": "trajuq_heldout_evaluation_v1",
+        "provenance": provenance,
         "selective_risk_version": SELECTIVE_RISK_VERSION,
         "seed": args.seed,
         "decision_entropy_baseline": summarize(
@@ -165,6 +175,7 @@ def main() -> None:
                     "correct": bool(1 - y),
                     "p_error_decision_entropy": float(pb),
                     "p_error_trajuq": float(pt),
+                    "analysis_provenance": row_binding,
                 }
                 f.write(json.dumps(row, sort_keys=True) + "\n")
         print(f"[TrajUQ] predictions -> {pred_path}")

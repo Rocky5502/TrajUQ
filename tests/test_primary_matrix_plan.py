@@ -14,6 +14,8 @@ from scripts.plan_primary_matrix import (
 def test_generation_args_cover_all_primary_adapters():
     llada = {
         "adapter": "llada",
+        "device": "cuda",
+        "dtype": "bfloat16",
         "generation": {
             "steps": 128,
             "gen_length": 128,
@@ -25,6 +27,8 @@ def test_generation_args_cover_all_primary_adapters():
     }
     dream = {
         "adapter": "dream",
+        "device": "cuda",
+        "dtype": "bfloat16",
         "generation": {
             "steps": 128,
             "max_new_tokens": 128,
@@ -36,6 +40,8 @@ def test_generation_args_cover_all_primary_adapters():
     }
     sdar = {
         "adapter": "sdar",
+        "device": "cuda",
+        "dtype": "bfloat16",
         "generation": {
             "gen_length": 128,
             "block_length": 4,
@@ -48,7 +54,12 @@ def test_generation_args_cover_all_primary_adapters():
         },
     }
 
-    assert "--llada-remasking" in generation_args(llada)
+    llada_args = generation_args(llada)
+    assert "--device" in llada_args
+    assert llada_args[llada_args.index("--device") + 1] == "cuda"
+    assert "--dtype" in llada_args
+    assert llada_args[llada_args.index("--dtype") + 1] == "bfloat16"
+    assert "--llada-remasking" in llada_args
     assert "--dream-alg" in generation_args(dream)
     assert "--sdar-denoising-steps" in generation_args(sdar)
     assert "1.0" in generation_args(sdar)

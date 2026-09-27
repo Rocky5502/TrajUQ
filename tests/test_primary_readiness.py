@@ -255,6 +255,8 @@ def write_parity(
                 "adapter": model,
                 "seed": 2027,
                 "model_revision": revision,
+                "source_git_commit": commit,
+                "source_git_clean": True,
             },
         },
     )
@@ -864,5 +866,20 @@ def test_primary_readiness_rejects_legacy_one_row_dataset_contract(tmp_path):
     assert result["status"] == "FAIL"
     assert any(
         "normalizer/scorer contracts" in item
+        for item in result["failures"]
+    )
+
+
+def test_primary_readiness_rejects_parity_from_stale_source_checkout(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    parity_path = Path(case["parity"]["llada"])
+    parity = json.loads(parity_path.read_text(encoding="utf-8"))
+    parity["run_provenance"]["source_git_commit"] = "other-commit"
+    write_json(parity_path, parity)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "parity gate is not an exact 20-prompt PASS" in item
         for item in result["failures"]
     )

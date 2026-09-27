@@ -63,6 +63,41 @@ def git_status_porcelain() -> str | None:
         return None
 
 
+def validate_readiness_source_bindings(readiness: dict) -> list[str]:
+    failures: list[str] = []
+    bindings = readiness.get("source_bindings")
+    if not isinstance(bindings, list) or not bindings:
+        return ["primary readiness has no source-binding manifest"]
+
+    seen: set[str] = set()
+    for item in bindings:
+        if not isinstance(item, dict):
+            failures.append("primary readiness source binding is malformed")
+            continue
+        path_text = str(item.get("path", "")).strip()
+        expected_sha = str(item.get("sha256", "")).strip()
+        if not path_text or not expected_sha:
+            failures.append("primary readiness source binding lacks path/SHA-256")
+            continue
+        if path_text in seen:
+            failures.append(
+                f"primary readiness source binding duplicates path: {path_text}"
+            )
+            continue
+        seen.add(path_text)
+        path = Path(path_text)
+        if not path.is_file():
+            failures.append(
+                f"primary readiness bound source is missing: {path_text}"
+            )
+            continue
+        if sha256_file(path) != expected_sha:
+            failures.append(
+                f"primary readiness bound source hash drifted: {path_text}"
+            )
+    return failures
+
+
 def generation_args(cfg: dict) -> list[str]:
     adapter = str(cfg["adapter"])
     g = cfg.get("generation", {})
@@ -148,6 +183,7 @@ def main() -> None:
             failures.append("primary readiness protocol is not v2")
         if readiness.get("status") != "PASS":
             failures.append("primary readiness gate is not PASS")
+        failures.extend(validate_readiness_source_bindings(readiness))
         current_head = git_head()
         experiment_commit = readiness.get("experiment_git_commit")
         if not current_head:

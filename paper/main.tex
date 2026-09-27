@@ -228,8 +228,11 @@ The planned primary GPU execution profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
 CUDA~13.0), with 16 CPU cores, 48~GB of system memory, and one
 NVIDIA A100-SXM4-80GB GPU. The operational rental envelope is 72 continuous
-hours; this budget is frozen before outcomes and never changes parity,
-correctness, calibration, or statistical gates. This is a pre-execution
+hours, including setup and review gates, with a predeclared 6-hour reserve for
+model-load/download overhead, CPU analysis/rendering, evidence export, and
+limited retry margin not included in generation timing projections. This budget
+is frozen before outcomes and never changes parity, correctness, calibration,
+or statistical gates. This is a pre-execution
 resource plan rather than evidence that the campaign has run; the final
 manuscript will retain only the environment actually attested by frozen run
 artifacts.

@@ -203,11 +203,15 @@ meta=json.loads(manifest.read_text(encoding="utf-8"))
 audit=json.loads(audit_path.read_text(encoding="utf-8"))
 ok=(
     meta.get("requested_revision")=="$DATASET_SHA"
+    and meta.get("source_git_clean") is True
+    and meta.get("source_git_commit")=="$FROZEN_COMMIT"
     and meta.get("calibration_sha256")==sha(cal)
     and meta.get("test_sha256")==sha(test)
     and audit.get("protocol")=="trajuq_split_pair_audit_v1"
     and audit.get("status")=="PASS"
     and audit.get("requested_revision")=="$DATASET_SHA"
+    and audit.get("source_git_clean") is True
+    and audit.get("source_git_commit")=="$FROZEN_COMMIT"
     and audit.get("calibration_sha256")==sha(cal)
     and audit.get("test_sha256")==sha(test)
     and int(audit.get("id_overlap_count",-1))==0

@@ -71,6 +71,18 @@ again for the 25-example MATH-500 review. Only after
 `results/primary_readiness.json` is protocol-v2 PASS may
 `all-after-readiness` launch the full frozen campaign.
 
+Every successful campaign milestone now refreshes the machine-readable project
+status and writes a privacy-scanned continuation bundle under `dist/`:
+`trajuq_pilot_handoff.zip`, `trajuq_parity_math_handoff.zip`,
+`trajuq_readiness_handoff.zip`, `trajuq_estimate_handoff.zip`,
+`trajuq_primary_handoff.zip`, `trajuq_analysis_handoff.zip`,
+`trajuq_rq2_handoff.zip`, `trajuq_rq3_handoff.zip`, and
+`trajuq_paper_handoff.zip`. These bundles contain compact status/result
+evidence and repository context, not raw run JSONL, processed benchmark rows,
+model weights, or cache directories. They are continuity checkpoints only; they
+do not replace the underlying frozen `results/*` evidence or make a failed
+scientific gate pass.
+
 ## 1. Freeze one immutable experiment commit
 
 From a clean checkout:

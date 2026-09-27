@@ -16,10 +16,14 @@ import subprocess
 from pathlib import Path
 
 ledger_path = Path("results/revision_ledger.json")
-if not ledger_path.exists():
-    raise SystemExit("Missing results/revision_ledger.json; freeze pre-primary first.")
+gated_path = Path("results/gated_dataset_access.json")
+if not ledger_path.exists() or not gated_path.exists():
+    raise SystemExit(
+        "Missing revision-ledger/gated-access evidence; freeze pre-primary first."
+    )
 
 ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+gated = json.loads(gated_path.read_text(encoding="utf-8"))
 if ledger.get("protocol") != "trajuq_revision_ledger_v2":
     raise SystemExit("Revision ledger protocol is not v2.")
 if ledger.get("status") != "PASS":
@@ -42,6 +46,19 @@ if head != expected:
     raise SystemExit(
         f"Current HEAD {head} differs from frozen experiment commit {expected}."
     )
+
+ledger_hash = __import__("hashlib").sha256(ledger_path.read_bytes()).hexdigest()
+if (
+    gated.get("protocol") != "trajuq_gated_dataset_access_v1"
+    or gated.get("status") != "PASS"
+    or gated.get("git_clean") is not True
+    or gated.get("git_commit") != head
+    or gated.get("revision_ledger_sha256") != ledger_hash
+):
+    raise SystemExit(
+        "Gated dataset access is not a clean revision-bound PASS for this checkout."
+    )
+
 print(f"[TrajUQ] frozen checkout PASS: {head}")
 PY
 }

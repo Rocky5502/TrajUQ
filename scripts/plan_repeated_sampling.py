@@ -196,8 +196,9 @@ def repeated_generation_argv(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Plan the frozen five-sample uncertainty baseline on the complete "
-            "primary model-dataset matrix. This command never runs a model."
+            "Plan the frozen five-sample uncertainty baseline on the "
+            "pre-registered eligible subset of the primary model-dataset "
+            "matrix. This command never runs a model."
         )
     )
     parser.add_argument(

@@ -138,7 +138,10 @@ particular, the following are implemented and versioned:
   `scripts/a100_campaign_linux.sh`, which preserves both human-review stop
   points, derives a provenance-bound A100 compute forecast before primary
   execution, and can resumably execute primary -> analysis -> RQ2 -> RQ3 ->
-  paper after primary readiness PASS;
+  paper after primary readiness PASS; every successful expensive milestone now
+  refreshes project status and emits a stage-specific privacy-scanned handoff
+  ZIP under `dist/`, so ignored result evidence can be carried into a new chat
+  or machine without packaging raw run JSONL or processed benchmark rows;
 - `scripts/estimate_a100_campaign.py`, which binds exact 18-cell prepared-input
   counts to audited LLaDA/SDAR/Dream GPU timing traces and reports serial
   primary/RQ2/RQ3 A100-hour planning estimates without turning them into paper

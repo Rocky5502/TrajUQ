@@ -11,6 +11,7 @@ status: pilot_adapter_implemented_parity_pending
 notes:
   - TrajUQ now contains an instrumented pilot adapter derived from the pinned MIT upstream generation loop.
   - Primary-paper use remains blocked until seed-matched on-GPU parity against the pinned upstream sampler passes.
+  - The adapter caps requested transfers to currently masked positions for the pre-registered reduced-step RQ3 control; this is a no-op for the native 4-step parity setting and prevents partial prompt-block mutation.
 generation:
   gen_length: 128
   block_length: 4

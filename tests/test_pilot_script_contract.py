@@ -13,6 +13,9 @@ def test_windows_pilot_wrapper_has_single_stage_blocks():
     assert "git status --porcelain" in text
     assert "results/cpu_verification.json" in text
     assert "trajuq_cpu_verification_v1" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
+    assert "revision_ledger_sha256" in text
 
 
 def test_windows_pilot_wrapper_has_no_known_corruption_fragments():

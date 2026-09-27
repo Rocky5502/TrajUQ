@@ -189,8 +189,11 @@ MONITOR_PID="$!"
 # Priority order preserves the core paper under a fixed rental envelope:
 # full primary -> full analysis -> RQ3 -> expensive RQ2 -> paper rendering.
 for stage in estimate primary analysis rq3 rq2 paper; do
-  if ! run_stage "$stage"; then
-    rc=$?
+  set +e
+  run_stage "$stage"
+  rc=$?
+  set -e
+  if (( rc != 0 )); then
     if [[ "$(remaining_seconds)" -le 0 ]]; then
       printf '[TrajUQ 72h] rental budget exhausted during %s. Artifacts remain resumable.\n' "$stage" >&2
     else

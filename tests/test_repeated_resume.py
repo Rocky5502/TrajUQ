@@ -13,6 +13,8 @@ def _args() -> SimpleNamespace:
         adapter="llada",
         model="example/llada",
         revision="model-sha",
+        device="cuda",
+        dtype="bfloat16",
         temperature=0.2,
         steps=128,
         max_new_tokens=128,
@@ -42,6 +44,8 @@ def _row(example_id: str, seed: int = 2027) -> dict:
         "generation": {
             "metadata": {
                 "model_revision": "model-sha",
+                "requested_device": "cuda",
+                "requested_dtype": "bfloat16",
                 "temperature": 0.2,
                 "steps_requested": 128,
                 "gen_length": 128,
@@ -90,3 +94,14 @@ def test_resumable_partial_accepts_complete_unaudited_prefix(tmp_path: Path):
     contract = repeated_seed_contract(_args(), 2027, "abc")
 
     assert resumable_partial_artifact(path, ["a", "b"], contract)
+
+
+
+def test_resumable_partial_rejects_runtime_dtype_drift(tmp_path: Path):
+    path = tmp_path / "seed-2027.raw.jsonl"
+    row = _row("a")
+    row["generation"]["metadata"]["requested_dtype"] = "float16"
+    path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    contract = repeated_seed_contract(_args(), 2027, "abc")
+
+    assert not resumable_partial_artifact(path, ["a", "b"], contract)

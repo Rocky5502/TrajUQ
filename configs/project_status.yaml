@@ -320,10 +320,10 @@ execution_gates:
     artifact: results/primary_analysis_plan.json
     expect: {key: status, equals: PASS}
   - id: primary_analysis_execution_complete
-    label: "All 18 primary cell analyses plus macro and RQ1 gate complete"
+    label: "All 18 primary analyses plus primary/ablation/prior-signal macros and RQ1 gate complete"
     stage: analysis
     issue: 8
-    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, the primary macro, complete 18-cell feature-ablation macro, and frozen RQ1 gate. Execution refuses drift in plan-bound scored inputs, audits, primary plan/config, or experiment commit."
+    action: "Use python scripts/execute_primary_analysis.py --execute to resume cell analyses, the primary macro, complete 18-cell feature-ablation macro, complete 18-cell prior-aligned signal diagnostic macro, and frozen RQ1 gate. Execution refuses drift in plan-bound scored inputs, audits, primary plan/config, or experiment commit."
     artifact: results/primary_analysis_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: repeated_sampling_plan
@@ -407,7 +407,7 @@ execution_gates:
     label: "Artifact-derived paper result manifest"
     stage: submission
     issue: 11
-    action: "Run python scripts/render_results_tex.py and python scripts/render_paper_result_figures.py. The text renderer SHA-binds primary, claim-gate, repeated, feature-ablation, adaptive, and primary-config sources; the figure renderer binds primary/config plus all three adaptive-cap sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
+    action: "Run python scripts/render_results_tex.py and python scripts/render_paper_result_figures.py. The text renderer SHA-binds primary, claim-gate, repeated, feature-ablation, prior-aligned signal, adaptive, and primary-config sources; the figure renderer binds primary/config plus all three adaptive-cap sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
     artifact: paper/generated_results_manifest.json
     expect: {key: protocol, equals: trajuq_paper_results_render_v1}
   - id: submission_readiness

@@ -55,6 +55,10 @@ particular, the following are implemented and versioned:
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
 - revision-ledger protocol v2 binding the experiment git commit, primary/data
   config hashes, immutable model/data SHAs, and frozen model-config hashes;
+- exact-revision dataset-contract protocol v1 that streams one row from each
+  of the six primary datasets on the frozen machine, exercises the frozen
+  normalizer and scorer with a constructed correct final answer, binds the
+  clean commit/revision-ledger SHA, and stores no benchmark row content;
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus one-command strict
@@ -147,12 +151,14 @@ The remaining work is primarily **execution**, not paper-number invention.
    changing commits. Hosted GitHub Actions is currently infrastructure-blocked
    before executable steps; issue #6 tracks that runner-allocation failure.
 2. Require `results/cpu_verification.json` PASS,
-   `results/revision_ledger.json` protocol-v2 PASS, and
-   `results/gated_dataset_access.json` protocol-v1 PASS at the same clean git
+   `results/revision_ledger.json` protocol-v2 PASS,
+   `results/gated_dataset_access.json` protocol-v1 PASS, and
+   `results/dataset_contracts.json` protocol-v1 PASS at the same clean git
    commit. The gated-access proof streams one record from every gated primary
-   dataset (currently GPQA-Diamond) at the ledger-resolved SHA and stores no
-   benchmark question/answer content. All parity/pilot/MATH wrappers revalidate
-   this proof and its revision-ledger SHA before GPU work.
+   dataset (currently GPQA-Diamond). The dataset-contract proof streams one row
+   from each of all six exact-revision primary datasets and exercises the frozen
+   normalizer/scorer. Neither artifact stores benchmark question/answer content,
+   and both must bind the exact revision-ledger SHA before GPU work.
 3. Run LLaDA 20-prompt native-vs-instrumented parity protocol v3 at the
    ledger-resolved LLaDA SHA. Require exactly 20 shared prompts, zero output
    mismatches, zero provenance mismatches, a clean comparator checkout, and
@@ -191,9 +197,10 @@ The remaining work is primarily **execution**, not paper-number invention.
    math-verify=0.9.0 and antlr4-python3-runtime=4.13.2. See issue #4.
 8. Run `python scripts/primary_readiness.py` and require protocol
    `trajuq_primary_readiness_v2` with `status=PASS`. It rejects stale/mixed
-   CPU, gated-dataset access, parity, pilot raw/scored audits, pilot review
-   sources, MATH-500 scorer/dependency/review sources, dataset-manifest, commit,
-   and dirty-worktree state.
+   CPU/log evidence, gated-dataset access, live six-dataset normalizer/scorer
+   contracts, parity, pilot raw/scored audits, pilot review sources, MATH-500
+   scorer/dependency/review sources, dataset-manifest, commit, and
+   dirty-worktree state.
 
 Do **not** launch the full 18-cell primary matrix before these gates pass.
 
@@ -209,9 +216,9 @@ After readiness passes:
    plan; reusable raw/scored evidence must have clean protocol-v1 audits from
    the frozen experiment commit, and the executor writes a resumable
    SHA-verified execution state;
-4. execute all 18 calibration/test cells exactly as planned;
-5. audit and score every cell without overwriting completed artifacts;
-6. create results/primary_analysis_plan.json only after all 18 scored artifacts
+5. execute all 18 calibration/test cells exactly as planned;
+6. audit and score every cell without overwriting completed artifacts;
+7. create results/primary_analysis_plan.json only after all 18 scored artifacts
    have clean protocol-v1 scored audits from the frozen experiment commit;
    analysis-plan protocol v2 then SHA-binds those inputs, audits, the primary
    plan/config, and experiment commit;

@@ -43,7 +43,22 @@ def main() -> None:
         "--output",
         default="results/gated_dataset_access.json",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help=(
+            "Explicit recovery-only replacement after inspecting/archiving an "
+            "existing access artifact. Official freeze wrappers never use this."
+        ),
+    )
     args = parser.parse_args()
+
+    out = Path(args.output)
+    if out.exists() and not args.overwrite:
+        raise SystemExit(
+            f"Refusing to overwrite gated dataset access evidence: {out}. "
+            "Inspect/archive it before recovery."
+        )
 
     try:
         from datasets import load_dataset
@@ -173,7 +188,6 @@ def main() -> None:
         ),
     }
 
-    out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",

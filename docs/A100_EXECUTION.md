@@ -10,6 +10,43 @@ Python >=3.10 is required; Python 3.11 is recommended when available. Always
 replace `<EXACT_FREEZE_SHA_FROM_HANDOFF>` with the exact commit nominated in
 the current project handoff; do not run the experiment from a moving branch.
 
+## Rental profile and first-day strategy
+
+The planned rental profile is one NVIDIA A100-SXM4-80GB GPU, 16 CPU cores,
+48 GB host RAM, a 200 GB system disk, and approximately 250 Mbps network
+bandwidth. This profile is sufficient to load and execute each frozen primary
+checkpoint one at a time; TrajUQ does not require multi-GPU model parallelism
+or training.
+
+The current generation runner is intentionally single-record and single-GPU.
+Therefore one A100 is sufficient for scientific completion but the full
+campaign is serial. Buying more GPUs would improve wall-clock time only if the
+frozen cells are explicitly partitioned across independent workers; one normal
+TrajUQ process does not automatically consume multiple GPUs.
+
+Do not prepay for a long rental before measuring the actual server. Start with
+one day. During that first rental, aim to complete the pre-primary freeze,
+LLaDA parity/pilot, the two human review stops, SDAR/Dream parity, the MATH-500
+gate, primary readiness, and then:
+
+```bash
+bash scripts/a100_campaign_linux.sh estimate
+cat results/a100_compute_estimate.md
+```
+
+The estimator is the authoritative planning surface after real timing traces
+exist. It reports the exact frozen generation-call count plus mean-timing and
+P90-planning A100-hours and equivalent 24/7 single-A100 days. It excludes model
+download/load startup, CPU analysis, failed retries, and optional RQ4.
+
+A 200 GB system disk is expected to be workable for the three checkpoints,
+Python environment, prepared data, and experiment artifacts, but disk use is
+not a scientific invariant. Check free space before model downloads and keep
+the experiment evidence on persistent storage. If the provider offers a retained
+data disk, use it; otherwise copy `results/`, `runs/`, `data/processed/`,
+and each `dist/trajuq_*handoff.zip` off the instance before releasing it.
+Never rely on an ephemeral system disk as the only copy of experiment evidence.
+
 ## 0. Fresh checkout and Python environment
 
 ```bash

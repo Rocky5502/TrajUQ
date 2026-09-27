@@ -114,7 +114,9 @@ particular, the following are implemented and versioned:
 - GPU preflight now enforces the pinned SDAR Transformers floor (`>=4.52.4`) with a tested semantic version parser; an escaping bug that made every installed version look invalid was fixed before parity execution;
 - instrumentation-overhead protocol v2 is clean-commit and SHA-bound to the
   exact native/instrumented parity runs, immutable on disk, and revalidated by
-  all parity wrappers on resume rather than trusted by filename;
+  all parity wrappers on resume rather than trusted by filename; it now also
+  requires both source runs to carry the same clean source checkout provenance
+  as the current frozen experiment commit before any timing/memory delta is accepted;
 - manuscript and analysis-plan terminology now states the frozen inference
   procedure exactly: paired class-stratified resampling within each fixed cell
   followed by equal-cell macro-averaging, without changing the registered
@@ -159,9 +161,10 @@ particular, the following are implemented and versioned:
   ZIP under `dist/`, so ignored result evidence can be carried into a new chat
   or machine without packaging raw run JSONL or processed benchmark rows;
 - `scripts/estimate_a100_campaign.py`, which binds exact 18-cell prepared-input
-  counts to audited LLaDA/SDAR/Dream GPU timing traces and reports serial
-  primary/RQ2/RQ3 A100-hour planning estimates without turning them into paper
-  claims;
+  counts to audited LLaDA/SDAR/Dream GPU timing traces, verifies each timing
+  row's source commit/clean state and model revision against the frozen run
+  audit, and reports serial primary/RQ2/RQ3 A100-hour planning estimates without
+  turning them into paper claims;
 - a deterministic anonymous Overleaf packager pinned to the official ACL style
   commit, with identity/path scanning and an internal SHA-256 source manifest;
   submission-ready mode requires the rendered-results and figure manifests,

@@ -83,6 +83,8 @@ function Assert-ParityPass {
         $Parity.provenance_mismatch_count -eq 0 -and
         $Parity.run_provenance.adapter -eq "llada" -and
         $Parity.run_provenance.model_revision -eq $ModelSha -and
+        $Parity.run_provenance.source_git_commit -eq $Commit -and
+        $Parity.run_provenance.source_git_clean -eq $true -and
         $ReferenceHashOk -and
         $InstrumentedHashOk -and
         $InstrumentedAuditOk

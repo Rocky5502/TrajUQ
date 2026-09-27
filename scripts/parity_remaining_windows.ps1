@@ -278,6 +278,12 @@ else {
     if ($Split.requested_revision -ne $DatasetSha) {
         throw "Existing GSM8K split revision differs from the frozen revision ledger."
     }
+    if ($Split.source_git_clean -ne $true -or [string]$Split.source_git_commit -ne $Head) {
+        throw "Existing GSM8K split is not bound to the frozen clean experiment commit."
+    }
+    if ($Audit.source_git_clean -ne $true -or [string]$Audit.source_git_commit -ne $Head) {
+        throw "Existing GSM8K split audit is not bound to the frozen clean experiment commit."
+    }
     if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalData)) {
         throw "Existing GSM8K calibration hash differs from its split manifest."
     }

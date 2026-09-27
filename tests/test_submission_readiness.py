@@ -72,12 +72,22 @@ def make_render_sources(tmp_path):
         "protocol": "trajuq_vs_repeated_macro_v2",
         "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
         "cell_set_complete": True,
-        "expected_cells": 18,
-        "observed_cells": 18,
+        "expected_cells": 12,
+        "observed_cells": 12,
+        "eligible_datasets": [
+            "gsm8k",
+            "math500",
+            "gpqa_diamond",
+            "mmlu_pro",
+        ],
+        "excluded_datasets": {
+            "arc_challenge": "frozen compute-bounded exclusion",
+            "truthfulqa": "frozen compute-bounded exclusion",
+        },
         "auxiliary_compute": {
             "aggregation": "equal_cell_weight_macro",
-            "expected_cells": 18,
-            "observed_cells_with_complete_test_wall_time": 18,
+            "expected_cells": 12,
+            "observed_cells_with_complete_test_wall_time": 12,
             "complete": True,
             "sample_count": 5,
             "mean_test_auxiliary_wall_time_seconds_per_example": 12.34,
@@ -237,6 +247,25 @@ def make_render_sources(tmp_path):
         },
     }
     primary_cfg = {
+        "models": {
+            "primary": [
+                "configs/models/llada.yaml",
+                "configs/models/sdar.yaml",
+                "configs/models/dream.yaml",
+            ]
+        },
+        "baselines": {
+            "expensive": {
+                "repeated_sampling": {
+                    "eligible_datasets": [
+                        "gsm8k",
+                        "math500",
+                        "gpqa_diamond",
+                        "mmlu_pro",
+                    ]
+                }
+            }
+        },
         "statistics": {
             "primary_endpoint": "hierarchical_macro_auroc_improvement",
             "rq1_claim_gate": {

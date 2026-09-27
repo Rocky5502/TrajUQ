@@ -97,8 +97,10 @@ Primary results are blocked until exact parity passes.
 
 \subsection{Dream}
 
-Dream exposes a token-generation hook through its public diffusion interface.
-We compare a native no-hook reference against the hook-enabled telemetry path on identical prompts, revision, seed, and decoding parameters.
+Dream exposes separate logits and token hooks through its public diffusion interface.
+The logits hook is invoked on the current masked state before token transfer, whereas the token hook is post-transfer.
+We therefore collect telemetry only through the pre-transfer logits hook and return logits unchanged, so each uncertainty distribution is paired with the same unresolved state used for that decision.
+We compare a native no-hook reference against this instrumentation path on identical prompts, revision, seed, and decoding parameters.
 Exact token-ID parity is required.
 
 \subsection{SDAR}

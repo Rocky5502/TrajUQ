@@ -51,6 +51,29 @@ Persistence & commitment\_time\_mean & normalized mean decision index\\
 \caption{Frozen primary feature dictionary.}
 \end{table*}
 
+\section{Positioning Against Recent dLLM Uncertainty Work}
+
+Recent work already establishes that diffusion-specific signals can support uncertainty estimation.
+DiSE evaluates completed sequences through token regeneration and uses self-evaluation to control generation length \citep{zhong2026dise}.
+Vazhentsev et al. study trajectory entropy and likelihood, commitment confidence, remasking, token flips, denoising complexity, and semantic trajectory instability on LLaDA and Dream, including D-CoCoA variants that combine semantic and likelihood-based signals \citep{vazhentsev2026dllmuq}.
+The table below clarifies the narrower incremental question frozen for \method.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Method / study & Native single-run trajectory & Extra evaluation calls & Calibrated $P(\mathrm{error})$ & Nested vs. decision confidence & Selective second-pass compute\\
+\midrule
+DiSE \citep{zhong2026dise} & -- & \cmark & -- & -- & --\\
+Vazhentsev et al. \citep{vazhentsev2026dllmuq} & \cmark & method-dependent & -- & -- & --\\
+\method & \cmark & -- (primary) & \cmark & \cmark & \cmark\\
+\bottomrule
+\end{tabular}
+\caption{Scope positioning, not a performance ranking. ``Extra evaluation calls'' refers to uncertainty computation beyond the native target generation; some diffusion-specific signals in prior work are single-run while masked-likelihood or semantic components add computation. \method's primary claim is the incremental held-out value of frozen trajectory telemetry beyond matched decision-time entropy.}
+\label{tab:related-positioning}
+\end{table*}
+
 \section{Calibration and Leakage Firewall}
 
 Generation and scoring are two separate stages.
@@ -169,6 +192,29 @@ Full minus persistence & \AblationNoPersistenceAUROCDelta & [\AblationNoPersiste
 \end{tabular}
 \caption{Frozen feature-family ablations relative to the decision-only baseline. Each value is macro-averaged with equal weight over all 18 model--dataset cells; AUROC confidence intervals use the same paired within-cell hierarchical bootstrap as the primary comparison.}
 \label{tab:feature-ablation}
+\end{table*}
+
+\section{Prior-Aligned Single-Trajectory Signal Diagnostics}
+
+To make the overlap with recent diffusion-specific UQ work explicit, we freeze two secondary diagnostics that require no additional generation:
+(1) mean normalized trajectory entropy over active unresolved positions; and
+(2) top-1 revision rate, the fraction of eligible consecutive unresolved observations whose argmax token changes.
+These correspond to trajectory-entropy and token-flip signal classes studied in prior dLLM UQ work \citep{vazhentsev2026dllmuq}, but they are \emph{not} presented as reproductions of D-CoCoA or DiSE.
+Each scalar is independently fit with the same calibration-only logistic mapping used elsewhere, evaluated on the exact same held-out examples, and compared to the full \method probability with paired hierarchical bootstrap aggregation across all 18 cells.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Prior-aligned signal & Signal AUROC & \method AUROC & $\Delta$ AUROC (95\% CI) & $\Delta$ AUPRC & $\Delta$ AURC\\
+\midrule
+Trajectory entropy & \PriorEntropyAUROC & \PriorEntropyTrajAUROC & \PriorEntropyAUROCDelta\ [\PriorEntropyAUROCLow, \PriorEntropyAUROCHigh] & \PriorEntropyAUPRCDelta & \PriorEntropyAURCDelta\\
+Top-1 revision / flip rate & \PriorFlipRateAUROC & \PriorFlipRateTrajAUROC & \PriorFlipRateAUROCDelta\ [\PriorFlipRateAUROCLow, \PriorFlipRateAUROCHigh] & \PriorFlipRateAUPRCDelta & \PriorFlipRateAURCDelta\\
+\bottomrule
+\end{tabular}
+\caption{Secondary prior-aligned signal-class diagnostics. Positive deltas favor the full \method probability. Both rows use the complete frozen 18-cell matrix with equal cell weight. These rows do not reproduce D-CoCoA's semantic-trajectory or masked-likelihood components, nor DiSE's sequence-regeneration score.}
+\label{tab:prior-signal-diagnostics}
 \end{table*}
 
 \section{Repeated-Sampling Baseline}

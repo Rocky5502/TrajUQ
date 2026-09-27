@@ -1,5 +1,6 @@
 import hashlib
 import json
+import zipfile
 
 import yaml
 
@@ -15,6 +16,7 @@ from scripts.submission_readiness import (
     preprimary_revalidation_argv,
     verify_downstream_provenance,
     verify_generated_results,
+    verify_overleaf_package,
     verify_result_figures,
     verify_submission_checkout,
 )
@@ -329,6 +331,83 @@ def write_valid_render_bundle(tmp_path):
         encoding="utf-8",
     )
     return generated, manifest, sources
+
+
+def write_overleaf_zip(path, *, extra_pdf: bool = False, ready: bool = True):
+    payloads = {
+        "main.tex": b"main\n",
+        "appendix.tex": b"appendix\n",
+        "references.bib": b"bib\n",
+        "generated_results.tex": b"results\n",
+        "acl.sty": b"style\n",
+        "acl_natbib.bst": b"bst\n",
+        "PAPER_STATUS.md": b"status\n",
+        "figures/generated/primary_auroc_improvement_matrix.pdf": (
+            b"%PDF-1.4\nprimary\n"
+        ),
+        "figures/generated/family_macro_auroc_improvement.pdf": (
+            b"%PDF-1.4\nfamily\n"
+        ),
+        "figures/generated/adaptive_accuracy_cost_tradeoff.pdf": (
+            b"%PDF-1.4\nadaptive\n"
+        ),
+    }
+    if extra_pdf:
+        payloads["figures/generated/stale.pdf"] = b"%PDF-1.4\nstale\n"
+
+    manifest = {
+        "protocol": "trajuq_overleaf_package_v1",
+        "anonymous": True,
+        "submission_ready": ready,
+        "acl_style_commit": submission_readiness.ACL_STYLE_COMMIT,
+        "files": [
+            {
+                "path": name,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "bytes": len(data),
+            }
+            for name, data in sorted(payloads.items())
+        ],
+    }
+    with zipfile.ZipFile(path, "w") as zf:
+        for name, data in payloads.items():
+            zf.writestr(name, data)
+        zf.writestr(
+            "MANIFEST.json",
+            json.dumps(manifest).encode("utf-8"),
+        )
+
+
+def test_overleaf_archive_gate_passes_for_exact_submission_bundle(tmp_path):
+    archive = tmp_path / "overleaf.zip"
+    write_overleaf_zip(archive)
+    result = verify_overleaf_package(archive)
+    assert result["status"] == "PASS"
+    assert result["sha256"] == hashlib.sha256(
+        archive.read_bytes()
+    ).hexdigest()
+
+
+def test_overleaf_archive_gate_rejects_extra_generated_pdf(tmp_path):
+    archive = tmp_path / "overleaf.zip"
+    write_overleaf_zip(archive, extra_pdf=True)
+    result = verify_overleaf_package(archive)
+    assert result["status"] == "FAIL"
+    assert any(
+        "generated-PDF set differs" in item
+        for item in result["failures"]
+    )
+
+
+def test_overleaf_archive_gate_requires_submission_ready_marker(tmp_path):
+    archive = tmp_path / "overleaf.zip"
+    write_overleaf_zip(archive, ready=False)
+    result = verify_overleaf_package(archive)
+    assert result["status"] == "FAIL"
+    assert any(
+        "not submission-ready" in item
+        for item in result["failures"]
+    )
 
 
 def test_generated_results_hash_gate_passes(tmp_path):

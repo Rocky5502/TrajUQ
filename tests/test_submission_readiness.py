@@ -1001,7 +1001,7 @@ def test_generated_results_gate_binds_exact_rq2_rq3_plans(tmp_path):
 
 
 def test_result_figure_gate_binds_exact_adaptive_plan(tmp_path):
-    sources, payloads, _ = make_render_sources(tmp_path)
+    _, payloads, _ = make_render_sources(tmp_path)
     primary_path = tmp_path / "primary.json"
     adaptive_plan = tmp_path / "adaptive_plan.json"
 

@@ -7,6 +7,7 @@ import json
 import numpy as np
 
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 from trajuq.risk import RAW_RISK_VERSION, raw_trajectory_risk
 from trajuq.statistics import paired_bootstrap_difference
 
@@ -35,8 +36,11 @@ def main() -> None:
         dtype=float,
     )
 
+    provenance = analysis_provenance({"test": args.input})
+
     payload = {
         "protocol": "trajuq_raw_risk_diagnostic_v1",
+        "provenance": provenance,
         "risk_version": RAW_RISK_VERSION,
         "n": len(rows),
         "comparison": "raw_trajectory_risk_minus_decision_entropy",

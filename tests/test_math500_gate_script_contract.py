@@ -56,6 +56,8 @@ def test_math500_wrapper_revalidates_hash_bound_split_and_parity_sources():
     assert "$InstrumentedAuditOk" in text
     assert "function Assert-Math500FrozenPair" in text
     assert "trajuq_split_pair_audit_v1" in text
+    assert "source_git_commit" in text
+    assert "source_git_clean" in text
     assert "calibration_sha256" in text
     assert "test_sha256" in text
     assert "$Audit.requested_revision -ne $DatasetSha" in text
@@ -82,3 +84,12 @@ def test_wrappers_use_shared_frozen_preprimary_validator():
     assert "scripts/validate_frozen_preprimary.py" in text
     text = Path("scripts/math500_gate_linux.sh").read_text(encoding="utf-8")
     assert "scripts/validate_frozen_preprimary.py" in text
+
+
+def test_linux_math500_pair_is_bound_to_frozen_source_commit():
+    text = Path("scripts/math500_gate_linux.sh").read_text(encoding="utf-8")
+
+    assert 'meta.get("source_git_clean") is True' in text
+    assert 'meta.get("source_git_commit")=="$FROZEN_COMMIT"' in text
+    assert 'audit.get("source_git_clean") is True' in text
+    assert 'audit.get("source_git_commit")=="$FROZEN_COMMIT"' in text

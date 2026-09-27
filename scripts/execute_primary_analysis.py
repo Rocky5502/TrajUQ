@@ -13,6 +13,9 @@ from trajuq.features import FROZEN_FEATURE_GROUPS
 from trajuq.io import read_jsonl
 
 
+PRIOR_SIGNAL_NAMES = {"trajectory_entropy", "top1_revision_rate"}
+
+
 CELL_STEPS = (
     ("evaluate", "evaluate_argv", ("metrics", "predictions")),
     ("nested_comparison", "nested_comparison_argv", ("nested_bootstrap",)),
@@ -20,6 +23,11 @@ CELL_STEPS = (
         "feature_ablation",
         "feature_ablation_argv",
         ("feature_ablation", "feature_ablation_predictions"),
+    ),
+    (
+        "prior_signal_diagnostic",
+        "prior_signal_diagnostic_argv",
+        ("prior_signal_diagnostic", "prior_signal_predictions"),
     ),
     ("raw_risk_diagnostic", "raw_risk_diagnostic_argv", ("raw_risk_diagnostic",)),
 )
@@ -154,6 +162,43 @@ def semantic_output_valid(
         ):
             return False
 
+    if key == "prior_signal_predictions":
+        try:
+            rows = list(read_jsonl(path))
+            if artifact_example_ids(path) != test_ids:
+                return False
+            target_rows = list(
+                read_jsonl(Path(str(cell["inputs"]["test"]["path"])))
+            )
+            target_by_id = {
+                str(row["example_id"]): row for row in target_rows
+            }
+            fields = {
+                "p_error_trajectory_entropy",
+                "p_error_top1_revision_rate",
+            }
+            for row in rows:
+                item_id = str(row["example_id"])
+                target = target_by_id[item_id]
+                expected_y = 0 if bool(target["correct"]) else 1
+                if int(row.get("y_error", -1)) != expected_y:
+                    return False
+                if bool(row.get("correct")) != bool(target["correct"]):
+                    return False
+                for field in fields:
+                    number = float(row[field])
+                    if not (0.0 <= number <= 1.0):
+                        return False
+            return True
+        except (
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+            TypeError,
+            KeyError,
+        ):
+            return False
+
     if path.suffix != ".json":
         return output_valid(path)
 
@@ -207,6 +252,24 @@ def semantic_output_valid(
             and set(payload.get("groups", {})) == set(expected_groups)
             and set(payload.get("paired_improvements_vs_decision_only", {}))
             == (set(expected_groups) - {"decision_only"})
+        )
+    if key == "prior_signal_diagnostic":
+        signals = payload.get("signals", {})
+        return (
+            payload.get("protocol")
+            == "trajuq_prior_aligned_signal_diagnostic_v1"
+            and payload.get("role")
+            == "secondary_prior_aligned_signal_class_diagnostic"
+            and int(payload.get("n_calibration", -1)) == n_cal
+            and int(payload.get("n_test", -1)) == n_test
+            and payload.get("signal_order")
+            == ["trajectory_entropy", "top1_revision_rate"]
+            and set(signals) == PRIOR_SIGNAL_NAMES
+            and all(
+                int(signals[name].get("n_calibration", -1)) == n_cal
+                and int(signals[name].get("n_test", -1)) == n_test
+                for name in PRIOR_SIGNAL_NAMES
+            )
         )
     if key == "raw_risk_diagnostic":
         return (
@@ -385,6 +448,9 @@ def cell_state(cell: dict[str, Any]) -> dict[str, Any]:
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
     ablation = Path(str(plan["final_outputs"]["macro_feature_ablation"]))
+    prior = Path(
+        str(plan["final_outputs"]["macro_prior_signal_diagnostics"])
+    )
     claim = Path(str(plan["final_outputs"]["rq1_claim_gate"]))
     expected_cells = int(plan.get("cell_count", 0))
 
@@ -448,6 +514,39 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 else "INVALID"
             )
 
+    prior_status = "MISSING"
+    if prior.exists():
+        if not valid_json(prior):
+            prior_status = "INVALID"
+        else:
+            payload = json.loads(prior.read_text(encoding="utf-8"))
+            macro = payload.get("macro", {})
+            metrics_complete = all(
+                set(macro.get(signal, {})) >= {
+                    "auroc",
+                    "auprc",
+                    "aurc",
+                }
+                for signal in PRIOR_SIGNAL_NAMES
+            )
+            prior_status = (
+                "COMPLETE"
+                if (
+                    payload.get("protocol")
+                    == "trajuq_prior_aligned_signal_macro_v1"
+                    and payload.get("role")
+                    == "secondary_prior_aligned_signal_class_diagnostic"
+                    and payload.get("cell_set_complete") is True
+                    and int(payload.get("observed_cells", -1))
+                    == expected_cells
+                    and int(payload.get("expected_cells", -1))
+                    == expected_cells
+                    and set(macro) == PRIOR_SIGNAL_NAMES
+                    and metrics_complete
+                )
+                else "INVALID"
+            )
+
     claim_status = "MISSING"
     if claim.exists():
         if not valid_json(claim):
@@ -472,6 +571,7 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "macro_primary": macro_status,
         "macro_feature_ablation": ablation_status,
+        "macro_prior_signal_diagnostics": prior_status,
         "rq1_claim_gate": claim_status,
     }
 
@@ -487,6 +587,7 @@ def execution_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         and complete_cells == expected
         and final["macro_primary"] == "COMPLETE"
         and final["macro_feature_ablation"] == "COMPLETE"
+        and final["macro_prior_signal_diagnostics"] == "COMPLETE"
         and final["rq1_claim_gate"] == "COMPLETE"
         else "IN_PROGRESS"
     )
@@ -751,6 +852,45 @@ def main() -> None:
             final["macro_primary"] == "COMPLETE"
             and final["macro_feature_ablation"] == "COMPLETE"
         ):
+            if final["macro_prior_signal_diagnostics"] == "MISSING":
+                run_command(
+                    [
+                        str(value)
+                        for value in plan["prior_signal_macro_argv"]
+                    ],
+                    execute=args.execute,
+                    scope="primary",
+                    step="prior_signal_macro",
+                    event_log=event_path,
+                )
+                if (
+                    args.execute
+                    and macro_state(plan)[
+                        "macro_prior_signal_diagnostics"
+                    ]
+                    != "COMPLETE"
+                ):
+                    write_snapshot(plan, state_path)
+                    raise SystemExit(
+                        "Prior-signal macro command did not produce "
+                        "a complete artifact."
+                    )
+            elif (
+                final["macro_prior_signal_diagnostics"] == "INVALID"
+            ):
+                raise SystemExit(
+                    "Existing prior-signal macro is invalid; "
+                    "do not overwrite it automatically."
+                )
+            else:
+                print("[SKIP] primary prior_signal_macro: complete")
+
+        final = macro_state(plan)
+        if (
+            final["macro_primary"] == "COMPLETE"
+            and final["macro_feature_ablation"] == "COMPLETE"
+            and final["macro_prior_signal_diagnostics"] == "COMPLETE"
+        ):
             if final["rq1_claim_gate"] == "MISSING":
                 run_command(
                     [str(value) for value in plan["rq1_claim_gate_argv"]],
@@ -774,6 +914,7 @@ def main() -> None:
         f"{final_snapshot['expected_cells']} cells; "
         f"macro={final_snapshot['final']['macro_primary']}; "
         f"ablation={final_snapshot['final']['macro_feature_ablation']}; "
+        f"prior={final_snapshot['final']['macro_prior_signal_diagnostics']}; "
         f"claim_gate={final_snapshot['final']['rq1_claim_gate']}"
     )
 

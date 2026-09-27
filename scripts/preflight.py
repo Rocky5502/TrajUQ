@@ -31,6 +31,53 @@ def version_triplet(value: str) -> tuple[int, int, int] | None:
     return tuple(int(part) for part in match.groups())
 
 
+def probe_remote_assets(
+    cfg: dict,
+) -> tuple[dict[str, object], list[str]]:
+    failures: list[str] = []
+    model_id = str(cfg.get("model_id", "")).strip()
+    revision = str(cfg.get("revision", "")).strip()
+    trust_remote_code = bool(cfg.get("trust_remote_code", True))
+    payload: dict[str, object] = {
+        "attempted": False,
+        "config_loaded": False,
+        "tokenizer_loaded": False,
+        "tokenizer_class": None,
+        "mask_token_id": None,
+    }
+    if not model_id or not revision or revision.lower() == "null":
+        return payload, failures
+
+    payload["attempted"] = True
+    try:
+        from transformers import AutoConfig, AutoTokenizer
+
+        remote_config = AutoConfig.from_pretrained(
+            model_id,
+            revision=revision,
+            trust_remote_code=trust_remote_code,
+        )
+        payload["config_loaded"] = remote_config is not None
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            revision=revision,
+            trust_remote_code=trust_remote_code,
+        )
+        payload["tokenizer_loaded"] = tokenizer is not None
+        payload["tokenizer_class"] = type(tokenizer).__name__
+        mask_id = getattr(tokenizer, "mask_token_id", None)
+        payload["mask_token_id"] = (
+            int(mask_id) if mask_id is not None else None
+        )
+    except Exception as exc:
+        failures.append(
+            "exact-revision config/tokenizer probe failed: "
+            f"{type(exc).__name__}: {exc}"
+        )
+    return payload, failures
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fail-fast preflight before a frozen GPU experiment.")
     parser.add_argument("--model-config", required=True)
@@ -66,6 +113,9 @@ def main() -> None:
         failures.append("model config has no model_id")
     if not revision and not args.allow_unpinned_revision:
         failures.append("model revision is not pinned")
+
+    remote_assets, remote_failures = probe_remote_assets(cfg)
+    failures.extend(remote_failures)
 
     rows = list(read_jsonl(data_path))
     ids = [str(r.get("id", "")) for r in rows]
@@ -104,6 +154,7 @@ def main() -> None:
             "transformers": transformers_version,
             "minimum_transformers": "4.52.4",
         },
+        "remote_assets": remote_assets,
         "cuda": cuda_payload,
         "failures": failures,
     }

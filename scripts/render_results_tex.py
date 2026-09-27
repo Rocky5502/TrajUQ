@@ -12,6 +12,12 @@ import yaml
 from scripts.evaluate_rq1_claim_gate import evaluate_gate
 
 
+PRIOR_SIGNAL_SUFFIXES = {
+    "trajectory_entropy": "PriorEntropy",
+    "top1_revision_rate": "PriorFlipRate",
+}
+
+
 ABLATION_SUFFIXES = {
     "decision_plus_distribution": "Distribution",
     "decision_plus_stability": "Stability",
@@ -205,6 +211,45 @@ def require_ablation(ablation: dict) -> None:
                     )
 
 
+def require_prior_signals(prior: dict) -> None:
+    if prior.get("protocol") != "trajuq_prior_aligned_signal_macro_v1":
+        raise ValueError("Prior-signal macro protocol is not recognized.")
+    if (
+        prior.get("role")
+        != "secondary_prior_aligned_signal_class_diagnostic"
+    ):
+        raise ValueError("Prior-signal macro role is not recognized.")
+    if prior.get("cell_set_complete") is not True:
+        raise ValueError("Prior-signal macro cell set is incomplete.")
+    if int(prior.get("expected_cells", -1)) != 18:
+        raise ValueError("Prior-signal expected cell count is not 18.")
+    if int(prior.get("observed_cells", -1)) != 18:
+        raise ValueError("Prior-signal observed cell count is not 18.")
+    macro = prior.get("macro", {})
+    if set(macro) != set(PRIOR_SIGNAL_SUFFIXES):
+        raise ValueError("Prior-signal set differs from frozen contract.")
+    for signal in PRIOR_SIGNAL_SUFFIXES:
+        metrics = macro[signal]
+        for metric in ("auroc", "auprc", "aurc"):
+            node = metrics.get(metric)
+            if not isinstance(node, dict):
+                raise ValueError(
+                    f"Prior-signal {signal} missing metric={metric}"
+                )
+            for key in (
+                "candidate_macro",
+                "baseline_macro",
+                "improvement_macro",
+                "improvement_ci_low",
+                "improvement_ci_high",
+            ):
+                value = float(node[key])
+                if not math.isfinite(value):
+                    raise ValueError(
+                        f"Prior-signal {signal}/{metric}/{key} is non-finite."
+                    )
+
+
 def require_adaptive(adaptive: dict) -> None:
     if adaptive.get("protocol") != "trajuq_adaptive_macro_v1":
         raise ValueError("Adaptive macro protocol is not recognized.")
@@ -249,6 +294,7 @@ def build_macros(
     claim: dict,
     repeated: dict,
     ablation: dict,
+    prior_signals: dict,
     adaptive: dict,
     primary_cfg: dict | None = None,
 ) -> dict[str, str]:
@@ -256,6 +302,7 @@ def build_macros(
     require_claim_gate(claim, primary, primary_cfg)
     require_repeated(repeated)
     require_ablation(ablation)
+    require_prior_signals(prior_signals)
     require_adaptive(adaptive)
 
     macros: dict[str, str] = {}
@@ -304,6 +351,27 @@ def build_macros(
             metrics["auprc"]["improvement_macro"]
         )
         macros[f"Ablation{suffix}AURCDelta"] = fmt_signed(
+            metrics["aurc"]["improvement_macro"]
+        )
+
+    for signal, suffix in PRIOR_SIGNAL_SUFFIXES.items():
+        metrics = prior_signals["macro"][signal]
+        auroc = metrics["auroc"]
+        macros[f"{suffix}AUROC"] = fmt(auroc["baseline_macro"])
+        macros[f"{suffix}TrajAUROC"] = fmt(auroc["candidate_macro"])
+        macros[f"{suffix}AUROCDelta"] = fmt_signed(
+            auroc["improvement_macro"]
+        )
+        macros[f"{suffix}AUROCLow"] = fmt_signed(
+            auroc["improvement_ci_low"]
+        )
+        macros[f"{suffix}AUROCHigh"] = fmt_signed(
+            auroc["improvement_ci_high"]
+        )
+        macros[f"{suffix}AUPRCDelta"] = fmt_signed(
+            metrics["auprc"]["improvement_macro"]
+        )
+        macros[f"{suffix}AURCDelta"] = fmt_signed(
             metrics["aurc"]["improvement_macro"]
         )
 
@@ -406,6 +474,10 @@ def main() -> None:
         default="results/primary_analysis/macro_feature_ablation.json",
     )
     parser.add_argument(
+        "--prior-signals",
+        default="results/primary_analysis/macro_prior_signal_diagnostics.json",
+    )
+    parser.add_argument(
         "--adaptive",
         default="results/adaptive/macro_cap_050.json",
     )
@@ -424,6 +496,7 @@ def main() -> None:
         "claim_gate": Path(args.claim_gate),
         "repeated": Path(args.repeated),
         "ablation": Path(args.ablation),
+        "prior_signals": Path(args.prior_signals),
         "adaptive": Path(args.adaptive),
     }
     payloads = {
@@ -441,6 +514,7 @@ def main() -> None:
         payloads["claim_gate"],
         payloads["repeated"],
         payloads["ablation"],
+        payloads["prior_signals"],
         payloads["adaptive"],
         primary_cfg,
     )

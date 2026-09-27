@@ -105,6 +105,10 @@ def audit_split_pair(
         )
     if not manifest.get("requested_revision"):
         failures.append("dataset revision is not pinned in split manifest")
+    if not str(manifest.get("source_git_commit", "")).strip():
+        failures.append("prepared split source git commit is missing")
+    if manifest.get("source_git_clean") is not True:
+        failures.append("prepared split was not produced from a clean git checkout")
 
     if int(manifest.get("n_calibration", -1)) != len(cal):
         failures.append("calibration count differs from split manifest")
@@ -120,6 +124,8 @@ def audit_split_pair(
         "status": "PASS" if not failures else "FAIL",
         "dataset": declared_dataset,
         "requested_revision": manifest.get("requested_revision"),
+        "source_git_commit": manifest.get("source_git_commit"),
+        "source_git_clean": manifest.get("source_git_clean"),
         "normalizer_version": manifest.get("normalizer_version"),
         "calibration_records": len(cal),
         "test_records": len(test),

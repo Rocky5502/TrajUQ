@@ -11,8 +11,8 @@
       "pre_generation_cap": {
         "method": "sha256_id_rank_v1",
         "seed": "2027",
-        "calibration_max": 1000,
-        "test_max": 1000
+        "calibration_max": 500,
+        "test_max": 500
       }
     },
     "arc_challenge": {
@@ -26,7 +26,7 @@
         "method": "sha256_id_rank_v1",
         "seed": "2027",
         "calibration_max": null,
-        "test_max": 1000
+        "test_max": 500
       }
     },
     "mmlu_pro": {
@@ -40,7 +40,7 @@
         "method": "sha256_id_rank_v1",
         "seed": "2027",
         "calibration_max": null,
-        "test_max": 1000
+        "test_max": 500
       }
     },
     "gpqa_diamond": {
@@ -91,5 +91,5 @@
       }
     }
   },
-  "compute_budget_note": "Pre-generation outcome-free caps are frozen before model calls to keep the complete 3-model x 6-dataset study executable within a three-day single-A100 rental envelope. Caps use only namespaced example IDs and the declared seed; labels, references, prompts, and model outcomes do not affect selection. Smaller partitions are retained in full."
+  "compute_budget_note": "Pre-generation outcome-free caps are frozen before model calls to keep the complete 3-model x 6-dataset primary/RQ3 study executable inside a three-day single-A100 rental envelope. Large source roles are capped at 500 examples using only namespaced IDs and the declared seed; labels, references, prompts, and model outcomes do not affect selection. Smaller partitions are retained in full. The secondary five-sample comparator uses a separately frozen 3x4 representative dataset subset."
 }

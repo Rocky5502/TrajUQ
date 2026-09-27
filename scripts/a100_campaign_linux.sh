@@ -348,6 +348,7 @@ prepare_primary_and_estimate() {
 run_primary() {
   prepare_primary_and_estimate
   "$PYTHON" scripts/execute_primary_plan.py
+  "$PYTHON" scripts/resident_generate_plan.py     --kind primary     --plan results/primary_matrix_plan.json
   "$PYTHON" scripts/execute_primary_plan.py --execute
   export_progress_handoff "primary"
 }
@@ -372,6 +373,7 @@ run_rq3() {
   require_primary_readiness
   "$PYTHON" scripts/plan_adaptive_runs.py
   "$PYTHON" scripts/execute_adaptive_plan.py
+  "$PYTHON" scripts/resident_generate_plan.py     --kind adaptive     --plan results/adaptive_matrix_plan.json
   "$PYTHON" scripts/execute_adaptive_plan.py --execute
   export_progress_handoff "rq3"
 }

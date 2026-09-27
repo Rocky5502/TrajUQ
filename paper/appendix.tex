@@ -172,7 +172,7 @@ We freeze:
 \item full minus persistence.
 \end{enumerate}
 Every ablation is calibrated on the same calibration partition and evaluated on the same test examples.
-The table below is populated only from the complete 18-cell hierarchical ablation artifact; positive deltas always favor the listed feature view over decision-only.
+The table below is populated only from the complete 18-cell equal-cell macro ablation artifact; positive deltas always favor the listed feature view over decision-only.
 
 \begin{table*}[t]
 \centering
@@ -190,7 +190,7 @@ Full minus revisions & \AblationNoRevisionsAUROCDelta & [\AblationNoRevisionsAUR
 Full minus persistence & \AblationNoPersistenceAUROCDelta & [\AblationNoPersistenceAUROCLow, \AblationNoPersistenceAUROCHigh] & \AblationNoPersistenceAUPRCDelta & \AblationNoPersistenceAURCDelta\\
 \bottomrule
 \end{tabular}
-\caption{Frozen feature-family ablations relative to the decision-only baseline. Each value is macro-averaged with equal weight over all 18 model--dataset cells; AUROC confidence intervals use the same paired within-cell hierarchical bootstrap as the primary comparison.}
+\caption{Frozen feature-family ablations relative to the decision-only baseline. Each value is macro-averaged with equal weight over all 18 model--dataset cells; AUROC confidence intervals use the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging as the primary comparison.}
 \label{tab:feature-ablation}
 \end{table*}
 
@@ -200,7 +200,7 @@ To make the overlap with recent diffusion-specific UQ work explicit, we freeze t
 (1) mean normalized trajectory entropy over active unresolved positions; and
 (2) top-1 revision rate, the fraction of eligible consecutive unresolved observations whose argmax token changes.
 These correspond to trajectory-entropy and token-flip signal classes studied in prior dLLM UQ work \citep{vazhentsev2026dllmuq}, but they are \emph{not} presented as reproductions of D-CoCoA or DiSE.
-Each scalar is independently fit with the same calibration-only logistic mapping used elsewhere, evaluated on the exact same held-out examples, and compared to the full \method probability with paired hierarchical bootstrap aggregation across all 18 cells.
+Each scalar is independently fit with the same calibration-only logistic mapping used elsewhere, evaluated on the exact same held-out examples, and compared to the full \method probability with paired class-stratified within-cell bootstrap aggregation and equal-cell macro-averaging across all 18 cells.
 
 \begin{table*}[t]
 \centering
@@ -234,7 +234,7 @@ The threshold is chosen under the frozen 50\% primary selection cap (25\% and 75
 A final calibrator is then trained on all calibration examples and applied to test.
 The threshold is not retuned on test.
 
-The primary execution is a selective second-pass rerun: selected examples launch a separate refined-budget generation from scratch. Therefore the nominal mean compute is $B_0+fB_1$. We do not use the cheaper $B_0+f(B_1-B_0)$ continuation formula unless a model-specific runtime actually resumes the same trajectory. We report policy accuracy, selection fraction, normalized cost relative to $B_0$, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random second-pass refinement. The primary 50\% cap and the frozen 25\%/75\% sensitivities are each aggregated over the complete 18-cell matrix with equal cell weight and a paired within-cell hierarchical bootstrap.
+The primary execution is a selective second-pass rerun: selected examples launch a separate refined-budget generation from scratch. Therefore the nominal mean compute is $B_0+fB_1$. We do not use the cheaper $B_0+f(B_1-B_0)$ continuation formula unless a model-specific runtime actually resumes the same trajectory. We report policy accuracy, selection fraction, normalized cost relative to $B_0$, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random second-pass refinement. The primary 50\% cap and the frozen 25\%/75\% sensitivities are each aggregated over the complete 18-cell matrix with equal cell weight and a paired class-stratified within-cell bootstrap.
 
 \section{Run Provenance}
 
@@ -270,10 +270,10 @@ No cell is populated without a corresponding immutable result artifact.
 Primary metrics are never computed by pooling examples from heterogeneous
 benchmarks.  For each model--dataset cell, the decision-entropy baseline and
 \method are evaluated on identical test examples.  A macro summary gives every
-cell equal weight.  Confidence intervals use a hierarchical paired bootstrap:
-within each replicate, examples are class-stratified and resampled independently
-inside every cell, candidate and baseline retain the same sampled indices, and
-the resulting cell-level improvements are macro-averaged.  We additionally
+cell equal weight.  Confidence intervals use a paired class-stratified within-cell bootstrap:
+within each replicate, examples are resampled independently inside every fixed
+cell, candidate and baseline retain the same sampled indices, and the resulting
+cell-level improvements are macro-averaged with equal cell weight.  We additionally
 report the number of cells with positive, zero, and negative point improvement
 so that a macro gain cannot hide systematic regressions.
 

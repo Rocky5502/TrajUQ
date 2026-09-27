@@ -246,8 +246,29 @@ def main() -> None:
             failures.append(
                 f"{adapter}: frozen model revision differs from revision ledger"
             )
+
+        observed_model_config_hash = sha256_file(frozen_path)
+        expected_model_config_hash = str(
+            revision_ledger.get("frozen_model_config_sha256", {}).get(adapter, "")
+        )
+        expected_model_config_path = str(
+            revision_ledger.get("frozen_model_configs", {}).get(adapter, "")
+        )
+        if not expected_model_config_hash:
+            failures.append(
+                f"{adapter}: revision ledger has no frozen model-config hash"
+            )
+        elif observed_model_config_hash != expected_model_config_hash:
+            failures.append(
+                f"{adapter}: frozen model config hash differs from revision ledger"
+            )
+        if expected_model_config_path and str(frozen_path) != expected_model_config_path:
+            failures.append(
+                f"{adapter}: frozen model config path differs from revision ledger"
+            )
+
         model_cfgs[adapter] = frozen
-        model_cfg_hashes[adapter] = sha256_file(frozen_path)
+        model_cfg_hashes[adapter] = observed_model_config_hash
 
     datasets = [str(x) for x in primary.get("datasets", [])]
     data_meta: dict[str, dict] = {}

@@ -22,6 +22,8 @@ def row(*, revision: str = "sha", prompt: str = "p", seed: int = 2027):
                 "temperature": 0.0,
                 "cfg_scale": 0.0,
                 "remasking": "low_confidence",
+                "torch_version": "2.5.1+cu124",
+                "transformers_version": "4.52.4",
             }
         },
     }

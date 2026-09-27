@@ -159,3 +159,15 @@ def test_primary_analysis_plan_wires_ablation_predictions_and_macro():
     assert "aggregate_feature_ablation.py" in text
     assert "macro_feature_ablation.json" in text
     assert '"feature_ablation_macro_argv"' in text
+
+
+def test_primary_analysis_plan_wires_prior_signal_diagnostics():
+    text = Path("scripts/plan_primary_analysis.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "evaluate_prior_signal_diagnostics.py" in text
+    assert "prior_signal_predictions.jsonl" in text
+    assert "aggregate_prior_signal_diagnostics.py" in text
+    assert "macro_prior_signal_diagnostics.json" in text
+    assert '"prior_signal_macro_argv"' in text

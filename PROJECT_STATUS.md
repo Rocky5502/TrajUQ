@@ -209,9 +209,10 @@ completion count cannot be mistaken for completed empirical work.
   system disk, and approximately 250 Mbps selected bandwidth. These are
   pre-execution resource selections, not verified run facts.
 - One A100 80GB is sufficient for the three frozen primary checkpoints because
-  they are loaded/executed sequentially. The repeated-sampling runner now keeps
-  one checkpoint resident across all five seeds for a partition, avoiding
-  repeated model reloads.
+  they are loaded/executed sequentially. Primary/RQ3 raw generation uses one
+  resident load per adapter, and RQ2 now keeps each checkpoint resident across
+  all eligible dataset/partition jobs while preserving the five separately
+  audited seed artifacts.
 - The operational rental envelope is 72 continuous hours. To make that budget
   scientific rather than post-hoc, the tracked dataset manifest freezes
   outcome-free SHA-256 ID caps before any model calls: GSM8K calibration/test

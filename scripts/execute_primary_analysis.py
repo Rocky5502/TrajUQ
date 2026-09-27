@@ -10,9 +10,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.evaluate_rq1_claim_gate import evaluate_gate  # noqa: E402
 from scripts.execute_primary_plan import (  # noqa: E402
     validate_plan_provenance as validate_primary_plan_provenance,
 )
@@ -640,6 +643,42 @@ def aggregate_provenance_matches(
     )
 
 
+def claim_matches_frozen_rule(
+    plan: dict[str, Any],
+    payload: dict[str, Any],
+) -> bool:
+    """Re-evaluate the RQ1 gate so a hand-edited decision cannot be reused."""
+
+    # Preserve lightweight unit fixtures that intentionally omit the full plan.
+    if plan.get("protocol") != "trajuq_primary_analysis_plan_v2":
+        return True
+
+    macro_path = Path(
+        str(plan.get("final_outputs", {}).get("macro_primary", ""))
+    )
+    config_path = Path(str(plan.get("primary_config", "")))
+    if not macro_path.is_file() or not config_path.is_file():
+        return False
+    try:
+        macro_payload = json.loads(macro_path.read_text(encoding="utf-8"))
+        primary_cfg = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        expected = evaluate_gate(macro_payload, primary_cfg)
+    except (OSError, json.JSONDecodeError, yaml.YAMLError, KeyError, TypeError, ValueError):
+        return False
+
+    for key in (
+        "primary_endpoint",
+        "decision",
+        "claim_supported",
+        "frozen_rules",
+        "observed",
+        "conditions",
+    ):
+        if payload.get(key) != expected.get(key):
+            return False
+    return True
+
+
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
     ablation = Path(str(plan["final_outputs"]["macro_feature_ablation"]))
@@ -779,6 +818,7 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                     }
                     and isinstance(payload.get("claim_supported"), bool)
                     and isinstance(payload.get("conditions"), dict)
+                    and claim_matches_frozen_rule(plan, payload)
                 )
                 else "INVALID"
             )

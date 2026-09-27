@@ -38,6 +38,8 @@ numbers.
 | `results/primary_analysis/<adapter>/<dataset>/predictions.jsonl` | exact frozen test-ID coverage | input to complete primary macro and RQ2 comparison |
 | `results/primary_analysis/<adapter>/<dataset>/nested_bootstrap.json` | `trajuq_nested_calibrated_comparison_v1` | per-cell paired RQ1 uncertainty analysis |
 | `results/primary_analysis/<adapter>/<dataset>/raw_risk_diagnostic.json` | `trajuq_raw_risk_diagnostic_v1` | training-free sensitivity / diagnostic discussion only |
+| `results/primary_analysis/<adapter>/<dataset>/calibration_sensitivity.json` | `trajuq_isotonic_calibration_sensitivity_v1`; source-bound PASS or recomputable `SKIP_INSUFFICIENT_CALIBRATION` | supplementary RQ2 calibration-sensitivity evidence only |
+| `results/primary_analysis/macro_calibration_sensitivity.json` | `trajuq_isotonic_calibration_sensitivity_macro_v1`; complete 18-cell PASS/SKIP partition | Appendix calibration-sensitivity summary; never enters the RQ1 claim gate |
 
 Primary manuscript macros are emitted by `scripts/render_results_tex.py`;
 numbers must not be typed manually into `paper/main.tex`.

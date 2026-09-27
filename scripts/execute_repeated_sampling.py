@@ -6,12 +6,19 @@ import hashlib
 import json
 import math
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from trajuq.io import read_jsonl
-from trajuq.provenance import binding_matches
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_primary_analysis import (  # noqa: E402
+    validate_plan_provenance as validate_analysis_plan_provenance,
+)
+from trajuq.io import read_jsonl  # noqa: E402
+from trajuq.provenance import binding_matches  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:
@@ -169,6 +176,23 @@ def validate_plan_provenance(
             failures.append(f"repeated plan missing bound {key} artifact")
         elif sha256_file(path) != expected_hash:
             failures.append(f"{key} hash differs from repeated plan")
+
+    analysis_plan_path = Path(str(plan.get("primary_analysis_plan", "")))
+    if analysis_plan_path.is_file():
+        try:
+            analysis_plan = json.loads(
+                analysis_plan_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError) as exc:
+            failures.append(f"bound primary analysis plan is invalid JSON: {exc}")
+        else:
+            failures.extend(
+                "primary analysis provenance: " + failure
+                for failure in validate_analysis_plan_provenance(
+                    analysis_plan,
+                    require_current_commit=require_current_commit,
+                )
+            )
 
     for cell in plan.get("cells", []):
         label = str(cell.get("cell", "<unknown>"))

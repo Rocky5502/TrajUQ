@@ -319,6 +319,8 @@ def main() -> None:
         nested = cell_root / "nested_bootstrap.json"
         ablations = cell_root / "feature_ablation.json"
         ablation_predictions = cell_root / "feature_ablation_predictions.jsonl"
+        prior_diag = cell_root / "prior_signal_diagnostic.json"
+        prior_predictions = cell_root / "prior_signal_predictions.jsonl"
         raw_diag = cell_root / "raw_risk_diagnostic.json"
 
         evaluate = [
@@ -365,6 +367,20 @@ def main() -> None:
             "--predictions-output",
             str(ablation_predictions),
         ]
+        prior_signal_diagnostic = [
+            "python",
+            "scripts/evaluate_prior_signal_diagnostics.py",
+            "--calibration",
+            cal,
+            "--test",
+            test,
+            "--seed",
+            str(seed),
+            "--output",
+            str(prior_diag),
+            "--predictions-output",
+            str(prior_predictions),
+        ]
         diagnostic = [
             "python",
             "scripts/compare_methods.py",
@@ -389,6 +405,7 @@ def main() -> None:
                 "evaluate_argv": evaluate,
                 "nested_comparison_argv": compare_nested,
                 "feature_ablation_argv": ablation,
+                "prior_signal_diagnostic_argv": prior_signal_diagnostic,
                 "raw_risk_diagnostic_argv": diagnostic,
                 "outputs": {
                     "metrics": str(metrics),
@@ -396,6 +413,8 @@ def main() -> None:
                     "nested_bootstrap": str(nested),
                     "feature_ablation": str(ablations),
                     "feature_ablation_predictions": str(ablation_predictions),
+                    "prior_signal_diagnostic": str(prior_diag),
+                    "prior_signal_predictions": str(prior_predictions),
                     "raw_risk_diagnostic": str(raw_diag),
                 },
             }
@@ -403,6 +422,7 @@ def main() -> None:
 
     macro_path = root / "macro_primary.json"
     ablation_macro_path = root / "macro_feature_ablation.json"
+    prior_signal_macro_path = root / "macro_prior_signal_diagnostics.json"
     gate_path = root / "rq1_claim_gate.json"
     ablation_macro_argv = [
         "python",
@@ -415,6 +435,18 @@ def main() -> None:
         str(seed),
         "--output",
         str(ablation_macro_path),
+    ]
+    prior_signal_macro_argv = [
+        "python",
+        "scripts/aggregate_prior_signal_diagnostics.py",
+        "--plan",
+        args.output,
+        "--n-boot",
+        str(n_boot),
+        "--seed",
+        str(seed),
+        "--output",
+        str(prior_signal_macro_path),
     ]
     gate_argv = [
         "python",
@@ -442,15 +474,18 @@ def main() -> None:
         "cell_analyses": analyses,
         "macro_aggregation_argv": aggregation_args,
         "feature_ablation_macro_argv": ablation_macro_argv,
+        "prior_signal_macro_argv": prior_signal_macro_argv,
         "rq1_claim_gate_argv": gate_argv,
         "final_outputs": {
             "macro_primary": str(macro_path),
             "macro_feature_ablation": str(ablation_macro_path),
+            "macro_prior_signal_diagnostics": str(prior_signal_macro_path),
             "rq1_claim_gate": str(gate_path),
         },
         "execution_order": (
             "Run all cell analyses first, then primary macro aggregation, then "
-            "the complete feature-ablation macro, then the RQ1 claim gate. Do "
+            "the complete feature-ablation and prior-aligned signal macros, "
+            "then the RQ1 claim gate. Do "
             "not omit a weak cell or rerun with altered analysis settings."
         ),
     }

@@ -2,6 +2,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from trajuq.io import sha256_text
+from trajuq.schema import SCHEMA_VERSION
+
 from scripts.execute_primary_plan import (
     artifact_id_state,
     audit_passes,
@@ -146,6 +149,115 @@ def test_partial_raw_prefix_is_resumed_not_counted_complete(tmp_path):
     state = partition_state(spec, "frozen-commit")
     assert state["raw_id_state"] == "PREFIX"
     assert not state["complete"]
+
+
+def frozen_llada_spec(tmp_path: Path) -> tuple[dict, Path]:
+    source = tmp_path / "input.jsonl"
+    rows = [
+        {"id": "a", "dataset": "gsm8k", "prompt": "first prompt"},
+        {"id": "b", "dataset": "gsm8k", "prompt": "second prompt"},
+        {"id": "c", "dataset": "gsm8k", "prompt": "third prompt"},
+    ]
+    write_artifact(
+        source,
+        "".join(json.dumps(row) + "\n" for row in rows),
+    )
+    spec = {
+        "input": str(source),
+        "raw_output": str(tmp_path / "run.raw.jsonl"),
+        "scored_output": str(tmp_path / "run.scored.jsonl"),
+        "generate_argv": [
+            "python",
+            "scripts/run_generation.py",
+            "--adapter",
+            "llada",
+            "--model",
+            "example/llada",
+            "--revision",
+            "model-sha",
+            "--input",
+            str(source),
+            "--output",
+            str(tmp_path / "run.raw.jsonl"),
+            "--seed",
+            "2027",
+            "--steps",
+            "128",
+            "--max-new-tokens",
+            "128",
+            "--block-length",
+            "128",
+            "--temperature",
+            "0.0",
+            "--llada-cfg-scale",
+            "0.0",
+            "--llada-remasking",
+            "low_confidence",
+        ],
+    }
+    return spec, source
+
+
+def frozen_llada_row(example_id: str, prompt: str, source: Path) -> dict:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "example_id": example_id,
+        "dataset": "gsm8k",
+        "prompt_sha256": sha256_text(prompt),
+        "model": "example/llada",
+        "adapter": "llada",
+        "seed": 2027,
+        "generation": {
+            "metadata": {
+                "model_id": "example/llada",
+                "model_revision": "model-sha",
+                "steps_requested": 128,
+                "gen_length": 128,
+                "block_length": 128,
+                "temperature": 0.0,
+                "cfg_scale": 0.0,
+                "remasking": "low_confidence",
+            }
+        },
+        "metadata": {
+            "source_input": str(source),
+            "model_revision": "model-sha",
+        },
+    }
+
+
+def test_partial_raw_resume_requires_exact_frozen_generation_provenance(tmp_path):
+    spec, source = frozen_llada_spec(tmp_path)
+    raw = Path(spec["raw_output"])
+    row = frozen_llada_row("a", "first prompt", source)
+    write_artifact(raw, json.dumps(row) + "\n")
+
+    assert artifact_id_state(raw, spec) == "PREFIX"
+    assert command_needed("generate", spec, "frozen-commit")
+
+
+def test_partial_raw_resume_rejects_wrong_revision_or_sampler_settings(tmp_path):
+    spec, source = frozen_llada_spec(tmp_path)
+    raw = Path(spec["raw_output"])
+    row = frozen_llada_row("a", "first prompt", source)
+
+    row["generation"]["metadata"]["model_revision"] = "wrong-sha"
+    write_artifact(raw, json.dumps(row) + "\n")
+    assert artifact_id_state(raw, spec) == "INVALID"
+
+    row = frozen_llada_row("a", "first prompt", source)
+    row["generation"]["metadata"]["temperature"] = 0.2
+    write_artifact(raw, json.dumps(row) + "\n")
+    assert artifact_id_state(raw, spec) == "INVALID"
+
+
+def test_partial_raw_resume_rejects_wrong_prompt_binding(tmp_path):
+    spec, source = frozen_llada_spec(tmp_path)
+    raw = Path(spec["raw_output"])
+    row = frozen_llada_row("a", "different prompt", source)
+    write_artifact(raw, json.dumps(row) + "\n")
+
+    assert artifact_id_state(raw, spec) == "INVALID"
 
 
 def test_partial_scored_artifact_is_rejected_before_overwrite(tmp_path):

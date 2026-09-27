@@ -136,6 +136,10 @@ if ((Compare-Object @($Contracts.observed_datasets) @($Contracts.expected_datase
     throw "Dataset-contract observed/expected dataset sets differ."
 }
 
+Run-Step "Validate complete frozen pre-primary evidence" {
+    & $Python scripts/validate_frozen_preprimary.py
+}
+
 $DirtyAfterFreeze = (& git status --porcelain) -join "`n"
 if ($LASTEXITCODE -ne 0) { throw "Unable to re-check git worktree after freeze." }
 if ($DirtyAfterFreeze) {

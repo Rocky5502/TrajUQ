@@ -68,6 +68,8 @@ def test_windows_pilot_wrapper_is_non_overwriting_and_hash_bound():
     assert "scored_sha256" in text
     assert "calibration_sha256" in text
     assert "test_sha256" in text
+    assert "source_git_commit" in text
+    assert "source_git_clean" in text
     assert "$Parity.git_clean -eq $true" in text
     assert "$Gate.git_clean -eq $true" in text
     assert "function Test-RunAuditPass" in text
@@ -140,6 +142,8 @@ def test_linux_a100_pilot_wrapper_matches_frozen_contract():
     assert "scripts/pilot_quality_gate.py" in text
     assert "trajuq_pilot_quality_gate_v2" in text
     assert "scripts/export_trace_review.py" in text
+    assert "source_git_commit" in text
+    assert "source_git_clean" in text
     assert "will not delete or overwrite evidence" in text
     assert '"$PARITY_RESULT"' in text
     assert '"$PILOT_GATE"' in text

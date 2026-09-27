@@ -165,7 +165,7 @@ def verify_generated_results(
     manifest = load_json(manifest_path)
     failures: list[str] = []
 
-    if manifest.get("protocol") != "trajuq_paper_results_render_v1":
+    if manifest.get("protocol") != "trajuq_paper_results_render_v2":
         failures.append("generated-results manifest protocol is not recognized")
 
     sources = manifest.get("sources", {})
@@ -175,6 +175,7 @@ def verify_generated_results(
         "repeated",
         "ablation",
         "prior_signals",
+        "calibration_sensitivity",
         "adaptive",
         "primary_config",
     }
@@ -229,6 +230,9 @@ def verify_generated_results(
             repeated = load_json(source_paths["repeated"])
             ablation = load_json(source_paths["ablation"])
             prior_signals = load_json(source_paths["prior_signals"])
+            calibration_sensitivity = load_json(
+                source_paths["calibration_sensitivity"]
+            )
             adaptive = load_json(source_paths["adaptive"])
             primary_cfg = yaml.safe_load(
                 source_paths["primary_config"].read_text(encoding="utf-8")
@@ -239,6 +243,7 @@ def verify_generated_results(
                 "repeated": repeated,
                 "ablation": ablation,
                 "prior_signals": prior_signals,
+                "calibration_sensitivity": calibration_sensitivity,
                 "adaptive": adaptive,
             }
             require_render_source_provenance(
@@ -278,6 +283,7 @@ def verify_generated_results(
                 repeated,
                 ablation,
                 prior_signals,
+                calibration_sensitivity,
                 adaptive,
                 primary_cfg,
             )
@@ -292,6 +298,7 @@ def verify_generated_results(
                     "repeated",
                     "ablation",
                     "prior_signals",
+                    "calibration_sensitivity",
                     "adaptive",
                     "primary_config",
                 )

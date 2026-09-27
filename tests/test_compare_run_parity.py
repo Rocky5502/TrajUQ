@@ -16,6 +16,10 @@ def row(
         "model": "example/model",
         "adapter": adapter,
         "seed": seed,
+        "metadata": {
+            "source_git_commit": "frozen-commit",
+            "source_git_clean": True,
+        },
         "generation": {
             "metadata": {
                 "model_revision": revision,
@@ -49,6 +53,8 @@ def test_uniform_run_provenance_has_no_errors():
         "adapter": "llada",
         "seed": 2027,
         "model_revision": "model-sha",
+        "source_git_commit": "frozen-commit",
+        "source_git_clean": True,
     }
 
 
@@ -103,5 +109,42 @@ def test_record_provenance_requires_adapter_specific_generation_fields():
     assert any(
         item["reason"] == "missing_provenance"
         and item["field"] == "generation.metadata.block_length"
+        for item in errors
+    )
+
+
+def test_record_provenance_rejects_stale_source_commit():
+    reference = row()
+    instrumented = row()
+    instrumented["metadata"]["source_git_commit"] = "other-commit"
+
+    errors = provenance_mismatches(
+        "example-1",
+        reference,
+        instrumented,
+        require=True,
+    )
+
+    assert any(
+        item["field"] == "metadata.source_git_commit"
+        and item["reason"] == "provenance_mismatch"
+        for item in errors
+    )
+
+
+def test_record_provenance_rejects_dirty_source_checkout():
+    reference = row()
+    instrumented = row()
+    instrumented["metadata"]["source_git_clean"] = False
+
+    errors = provenance_mismatches(
+        "example-1",
+        reference,
+        instrumented,
+        require=True,
+    )
+
+    assert any(
+        item["reason"] == "source_checkout_not_clean"
         for item in errors
     )

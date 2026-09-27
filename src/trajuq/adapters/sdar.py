@@ -220,15 +220,18 @@ class SDARAdapter(BaseAdapter):
 
         prefill_blocks = prompt_length // block_length
         prefill_length = prefill_blocks * block_length
+        forward_evals = 0
         if prefill_length > 0:
-            self.model(
-                x[:, :prefill_length],
-                attention_mask=attention[:, :prefill_length, :prefill_length],
-                position_ids=position_ids[:, :prefill_length],
-                past_key_values=past_key_values,
-                use_cache=True,
-                store_kv=True,
-            )
+            with torch.no_grad():
+                self.model(
+                    x[:, :prefill_length],
+                    attention_mask=attention[:, :prefill_length, :prefill_length],
+                    position_ids=position_ids[:, :prefill_length],
+                    past_key_values=past_key_values,
+                    use_cache=True,
+                    store_kv=True,
+                )
+            forward_evals += 1
 
         counts = self._transfer_counts(
             torch,
@@ -237,7 +240,6 @@ class SDARAdapter(BaseAdapter):
             self.device,
         )
         block_payloads: list[TrajectoryFeaturePayload] = []
-        forward_evals = 0
 
         for block in range(prefill_blocks, num_blocks):
             block_start = block * block_length
@@ -261,25 +263,27 @@ class SDARAdapter(BaseAdapter):
             for step in range(denoising_steps + 1):
                 mask_index = cur_x.eq(self.mask_id)
                 if mask_index.sum() == 0:
-                    self.model(
+                    with torch.no_grad():
+                        self.model(
+                            cur_x,
+                            attention_mask=cur_attention,
+                            position_ids=cur_position_ids,
+                            past_key_values=past_key_values,
+                            use_cache=True,
+                            store_kv=True,
+                        )
+                    forward_evals += 1
+                    break
+
+                with torch.no_grad():
+                    logits = self.model(
                         cur_x,
                         attention_mask=cur_attention,
                         position_ids=cur_position_ids,
                         past_key_values=past_key_values,
                         use_cache=True,
-                        store_kv=True,
-                    )
-                    forward_evals += 1
-                    break
-
-                logits = self.model(
-                    cur_x,
-                    attention_mask=cur_attention,
-                    position_ids=cur_position_ids,
-                    past_key_values=past_key_values,
-                    use_cache=True,
-                    store_kv=False,
-                ).logits
+                        store_kv=False,
+                    ).logits
                 forward_evals += 1
 
                 if local_acc is not None:

@@ -9,6 +9,7 @@ from scripts.execute_repeated_sampling import (
     generation_state,
     macro_state,
     pair_state,
+    repeated_manifest_matches_argv,
     validate_plan_provenance,
     validate_repeated_scope,
 )
@@ -51,6 +52,24 @@ def repeated_argv(input_path: Path, output_dir: Path) -> list[str]:
         "--llada-remasking",
         "low_confidence",
     ]
+
+
+def test_repeated_manifest_rejects_requested_dtype_drift(tmp_path):
+    input_path = tmp_path / "input.jsonl"
+    output_dir = tmp_path / "repeated"
+    output_dir.mkdir()
+    write_input(input_path, ["x"])
+    argv = repeated_argv(input_path, output_dir)
+    seeds = [2027, 2028, 2029, 2030, 2031]
+    write_manifest(output_dir, input_path, seeds)
+
+    payload = json.loads(
+        (output_dir / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert repeated_manifest_matches_argv(payload, argv, seeds)
+
+    payload["requested_dtype"] = "float16"
+    assert not repeated_manifest_matches_argv(payload, argv, seeds)
 
 
 def write_input(path: Path, ids: list[str]) -> None:

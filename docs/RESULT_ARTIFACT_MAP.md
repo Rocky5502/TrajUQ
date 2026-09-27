@@ -17,6 +17,7 @@ numbers.
 |---|---|---|
 | `results/cpu_verification.json` | `scripts/freeze_preprimary.sh` / `scripts/verify_cpu.sh` | clean CPU/static verification bound to the frozen experiment commit |
 | `results/revision_ledger.json` | `scripts/resolve_experiment_revisions.py` | immutable model/data/config revision ledger |
+| `results/gated_dataset_access.json` | `scripts/verify_gated_dataset_access.py` | clean exact-revision record-access proof for gated primary datasets, bound to the revision-ledger SHA without storing benchmark content |
 | `results/llada_parity.json` | `scripts/pilot_linux.sh parity` | exact 20-prompt LLaDA parity-v3 evidence |
 | `results/sdar_parity.json` | `scripts/parity_remaining_linux.sh sdar` | exact 20-prompt SDAR parity-v3 evidence |
 | `results/dream_parity.json` | `scripts/parity_remaining_linux.sh dream` | exact 20-prompt Dream parity-v3 evidence |

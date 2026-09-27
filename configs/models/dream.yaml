@@ -13,7 +13,8 @@ generation:
   alg: entropy
   alg_temp: 0.1
 notes:
-  - Uses Dream's documented generation hook to observe state and logits.
+  - Uses Dream's documented pre-transfer generation_logits_hook_func so predictive logits and unresolved state are aligned at the same decision step.
+  - Raw/scored run audits require telemetry_hook=pre_transfer_generation_logits_hook; older post-transfer token-hook artifacts are invalid.
   - Freeze the exact model/tokenizer revision before primary runs.
 
 validation:

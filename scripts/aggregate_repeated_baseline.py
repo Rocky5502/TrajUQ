@@ -15,6 +15,7 @@ from trajuq.aggregation import (
     oriented_improvement,
 )
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -255,6 +256,22 @@ def main() -> None:
         ),
     }
 
+    provenance_sources: dict[str, str] = {"plan": args.plan}
+    for spec in specs:
+        label = str(spec["cell"])
+        provenance_sources[f"scored_target:{label}"] = str(
+            spec["provenance"]["test"]["scored_target"]
+        )
+        provenance_sources[f"trajuq_predictions:{label}"] = str(
+            spec["trajuq_predictions"]
+        )
+        provenance_sources[f"repeated_metrics:{label}"] = str(
+            spec["repeated_metrics"]
+        )
+        provenance_sources[f"repeated_predictions:{label}"] = str(
+            spec["repeated_predictions"]
+        )
+
     payload = {
         "protocol": "trajuq_vs_repeated_macro_v2",
         "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
@@ -268,6 +285,7 @@ def main() -> None:
         "auxiliary_compute": auxiliary_compute,
         "per_cell": per_cell,
         "macro": macro,
+        "provenance": analysis_provenance(provenance_sources),
     }
 
     out = Path(args.output)

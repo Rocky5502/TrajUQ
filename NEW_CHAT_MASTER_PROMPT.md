@@ -58,7 +58,7 @@ Your job is to **continue the existing project**, not restart or redesign it.
   the dataset manifest freezes outcome-free SHA-256 ID caps with seed 2027:
   GSM8K calibration/test at 500 each; ARC-Challenge and MMLU-Pro large test
   splits at 500; smaller frozen partitions remain complete.
-- Run `python3.11 scripts/start_a100_rental_clock.py` immediately after the
+- Run `python3 scripts/start_a100_rental_clock.py` immediately after the
   exact rented-server checkout. Complete the pre-primary/parity/human gates,
   run `bash scripts/a100_campaign_linux.sh estimate`, then launch
   `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`;

@@ -231,7 +231,7 @@ def verified_raw_artifact(
     )
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate the frozen repeated-sampling uncertainty baseline."
     )
@@ -280,7 +280,22 @@ def main() -> None:
             "and every record matches the requested model/seed/sampler settings."
         ),
     )
-    args = parser.parse_args()
+    return parser
+
+
+def run_repeated_generation(
+    args,
+    *,
+    resident_adapter=None,
+    torch_module=None,
+) -> dict:
+    """Execute one frozen repeated-sampling partition.
+
+    A caller may provide an already-loaded adapter so multiple frozen
+    dataset/partition jobs for the same checkpoint share one model load.
+    Artifact contracts, seed audits, and manifest semantics remain identical
+    to standalone execution.
+    """
 
     if args.temperature <= 0:
         raise SystemExit(
@@ -316,10 +331,8 @@ def main() -> None:
     if args.limit is not None:
         rows = rows[: args.limit]
 
-    # Load the checkpoint lazily. Fully verified reruns and complete-but-
-    # unaudited recovery should not spend GPU time loading a model unnecessarily.
-    resident_adapter = None
-    torch = None
+    adapter = resident_adapter
+    torch = torch_module
 
     manifest = {
         "protocol": "repeated_sampling_v1",
@@ -376,6 +389,7 @@ def main() -> None:
                 }
             )
             continue
+
         contract = repeated_seed_contract(args, seed, commit)
         resumed = False
         if output.exists():
@@ -396,8 +410,8 @@ def main() -> None:
                 output.unlink()
 
         done = existing_ids(output)
-        if len(done) < len(expected_ids) and resident_adapter is None:
-            resident_adapter = build_adapter(
+        if len(done) < len(expected_ids) and adapter is None:
+            adapter = build_adapter(
                 args.adapter,
                 args.model,
                 args.device,
@@ -405,23 +419,24 @@ def main() -> None:
                 args.mask_id,
                 args.revision,
             )
-            try:
-                import torch as _torch
+            if torch is None:
+                try:
+                    import torch as _torch
 
-                torch = _torch
-            except ImportError:
-                torch = None
+                    torch = _torch
+                except ImportError:
+                    torch = None
 
         for index, row in enumerate(rows):
             example_id = str(row["id"])
             if example_id in done:
                 continue
-            if resident_adapter is None:
+            if adapter is None:
                 raise SystemExit(
                     "Internal error: missing resident adapter for incomplete seed."
                 )
             record = generate_record(
-                resident_adapter,
+                adapter,
                 args,
                 row,
                 seed=seed,
@@ -466,6 +481,12 @@ def main() -> None:
         encoding="utf-8",
     )
     print(f"[TrajUQ] repeated-sampling manifest -> {manifest_path}")
+    return manifest
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    run_repeated_generation(args)
 
 
 if __name__ == "__main__":

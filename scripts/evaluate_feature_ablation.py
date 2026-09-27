@@ -11,6 +11,7 @@ from trajuq.calibration import RiskCalibrator
 from trajuq.evaluation import calibration_metrics, error_detection_metrics, selective_curve
 from trajuq.features import FROZEN_FEATURE_GROUPS
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance, compact_row_binding
 from trajuq.statistics import paired_bootstrap_improvement
 
 
@@ -108,8 +109,17 @@ def main() -> None:
             for metric in ("auroc", "auprc", "aurc")
         }
 
+    provenance = analysis_provenance(
+        {
+            "calibration": args.calibration,
+            "test": args.test,
+        }
+    )
+    row_binding = compact_row_binding(provenance)
+
     payload = {
         "protocol": "frozen_feature_family_ablation_v1",
+        "provenance": provenance,
         "baseline": "decision_only",
         "delta_direction": "positive_means_group_is_better_than_decision_only",
         "group_order": list(FROZEN_FEATURE_GROUPS),
@@ -138,6 +148,7 @@ def main() -> None:
                                 name: float(probabilities[name][idx])
                                 for name in FROZEN_FEATURE_GROUPS
                             },
+                            "analysis_provenance": row_binding,
                         },
                         sort_keys=True,
                     )

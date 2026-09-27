@@ -86,6 +86,28 @@ Feature selection, calibrator family, adaptive thresholds, and ablation definiti
 The primary calibrator is standardized logistic regression.
 Isotonic calibration is supplementary only: for an eligible cell, the same standardized logistic classifier is post-calibrated from five-fold stratified out-of-fold calibration scores with the non-ensemble procedure, and no test label is used for fitting. Eligibility is frozen at at least 1000 calibration examples and at least five examples in each correctness class; ineligible cells remain explicit skips in the complete 18-cell sensitivity artifact. This analysis does not alter the primary logistic RQ1 endpoint or claim gate.
 
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+Risk view & Metric & Primary logistic & Isotonic sensitivity & $\Delta$ (isotonic $-$ logistic)\\
+\midrule
+Decision entropy & Brier & \CalibrationDecisionBrierLogistic & \CalibrationDecisionBrierIsotonic & \CalibrationDecisionBrierDelta\\
+Decision entropy & NLL & \CalibrationDecisionNLLLogistic & \CalibrationDecisionNLLIsotonic & \CalibrationDecisionNLLDelta\\
+Decision entropy & ECE & \CalibrationDecisionECELogistic & \CalibrationDecisionECEIsotonic & \CalibrationDecisionECEDelta\\
+Decision entropy & AURC & \CalibrationDecisionAURCLogistic & \CalibrationDecisionAURCIsotonic & \CalibrationDecisionAURCDelta\\
+\midrule
+Trajectory + decision & Brier & \CalibrationTrajBrierLogistic & \CalibrationTrajBrierIsotonic & \CalibrationTrajBrierDelta\\
+Trajectory + decision & NLL & \CalibrationTrajNLLLogistic & \CalibrationTrajNLLIsotonic & \CalibrationTrajNLLDelta\\
+Trajectory + decision & ECE & \CalibrationTrajECELogistic & \CalibrationTrajECEIsotonic & \CalibrationTrajECEDelta\\
+Trajectory + decision & AURC & \CalibrationTrajAURCLogistic & \CalibrationTrajAURCIsotonic & \CalibrationTrajAURCDelta\\
+\bottomrule
+\end{tabular}
+\caption{Supplementary isotonic calibration sensitivity. Values are equal-cell means over the pre-registered eligible cells only (\CalibrationEligibleCells{} eligible; \CalibrationSkippedCells{} explicit skips out of 18). For all four reported metrics, positive $\Delta$ denotes improvement because the renderer stores logistic minus isotonic for lower-is-better quantities. This table is supplementary and does not enter the frozen RQ1 claim gate.}
+\label{tab:calibration-sensitivity}
+\end{table*}
+
 \section{Model-Specific Parity Gates}
 
 \subsection{LLaDA-MoE}

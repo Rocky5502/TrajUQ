@@ -18,6 +18,10 @@ def repeated_argv(output_dir: str) -> list[str]:
         "data/input.jsonl",
         "--output-dir",
         output_dir,
+        "--device",
+        "cuda",
+        "--dtype",
+        "bfloat16",
         "--seeds",
         "2027",
         "2028",
@@ -51,6 +55,8 @@ def test_parse_repeated_argv_uses_shared_parser_contract():
     assert args.revision == "model-sha"
     assert args.seeds == [2027, 2028, 2029, 2030, 2031]
     assert args.temperature == 0.2
+    assert args.device == "cuda"
+    assert args.dtype == "bfloat16"
     assert args.resume_verified is True
     assert args.resume_partial is True
 

@@ -22,6 +22,8 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] One clean experiment git commit selected before GPU parity.
 - [ ] `results/cpu_verification.json` is PASS on that exact commit.
 - [ ] `results/revision_ledger.json` is protocol `trajuq_revision_ledger_v2` and PASS on that exact commit.
+- [ ] `results/gated_dataset_access.json` is protocol `trajuq_gated_dataset_access_v1`, PASS on that same clean commit, and SHA-bound to the revision ledger.
+- [ ] Every gated primary dataset (currently GPQA-Diamond) can stream one record at its ledger-resolved SHA without storing benchmark content.
 - [ ] Primary config and dataset-manifest hashes match the revision ledger.
 - [ ] Exact model/tokenizer and dataset SHAs are recorded in the revision ledger.
 - [ ] Frozen model-config hashes match the revision ledger.
@@ -66,6 +68,7 @@ Do not start the full primary matrix until every required item is checked.
 ## Pre-primary automation artifacts
 - [ ] `results/cpu_verification.json` reports clean PASS.
 - [ ] `results/revision_ledger.json` reports protocol-v2 PASS.
+- [ ] `results/gated_dataset_access.json` reports protocol-v1 PASS and binds the current revision-ledger SHA-256.
 - [ ] `results/llada_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
 - [ ] `results/sdar_parity.json` reports protocol-v3 PASS for exactly 20 prompts.
 - [ ] `results/dream_parity.json` reports protocol-v3 PASS for exactly 20 prompts.

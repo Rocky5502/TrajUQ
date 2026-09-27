@@ -189,6 +189,9 @@ def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
 
     assert "require_clean_frozen_checkout" in text
     assert "trajuq_revision_ledger_v2" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
+    assert "revision_ledger_sha256" in text
     assert "trajuq_primary_readiness_v2" in text
     assert "scripts/pilot_linux.sh prepare" in text
     assert "scripts/pilot_linux.sh parity" in text

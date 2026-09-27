@@ -5,12 +5,19 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from trajuq.io import read_jsonl
-from trajuq.provenance import binding_matches, compact_binding_matches
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.execute_primary_plan import (  # noqa: E402
+    validate_plan_provenance as validate_primary_plan_provenance,
+)
+from trajuq.io import read_jsonl  # noqa: E402
+from trajuq.provenance import binding_matches, compact_binding_matches  # noqa: E402
 
 
 BASE_STEPS = (
@@ -184,6 +191,23 @@ def validate_plan_provenance(
             failures.append(f"adaptive plan missing bound {key} artifact")
         elif sha256_file(path) != expected_hash:
             failures.append(f"{key} hash differs from adaptive plan")
+
+    primary_plan_path = Path(str(plan.get("primary_plan", "")))
+    if primary_plan_path.is_file():
+        try:
+            primary_plan = json.loads(
+                primary_plan_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError) as exc:
+            failures.append(f"bound primary plan is invalid JSON: {exc}")
+        else:
+            failures.extend(
+                "primary plan provenance: " + failure
+                for failure in validate_primary_plan_provenance(
+                    primary_plan,
+                    require_current_commit=require_current_commit,
+                )
+            )
 
     for cell in plan.get("cells", []):
         label = str(cell.get("cell", "<unknown>"))

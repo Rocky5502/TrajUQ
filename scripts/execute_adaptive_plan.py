@@ -130,7 +130,11 @@ def artifact_example_ids(path: Path) -> list[str]:
     return ids
 
 
-def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
+def artifact_id_state(
+    path: Path,
+    spec: dict[str, Any],
+    expected_commit: str | None = None,
+) -> str:
     if not path.exists():
         return "MISSING"
     try:
@@ -146,6 +150,7 @@ def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
                     input_rows[index],
                     spec,
                     contract,
+                    expected_commit,
                 )
                 for index, row in enumerate(rows)
             ):
@@ -314,8 +319,8 @@ def base_partition_state(
 ) -> dict[str, Any]:
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
-    raw_state = artifact_id_state(raw, spec)
-    scored_state = artifact_id_state(scored, spec)
+    raw_state = artifact_id_state(raw, spec, expected_commit)
+    scored_state = artifact_id_state(scored, spec, expected_commit)
     raw_ok = audit_passes(raw, "raw", expected_commit)
     scored_ok = audit_passes(scored, "scored", expected_commit)
     return {
@@ -644,7 +649,7 @@ def command_needed(
     raw = Path(str(spec["raw_output"]))
     scored = Path(str(spec["scored_output"]))
     if step == "generate":
-        state = artifact_id_state(raw, spec)
+        state = artifact_id_state(raw, spec, expected_commit)
         if state == "INVALID":
             raise ValueError(
                 f"adaptive raw artifact is not an exact prefix of the frozen input: {raw}"
@@ -653,7 +658,7 @@ def command_needed(
     if step == "audit_raw":
         return not audit_passes(raw, "raw", expected_commit)
     if step == "score":
-        state = artifact_id_state(scored, spec)
+        state = artifact_id_state(scored, spec, expected_commit)
         if state in {"PREFIX", "INVALID"}:
             raise ValueError(
                 f"partial/invalid adaptive scored artifact requires inspection: {scored}"

@@ -84,7 +84,12 @@ implementation:
     evidence:
       - scripts/run_repeated_samples.py
       - scripts/plan_repeated_sampling.py
+      - scripts/execute_repeated_sampling.py
+      - scripts/evaluate_repeated_sampling.py
       - scripts/aggregate_repeated_baseline.py
+      - tests/test_repeated_protocol.py
+      - tests/test_execute_repeated_sampling.py
+      - tests/test_repeated_artifact_contract.py
   - id: resumable_repeated_executor
     label: "Resumable five-sample executor with frozen-commit seed-audit reuse and source-bound macro validation"
     state: DONE
@@ -368,7 +373,7 @@ execution_gates:
     label: "All 18 five-sample cells plus macro complete"
     stage: analysis
     issue: 9
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, and from the frozen experiment commit. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, from the frozen experiment commit, and match the frozen adapter/model/revision plus sampler settings in both raw records and manifest. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan

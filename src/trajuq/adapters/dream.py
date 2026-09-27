@@ -85,9 +85,13 @@ class DreamAdapter(BaseAdapter):
             mask_id=self.mask_id,
         )
 
-        def hook(step, x, logits):
+        def logits_hook(step, x, logits):
+            # Dream invokes the logits hook after computing predictive logits
+            # from the current masked state and before any token transfer. This
+            # is the only hook location where state_ids and logits describe the
+            # same pre-commit decision state.
             acc.observe(step=step, logits=logits, state_ids=x)
-            return x
+            return logits
 
         with torch.no_grad():
             output = self.model.diffusion_generate(
@@ -101,7 +105,7 @@ class DreamAdapter(BaseAdapter):
                 top_p=top_p,
                 alg=alg,
                 alg_temp=alg_temp,
-                generation_tokens_hook_func=hook,
+                generation_logits_hook_func=logits_hook,
             )
 
         generated_ids = output.sequences[0][input_ids.shape[1] :]
@@ -124,5 +128,6 @@ class DreamAdapter(BaseAdapter):
                 "algorithm": alg,
                 "algorithm_temperature": float(alg_temp),
                 "trajectory_semantics": "active_unresolved_positions_v4",
+                "telemetry_hook": "pre_transfer_generation_logits_hook",
             },
         )

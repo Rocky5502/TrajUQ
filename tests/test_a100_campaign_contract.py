@@ -34,3 +34,24 @@ def test_a100_campaign_keeps_human_review_stops_after_checkpoint_export():
     math_export = text.index('export_progress_handoff "parity_math"')
     math_stop = text.index("[TrajUQ] STOP FOR HUMAN MATH-500 REVIEW.")
     assert math_export < math_stop
+
+
+def test_a100_parity_math_revalidates_source_bound_human_pilot_gate():
+    text = Path("scripts/a100_campaign_linux.sh").read_text(encoding="utf-8")
+
+    assert "require_pilot_manual_gate()" in text
+    assert "review_sheet_sha256" in text
+    assert "parity_artifact_sha256" in text
+    assert "pilot_quality_sha256" in text
+    assert "review_scored_sha256" in text
+    assert "trajuq_run_audit_v1" in text
+    assert "reference_sha256" in text
+    assert "instrumented_sha256" in text
+    assert 'manual.get("git_commit") != head' in text
+
+    parity_math = text[text.index("  parity-math)"):]
+    assert "require_pilot_manual_gate" in parity_math
+    assert (
+        'require_json_pass       "results/llada_gsm8k_pilot50_manual_review.json"'
+        not in parity_math
+    )

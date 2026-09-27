@@ -79,3 +79,14 @@ def test_resumable_partial_rejects_audited_or_wrong_contract(tmp_path: Path):
     path.with_suffix(path.suffix + ".audit.json").unlink()
     wrong = repeated_seed_contract(_args(), 2028, "abc")
     assert not resumable_partial_artifact(path, ["a", "b"], wrong)
+
+
+def test_resumable_partial_accepts_complete_unaudited_prefix(tmp_path: Path):
+    path = tmp_path / "seed-2027.raw.jsonl"
+    path.write_text(
+        json.dumps(_row("a")) + "\n" + json.dumps(_row("b")) + "\n",
+        encoding="utf-8",
+    )
+    contract = repeated_seed_contract(_args(), 2027, "abc")
+
+    assert resumable_partial_artifact(path, ["a", "b"], contract)

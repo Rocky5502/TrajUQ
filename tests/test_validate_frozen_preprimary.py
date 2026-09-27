@@ -48,8 +48,8 @@ def build_frozen_case(tmp_path: Path) -> dict[str, Path]:
                         "pre_generation_cap": {
                             "method": SPLIT_SELECTION_VERSION,
                             "seed": "2027",
-                            "calibration_max": 1000,
-                            "test_max": 1000,
+                            "calibration_max": 500,
+                            "test_max": 500,
                         },
                     }
                 }

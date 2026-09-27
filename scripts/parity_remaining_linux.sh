@@ -40,6 +40,9 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
+run_step "Validate frozen pre-primary evidence" \
+  "$PYTHON" scripts/validate_frozen_preprimary.py
+
 "$PYTHON" - <<'PY'
 import json
 import subprocess

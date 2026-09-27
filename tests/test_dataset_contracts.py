@@ -1,13 +1,13 @@
 from scripts.verify_dataset_contracts import verify_one
 
 
-def fake_loader_factory(row):
+def fake_loader_factory(row, count=4):
     def load_dataset(repo_id, *args, **kwargs):
         assert repo_id
         assert kwargs["revision"] == "resolved-sha"
         assert kwargs["streaming"] is True
         assert kwargs["split"]
-        return iter([row])
+        return iter([dict(row) for _ in range(count)])
 
     return load_dataset
 
@@ -113,6 +113,9 @@ def test_all_primary_normalizer_scorer_contracts_smoke():
         )
         assert result["status"] == "PASS", (name, result)
         assert result["scorer_smoke_pass"] is True
+        assert result["scorer_smoke_pass_count"] == 4
+        assert result["observed_sample_count"] == 4
+        assert result["contract_sample_count"] == 4
         assert result["source_row_content_stored"] is False
         assert result["resolved_revision"] == "resolved-sha"
 
@@ -132,3 +135,34 @@ def test_dataset_contract_artifact_exposes_schema_not_row_content():
     assert "correct" not in rendered
     assert "wrong1" not in rendered
     assert set(result["upstream_fields"]) == set(row)
+
+
+def test_dataset_contract_rejects_truncated_stream():
+    name = "gpqa_diamond"
+    spec, row = specs_and_rows()[name]
+    result = verify_one(
+        name=name,
+        spec=spec,
+        revision="resolved-sha",
+        load_dataset=fake_loader_factory(row, count=2),
+        sample_count=4,
+    )
+
+    assert result["status"] == "FAIL"
+    assert result["observed_sample_count"] == 2
+    assert any("expected 4" in item for item in result["failures"])
+
+
+def test_gpqa_contract_exercises_all_four_rotation_offsets():
+    name = "gpqa_diamond"
+    spec, row = specs_and_rows()[name]
+    result = verify_one(
+        name=name,
+        spec=spec,
+        revision="resolved-sha",
+        load_dataset=fake_loader_factory(row, count=4),
+        sample_count=4,
+    )
+
+    assert result["status"] == "PASS"
+    assert result["scorer_smoke_pass_count"] == 4

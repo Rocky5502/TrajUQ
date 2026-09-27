@@ -257,8 +257,8 @@ The processed benchmark directory is gitignored. The split manifest records the
 requested revision, dataset fingerprints, uncapped source counts, frozen
 pre-generation cap policy, selected counts, and SHA-256 hashes. The current
 three-day profile uses outcome-free SHA-256 ID ranking with seed 2027:
-GSM8K calibration/test are capped at 1,000 each; ARC-Challenge and MMLU-Pro
-retain their smaller calibration splits and cap the larger test split at 1,000;
+GSM8K calibration/test are capped at 500 each; ARC-Challenge and MMLU-Pro
+retain their smaller calibration splits and cap the larger test split at 500;
 GPQA-Diamond, TruthfulQA, and MATH-500 keep their complete frozen holdouts.
 The selection rule never consults references, correctness, prompt text, or
 model outputs.
@@ -427,11 +427,11 @@ python scripts/evaluate_repeated_sampling.py \
   --predictions-output results/llada_gsm8k_repeated_predictions.jsonl
 ```
 
-The frozen primary repeated-sampling baseline requires exactly five seeds
-(2027--2031) by default. The evaluator verifies unique/matched seeds, identical
+The frozen repeated-sampling baseline requires exactly five seeds
+(2027--2031) on the pre-registered 12-cell subset: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. The evaluator verifies unique/matched seeds, identical
 generation settings between calibration and test, raw outcome isolation, model
 identity, prompt hashes, and reports the auxiliary repeated-generation wall
-time. The full 18-cell aggregator emits protocol
+time. The frozen 12-cell representative aggregator emits protocol
 `trajuq_vs_repeated_macro_v2`; it refuses incomplete test-time wall-clock
 metadata and reports the equal-cell-weight mean auxiliary seconds per example
 with target generation excluded. After both prediction artifacts exist, compare
@@ -517,7 +517,7 @@ The trace contains top-k logits only, so `topk_entropy_proxy` is **not** full-vo
 
 ## MATH-500 scorer
 
-MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the full 18-cell comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass. Use `scripts/math500_gate_windows.ps1 -Stage all` on Windows for the guarded automated path. The deterministic review sheet records the exact scored-pilot and frozen calibration-input SHA-256 values; the human recorder and primary readiness revalidate those sources plus the scored-pilot audit before accepting the attestation.
+MATH-500 scoring is wired to pinned `math-verify==0.9.0` with ANTLR 4.13.2 and precision 6. The five-sample baseline uses the same equivalence relation for reference-free pairwise clustering, so MATH-500 remains in the frozen 12-cell representative comparator. See `docs/MATH500_SCORING.md`. Before the primary matrix, both `scripts/audit_math500_scorer.py` and a 25-example calibration-split human review must pass. Use `scripts/math500_gate_windows.ps1 -Stage all` on Windows for the guarded automated path. The deterministic review sheet records the exact scored-pilot and frozen calibration-input SHA-256 values; the human recorder and primary readiness revalidate those sources plus the scored-pilot audit before accepting the attestation.
 
 ## Scientific guardrails
 

@@ -82,7 +82,33 @@ def main() -> None:
         action="store_true",
         help="Run later checks even if an earlier step fails.",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help=(
+            "Explicit recovery-only replacement of existing CPU verification "
+            "evidence. Official freeze wrappers never use this."
+        ),
+    )
     args = parser.parse_args()
+
+    output_path = Path(args.output)
+    logs_path = Path(args.logs_dir)
+    existing_logs = (
+        [path for path in logs_path.iterdir() if path.is_file()]
+        if logs_path.is_dir()
+        else []
+    )
+    if (output_path.exists() or existing_logs) and not args.overwrite:
+        existing = (
+            ([output_path] if output_path.exists() else [])
+            + existing_logs
+        )
+        raise SystemExit(
+            "Refusing to overwrite CPU verification evidence: "
+            + ", ".join(str(path) for path in existing[:12])
+            + ". Inspect/archive it before recovery."
+        )
 
     commit = git_text("rev-parse", "HEAD")
     dirty_text = git_text("status", "--porcelain")
@@ -168,7 +194,7 @@ def main() -> None:
         ),
     }
 
-    out = Path(args.output)
+    out = output_path
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",

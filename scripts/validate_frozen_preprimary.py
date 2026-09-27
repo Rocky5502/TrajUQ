@@ -128,6 +128,14 @@ def validate_frozen_preprimary(
     if not ledger_ok:
         failures.append("revision ledger/config provenance is not a valid PASS")
 
+    manifest_definitions: dict[str, Any] = {}
+    if manifest_path.is_file():
+        try:
+            manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest_definitions = dict(manifest_payload.get("datasets", {}))
+        except (OSError, json.JSONDecodeError, TypeError):
+            failures.append("dataset manifest is invalid")
+
     primary_models: set[str] = set()
     primary_datasets: set[str] = set()
     if primary_path.is_file():
@@ -146,6 +154,17 @@ def validate_frozen_preprimary(
         failures.append("revision ledger model set differs from primary config")
     if primary_datasets and set(ledger_datasets) != primary_datasets:
         failures.append("revision ledger dataset set differs from primary config")
+    if primary_datasets and not primary_datasets.issubset(set(manifest_definitions)):
+        failures.append("primary dataset set is missing from dataset manifest")
+    for name, row in ledger_datasets.items():
+        spec = manifest_definitions.get(name)
+        if not isinstance(spec, dict):
+            failures.append(f"{name}: dataset manifest definition is missing")
+            continue
+        if str(row.get("repo_id", "")) != str(spec.get("hf_id", "")):
+            failures.append(
+                f"{name}: revision-ledger repo_id differs from dataset manifest"
+            )
 
     frozen_paths = ledger.get("frozen_model_configs", {})
     frozen_hashes = ledger.get("frozen_model_config_sha256", {})
@@ -190,7 +209,8 @@ def validate_frozen_preprimary(
             cpu_logs_ok = False
             break
     cpu_ok = (
-        cpu.get("protocol") == "trajuq_cpu_verification_v1"
+        bool(expected_steps)
+        and cpu.get("protocol") == "trajuq_cpu_verification_v1"
         and cpu.get("status") == "PASS"
         and cpu.get("git_clean") is True
         and cpu.get("git_commit") == experiment_commit

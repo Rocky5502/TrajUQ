@@ -239,7 +239,9 @@ Use the live `configs/project_status.yaml` as the authority if this order or pro
 After pre-primary readiness PASS:
 1. prepare all six immutable calibration/test dataset pairs;
 2. create and archive `results/primary_matrix_plan.json`;
-3. dry-run then execute `scripts/execute_primary_plan.py`;
+3. run `scripts/estimate_a100_campaign.py` and inspect the provenance-bound
+   serial-A100 forecast;
+4. dry-run then execute `scripts/execute_primary_plan.py`;
 4. complete all 18 generation/audit/scoring cells;
 5. create `results/primary_analysis_plan.json` only after scored artifacts and audits exist;
 6. dry-run then execute `scripts/execute_primary_analysis.py`;
@@ -260,6 +262,8 @@ bash scripts/a100_campaign_linux.sh pilot
 bash scripts/a100_campaign_linux.sh parity-math
 # manually inspect all 25 MATH-500 scorer examples and record the attestation
 bash scripts/a100_campaign_linux.sh readiness
+bash scripts/a100_campaign_linux.sh estimate
+cat results/a100_compute_estimate.md
 bash scripts/a100_campaign_linux.sh all-after-readiness
 ```
 

@@ -171,3 +171,10 @@ def test_primary_analysis_plan_wires_prior_signal_diagnostics():
     assert "aggregate_prior_signal_diagnostics.py" in text
     assert "macro_prior_signal_diagnostics.json" in text
     assert '"prior_signal_macro_argv"' in text
+
+
+def test_primary_analysis_planner_revalidates_primary_plan_provenance():
+    text = Path("scripts/plan_primary_analysis.py").read_text(encoding="utf-8")
+
+    assert "validate_primary_plan_provenance" in text
+    assert "primary plan provenance: " in text

@@ -58,7 +58,11 @@ particular, the following are implemented and versioned:
 - claim-gated manuscript result rendering;
 - anonymous ARR supplement builder;
 - PowerShell and Bash CPU-verification entry points plus one-command strict
-  pre-primary freeze wrappers for Windows and Linux/macOS;
+  pre-primary freeze wrappers for Windows and Linux/macOS; the official freeze
+  wrappers now fail before producing anything when immutable CPU/revision/gated/
+  MATH-scorer/frozen-model evidence already exists, preventing mixed-commit
+  partial freezes, while the individual evidence producers refuse overwrite by
+  default;
 - a guarded Windows parity wrapper for SDAR/Dream that consumes the frozen
   revision ledger, enforces a clean matching checkout, preserves valid PASS
   artifacts, and refuses ambiguous partial evidence;
@@ -78,7 +82,9 @@ particular, the following are implemented and versioned:
   manifest hash, the exact CPU-verification protocol/step sequence, raw/scored
   pilot audit SHA bindings, clean pilot-quality and MATH-500 automatic-audit
   provenance, frozen MATH dependency versions, source-bound clean-checkout
-  human attestations, MATH scored-pilot audit evidence, and hash-bound parity sources;
+  human attestations, MATH scored-pilot audit evidence, and hash-bound parity
+  sources; it now emits a SHA-256 source-binding manifest over every validated
+  file, and the primary planner/executor re-hash that manifest before GPU work;
 - a versioned `NEW_CHAT_MASTER_PROMPT.md` plus a fail-closed private research
   handoff exporter that refuses to omit required continuation context;
 - guarded Linux/A100 wrappers for the LLaDA prepare/parity/pilot path,

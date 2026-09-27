@@ -79,6 +79,11 @@ particular, the following are implemented and versioned:
 - pilot and MATH-500 human review sheets are source-bound to the exact scored
   calibration artifacts they display; their recorders and primary readiness
   independently revalidate those hashes before the 18-cell matrix can launch;
+- immutable frozen-plan writes across primary, primary-analysis, repeated-sampling,
+  and adaptive planners: byte-identical reruns are preserved, while any differing
+  existing plan is rejected for inspection rather than overwritten;
+- Linux Dream parity reruns now treat an existing stale/FAIL parity JSON as
+  immutable evidence, matching the non-overwrite behavior of LLaDA and SDAR;
 - clean-checkout provenance guards across the pilot wrapper, primary readiness,
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;

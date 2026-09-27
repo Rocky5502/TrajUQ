@@ -190,7 +190,7 @@ implementation:
       - tests/test_pilot_script_contract.py
       - scripts/export_research_handoff.py
   - id: a100_compute_estimator
-    label: "Frozen-input A100 compute forecast from audited model timing traces"
+    label: "Frozen-input A100 compute forecast from audited source-commit-bound model timing traces"
     state: DONE
     evidence:
       - scripts/estimate_a100_campaign.py

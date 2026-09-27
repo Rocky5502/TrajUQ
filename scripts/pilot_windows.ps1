@@ -225,6 +225,18 @@ function Assert-FrozenPilotInputs {
     if ($Split.requested_revision -ne $DatasetSha) {
         throw "Frozen GSM8K split revision differs from the revision ledger."
     }
+    if ($Split.source_git_clean -ne $true) {
+        throw "Frozen GSM8K split was not produced from a clean checkout."
+    }
+    if ([string]$Split.source_git_commit -ne $Commit) {
+        throw "Frozen GSM8K split source commit differs from the frozen experiment commit."
+    }
+    if ($Audit.source_git_clean -ne $true) {
+        throw "Frozen GSM8K split audit does not attest a clean source checkout."
+    }
+    if ([string]$Audit.source_git_commit -ne $Commit) {
+        throw "Frozen GSM8K split audit source commit differs from the frozen experiment commit."
+    }
     if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalibrationData)) {
         throw "Frozen GSM8K calibration hash differs from its split manifest."
     }

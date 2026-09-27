@@ -20,7 +20,7 @@ if [[ ! -f "$RENTAL_CLOCK_PATH" ]]; then
   exit 1
 fi
 
-read -r START_EPOCH DEADLINE_EPOCH CLOCK_HOURS < <(
+CLOCK_VALUES="$(
   "$PYTHON" - "$RENTAL_CLOCK_PATH" "$HEAD_SHA" "$BUDGET_HOURS" <<'PY'
 import json
 import sys
@@ -49,7 +49,12 @@ if start <= 0 or deadline <= start:
     raise SystemExit("Rental clock has invalid start/deadline epochs.")
 print(start, deadline, clock_hours)
 PY
-)
+)" || exit $?
+read -r START_EPOCH DEADLINE_EPOCH CLOCK_HOURS <<< "$CLOCK_VALUES"
+if [[ -z "${START_EPOCH:-}" || -z "${DEADLINE_EPOCH:-}" || -z "${CLOCK_HOURS:-}" ]]; then
+  printf '%s\n' '[TrajUQ 72h] rental clock parser returned incomplete values.' >&2
+  exit 1
+fi
 BUDGET_SECONDS="$((CLOCK_HOURS * 3600))"
 
 write_state() {

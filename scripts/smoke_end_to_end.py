@@ -61,12 +61,23 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
     }
 
 
-def write_partition(root: Path, name: str, start: int, count: int, seed: int) -> tuple[Path, Path]:
+def write_partition(
+    root: Path,
+    name: str,
+    start: int,
+    count: int,
+    seed: int,
+    source_git_commit: str,
+) -> tuple[Path, Path]:
     rng = random.Random(f"{seed}:{name}")
     input_path = root / f"{name}.input.jsonl"
     raw_path = root / f"{name}.raw.jsonl"
 
-    for path in (input_path, raw_path):
+    for path in (
+        input_path,
+        raw_path,
+        raw_path.with_suffix(raw_path.suffix + ".audit.json"),
+    ):
         if path.exists():
             path.unlink()
 
@@ -117,7 +128,12 @@ def write_partition(root: Path, name: str, start: int, count: int, seed: int) ->
             generation=generation,
             correct=None,
             reference=None,
-            metadata={"model_revision": "synthetic-v1", "synthetic": True},
+            metadata={
+                "model_revision": "synthetic-v1",
+                "synthetic": True,
+                "source_git_commit": source_git_commit,
+                "source_git_clean": True,
+            },
         )
         append_jsonl(raw_path, record.to_dict())
 
@@ -141,15 +157,41 @@ def main() -> None:
     root = Path(args.output_dir)
     root.mkdir(parents=True, exist_ok=True)
 
-    cal_input, cal_raw = write_partition(root, "calibration", 0, args.calibration, args.seed)
-    test_input, test_raw = write_partition(root, "test", 10000, args.test, args.seed)
+    source_git_commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+    cal_input, cal_raw = write_partition(
+        root,
+        "calibration",
+        0,
+        args.calibration,
+        args.seed,
+        source_git_commit,
+    )
+    test_input, test_raw = write_partition(
+        root,
+        "test",
+        10000,
+        args.test,
+        args.seed,
+        source_git_commit,
+    )
 
     cal_scored = root / "calibration.scored.jsonl"
     test_scored = root / "test.scored.jsonl"
     metrics = root / "metrics.json"
     nested_bootstrap = root / "nested_bootstrap.json"
     feature_ablation = root / "feature_ablation.json"
-    for path in (cal_scored, test_scored, metrics, nested_bootstrap, feature_ablation):
+    for path in (
+        cal_scored,
+        test_scored,
+        cal_scored.with_suffix(cal_scored.suffix + ".audit.json"),
+        test_scored.with_suffix(test_scored.suffix + ".audit.json"),
+        metrics,
+        nested_bootstrap,
+        feature_ablation,
+    ):
         if path.exists():
             path.unlink()
 

@@ -161,8 +161,8 @@ function Run-SDARParity {
 
     if (Require-ExistingParity $ParityPath "sdar" $Revision $Head) {
         Write-Host "SDAR parity already PASS at frozen HEAD; preserving existing evidence." -ForegroundColor Green
-        if (-not (Test-Path $Overhead) -and (Test-Path $Reference) -and (Test-Path $Instrumented)) {
-            Run-Step "SDAR instrumentation overhead" {
+        if ((Test-Path $Reference) -and (Test-Path $Instrumented)) {
+            Run-Step "Validate SDAR instrumentation overhead" {
                 & $Python scripts/compare_instrumentation_overhead.py --reference $Reference --instrumented $Instrumented --output $Overhead
             }
         }

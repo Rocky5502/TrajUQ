@@ -203,36 +203,49 @@ completion count cannot be mistaken for completed empirical work.
 - Private local Windows workspace: `G:\\NAACL Project2`. This path is for
   continuation/operations only and must not appear in the anonymous manuscript
   or submission artifacts.
-- Primary scale/transfer GPU execution environment: Linux server,
+- Planned primary scale/transfer rental profile: Linux server,
   `ubuntu24.04ubuntu24_cuda13.0` (Ubuntu 24.04 / CUDA 13.0), one
-  NVIDIA A100-SXM4-80GB GPU, and 48 GB system memory.
-- The manuscript records this hardware/software setup in
-  `paper/main.tex` under **Experimental Environment**, with expanded resource
-  accounting in `paper/appendix.tex`. It does not claim an
-  experiment PASS merely from environment availability; empirical status is
-  controlled only by the frozen `results/*` artifacts.
-- For expensive execution, prefer the guarded A100/Linux campaign wrappers when
-  practical. The Windows workspace remains the canonical local development and
-  evidence-inspection location requested by the project owner.
+  NVIDIA A100-SXM4-80GB GPU, 16 CPU cores, 48 GB system memory, a 200 GB
+  system disk, and approximately 250 Mbps selected bandwidth. These are
+  pre-execution resource selections, not verified run facts.
+- One A100 80GB is sufficient for the three frozen primary checkpoints because
+  they are loaded/executed sequentially; the current generation runner is
+  single-record/single-GPU, so additional GPUs would reduce wall-clock only
+  through explicit cell-level parallel workers rather than automatic scaling.
+- The manuscript now labels this hardware/software setup as **planned** until
+  frozen run artifacts attest the environment actually used.
+- For expensive execution, use the guarded A100/Linux campaign as the primary
+  path. The Windows workspace remains the canonical local development,
+  synchronization, and evidence-inspection location.
 
-## Immediate local-GPU next action
+## Immediate remote-A100 next action
 
-The repository-side implementation is sufficiently mature to start real pre-primary
-execution now. On the Windows/local-GPU machine, use `docs/GPU_PILOT.md` as the
-canonical local runbook. The immediate sequence is:
+The repository-side implementation is sufficiently mature to start real
+pre-primary execution on the rented A100. Do not commit to a multi-day rental
+before measuring the actual machine: start with one day, reach the readiness
+gate, and generate the provenance-bound compute estimate.
 
-```powershell
+```bash
 git pull
-git status --short
-PowerShell -ExecutionPolicy Bypass -File scripts/freeze_preprimary_windows.ps1
-PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage prepare
-PowerShell -ExecutionPolicy Bypass -File scripts/pilot_windows.ps1 -Stage parity
+git status --porcelain
+nvidia-smi
+python3.11 --version
+bash scripts/freeze_preprimary.sh
+bash scripts/a100_campaign_linux.sh pilot
+# complete the required 10-trace human review
+bash scripts/a100_campaign_linux.sh parity-math
+# complete the required 25-example MATH-500 human review
+bash scripts/a100_campaign_linux.sh readiness
+bash scripts/a100_campaign_linux.sh estimate
+cat results/a100_compute_estimate.md
 ```
 
-Do not edit tracked experiment code between the freeze and parity commands. If
-CUDA preflight/OOM prevents the frozen checkpoint from running locally, preserve
-the evidence/logs and move the same commit/revisions to the A100/Linux path
-instead of weakening the scientific configuration.
+Do not edit tracked experiment code after the freeze. The estimator now reports
+the exact frozen generation-call count, serial A100-hours, and equivalent 24/7
+single-A100 days from real LLaDA/SDAR/Dream timing traces. Keep experiment
+evidence on persistent storage or copy `results/`, `runs/`,
+`data/processed/`, and the generated handoff ZIPs off the instance before
+releasing an ephemeral disk.
 
 ## What is still blocked / not done
 

@@ -302,9 +302,10 @@ python scripts/submission_readiness.py
 ~~~
 
 The renderer checks complete cell sets, re-evaluates the RQ1 claim gate from the
-frozen primary config, and writes a manifest that SHA-binds five result
-artifacts (primary, RQ1 gate, repeated sampling, feature ablations, and adaptive
-compute) plus the primary config before populating paper macros. The result
+frozen primary config, and writes a manifest that SHA-binds six result
+artifacts (primary, RQ1 gate, repeated sampling, feature ablations, prior-aligned
+signal diagnostics, and adaptive compute) plus the primary config before
+populating paper macros. The result
 figure manifest separately binds the aggregate/adaptive sources and generated
 PDF hashes. Final submission readiness then distinguishes the historical experiment commit from
 the later clean paper/submission commit.

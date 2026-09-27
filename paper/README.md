@@ -19,7 +19,15 @@ Start from the current official ACL Overleaf template and replace its main.tex w
 - references.bib
 - generated_results.tex
 
-The official acl.sty should come from the current ACL template rather than being vendored here.
+The official ACL style is not vendored in the repository. Build a deterministic
+anonymous Overleaf ZIP from the pinned official style commit with:
+
+    python scripts/build_overleaf_package.py
+
+The package contains `main.tex`, `appendix.tex`, `references.bib`,
+`generated_results.tex`, the pinned official `acl.sty` /
+`acl_natbib.bst`, generated result PDFs when present, and an internal SHA-256
+manifest. Packaging requires a clean checkout.
 
 ## Result-population rule
 
@@ -64,7 +72,12 @@ must not be linked from the anonymous review PDF.
 
 ## Final repository-side submission gate
 
-After all frozen results are rendered, run:
+After all frozen results are rendered, first build and inspect the exact Overleaf
+package that will be uploaded:
+
+    python scripts/build_overleaf_package.py
+
+Then run:
 
     python scripts/submission_readiness.py
 

@@ -260,7 +260,7 @@ artifacts, create the five-sample baseline ledger:
 python scripts/plan_repeated_sampling.py
 ```
 
-The frozen comparator now covers all 18 cells. Repeated-sampling plan protocol
+The frozen comparator covers 12 pre-registered cells: all three primary models crossed with GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. ARC-Challenge and TruthfulQA remain in the full primary/RQ3 matrices. Repeated-sampling plan protocol
 v2 SHA-binds the primary plan, primary-analysis plan, primary config, prompt
 partitions, scored targets/audits, and per-cell TrajUQ prediction artifacts before
 auxiliary generation. Every bound scored target must have a clean protocol-v1
@@ -271,7 +271,7 @@ adapter-specific generation settings.
 
 Execute every planned auxiliary generation and cell evaluation before running
 the plan's `aggregate_repeated_baseline.py` command. Repeated macro protocol v2
-requires complete test-time auxiliary wall-clock metadata in all 18 cells and
+requires complete test-time auxiliary wall-clock metadata in all 12 eligible cells and
 reports the equal-cell-weight mean auxiliary seconds per example, excluding the
 target generation itself. The executor and paper renderer both reject a macro
 that drops this compute accounting. This full-matrix comparator is reported
@@ -290,7 +290,7 @@ python scripts/execute_repeated_sampling.py
 # Execute one model--dataset cell:
 python scripts/execute_repeated_sampling.py --cell llada:gsm8k --execute
 
-# Resume the complete 18-cell comparator:
+# Resume the complete frozen 12-cell comparator:
 python scripts/execute_repeated_sampling.py --execute
 ```
 
@@ -302,7 +302,7 @@ commit, stage=`raw`, and SHA-bound to the current artifact. The repeated
 manifest also records the git commit/clean state and input SHA-256. Unverified
 partial artifacts are never overwritten automatically. The executor writes
 `results/repeated_sampling_execution_state.json` and an append-only event log.
-The full macro is run only after all 18 cells are complete, and the execution
+The repeated macro is run only after all 12 eligible cells are complete, and the execution
 state marks it complete only for protocol `trajuq_vs_repeated_macro_v2` with
 complete five-sample auxiliary compute accounting.
 

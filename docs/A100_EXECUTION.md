@@ -98,8 +98,10 @@ The freeze writes:
 The CPU artifact, revision ledger, gated-dataset-access artifact, and live
 dataset-contract artifact must all be PASS and bind the exact same git commit.
 Both data-access artifacts must bind the exact revision-ledger SHA-256.
-`dataset_contracts.json` streams one row from each frozen primary dataset,
-checks the normalizer/scorer contract, and stores no benchmark row content. From this point onward, do **not** edit tracked experiment code on
+`dataset_contracts.json` streams four rows from each frozen primary dataset,
+checks the normalizer/scorer contract on every sampled row, stores no benchmark
+row content, and is rejected by the shared guard if it only contains legacy
+one-row evidence. From this point onward, do **not** edit tracked experiment code on
 this run. If a code repair becomes necessary, invalidate the run, archive the existing
 private evidence, commit the repair, move to a fresh evidence workspace or
 checkout, freeze the new commit, and regenerate the full affected evidence

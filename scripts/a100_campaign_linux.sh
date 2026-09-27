@@ -133,10 +133,19 @@ print(f"[TrajUQ] gate PASS: {path}")
 PY
 }
 
+require_a100_machine() {
+  require_json_pass \
+    "results/a100_machine_preflight.json" \
+    "trajuq_a100_machine_preflight_v1"
+}
+
 require_primary_readiness() {
   require_clean_frozen_checkout
+  require_a100_machine
   "$PYTHON" scripts/primary_readiness.py
-  require_json_pass     "results/primary_readiness.json"     "trajuq_primary_readiness_v2"
+  require_json_pass \
+    "results/primary_readiness.json" \
+    "trajuq_primary_readiness_v2"
 }
 
 require_pilot_manual_gate() {
@@ -417,6 +426,7 @@ case "$STAGE" in
 
   readiness)
     require_clean_frozen_checkout
+    require_a100_machine
     "$PYTHON" scripts/primary_readiness.py
     export_progress_handoff "readiness"
     ;;

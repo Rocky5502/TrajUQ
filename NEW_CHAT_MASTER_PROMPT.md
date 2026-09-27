@@ -225,9 +225,15 @@ The immutable revision ledger must exist and PASS:
 The exact-revision gated-dataset access proof must exist and PASS:
 `results/gated_dataset_access.json`
 
-It must be from the same clean experiment commit, bind the current revision-ledger
-SHA-256, and prove one record can be streamed from every gated primary dataset
-(currently GPQA-Diamond) without storing benchmark content.
+The live six-dataset normalizer/scorer contract proof must exist and PASS:
+`results/dataset_contracts.json`
+
+Both data preflights must be from the same clean experiment commit and bind the
+current revision-ledger SHA-256. Gated access proves one record can be streamed
+from every gated primary dataset (currently GPQA-Diamond). Dataset-contract v1
+streams one row from each of all six exact-revision primary datasets, exercises
+the frozen normalizer and scorer with a constructed correct final answer, and
+stores no benchmark row content.
 
 Then, in order:
 1. LLaDA 20-prompt exact parity v3;
@@ -236,7 +242,10 @@ Then, in order:
 4. SDAR exact parity v3;
 5. Dream exact parity v3;
 6. MATH-500 automatic scorer audit + 25-example calibration pilot + source-bound manual review;
-7. `scripts/primary_readiness.py` protocol v2 PASS, including gated-dataset access, parity-source hashes, pilot raw/scored audits, pilot review source, MATH scored-pilot/input/audit source checks, and clean-checkout provenance;
+7. `scripts/primary_readiness.py` protocol v2 PASS, including CPU/log hashes,
+   gated-dataset access, live six-dataset contract evidence, parity-source
+   hashes, pilot raw/scored audits, pilot review source,
+   MATH scored-pilot/input/audit source checks, and clean-checkout provenance;
 8. only then create/execute the frozen 18-cell primary plan.
 
 Use the live `configs/project_status.yaml` as the authority if this order or protocol version has since changed.
@@ -249,15 +258,19 @@ After pre-primary readiness PASS:
 3. run `scripts/estimate_a100_campaign.py` and inspect the provenance-bound
    serial-A100 forecast;
 4. dry-run then execute `scripts/execute_primary_plan.py`;
-4. complete all 18 generation/audit/scoring cells;
-5. create `results/primary_analysis_plan.json` only after scored artifacts and audits exist;
-6. dry-run then execute `scripts/execute_primary_analysis.py`;
-7. aggregate the complete 18-cell primary endpoint and the complete frozen feature-ablation macro;
-8. execute the frozen RQ1 claim gate unchanged;
-9. execute the hash-bound 18-cell five-sample comparator;
-10. execute the hash-bound RQ3 25/50/75% adaptive matrix;
-11. optionally execute RQ4 only after the primary path is healthy;
-12. render manuscript results only from frozen primary, RQ1, ablation, repeated, and adaptive artifacts, then render the SHA-bound aggregate result figures from the primary and 25/50/75% adaptive macros.
+5. complete all 18 generation/audit/scoring cells;
+6. create `results/primary_analysis_plan.json` only after scored artifacts and audits exist;
+7. dry-run then execute `scripts/execute_primary_analysis.py`;
+8. aggregate the complete 18-cell primary endpoint, frozen feature-ablation macro,
+   and prior-aligned signal diagnostic macro;
+9. execute the frozen RQ1 claim gate unchanged;
+10. execute the hash-bound 18-cell five-sample comparator;
+11. execute the hash-bound RQ3 25/50/75% adaptive matrix;
+12. optionally execute RQ4 only after the primary path is healthy;
+13. render manuscript results only from the seven frozen text sources (primary,
+   RQ1, ablation, prior-signal, repeated, adaptive-50%, primary config), then
+   render the SHA-bound aggregate result figures from the primary and
+   25/50/75% adaptive macros.
 
 Execution scripts are designed to be resumable and non-overwriting. Existing PARTIAL/INVALID artifacts must be inspected, not silently replaced.
 

@@ -150,9 +150,16 @@ baselines:
         - gsm8k
         - math500
         - gpqa_diamond
-        - arc_challenge
         - mmlu_pro
-        - truthfulqa
+      excluded_datasets:
+        arc_challenge: >
+          Secondary compute-bounded comparator excludes ARC-Challenge because
+          broad multiple-choice coverage is already represented by MMLU-Pro;
+          ARC-Challenge remains in the full 18-cell primary and RQ3 analyses.
+        truthfulqa: >
+          Secondary compute-bounded comparator excludes TruthfulQA to preserve
+          the 72-hour single-A100 envelope; TruthfulQA remains in the full
+          18-cell primary and RQ3 analyses.
       math500_clustering: pairwise_math_verify_connected_components_v1
 
 

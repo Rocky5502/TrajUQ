@@ -20,7 +20,10 @@ from trajuq.provenance import analysis_provenance
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.execute_repeated_sampling import validate_plan_provenance  # noqa: E402
+from scripts.execute_repeated_sampling import (  # noqa: E402
+    pair_state,
+    validate_plan_provenance,
+)
 
 
 AGGREGATE_METRICS = (
@@ -173,6 +176,28 @@ def main() -> None:
     pairs = [(str(item["adapter"]), str(item["dataset"])) for item in specs]
     if len(pairs) != len(set(pairs)):
         raise SystemExit("Repeated-sampling plan contains duplicate cells.")
+
+    experiment_commit = str(plan.get("experiment_git_commit", ""))
+    for spec in specs:
+        label = str(spec["cell"])
+        target = index(
+            str(spec["provenance"]["test"]["scored_target"])
+        )
+        state = pair_state(
+            Path(str(spec["repeated_metrics"])),
+            Path(str(spec["repeated_predictions"])),
+            list(target),
+            expected_commit=experiment_commit,
+            evaluation_argv=[
+                str(value)
+                for value in spec["evaluate_argv"]
+            ],
+            expected_seeds=[int(seed) for seed in spec["seeds"]],
+        )
+        if state != "COMPLETE":
+            raise SystemExit(
+                f"{label}: repeated evaluation source binding is {state}"
+            )
 
     cells = [load_cell(spec) for spec in specs]
     per_cell: dict[str, dict] = {}

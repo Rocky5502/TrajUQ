@@ -86,7 +86,7 @@ implementation:
       - scripts/plan_repeated_sampling.py
       - scripts/aggregate_repeated_baseline.py
   - id: resumable_repeated_executor
-    label: "Resumable five-sample executor with frozen-commit seed-audit reuse"
+    label: "Resumable five-sample executor with frozen-commit seed-audit reuse and source-bound macro validation"
     state: DONE
     evidence:
       - scripts/execute_repeated_sampling.py
@@ -108,7 +108,7 @@ implementation:
       - scripts/aggregate_adaptive.py
       - src/trajuq/adaptive_aggregation.py
   - id: resumable_adaptive_executor
-    label: "Resumable adaptive RQ3 executor with frozen-commit base/refined audits and cap gates"
+    label: "Resumable adaptive RQ3 executor with frozen-commit audits, cap gates, and source-bound macro validation"
     state: DONE
     evidence:
       - scripts/execute_adaptive_plan.py
@@ -324,7 +324,7 @@ execution_gates:
     label: "All 18 five-sample cells plus macro complete"
     stage: analysis
     issue: 9
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, and from the frozen experiment commit. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, and from the frozen experiment commit. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan
@@ -338,7 +338,7 @@ execution_gates:
     label: "All adaptive base runs, 25/50/75% evaluations, and macros complete"
     stage: analysis
     issue: 10
-    action: "Use python scripts/execute_adaptive_plan.py --execute to resume the full RQ3 matrix. Refined and reusable low-budget base audits must remain protocol-v1, clean, stage-correct, SHA-bound, and tied to the frozen experiment commit."
+    action: "Use python scripts/execute_adaptive_plan.py --execute to resume the full RQ3 matrix. Refined and reusable low-budget base audits must remain protocol-v1, clean, stage-correct, SHA-bound, and tied to the frozen experiment commit. Every adaptive macro is additionally source-bound to the frozen plan plus each consumed refined target, cap result, and prediction artifact before reuse."
     artifact: results/adaptive_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: primary_macro

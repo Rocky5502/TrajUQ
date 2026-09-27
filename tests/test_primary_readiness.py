@@ -105,6 +105,7 @@ def write_dataset_contracts_pass(
             "revision_ledger": str(ledger_path),
             "revision_ledger_sha256": sha256_file(ledger_path),
             "normalizer_version": NORMALIZER_VERSION,
+            "contract_sample_count_per_dataset": 4,
             "expected_datasets": names,
             "observed_datasets": names,
             "results": [
@@ -113,6 +114,9 @@ def write_dataset_contracts_pass(
                     "repo_id": str(item["repo_id"]),
                     "resolved_revision": str(item["resolved_sha"]),
                     "normalizer_version": NORMALIZER_VERSION,
+                    "contract_sample_count": 4,
+                    "observed_sample_count": 4,
+                    "scorer_smoke_pass_count": 4,
                     "scorer_smoke_pass": True,
                     "source_row_content_stored": False,
                     "status": "PASS",
@@ -841,5 +845,24 @@ def test_primary_readiness_rejects_frozen_model_identity_drift(tmp_path):
     assert result["status"] == "FAIL"
     assert any(
         "frozen config model_id differs from revision ledger" in item
+        for item in result["failures"]
+    )
+
+
+def test_primary_readiness_rejects_legacy_one_row_dataset_contract(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    payload = json.loads(
+        case["dataset_contracts"].read_text(encoding="utf-8")
+    )
+    payload["contract_sample_count_per_dataset"] = 1
+    payload["results"][0]["contract_sample_count"] = 1
+    payload["results"][0]["observed_sample_count"] = 1
+    payload["results"][0]["scorer_smoke_pass_count"] = 1
+    write_json(case["dataset_contracts"], payload)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "normalizer/scorer contracts" in item
         for item in result["failures"]
     )

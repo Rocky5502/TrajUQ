@@ -104,6 +104,109 @@ def argv_value(argv: list[str], flag: str) -> str | None:
     return str(argv[idx + 1])
 
 
+def _argv_value_or(argv: list[str], flag: str, default: str) -> str:
+    value = argv_value(argv, flag)
+    return default if value is None else value
+
+
+def repeated_manifest_matches_argv(
+    payload: dict[str, Any],
+    argv: list[str],
+    seeds: list[int],
+) -> bool:
+    """Require a repeated-run manifest to match the frozen generation command."""
+
+    adapter = argv_value(argv, "--adapter")
+    model = argv_value(argv, "--model")
+    revision = argv_value(argv, "--revision")
+    if not adapter or not model or not revision:
+        return False
+
+    try:
+        common_ok = (
+            str(payload.get("adapter", "")) == adapter
+            and str(payload.get("model", "")) == model
+            and str(payload.get("model_revision", "")) == revision
+            and [int(seed) for seed in payload.get("seeds", [])] == seeds
+            and float(payload.get("temperature")) == float(
+                _argv_value_or(argv, "--temperature", "0.2")
+            )
+            and float(payload.get("top_p")) == float(
+                _argv_value_or(argv, "--top-p", "1.0")
+            )
+            and int(payload.get("max_new_tokens")) == int(
+                _argv_value_or(argv, "--max-new-tokens", "128")
+            )
+        )
+    except (TypeError, ValueError):
+        return False
+    if not common_ok:
+        return False
+
+    settings = payload.get("adapter_generation", {})
+    if not isinstance(settings, dict):
+        return False
+
+    try:
+        if adapter == "llada":
+            return (
+                int(payload.get("steps")) == int(
+                    _argv_value_or(argv, "--steps", "128")
+                )
+                and int(payload.get("block_length")) == int(
+                    _argv_value_or(argv, "--block-length", "128")
+                )
+                and float(settings.get("llada_cfg_scale")) == float(
+                    _argv_value_or(argv, "--llada-cfg-scale", "0.0")
+                )
+                and str(settings.get("llada_remasking", ""))
+                == _argv_value_or(
+                    argv,
+                    "--llada-remasking",
+                    "low_confidence",
+                )
+            )
+        if adapter == "dream":
+            return (
+                int(payload.get("steps")) == int(
+                    _argv_value_or(argv, "--steps", "128")
+                )
+                and str(settings.get("dream_alg", ""))
+                == _argv_value_or(argv, "--dream-alg", "entropy")
+                and float(settings.get("dream_alg_temp")) == float(
+                    _argv_value_or(argv, "--dream-alg-temp", "0.1")
+                )
+            )
+        if adapter == "sdar":
+            return (
+                int(payload.get("block_length")) == int(
+                    _argv_value_or(argv, "--block-length", "128")
+                )
+                and int(settings.get("sdar_denoising_steps")) == int(
+                    _argv_value_or(argv, "--sdar-denoising-steps", "4")
+                )
+                and int(settings.get("sdar_top_k")) == int(
+                    _argv_value_or(argv, "--sdar-top-k", "0")
+                )
+                and str(settings.get("sdar_remasking_strategy", ""))
+                == _argv_value_or(
+                    argv,
+                    "--sdar-remasking-strategy",
+                    "low_confidence_dynamic",
+                )
+                and float(settings.get("sdar_confidence_threshold")) == float(
+                    _argv_value_or(
+                        argv,
+                        "--sdar-confidence-threshold",
+                        "0.85",
+                    )
+                )
+            )
+    except (TypeError, ValueError):
+        return False
+    return False
+
+
 def expected_ids_from_generation_argv(argv: list[str]) -> list[str]:
     input_text = argv_value(argv, "--input")
     if not input_text:
@@ -324,7 +427,7 @@ def generation_state(
             and input_path.exists()
             and str(payload.get("input")) == str(input_path)
             and str(payload.get("input_sha256", "")) == sha256_file(input_path)
-            and [int(seed) for seed in payload.get("seeds", [])] == seeds
+            and repeated_manifest_matches_argv(payload, argv, seeds)
             and run_seeds == seeds
         )
 

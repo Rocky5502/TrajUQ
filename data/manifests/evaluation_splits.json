@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "datasets": {
     "gsm8k": {
       "hf_id": "openai/gsm8k",
@@ -7,7 +7,13 @@
       "strategy": "official",
       "calibration_split": "train",
       "test_split": "test",
-      "revision": null
+      "revision": null,
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": 1000,
+        "test_max": 1000
+      }
     },
     "arc_challenge": {
       "hf_id": "allenai/ai2_arc",
@@ -15,7 +21,13 @@
       "strategy": "official",
       "calibration_split": "validation",
       "test_split": "test",
-      "revision": null
+      "revision": null,
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": null,
+        "test_max": 1000
+      }
     },
     "mmlu_pro": {
       "hf_id": "TIGER-Lab/MMLU-Pro",
@@ -23,36 +35,61 @@
       "strategy": "official",
       "calibration_split": "validation",
       "test_split": "test",
-      "revision": null
+      "revision": null,
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": null,
+        "test_max": 1000
+      }
     },
     "gpqa_diamond": {
       "hf_id": "Idavidrein/gpqa",
       "config": "gpqa_diamond",
       "strategy": "internal_holdout",
       "source_split": "train",
-      "calibration_fraction": 0.30,
+      "calibration_fraction": 0.3,
       "split_seed": "2027",
       "revision": null,
-      "gated": true
+      "gated": true,
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": null,
+        "test_max": null
+      }
     },
     "truthfulqa": {
       "hf_id": "truthfulqa/truthful_qa",
       "config": "multiple_choice",
       "strategy": "internal_holdout",
       "source_split": "validation",
-      "calibration_fraction": 0.30,
+      "calibration_fraction": 0.3,
       "split_seed": "2027",
-      "revision": null
+      "revision": null,
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": null,
+        "test_max": null
+      }
     },
     "math500": {
       "hf_id": "HuggingFaceH4/MATH-500",
       "config": null,
       "strategy": "internal_holdout",
       "source_split": "test",
-      "calibration_fraction": 0.30,
+      "calibration_fraction": 0.3,
       "split_seed": "2027",
       "revision": null,
-      "nonstandard_note": "Internal held-out evaluation only; do not call this the standard full MATH-500 score. Primary inclusion also requires the symbolic-equivalence scorer gate."
+      "nonstandard_note": "Internal held-out evaluation only; do not call this the standard full MATH-500 score. Primary inclusion also requires the symbolic-equivalence scorer gate.",
+      "pre_generation_cap": {
+        "method": "sha256_id_rank_v1",
+        "seed": "2027",
+        "calibration_max": null,
+        "test_max": null
+      }
     }
-  }
+  },
+  "compute_budget_note": "Pre-generation outcome-free caps are frozen before model calls to keep the complete 3-model x 6-dataset study executable within a three-day single-A100 rental envelope. Caps use only namespaced example IDs and the declared seed; labels, references, prompts, and model outcomes do not affect selection. Smaller partitions are retained in full."
 }

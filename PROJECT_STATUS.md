@@ -45,7 +45,7 @@ particular, the following are implemented and versioned:
   readiness re-hashes that evidence and accepts only exact 20-prompt artifacts
   bound to the frozen revision-ledger git commit and model SHA;
 - frozen 18-cell primary planning and hierarchical aggregation; the primary execution plan is hash-bound to the experiment commit, primary/readiness/revision-ledger artifacts, prepared dataset inputs, and the exact gitignored frozen model-config paths/SHA-256 values recorded by revision-ledger v2, so changing a generation setting after the freeze invalidates planning;
-- pre-registered RQ1 positive-claim gate;
+- pre-registered RQ1 positive-claim gate; primary-analysis reuse re-evaluates the frozen claim rule from the bound macro/config before accepting an existing gate artifact, so a hand-edited decision cannot make execution appear complete;
 - five-seed repeated-sampling baseline and full-matrix macro aggregation; repeated-sampling plan protocol v2 binds the primary/analysis plans, config, scored targets, prompt partitions, and TrajUQ prediction artifacts by SHA-256 before auxiliary generation; repeated seed reuse now also requires exact model/revision/seed and sampler-setting agreement in the raw artifacts, while the execution-state manifest is checked against the frozen generation argv so a same-commit wrong-parameter run cannot be silently reused; repeated macro protocol v2 additionally requires complete test-time auxiliary wall-clock metadata in all 18 cells and carries an equal-cell-weight compute summary into artifact-derived paper rendering;
 - pinned MATH-500 symbolic scoring, commit-bound automatic audit with runtime
   dependency-version verification, deterministic calibration review-sheet

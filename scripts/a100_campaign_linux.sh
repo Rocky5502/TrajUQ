@@ -145,10 +145,15 @@ for name in datasets:
 PY
 }
 
-run_primary() {
+prepare_primary_and_estimate() {
   require_primary_readiness
   prepare_missing_dataset_pairs
   "$PYTHON" scripts/plan_primary_matrix.py
+  "$PYTHON" scripts/estimate_a100_campaign.py
+}
+
+run_primary() {
+  prepare_primary_and_estimate
   "$PYTHON" scripts/execute_primary_plan.py
   "$PYTHON" scripts/execute_primary_plan.py --execute
 }
@@ -210,6 +215,10 @@ case "$STAGE" in
     "$PYTHON" scripts/project_status.py
     ;;
 
+  estimate)
+    prepare_primary_and_estimate
+    ;;
+
   primary)
     run_primary
     ;;
@@ -240,6 +249,6 @@ case "$STAGE" in
     ;;
 
   *)
-    fail "Unknown stage '$STAGE'. Use status|pilot|parity-math|readiness|primary|analysis|rq2|rq3|paper|all-after-readiness."
+    fail "Unknown stage '$STAGE'. Use status|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness."
     ;;
 esac

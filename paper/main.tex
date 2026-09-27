@@ -212,6 +212,14 @@ The frozen suite spans mathematical reasoning, science QA, multiple-choice knowl
 GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
 Where official calibration/test splits exist, they are kept separate.
 Single-split datasets use a deterministic pre-generation internal holdout and are reported explicitly as such.
+To keep the complete $3\times6$ study inside a predeclared three-day single-A100
+compute envelope, large source partitions are capped emph{before any model
+call} using SHA-256 ranking of namespaced example IDs with seed 2027.
+The cap is 1,000 examples per role where specified: GSM8K train/test are capped
+at 1,000 each, while ARC-Challenge and MMLU-Pro retain their smaller official
+calibration splits and cap only the larger test split at 1,000; the three
+single-split benchmarks are retained in full after their frozen holdout.
+Selection never uses references, correctness, prompt text, or model outcomes.
 MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.
 
 \subsection{Experimental Environment}
@@ -219,9 +227,12 @@ MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used 
 The planned primary GPU execution profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
 CUDA~13.0), with 16 CPU cores, 48~GB of system memory, and one
-NVIDIA A100-SXM4-80GB GPU. This is a pre-execution resource plan rather than
-evidence that the campaign has run; the final manuscript will retain only the
-environment actually attested by frozen run artifacts.
+NVIDIA A100-SXM4-80GB GPU. The operational rental envelope is 72 continuous
+hours; this budget is frozen before outcomes and never changes parity,
+correctness, calibration, or statistical gates. This is a pre-execution
+resource plan rather than evidence that the campaign has run; the final
+manuscript will retain only the environment actually attested by frozen run
+artifacts.
 All model and dataset revisions, software dependencies, generation settings,
 and source-checkout provenance are frozen before the corresponding primary
 artifacts are produced.
@@ -326,6 +337,9 @@ Trajectory instrumentation is model-runtime dependent and must be parity-validat
 Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.
 Post-hoc logistic calibration requires a representative calibration partition and can degrade under distribution shift.
 Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
+For compute-bounded reproducibility, GSM8K and the larger ARC-Challenge/MMLU-Pro
+partitions use predeclared deterministic caps; consequently those reported
+numbers are frozen-subset estimates rather than full-split leaderboard scores.
 The repeated-sampling baseline has substantially higher inference cost. For MATH-500, its vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.
 Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
 

@@ -329,9 +329,7 @@ fi
 if [[ "$STAGE" == "parity" || "$STAGE" == "all" ]]; then
   if parity_passes; then
     printf 'LLaDA parity already PASS and hash-valid; preserving evidence.\n'
-    if [[ ! -e "$PARITY_OVERHEAD" ]]; then
-      run_step "Instrumentation overhead"         "$PYTHON" scripts/compare_instrumentation_overhead.py           --reference "$PARITY_REFERENCE"           --instrumented "$PARITY_TRAJUQ"           --output "$PARITY_OVERHEAD"
-    fi
+    run_step "Validate instrumentation overhead"       "$PYTHON" scripts/compare_instrumentation_overhead.py         --reference "$PARITY_REFERENCE"         --instrumented "$PARITY_TRAJUQ"         --output "$PARITY_OVERHEAD"
   else
     require_no_existing_artifacts       "$PARITY_REFERENCE"       "$PARITY_TRAJUQ"       "$PARITY_TRAJUQ.audit.json"       "$PARITY_RESULT"       "$PARITY_OVERHEAD"
 

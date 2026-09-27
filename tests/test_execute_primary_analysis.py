@@ -86,6 +86,8 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         "nested_bootstrap": tmp_path / "nested.json",
         "feature_ablation": tmp_path / "ablation.json",
         "feature_ablation_predictions": tmp_path / "ablation_predictions.jsonl",
+        "prior_signal_diagnostic": tmp_path / "prior_signal.json",
+        "prior_signal_predictions": tmp_path / "prior_signal_predictions.jsonl",
         "raw_risk_diagnostic": tmp_path / "raw.json",
     }
     outputs["metrics"].write_text(
@@ -155,6 +157,44 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         + "\n",
         encoding="utf-8",
     )
+    outputs["prior_signal_diagnostic"].write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_prior_aligned_signal_diagnostic_v1",
+                "role": "secondary_prior_aligned_signal_class_diagnostic",
+                "signal_order": [
+                    "trajectory_entropy",
+                    "top1_revision_rate",
+                ],
+                "n_calibration": 1,
+                "n_test": 1,
+                "signals": {
+                    "trajectory_entropy": {
+                        "n_calibration": 1,
+                        "n_test": 1,
+                    },
+                    "top1_revision_rate": {
+                        "n_calibration": 1,
+                        "n_test": 1,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    outputs["prior_signal_predictions"].write_text(
+        json.dumps(
+            {
+                "example_id": "x",
+                "y_error": 1,
+                "correct": False,
+                "p_error_trajectory_entropy": 0.6,
+                "p_error_top1_revision_rate": 0.7,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     outputs["raw_risk_diagnostic"].write_text(
         json.dumps(
             {
@@ -168,6 +208,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
 
     macro = tmp_path / "macro.json"
     ablation_macro = tmp_path / "ablation_macro.json"
+    prior_macro = tmp_path / "prior_macro.json"
     claim = tmp_path / "claim.json"
     plan = {
         "status": "PASS",
@@ -187,6 +228,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         "final_outputs": {
             "macro_primary": str(macro),
             "macro_feature_ablation": str(ablation_macro),
+            "macro_prior_signal_diagnostics": str(prior_macro),
             "rq1_claim_gate": str(claim),
         },
     }
@@ -237,6 +279,29 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                     }
                     for name in FROZEN_FEATURE_GROUPS
                     if name != "decision_only"
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    prior_macro.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_prior_aligned_signal_macro_v1",
+                "role": "secondary_prior_aligned_signal_class_diagnostic",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "macro": {
+                    signal: {
+                        "auroc": {},
+                        "auprc": {},
+                        "aurc": {},
+                    }
+                    for signal in (
+                        "trajectory_entropy",
+                        "top1_revision_rate",
+                    )
                 },
             }
         ),
@@ -462,5 +527,43 @@ def test_feature_ablation_prediction_semantics_reject_group_drift(tmp_path):
     assert not semantic_output_valid(
         cell,
         "feature_ablation_predictions",
+        pred,
+    )
+
+
+def test_prior_signal_prediction_semantics_reject_bad_probability(tmp_path):
+    cal = tmp_path / "cal.jsonl"
+    test = tmp_path / "test.jsonl"
+    pred = tmp_path / "prior_signal_predictions.jsonl"
+    cal.write_text(
+        '{"example_id":"c","correct":true}\n',
+        encoding="utf-8",
+    )
+    test.write_text(
+        '{"example_id":"t","correct":false}\n',
+        encoding="utf-8",
+    )
+    pred.write_text(
+        json.dumps(
+            {
+                "example_id": "t",
+                "y_error": 1,
+                "correct": False,
+                "p_error_trajectory_entropy": 1.2,
+                "p_error_top1_revision_rate": 0.5,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    cell = {
+        "inputs": {
+            "calibration": {"path": str(cal)},
+            "test": {"path": str(test)},
+        }
+    }
+    assert not semantic_output_valid(
+        cell,
+        "prior_signal_predictions",
         pred,
     )

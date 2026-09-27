@@ -60,7 +60,7 @@ if ($ExistingFreezeEvidence.Count -gt 0) {
 
 if (-not $SkipDependencyInstall) {
     Run-Step "Install CPU/model/data verification dependencies" {
-        & $Python -m pip install -e ".[dev,math,models]"
+        & $Python -m pip install -e ".[dev,math,models,analysis]"
     }
 }
 

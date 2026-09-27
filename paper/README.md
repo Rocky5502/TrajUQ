@@ -35,7 +35,7 @@ The committed `generated_results.tex` is a pre-results fallback containing TBD m
 
     python scripts/render_results_tex.py
 
-The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation macro, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation macros, and emits `paper/generated_results_manifest.json` with SHA-256 bindings to seven sources: primary, RQ1 gate, repeated sampling, feature ablations, prior-aligned signal diagnostics, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim.
+The renderer refuses incomplete cell sets, cross-checks the RQ1 claim gate against the primary macro result, requires the complete hierarchical feature-ablation and prior-aligned diagnostic macros, requires the complete 18-cell supplementary isotonic calibration-sensitivity PASS/SKIP partition, requires repeated-sampling macro protocol v2 with complete five-sample auxiliary wall-clock accounting across all 18 cells, writes all table/cost/ablation/calibration-sensitivity macros, and emits `paper/generated_results_manifest.json` protocol v2 with SHA-256 bindings to eight sources: primary, RQ1 gate, repeated sampling, feature ablations, prior-aligned signal diagnostics, supplementary isotonic calibration sensitivity, adaptive compute, and the frozen primary config. A failed RQ1 gate produces narrow result language rather than a positive claim, and the isotonic sensitivity never changes the frozen RQ1 decision.
 
 After all three adaptive-cap macros exist, also run:
 

@@ -137,7 +137,18 @@ python scripts/audit_paper.py --submission-ready
 
 Then separately run the official ACL pubcheck on the compiled PDF.
 
-Build the anonymous software archive with `python scripts/build_anonymous_supplement.py` and inspect its MANIFEST.json before upload.
+Build the exact anonymous Overleaf source package:
+
+```bash
+python scripts/build_overleaf_package.py
+```
+
+Inspect its `MANIFEST.json`, source commit, ACL-style commit, and included file
+hashes before importing/uploading it to Overleaf.
+
+Build the anonymous software archive with
+`python scripts/build_anonymous_supplement.py` and inspect its MANIFEST.json
+before upload.
 
 Before upload verify:
 
@@ -149,6 +160,7 @@ Before upload verify:
 - all figures/tables remain readable at ACL size;
 - all citations resolve;
 - software ZIP is anonymized;
+- Overleaf ZIP is built from the final clean source commit and pinned ACL style;
 - data ZIP, if submitted, contains no gated/raw data that cannot be redistributed;
 - Responsible NLP Research questions are answered accurately;
 - all author OpenReview/service requirements are complete.

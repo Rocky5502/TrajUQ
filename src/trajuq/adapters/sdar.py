@@ -13,6 +13,22 @@ UPSTREAM_REPOSITORY = "JetAstra/SDAR"
 UPSTREAM_COMMIT = "4c2749ba103448f45520e8411533710a1e66574d"
 
 
+def bounded_transfer_count(requested: int, masked_count: int) -> int:
+    """Never transfer more positions than are currently unresolved.
+
+    This is a no-op under the frozen native SDAR parity configuration
+    (block_length=4, denoising_steps=4). It matters for TrajUQ's pre-registered
+    reduced-step RQ3 control, where a partially prompt-filled first block can
+    contain fewer mask tokens than the nominal per-step transfer count.
+    """
+
+    requested = int(requested)
+    masked_count = int(masked_count)
+    if requested < 0 or masked_count < 0:
+        raise ValueError("transfer counts must be non-negative")
+    return min(requested, masked_count)
+
+
 class SDARAdapter(BaseAdapter):
     """Instrumented adapter for the public SDAR Transformers runtime.
 
@@ -290,20 +306,27 @@ class SDARAdapter(BaseAdapter):
                         masked = mask_index[j].nonzero(as_tuple=True)[0]
                         if len(masked):
                             first = int(masked.min().item())
-                            k = int(counts[step].item())
+                            k = bounded_transfer_count(
+                                int(counts[step].item()),
+                                int(mask_index[j].sum().item()),
+                            )
                             transfer[j, first : first + k] = True
                 else:
                     confidence = torch.where(mask_index, proposal_prob, -torch.inf)
                     for j in range(confidence.shape[0]):
-                        k = int(counts[step].item())
+                        k = bounded_transfer_count(
+                            int(counts[step].item()),
+                            int(mask_index[j].sum().item()),
+                        )
+                        if k <= 0:
+                            continue
                         if remasking_strategy == "low_confidence_dynamic":
                             high = confidence[j] > confidence_threshold
                             if int(high.sum().item()) >= k:
                                 transfer[j] = high
                                 continue
-                        if k > 0:
-                            idx = torch.topk(confidence[j], k=k).indices
-                            transfer[j, idx] = True
+                        idx = torch.topk(confidence[j], k=k).indices
+                        transfer[j, idx] = True
 
                 cur_x[transfer] = proposal[transfer]
 
@@ -340,6 +363,9 @@ class SDARAdapter(BaseAdapter):
                 "top_p": float(top_p),
                 "remasking_strategy": remasking_strategy,
                 "confidence_threshold": float(confidence_threshold),
+                "partial_block_transfer_guard": (
+                    "cap_requested_transfers_to_masked_positions"
+                ),
                 "model_forward_evaluations": int(forward_evals),
                 "parity_status": "PENDING_GPU_AUDIT",
             },

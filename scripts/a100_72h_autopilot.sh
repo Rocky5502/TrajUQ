@@ -129,23 +129,35 @@ if payload.get("status") != "PASS":
 remaining_hours = remaining_seconds / 3600.0
 mean_hours = float(payload["aggregate"]["mean_projection_hours"])
 p90_hours = float(payload["aggregate"]["p90_planning_hours"])
+reserve_hours = float(
+    payload.get("budget_assessment", {}).get(
+        "operational_reserve_hours",
+        0.0,
+    )
+)
+mean_required = mean_hours + reserve_hours
+p90_required = p90_hours + reserve_hours
 print(
     "[TrajUQ 72h] remaining rental hours="
     f"{remaining_hours:.2f}; projected mean={mean_hours:.2f}; "
-    f"P90 planning sum={p90_hours:.2f}"
+    f"P90 planning sum={p90_hours:.2f}; reserve={reserve_hours:.2f}"
 )
-if mean_hours > remaining_hours:
+if mean_required > remaining_hours:
     raise SystemExit(
-        "Frozen full scope mean projection exceeds the remaining paid-rental "
-        "window. Stop before scale; do not silently weaken scientific gates."
+        "Frozen full-scope mean projection plus operational reserve exceeds "
+        "the remaining paid-rental window. Stop before scale; do not silently "
+        "weaken scientific gates."
     )
-if p90_hours > remaining_hours:
+if p90_required > remaining_hours:
     print(
-        "[TrajUQ 72h] WARNING: mean projection fits but conservative P90 "
-        "planning sum exceeds remaining rental time."
+        "[TrajUQ 72h] WARNING: mean + reserve fits but conservative P90 "
+        "planning sum + reserve exceeds remaining rental time."
     )
 else:
-    print("[TrajUQ 72h] conservative P90 planning sum fits remaining rental time.")
+    print(
+        "[TrajUQ 72h] conservative P90 planning sum + reserve fits remaining "
+        "rental time."
+    )
 PY
 }
 

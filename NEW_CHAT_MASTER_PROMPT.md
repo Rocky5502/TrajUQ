@@ -222,6 +222,13 @@ The clean CPU verification artifact must exist and PASS:
 The immutable revision ledger must exist and PASS:
 `results/revision_ledger.json`
 
+The exact-revision gated-dataset access proof must exist and PASS:
+`results/gated_dataset_access.json`
+
+It must be from the same clean experiment commit, bind the current revision-ledger
+SHA-256, and prove one record can be streamed from every gated primary dataset
+(currently GPQA-Diamond) without storing benchmark content.
+
 Then, in order:
 1. LLaDA 20-prompt exact parity v3;
 2. LLaDA + GSM8K 50-example calibration pilot with raw/scored audit PASS artifacts;
@@ -229,7 +236,7 @@ Then, in order:
 4. SDAR exact parity v3;
 5. Dream exact parity v3;
 6. MATH-500 automatic scorer audit + 25-example calibration pilot + source-bound manual review;
-7. `scripts/primary_readiness.py` protocol v2 PASS, including parity-source hashes, pilot raw/scored audits, pilot review source, MATH scored-pilot/input/audit source checks, and clean-checkout provenance;
+7. `scripts/primary_readiness.py` protocol v2 PASS, including gated-dataset access, parity-source hashes, pilot raw/scored audits, pilot review source, MATH scored-pilot/input/audit source checks, and clean-checkout provenance;
 8. only then create/execute the frozen 18-cell primary plan.
 
 Use the live `configs/project_status.yaml` as the authority if this order or protocol version has since changed.

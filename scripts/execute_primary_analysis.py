@@ -525,6 +525,97 @@ def cell_state(cell: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def aggregate_provenance_matches(
+    plan: dict[str, Any],
+    payload: dict,
+    kind: str,
+) -> bool:
+    # Lightweight unit fixtures may omit the real plan protocol. Real frozen
+    # analysis plans must carry source-bound aggregate artifacts.
+    if plan.get("protocol") != "trajuq_primary_analysis_plan_v2":
+        return True
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    if not expected_commit:
+        return False
+
+    sources: dict[str, tuple[str, str]] = {}
+    cells = list(plan.get("cell_analyses", []))
+
+    if kind == "primary":
+        config_path = str(plan.get("primary_config", ""))
+        config_hash = str(plan.get("primary_config_sha256", ""))
+        if not config_path or not config_hash:
+            return False
+        sources["primary_config"] = (config_path, config_hash)
+        for cell in cells:
+            label = str(cell.get("cell", ""))
+            path = Path(str(cell.get("outputs", {}).get("predictions", "")))
+            if not label or not path.is_file():
+                return False
+            sources[f"prediction:{label.replace(':', '_')}"] = (
+                str(path),
+                sha256_file(path),
+            )
+    elif kind == "ablation":
+        for cell in cells:
+            label = str(cell.get("cell", ""))
+            path = Path(
+                str(
+                    cell.get("outputs", {}).get(
+                        "feature_ablation_predictions",
+                        "",
+                    )
+                )
+            )
+            if not label or not path.is_file():
+                return False
+            sources[f"prediction:{label}"] = (
+                str(path),
+                sha256_file(path),
+            )
+    elif kind == "prior":
+        for cell in cells:
+            label = str(cell.get("cell", ""))
+            outputs = cell.get("outputs", {})
+            trajuq_path = Path(str(outputs.get("predictions", "")))
+            prior_path = Path(str(outputs.get("prior_signal_predictions", "")))
+            if (
+                not label
+                or not trajuq_path.is_file()
+                or not prior_path.is_file()
+            ):
+                return False
+            sources[f"trajuq_prediction:{label}"] = (
+                str(trajuq_path),
+                sha256_file(trajuq_path),
+            )
+            sources[f"prior_signal_prediction:{label}"] = (
+                str(prior_path),
+                sha256_file(prior_path),
+            )
+    elif kind == "claim":
+        macro_path = Path(
+            str(plan.get("final_outputs", {}).get("macro_primary", ""))
+        )
+        config_path = str(plan.get("primary_config", ""))
+        config_hash = str(plan.get("primary_config_sha256", ""))
+        if not macro_path.is_file() or not config_path or not config_hash:
+            return False
+        sources = {
+            "macro_primary": (str(macro_path), sha256_file(macro_path)),
+            "primary_config": (config_path, config_hash),
+        }
+    else:
+        raise ValueError(f"unknown aggregate provenance kind: {kind}")
+
+    return binding_matches(
+        payload.get("provenance", {}),
+        expected_commit=expected_commit,
+        expected_sources=sources,
+    )
+
+
 def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
     macro = Path(str(plan["final_outputs"]["macro_primary"]))
     ablation = Path(str(plan["final_outputs"]["macro_feature_ablation"]))
@@ -545,6 +636,11 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 if (
                     payload.get("protocol")
                     == "hierarchical_within_cell_macro_bootstrap_v1"
+                    and aggregate_provenance_matches(
+                        plan,
+                        payload,
+                        "primary",
+                    )
                     and payload.get("cell_set_complete") is True
                     and int(payload.get("observed_cell_count", -1))
                     == expected_cells
@@ -582,6 +678,11 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 if (
                     payload.get("protocol")
                     == "trajuq_feature_ablation_macro_v1"
+                    and aggregate_provenance_matches(
+                        plan,
+                        payload,
+                        "ablation",
+                    )
                     and payload.get("baseline") == "decision_only"
                     and payload.get("cell_set_complete") is True
                     and int(payload.get("observed_cells", -1))
@@ -614,6 +715,11 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 if (
                     payload.get("protocol")
                     == "trajuq_prior_aligned_signal_macro_v1"
+                    and aggregate_provenance_matches(
+                        plan,
+                        payload,
+                        "prior",
+                    )
                     and payload.get("role")
                     == "secondary_prior_aligned_signal_class_diagnostic"
                     and payload.get("cell_set_complete") is True
@@ -637,6 +743,11 @@ def macro_state(plan: dict[str, Any]) -> dict[str, Any]:
                 "COMPLETE"
                 if (
                     payload.get("protocol") == "trajuq_rq1_claim_gate_v1"
+                    and aggregate_provenance_matches(
+                        plan,
+                        payload,
+                        "claim",
+                    )
                     and payload.get("decision")
                     in {
                         "SUPPORT_POSITIVE_RQ1_CLAIM",

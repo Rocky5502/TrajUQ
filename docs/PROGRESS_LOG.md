@@ -52,6 +52,12 @@ their expected `results/*` artifacts exist and pass inspection.
   the readiness-to-plan/execution time-of-check/time-of-use gap.
 - Primary, primary-analysis, repeated-sampling, and adaptive planners/executors
   reject dirty worktrees and mismatched commits.
+- Provenance validation is now recursively chained across stages: primary-analysis
+  planning/execution revalidates the frozen primary plan; RQ2 planning/execution
+  revalidates the primary-analysis plan (which revalidates primary/readiness);
+  and RQ3 planning/execution revalidates the primary/readiness chain. Hashing an
+  unchanged outer plan JSON is therefore not enough to hide drift in nested
+  gitignored authorization evidence.
 - Run audits are SHA-bound and commit-bound; reusable outputs must remain tied to
   their source artifacts.
 - Primary-analysis cell outputs and primary/ablation/prior-signal macro outputs
@@ -75,6 +81,10 @@ their expected `results/*` artifacts exist and pass inspection.
 
 ### Paper/submission evidence chain
 
+- The canonical result-artifact map now matches the renderer's seven-source
+  contract, including the complete 18-cell prior-aligned signal diagnostic
+  macro (`trajuq_prior_aligned_signal_macro_v1`) used by Appendix
+  Table `tab:prior-signal-diagnostics`.
 - Artifact-derived paper rendering requires provenance for primary, RQ1 claim,
   repeated, feature-ablation, prior-signal, and adaptive aggregate sources.
 - The renderer revalidates upstream source hashes and frozen-commit agreement

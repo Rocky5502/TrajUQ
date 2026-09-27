@@ -50,9 +50,10 @@ A PASS requires, at one clean frozen experiment commit:
 - dataset-contract v1 bound to the same ledger, covering all six primary
   datasets at their exact resolved revisions.
 
-The dataset-contract gate streams one row from each frozen primary dataset,
-applies the real normalizer, exercises the real frozen scorer using a
-constructed correct final answer, and stores only schema/provenance/status. It
+The dataset-contract gate streams four rows from each frozen primary dataset,
+applies the real normalizer, exercises the real frozen scorer on every sampled
+row using a constructed correct final answer, and stores only
+schema/provenance/status. Legacy one-row contract evidence is rejected. It
 does not retain streamed benchmark question, answer, prompt, or reference
 content.
 

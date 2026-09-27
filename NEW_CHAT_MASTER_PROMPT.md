@@ -138,7 +138,7 @@ Use exactly five seeds:
 - 2030
 - 2031
 
-The repeated-sampling comparator covers all 18 primary cells. Its final macro is protocol `trajuq_vs_repeated_macro_v2`: all 18 cells must retain valid test-time auxiliary wall-clock metadata, and the artifact reports an equal-cell-weight mean extra seconds per example with target generation excluded. The executor and paper renderer reject incomplete compute accounting.
+The repeated-sampling comparator covers all 18 primary cells. Its final macro is protocol `trajuq_vs_repeated_macro_v2`: all 18 cells must retain valid test-time auxiliary wall-clock metadata, and the artifact reports an equal-cell-weight mean extra seconds per example with target generation excluded. The executor and paper renderer reject incomplete compute accounting. Seed reuse additionally requires the raw artifact records and manifest to match the frozen adapter/model/revision and sampler settings; a same-commit audited seed with different temperature or adapter knobs is not reusable.
 
 ## 7. RQ3 adaptive compute
 

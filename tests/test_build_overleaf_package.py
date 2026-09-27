@@ -62,8 +62,8 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
 
     assert first_payload["status"] == "PASS"
     assert first_payload["acl_style_commit"] == ACL_STYLE_COMMIT
-    assert first_payload["status"] == "PASS"
     assert first.read_bytes() == second.read_bytes()
+    assert ("a" * 40).encode("utf-8") not in first.read_bytes()
 
     with zipfile.ZipFile(first) as zf:
         names = set(zf.namelist())

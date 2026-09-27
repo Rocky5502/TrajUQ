@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from trajuq.io import read_jsonl
-from trajuq.provenance import binding_matches
+from trajuq.provenance import binding_matches, compact_binding_matches
 
 
 BASE_STEPS = (
@@ -299,6 +299,8 @@ def base_partition_state(
 def evaluation_state(
     spec: dict[str, Any],
     expected_ids: list[str] | None = None,
+    source_paths: dict[str, str] | None = None,
+    expected_commit: str | None = None,
 ) -> str:
     result = Path(str(spec["result"]))
     predictions = Path(str(spec["predictions"]))
@@ -329,6 +331,39 @@ def evaluation_state(
         return "INVALID"
     if expected_ids is not None and int(payload.get("n_test", -1)) != len(expected_ids):
         return "INVALID"
+
+    if source_paths is not None:
+        if not expected_commit:
+            return "INVALID"
+        expected_sources: dict[str, tuple[str, str]] = {}
+        expected_sha256: dict[str, str] = {}
+        for name, raw_path in source_paths.items():
+            path = Path(str(raw_path))
+            if not path.is_file():
+                return "INVALID"
+            digest = sha256_file(path)
+            expected_sources[name] = (str(path), digest)
+            expected_sha256[name] = digest
+        if not binding_matches(
+            payload.get("provenance", {}),
+            expected_commit=expected_commit,
+            expected_sources=expected_sources,
+        ):
+            return "INVALID"
+        try:
+            prediction_rows = list(read_jsonl(predictions))
+        except Exception:
+            return "INVALID"
+        if any(
+            not compact_binding_matches(
+                row.get("analysis_provenance", {}),
+                expected_commit=expected_commit,
+                expected_sha256=expected_sha256,
+            )
+            for row in prediction_rows
+        ):
+            return "INVALID"
+
     return "COMPLETE"
 
 
@@ -421,10 +456,22 @@ def cell_state(
         expected_test_ids = expected_input_ids(cell["test_base"])
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
         expected_test_ids = []
+    evaluation_sources = {
+        "cal_base": str(cell["calibration_base"]["scored_output"]),
+        "cal_refined": str(
+            cell["provenance"]["calibration"]["refined_scored"]
+        ),
+        "test_base": str(cell["test_base"]["scored_output"]),
+        "test_refined": str(
+            cell["provenance"]["test"]["refined_scored"]
+        ),
+    }
     evaluations = {
         key: evaluation_state(
             cell["evaluations"][key],
             expected_test_ids,
+            evaluation_sources,
+            expected_commit,
         )
         for key in fraction_keys
     }
@@ -714,7 +761,24 @@ def main() -> None:
 
         for key in selected_fraction_keys:
             evaluation = cell["evaluations"][key]
-            state = evaluation_state(evaluation, expected_test_ids)
+            evaluation_sources = {
+                "cal_base": str(
+                    cell["calibration_base"]["scored_output"]
+                ),
+                "cal_refined": str(
+                    cell["provenance"]["calibration"]["refined_scored"]
+                ),
+                "test_base": str(cell["test_base"]["scored_output"]),
+                "test_refined": str(
+                    cell["provenance"]["test"]["refined_scored"]
+                ),
+            }
+            state = evaluation_state(
+                evaluation,
+                expected_test_ids,
+                evaluation_sources,
+                expected_commit,
+            )
             if state == "COMPLETE":
                 print(f"[SKIP] {scope} {key}: evaluation complete")
                 continue
@@ -733,6 +797,8 @@ def main() -> None:
             if args.execute and evaluation_state(
                 evaluation,
                 expected_test_ids,
+                evaluation_sources,
+                expected_commit,
             ) != "COMPLETE":
                 write_snapshot(plan, state_path)
                 raise SystemExit(

@@ -214,6 +214,19 @@ Where official calibration/test splits exist, they are kept separate.
 Single-split datasets use a deterministic pre-generation internal holdout and are reported explicitly as such.
 MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.
 
+\subsection{Experimental Environment}
+
+Primary GPU execution is performed on a Linux server using the
+\texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
+CUDA~13.0), equipped with one NVIDIA A100-SXM4-80GB GPU and 48~GB of
+system memory.
+All model and dataset revisions, software dependencies, generation settings,
+and source-checkout provenance are frozen before the corresponding primary
+artifacts are produced.
+The repository records per-example wall-clock time and peak allocated GPU
+memory where available; these measurements are treated as execution metadata
+and are not substituted for the pre-registered uncertainty endpoints.
+
 \subsection{Baselines}
 
 We compare against:

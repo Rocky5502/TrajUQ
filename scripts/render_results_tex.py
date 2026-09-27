@@ -33,6 +33,30 @@ ABLATION_SUFFIXES = {
 }
 
 
+CALIBRATION_SENSITIVITY_METRICS = (
+    "brier",
+    "nll",
+    "ece",
+    "ece_10",
+    "ece_20",
+    "aurc",
+    "risk_at_50_coverage",
+    "risk_at_80_coverage",
+)
+
+CALIBRATION_RENDER_METRICS = {
+    "brier": "Brier",
+    "nll": "NLL",
+    "ece": "ECE",
+    "aurc": "AURC",
+}
+
+CALIBRATION_RENDER_VIEWS = {
+    "decision_entropy": "Decision",
+    "trajectory_plus_decision": "Traj",
+}
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -98,6 +122,7 @@ def require_render_source_provenance(
             "repeated",
             "ablation",
             "prior_signals",
+            "calibration_sensitivity",
             "adaptive",
         )
     }
@@ -107,7 +132,7 @@ def require_render_source_provenance(
         )
 
     config_hash = sha256(primary_config_path)
-    for label in ("primary", "claim_gate"):
+    for label in ("primary", "claim_gate", "calibration_sensitivity"):
         spec = payloads[label]["provenance"]["sources"].get(
             "primary_config"
         )
@@ -349,6 +374,99 @@ def require_prior_signals(prior: dict) -> None:
                     )
 
 
+def require_calibration_sensitivity(sensitivity: dict) -> None:
+    if (
+        sensitivity.get("protocol")
+        != "trajuq_isotonic_calibration_sensitivity_macro_v1"
+    ):
+        raise ValueError(
+            "Calibration-sensitivity macro protocol is not recognized."
+        )
+    if (
+        sensitivity.get("role")
+        != "supplementary_calibration_sensitivity"
+    ):
+        raise ValueError("Calibration-sensitivity role is not recognized.")
+    if sensitivity.get("cell_set_complete") is not True:
+        raise ValueError("Calibration-sensitivity cell set is incomplete.")
+    if int(sensitivity.get("expected_cells", -1)) != 18:
+        raise ValueError(
+            "Calibration-sensitivity expected cell count is not 18."
+        )
+    if int(sensitivity.get("observed_cells", -1)) != 18:
+        raise ValueError(
+            "Calibration-sensitivity observed cell count is not 18."
+        )
+
+    eligible = set(sensitivity.get("eligible_cells", []))
+    skipped = set(sensitivity.get("skipped_cells", []))
+    per_cell = sensitivity.get("per_cell", {})
+    if eligible.intersection(skipped):
+        raise ValueError(
+            "Calibration-sensitivity eligible/skipped cell sets overlap."
+        )
+    if len(eligible) != int(sensitivity.get("eligible_cell_count", -1)):
+        raise ValueError(
+            "Calibration-sensitivity eligible-cell count is inconsistent."
+        )
+    if len(skipped) != int(sensitivity.get("skipped_cell_count", -1)):
+        raise ValueError(
+            "Calibration-sensitivity skipped-cell count is inconsistent."
+        )
+    if len(eligible | skipped) != 18 or set(per_cell) != eligible | skipped:
+        raise ValueError(
+            "Calibration-sensitivity does not partition the full 18-cell set."
+        )
+
+    policy = sensitivity.get("eligibility_policy", {})
+    expected_policy = {
+        "role": "supplementary_calibration_sensitivity",
+        "base_estimator": "standardized_logistic",
+        "cv_folds": 5,
+        "ensemble": False,
+        "min_calibration_samples": 1000,
+        "min_class_count": 5,
+    }
+    if policy != expected_policy:
+        raise ValueError(
+            "Calibration-sensitivity eligibility policy differs from frozen contract."
+        )
+
+    macro = sensitivity.get("macro_over_eligible_cells", {})
+    if set(macro) != set(CALIBRATION_RENDER_VIEWS):
+        raise ValueError(
+            "Calibration-sensitivity view set differs from frozen contract."
+        )
+    for view in CALIBRATION_RENDER_VIEWS:
+        metrics = macro[view]
+        if set(metrics) != set(CALIBRATION_SENSITIVITY_METRICS):
+            raise ValueError(
+                f"Calibration-sensitivity metric set differs for view={view}."
+            )
+        for metric in CALIBRATION_SENSITIVITY_METRICS:
+            node = metrics[metric]
+            if set(node) != {
+                "primary_logistic",
+                "isotonic_sensitivity",
+                "isotonic_minus_logistic_improvement",
+            }:
+                raise ValueError(
+                    f"Calibration-sensitivity fields differ for {view}/{metric}."
+                )
+            for value in node.values():
+                if eligible:
+                    number = float(value)
+                    if not math.isfinite(number):
+                        raise ValueError(
+                            f"Calibration-sensitivity {view}/{metric} is non-finite."
+                        )
+                elif value is not None:
+                    raise ValueError(
+                        "Calibration-sensitivity macro must use null metrics "
+                        "when no cell is eligible."
+                    )
+
+
 def require_adaptive(adaptive: dict) -> None:
     if adaptive.get("protocol") != "trajuq_adaptive_macro_v1":
         raise ValueError("Adaptive macro protocol is not recognized.")
@@ -388,12 +506,19 @@ def fmt_signed(value: float) -> str:
     return f"{float(value):+.3f}"
 
 
+def fmt_optional(value: float | None, *, signed: bool = False) -> str:
+    if value is None:
+        return "--"
+    return fmt_signed(value) if signed else fmt(value)
+
+
 def build_macros(
     primary: dict,
     claim: dict,
     repeated: dict,
     ablation: dict,
     prior_signals: dict,
+    calibration_sensitivity: dict,
     adaptive: dict,
     primary_cfg: dict | None = None,
 ) -> dict[str, str]:
@@ -402,6 +527,7 @@ def build_macros(
     require_repeated(repeated)
     require_ablation(ablation)
     require_prior_signals(prior_signals)
+    require_calibration_sensitivity(calibration_sensitivity)
     require_adaptive(adaptive)
 
     macros: dict[str, str] = {}
@@ -473,6 +599,31 @@ def build_macros(
         macros[f"{suffix}AURCDelta"] = fmt_signed(
             metrics["aurc"]["improvement_macro"]
         )
+
+    macros["CalibrationEligibleCells"] = str(
+        int(calibration_sensitivity["eligible_cell_count"])
+    )
+    macros["CalibrationSkippedCells"] = str(
+        int(calibration_sensitivity["skipped_cell_count"])
+    )
+    sensitivity_macro = calibration_sensitivity[
+        "macro_over_eligible_cells"
+    ]
+    for view, view_suffix in CALIBRATION_RENDER_VIEWS.items():
+        for metric, metric_suffix in CALIBRATION_RENDER_METRICS.items():
+            node = sensitivity_macro[view][metric]
+            macros[
+                f"Calibration{view_suffix}{metric_suffix}Logistic"
+            ] = fmt_optional(node["primary_logistic"])
+            macros[
+                f"Calibration{view_suffix}{metric_suffix}Isotonic"
+            ] = fmt_optional(node["isotonic_sensitivity"])
+            macros[
+                f"Calibration{view_suffix}{metric_suffix}Delta"
+            ] = fmt_optional(
+                node["isotonic_minus_logistic_improvement"],
+                signed=True,
+            )
 
     a = adaptive["macro"]
     macros.update(
@@ -577,6 +728,10 @@ def main() -> None:
         default="results/primary_analysis/macro_prior_signal_diagnostics.json",
     )
     parser.add_argument(
+        "--calibration-sensitivity",
+        default="results/primary_analysis/macro_calibration_sensitivity.json",
+    )
+    parser.add_argument(
         "--adaptive",
         default="results/adaptive/macro_cap_050.json",
     )
@@ -596,6 +751,7 @@ def main() -> None:
         "repeated": Path(args.repeated),
         "ablation": Path(args.ablation),
         "prior_signals": Path(args.prior_signals),
+        "calibration_sensitivity": Path(args.calibration_sensitivity),
         "adaptive": Path(args.adaptive),
     }
     payloads = {
@@ -619,6 +775,7 @@ def main() -> None:
         payloads["repeated"],
         payloads["ablation"],
         payloads["prior_signals"],
+        payloads["calibration_sensitivity"],
         payloads["adaptive"],
         primary_cfg,
     )

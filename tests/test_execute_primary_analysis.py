@@ -142,6 +142,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         "feature_ablation_predictions": tmp_path / "ablation_predictions.jsonl",
         "prior_signal_diagnostic": tmp_path / "prior_signal.json",
         "prior_signal_predictions": tmp_path / "prior_signal_predictions.jsonl",
+        "calibration_sensitivity": tmp_path / "calibration_sensitivity.json",
         "raw_risk_diagnostic": tmp_path / "raw.json",
     }
     outputs["metrics"].write_text(
@@ -261,6 +262,35 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         + "\n",
         encoding="utf-8",
     )
+    outputs["calibration_sensitivity"].write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_isotonic_calibration_sensitivity_v1",
+                "role": "supplementary_calibration_sensitivity",
+                "status": "SKIP_INSUFFICIENT_CALIBRATION",
+                "provenance": provenance,
+                "selective_risk_version": "tie_aware_uniform_tie_break_v2",
+                "seed": 2027,
+                "n_calibration": 1,
+                "n_test": 1,
+                "eligibility": {
+                    "eligible": False,
+                    "min_calibration_samples_required": 1000,
+                    "min_class_count_required": 5,
+                    "cv_folds_requested": 5,
+                    "observed_class_counts": {"0": 1},
+                    "observed_min_class_count": 1,
+                },
+                "method": {
+                    "base_estimator": "standardized_logistic",
+                    "isotonic_cv": "stratified_out_of_fold",
+                    "ensemble": False,
+                    "test_labels_used_for_fit": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     outputs["raw_risk_diagnostic"].write_text(
         json.dumps(
             {
@@ -286,6 +316,14 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                 "adapter": "llada",
                 "dataset": "gsm8k",
                 "experiment_git_commit": commit,
+                "calibration_sensitivity_contract": {
+                    "role": "supplementary_calibration_sensitivity",
+                    "base_estimator": "standardized_logistic",
+                    "cv_folds": 5,
+                    "ensemble": False,
+                    "min_calibration_samples": 1000,
+                    "min_class_count": 5,
+                },
                 "inputs": {
                     "calibration": {
                         "path": str(cal),
@@ -842,3 +880,194 @@ def test_analysis_provenance_surfaces_nested_primary_plan_failure(
         in item
         for item in failures
     )
+
+
+def _isotonic_contract() -> dict:
+    return {
+        "role": "supplementary_calibration_sensitivity",
+        "base_estimator": "standardized_logistic",
+        "cv_folds": 5,
+        "ensemble": False,
+        "min_calibration_samples": 1000,
+        "min_class_count": 5,
+    }
+
+
+def _write_scored_rows(path: Path, rows: list[tuple[str, bool]]) -> None:
+    path.write_text(
+        "".join(
+            json.dumps({"example_id": item_id, "correct": correct}) + "\n"
+            for item_id, correct in rows
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_calibration_sensitivity_accepts_recomputed_insufficient_skip(tmp_path):
+    commit = "a" * 40
+    cal = tmp_path / "cal.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    out = tmp_path / "sensitivity.json"
+    _write_scored_rows(cal, [("c0", True), ("c1", False)])
+    _write_scored_rows(test, [("t0", True)])
+    provenance = _analysis_binding(commit, cal, test)
+
+    payload = {
+        "protocol": "trajuq_isotonic_calibration_sensitivity_v1",
+        "role": "supplementary_calibration_sensitivity",
+        "status": "SKIP_INSUFFICIENT_CALIBRATION",
+        "provenance": provenance,
+        "selective_risk_version": "tie_aware_uniform_tie_break_v2",
+        "seed": 2027,
+        "n_calibration": 2,
+        "n_test": 1,
+        "eligibility": {
+            "eligible": False,
+            "min_calibration_samples_required": 1000,
+            "min_class_count_required": 5,
+            "cv_folds_requested": 5,
+            "observed_class_counts": {"0": 1, "1": 1},
+            "observed_min_class_count": 1,
+        },
+        "method": {
+            "base_estimator": "standardized_logistic",
+            "isotonic_cv": "stratified_out_of_fold",
+            "ensemble": False,
+            "test_labels_used_for_fit": False,
+        },
+    }
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    cell = {
+        "experiment_git_commit": commit,
+        "calibration_sensitivity_contract": _isotonic_contract(),
+        "inputs": {
+            "calibration": {"path": str(cal), "sha256": _sha256(cal)},
+            "test": {"path": str(test), "sha256": _sha256(test)},
+        },
+    }
+
+    assert semantic_output_valid(cell, "calibration_sensitivity", out)
+
+
+def test_calibration_sensitivity_rejects_forged_skip_when_eligible(tmp_path):
+    commit = "a" * 40
+    cal = tmp_path / "cal.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    out = tmp_path / "sensitivity.json"
+    rows = [
+        (f"c{i}", i % 2 == 0)
+        for i in range(1000)
+    ]
+    _write_scored_rows(cal, rows)
+    _write_scored_rows(test, [("t0", True), ("t1", False)])
+    provenance = _analysis_binding(commit, cal, test)
+
+    payload = {
+        "protocol": "trajuq_isotonic_calibration_sensitivity_v1",
+        "role": "supplementary_calibration_sensitivity",
+        "status": "SKIP_INSUFFICIENT_CALIBRATION",
+        "provenance": provenance,
+        "selective_risk_version": "tie_aware_uniform_tie_break_v2",
+        "seed": 2027,
+        "n_calibration": 1000,
+        "n_test": 2,
+        "eligibility": {
+            "eligible": False,
+            "min_calibration_samples_required": 1000,
+            "min_class_count_required": 5,
+            "cv_folds_requested": 5,
+            "observed_class_counts": {"0": 500, "1": 500},
+            "observed_min_class_count": 500,
+        },
+        "method": {
+            "base_estimator": "standardized_logistic",
+            "isotonic_cv": "stratified_out_of_fold",
+            "ensemble": False,
+            "test_labels_used_for_fit": False,
+        },
+    }
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    cell = {
+        "experiment_git_commit": commit,
+        "calibration_sensitivity_contract": _isotonic_contract(),
+        "inputs": {
+            "calibration": {"path": str(cal), "sha256": _sha256(cal)},
+            "test": {"path": str(test), "sha256": _sha256(test)},
+        },
+    }
+
+    assert not semantic_output_valid(cell, "calibration_sensitivity", out)
+
+
+def test_calibration_sensitivity_accepts_valid_eligible_pass(tmp_path):
+    commit = "a" * 40
+    cal = tmp_path / "cal.scored.jsonl"
+    test = tmp_path / "test.scored.jsonl"
+    out = tmp_path / "sensitivity.json"
+    rows = [
+        (f"c{i}", i % 2 == 0)
+        for i in range(1000)
+    ]
+    _write_scored_rows(cal, rows)
+    _write_scored_rows(test, [("t0", True), ("t1", False)])
+    provenance = _analysis_binding(commit, cal, test)
+    metrics = {
+        "brier": 0.2,
+        "nll": 0.6,
+        "ece": 0.1,
+        "ece_10": 0.1,
+        "ece_20": 0.1,
+        "aurc": 0.3,
+        "risk_at_50_coverage": 0.2,
+        "risk_at_80_coverage": 0.3,
+    }
+    improvement = {name: 0.01 for name in metrics}
+    payload = {
+        "protocol": "trajuq_isotonic_calibration_sensitivity_v1",
+        "role": "supplementary_calibration_sensitivity",
+        "status": "PASS",
+        "provenance": provenance,
+        "selective_risk_version": "tie_aware_uniform_tie_break_v2",
+        "seed": 2027,
+        "n_calibration": 1000,
+        "n_test": 2,
+        "eligibility": {
+            "eligible": True,
+            "min_calibration_samples_required": 1000,
+            "min_class_count_required": 5,
+            "cv_folds_requested": 5,
+            "observed_class_counts": {"0": 500, "1": 500},
+            "observed_min_class_count": 500,
+        },
+        "method": {
+            "base_estimator": "standardized_logistic",
+            "isotonic_cv": "stratified_out_of_fold",
+            "ensemble": False,
+            "test_labels_used_for_fit": False,
+        },
+        "effective_cv_folds": {
+            "decision_entropy": 5,
+            "trajectory_plus_decision": 5,
+        },
+        "decision_entropy": {
+            "primary_logistic": metrics,
+            "isotonic_sensitivity": metrics,
+            "isotonic_minus_logistic_improvement": improvement,
+        },
+        "trajectory_plus_decision": {
+            "primary_logistic": metrics,
+            "isotonic_sensitivity": metrics,
+            "isotonic_minus_logistic_improvement": improvement,
+        },
+    }
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    cell = {
+        "experiment_git_commit": commit,
+        "calibration_sensitivity_contract": _isotonic_contract(),
+        "inputs": {
+            "calibration": {"path": str(cal), "sha256": _sha256(cal)},
+            "test": {"path": str(test), "sha256": _sha256(test)},
+        },
+    }
+
+    assert semantic_output_valid(cell, "calibration_sensitivity", out)

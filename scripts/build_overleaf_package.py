@@ -123,7 +123,7 @@ def submission_result_files(paper_dir: Path) -> dict[str, bytes]:
         )
 
     results_manifest = load_json(results_manifest_path)
-    if results_manifest.get("protocol") != "trajuq_paper_results_render_v1":
+    if results_manifest.get("protocol") != "trajuq_paper_results_render_v2":
         raise ValueError("generated-results manifest protocol is not recognized")
     if (
         str(results_manifest.get("output_sha256", ""))

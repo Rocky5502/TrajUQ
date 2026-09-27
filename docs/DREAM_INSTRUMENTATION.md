@@ -69,9 +69,15 @@ python scripts/compare_run_parity.py \
 
 The hard gate is exact token-ID equality for all 20 prompts under the deterministic condition. The comparator emits `trajuq_exact_parity_v3`; primary readiness additionally requires exactly 20 shared records, uniform run provenance, the revision-ledger Dream SHA, and the same frozen experiment git commit.
 
-## Manual telemetry audit
+## Telemetry inspection after parity
 
-For at least ten prompts, verify:
+Dream has **no separate frozen 50-example pilot or human-attestation gate**.
+The shared pre-primary human pilot gate is LLaDA + GSM8K; Dream's required
+authorization is the exact parity-v3 PASS plus the normal raw-run semantic
+audit at the frozen commit/revision.
+
+After parity passes, it is still useful as a diagnostic to inspect several
+Dream traces and confirm:
 - observed trajectory count is compatible with requested denoising steps;
 - logged generated-region length matches returned generated-token length;
 - entropy/confidence/margin values are finite and non-constant;
@@ -79,7 +85,8 @@ For at least ten prompts, verify:
 - late revisions are not an artifact of prompt-token inclusion;
 - wall time and peak GPU memory are recorded.
 
-Only after exact parity + manual audit may Dream be used for the 50-example pilot and then primary numbers.
+This inspection must not be turned into post-hoc feature redesign or an
+additional outcome-conditioned selection gate.
 
 
 ## Instrumentation overhead

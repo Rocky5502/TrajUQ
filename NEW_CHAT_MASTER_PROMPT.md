@@ -61,6 +61,9 @@ Your job is to **continue the existing project**, not restart or redesign it.
   The supervisor prioritizes primary -> analysis -> RQ3 -> expensive RQ2 ->
   paper and logs GPU/disk/progress hourly without requiring the agent to remain
   connected.
+- Frozen generation argv explicitly includes `--device cuda` and
+  `--dtype bfloat16`; primary/adaptive and RQ2 reuse contracts reject runtime
+  drift.
 - Environment availability is not evidence of experiment completion. Only
   inspected, frozen `results/*` artifacts may move execution gates to PASS.
 - Use the guarded A100/Linux campaign as the primary expensive-execution path;

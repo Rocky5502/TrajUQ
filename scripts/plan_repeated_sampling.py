@@ -13,6 +13,9 @@ import yaml
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.execute_primary_analysis import (  # noqa: E402
+    validate_plan_provenance as validate_analysis_plan_provenance,
+)
 from scripts.plan_primary_analysis import scored_source_chain_passes  # noqa: E402
 
 
@@ -241,6 +244,10 @@ def main() -> None:
         failures.append("primary analysis plan protocol is not v2")
     if analysis.get("status") != "PASS":
         failures.append("primary analysis plan is not PASS")
+    failures.extend(
+        "primary analysis provenance: " + failure
+        for failure in validate_analysis_plan_provenance(analysis)
+    )
 
     experiment_commit = str(primary.get("experiment_git_commit", ""))
     if str(analysis.get("experiment_git_commit", "")) != experiment_commit:

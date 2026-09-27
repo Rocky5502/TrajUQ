@@ -5,6 +5,7 @@ from pathlib import Path
 import scripts.execute_primary_analysis as execute_primary_analysis
 from trajuq.features import FROZEN_FEATURE_GROUPS
 from scripts.execute_primary_analysis import (
+    aggregate_provenance_matches,
     execution_snapshot,
     output_valid,
     semantic_output_valid,
@@ -686,3 +687,50 @@ def test_semantic_output_rejects_stale_commit_binding(tmp_path):
         },
     }
     assert not semantic_output_valid(cell, "metrics", metrics)
+
+
+def test_aggregate_provenance_rejects_prediction_drift(tmp_path):
+    commit = "a" * 40
+    config = tmp_path / "primary.yaml"
+    prediction = tmp_path / "predictions.jsonl"
+    config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    prediction.write_text(
+        '{"example_id":"t","p_error_trajuq":0.4}\n',
+        encoding="utf-8",
+    )
+    plan = {
+        "protocol": "trajuq_primary_analysis_plan_v2",
+        "experiment_git_commit": commit,
+        "primary_config": str(config),
+        "primary_config_sha256": _sha256(config),
+        "cell_analyses": [
+            {
+                "cell": "llada:gsm8k",
+                "outputs": {"predictions": str(prediction)},
+            }
+        ],
+    }
+    provenance = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "primary_config": {
+                "path": str(config),
+                "sha256": _sha256(config),
+            },
+            "prediction:llada_gsm8k": {
+                "path": str(prediction),
+                "sha256": _sha256(prediction),
+            },
+        },
+    }
+    payload = {"provenance": provenance}
+
+    assert aggregate_provenance_matches(plan, payload, "primary")
+
+    prediction.write_text(
+        '{"example_id":"t","p_error_trajuq":0.9}\n',
+        encoding="utf-8",
+    )
+    assert not aggregate_provenance_matches(plan, payload, "primary")

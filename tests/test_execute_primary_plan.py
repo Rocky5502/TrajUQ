@@ -173,6 +173,7 @@ def test_partial_scored_artifact_is_rejected_before_overwrite(tmp_path):
 def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
     primary = tmp_path / "primary.yaml"
     readiness = tmp_path / "readiness.json"
+    readiness_source = tmp_path / "llada_parity.json"
     ledger = tmp_path / "revision_ledger.json"
     model = tmp_path / "llada.yaml"
     split_manifest = tmp_path / "split_manifest.json"
@@ -181,7 +182,7 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
     test = tmp_path / "test.jsonl"
     for path, text in (
         (primary, "experiment: {}\n"),
-        (readiness, '{"status":"PASS"}\n'),
+        (readiness_source, '{"status":"PASS"}\n'),
         (ledger, '{"status":"PASS"}\n'),
         (model, "revision: abc\n"),
         (split_manifest, '{"dataset":"gsm8k"}\n'),
@@ -190,6 +191,24 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
         (test, '{"id":"t"}\n'),
     ):
         path.write_text(text, encoding="utf-8")
+
+    readiness.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "source_bindings": [
+                    {
+                        "path": str(readiness_source),
+                        "sha256": hashlib.sha256(
+                            readiness_source.read_bytes()
+                        ).hexdigest(),
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     monkeypatch.setattr(
         "scripts.execute_primary_plan.git_head",
@@ -238,6 +257,11 @@ def test_validate_plan_provenance_accepts_bound_inputs(tmp_path, monkeypatch):
     }
 
     assert validate_plan_provenance(plan) == []
+
+    readiness_source.write_text('{"status":"FAIL"}\n', encoding="utf-8")
+    failures = validate_plan_provenance(plan)
+    assert any("readiness bound source hash drifted" in item for item in failures)
+    readiness_source.write_text('{"status":"PASS"}\n', encoding="utf-8")
 
     monkeypatch.setattr(
         "scripts.execute_primary_plan.git_status_porcelain",

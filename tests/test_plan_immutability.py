@@ -38,3 +38,9 @@ def test_all_frozen_planners_use_immutable_json_writer():
         text = Path(planner).read_text(encoding="utf-8")
         assert "write_json_immutable" in text, planner
         assert "out.write_text(" not in text, planner
+
+
+def test_primary_readiness_uses_immutable_json_writer():
+    text = Path("scripts/primary_readiness.py").read_text(encoding="utf-8")
+    assert "write_json_immutable(out, payload)" in text
+    assert "out.write_text(" not in text

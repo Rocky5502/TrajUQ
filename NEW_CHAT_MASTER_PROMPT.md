@@ -62,8 +62,9 @@ Your job is to **continue the existing project**, not restart or redesign it.
   exact rented-server checkout. Complete the pre-primary/parity/human gates,
   run `bash scripts/a100_campaign_linux.sh estimate`, then launch
   `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`;
-  the supervisor inherits the original deadline and checks its estimate against
-  the hours still remaining.
+  the supervisor inherits the original deadline and checks mean projected
+  generation time plus the frozen 6-hour operational reserve against the hours
+  still remaining.
   The supervisor prioritizes primary -> analysis -> RQ3 -> expensive RQ2 ->
   paper and logs GPU/disk/progress hourly without requiring the agent to remain
   connected.

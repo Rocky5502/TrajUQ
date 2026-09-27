@@ -215,9 +215,9 @@ Single-split datasets use a deterministic pre-generation internal holdout and ar
 To keep the complete $3\times6$ study inside a predeclared three-day single-A100
 compute envelope, large source partitions are capped emph{before any model
 call} using SHA-256 ranking of namespaced example IDs with seed 2027.
-The cap is 1,000 examples per role where specified: GSM8K train/test are capped
-at 1,000 each, while ARC-Challenge and MMLU-Pro retain their smaller official
-calibration splits and cap only the larger test split at 1,000; the three
+The cap is 500 examples per role where specified: GSM8K train/test are capped
+at 500 each, while ARC-Challenge and MMLU-Pro retain their smaller official
+calibration splits and cap only the larger test split at 500; the three
 single-split benchmarks are retained in full after their frozen holdout.
 Selection never uses references, correctness, prompt text, or model outcomes.
 MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.
@@ -294,7 +294,7 @@ Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
 \method (single trajectory) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
 \bottomrule
 \end{tabular}
-\caption{Expensive five-sample baseline on the complete frozen $3\times6$ model--dataset matrix. The five auxiliary generations require \RepeatedAuxWallTime\ s/example on average (equal-cell macro; target generation excluded). MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. This comparator remains secondary to the pre-registered RQ1 endpoint.}
+\caption{Expensive five-sample baseline on the pre-registered \RepeatedCellCount-cell ($3\times\RepeatedDatasetCount$) representative subset spanning GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. The five auxiliary generations require \RepeatedAuxWallTime\ s/example on average (equal-cell macro; target generation excluded). MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. ARC-Challenge and TruthfulQA remain in the complete 18-cell primary and adaptive analyses but are excluded from this secondary compute-intensive comparator before outcomes are observed.}
 \label{tab:repeated}
 \end{table}
 

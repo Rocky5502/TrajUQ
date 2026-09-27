@@ -79,7 +79,14 @@ From a clean checkout:
 SKIP_INSTALL=1 bash scripts/freeze_preprimary.sh
 ```
 
-Require the final line `PRE-PRIMARY FREEZE PASS`. The freeze writes:
+Require the final line `PRE-PRIMARY FREEZE PASS`. Before writing anything,
+the official freeze wrapper refuses to start if immutable evidence from another
+freeze already exists (CPU artifact/logs, revision ledger/frozen model configs,
+gated-access proof, or the automatic MATH-500 scorer audit). Archive the old
+private handoff/evidence or use a fresh checkout/results workspace; do not mix
+freeze commits.
+
+The freeze writes:
 
 - `results/cpu_verification.json`;
 - `results/revision_ledger.json`;
@@ -90,8 +97,10 @@ Require the final line `PRE-PRIMARY FREEZE PASS`. The freeze writes:
 The CPU artifact, revision ledger, and gated-dataset-access artifact must all
 be PASS and bind the exact same git commit; the access artifact must also bind
 the exact revision-ledger SHA-256. From this point onward, do **not** edit tracked experiment code on
-this run. If a code repair becomes necessary, invalidate the run, commit the
-repair, freeze a new commit, and regenerate affected evidence.
+this run. If a code repair becomes necessary, invalidate the run, archive the existing
+private evidence, commit the repair, move to a fresh evidence workspace or
+checkout, freeze the new commit, and regenerate the full affected evidence
+chain. The official wrapper will not overwrite the old freeze.
 
 ## 2. LLaDA hard parity and 50-example GSM8K pilot
 
@@ -310,9 +319,10 @@ python scripts/execute_primary_analysis.py --execute
 
 This produces cell-level held-out metrics, nested calibrated comparison,
 feature-family ablations plus exact per-example group probabilities, the
-training-free raw-risk diagnostic, the complete equal-cell-weight primary
-macro, the complete 18-cell hierarchical feature-ablation macro, and the
-pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
+training-free raw-risk diagnostic, prior-aligned trajectory-entropy and top-1
+revision/flip diagnostics, the complete equal-cell-weight primary macro, the
+complete 18-cell hierarchical feature-ablation macro, the complete 18-cell
+prior-aligned signal diagnostic macro, and the pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
 and must not trigger post-hoc analysis redesign.
 
 ## 9. RQ2 expensive five-sample comparator
@@ -348,9 +358,12 @@ trajectory.
 ## 11. Paper rendering and submission checks
 
 Empirical values must enter the manuscript only through artifact-derived
-rendering. The renderer requires the complete primary, RQ1 gate, feature
-ablation, repeated-sampling, and adaptive artifacts before replacing any TBD
-macro:
+rendering. The text renderer requires seven SHA-bound sources: the complete
+primary aggregate, RQ1 gate, repeated-sampling aggregate, feature-ablation
+aggregate, prior-aligned signal aggregate, primary 50% adaptive aggregate, and
+frozen primary config. The figure renderer independently binds the primary
+aggregate/config plus all three adaptive-cap artifacts before replacing any TBD
+result surface:
 
 ```bash
 python scripts/render_results_tex.py
@@ -372,7 +385,7 @@ Do not type result numbers manually into `paper/main.tex`.
 Stop rather than improvise if any of the following occurs:
 
 - dirty worktree after the experiment freeze;
-- CPU verification or revision ledger FAIL;
+- CPU verification, revision ledger, or exact-revision gated-dataset access FAIL;
 - model revision/data revision drift;
 - any exact-parity mismatch;
 - pilot quality or run-audit failure;

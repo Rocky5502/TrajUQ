@@ -51,6 +51,7 @@ require_json_pass() {
   local protocol="$2"
   "$PYTHON" - "$path" "$protocol" <<'PY'
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -65,6 +66,19 @@ if payload.get("protocol") != protocol:
     )
 if payload.get("status") != "PASS":
     raise SystemExit(f"{path}: status is not PASS")
+
+head = subprocess.check_output(
+    ["git", "rev-parse", "HEAD"],
+    text=True,
+).strip()
+artifact_commit = payload.get("git_commit")
+if artifact_commit is not None and str(artifact_commit) != head:
+    raise SystemExit(
+        f"{path}: artifact commit {artifact_commit!r} != current HEAD {head!r}"
+    )
+if "git_clean" in payload and payload.get("git_clean") is not True:
+    raise SystemExit(f"{path}: artifact was not recorded from a clean checkout")
+
 print(f"[TrajUQ] gate PASS: {path}")
 PY
 }

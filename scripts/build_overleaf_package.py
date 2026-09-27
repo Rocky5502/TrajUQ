@@ -93,13 +93,12 @@ def scan_text(name: str, data: bytes) -> list[str]:
     return failures
 
 
-def paper_status_text(*, git_commit: str | None) -> bytes:
-    commit = git_commit or "UNKNOWN"
+def paper_status_text(*, source_snapshot_sha256: str) -> bytes:
     text = f"""# TrajUQ anonymous Overleaf package
 
-This package is generated from the frozen manuscript source.
+This package is generated from the frozen anonymous manuscript source.
 
-Source commit: `{commit}`
+Anonymous source snapshot SHA-256: `{source_snapshot_sha256}`
 Official ACL style commit: `{ACL_STYLE_COMMIT}`
 
 The numerical result macros are controlled by `generated_results.tex`.
@@ -151,7 +150,17 @@ def build_package(
                 raise ValueError(f"invalid generated PDF figure: {path}")
             files[f"figures/generated/{path.name}"] = data
 
-    status = paper_status_text(git_commit=git_commit)
+    source_snapshot = hashlib.sha256()
+    for name in PAPER_FILES:
+        source_snapshot.update(name.encode("utf-8"))
+        source_snapshot.update(b"\0")
+        source_snapshot.update(files[name])
+        source_snapshot.update(b"\0")
+    source_snapshot_sha256 = source_snapshot.hexdigest()
+
+    status = paper_status_text(
+        source_snapshot_sha256=source_snapshot_sha256
+    )
     failures.extend(scan_text("PAPER_STATUS.md", status))
     files["PAPER_STATUS.md"] = status
 
@@ -162,7 +171,7 @@ def build_package(
 
     manifest = {
         "protocol": "trajuq_overleaf_package_v1",
-        "source_git_commit": git_commit,
+        "source_snapshot_sha256": source_snapshot_sha256,
         "acl_style_repository": "acl-org/acl-style-files",
         "acl_style_commit": ACL_STYLE_COMMIT,
         "anonymous": True,

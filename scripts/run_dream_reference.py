@@ -3,10 +3,27 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import time
 from pathlib import Path
 
 from trajuq.io import read_jsonl, sha256_text
+
+
+def git_text(*args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except Exception:
+        return None
+
+
+def git_clean() -> bool | None:
+    status = git_text("status", "--porcelain")
+    return None if status is None else status == ""
 
 
 def main() -> None:
@@ -28,6 +45,15 @@ def main() -> None:
     parser.add_argument("--alg", default="entropy")
     parser.add_argument("--alg-temp", type=float, default=0.1)
     args = parser.parse_args()
+
+    source_git_commit = git_text("rev-parse", "HEAD")
+    source_git_clean = git_clean()
+    if not source_git_commit:
+        raise SystemExit("Unable to resolve source git commit for native parity reference.")
+    if source_git_clean is not True:
+        raise SystemExit(
+            "Native parity reference requires a clean frozen git checkout."
+        )
 
     try:
         import torch
@@ -109,6 +135,10 @@ def main() -> None:
                 "model": args.model,
                 "adapter": "dream",
                 "seed": int(args.seed),
+                "metadata": {
+                    "source_git_commit": source_git_commit,
+                    "source_git_clean": source_git_clean,
+                },
                 "generation": {
                     "text": tokenizer.decode(
                         generated.tolist(),

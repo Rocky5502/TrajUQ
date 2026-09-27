@@ -190,7 +190,7 @@ run_sdar() {
   if parity_passes sdar "$SDAR_SHA" "$parity"; then
     printf 'SDAR parity already PASS and hash-valid; preserving evidence.\n'
   else
-    require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$overhead"
+    require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"
     run_step "SDAR 20-prompt native reference"       "$PYTHON" scripts/run_sdar_reference.py         --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$ref" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --denoising-steps 4         --temperature 1.0 --top-k 0 --top-p 1.0         --remasking-strategy low_confidence_dynamic --confidence-threshold 0.85
     run_step "SDAR 20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter sdar --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$inst" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --sdar-denoising-steps 4         --temperature 1.0 --sdar-top-k 0 --top-p 1.0         --sdar-remasking-strategy low_confidence_dynamic         --sdar-confidence-threshold 0.85
     run_step "Audit SDAR parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst" --stage raw --require-revision

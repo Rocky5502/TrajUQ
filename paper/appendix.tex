@@ -3,6 +3,20 @@
 The appendix records the complete frozen experimental contract and supplementary analyses.
 It is intentionally detailed so that model-specific implementation choices cannot be changed silently after test outcomes are observed.
 
+\section{Execution Environment and Resource Accounting}
+
+Primary scale and transfer experiments are executed on a Linux server using the
+\texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
+CUDA~13.0), one NVIDIA A100-SXM4-80GB GPU, and 48~GB of system memory.
+The experiment freeze records the source commit, immutable model and dataset
+revisions, frozen model configurations, and dependency-sensitive scorer
+requirements before expensive execution.
+Run artifacts additionally record wall-clock time and peak allocated GPU memory
+when available.
+These resource measurements are used for compute accounting and instrumentation
+overhead analysis; they do not change the frozen primary endpoint or RQ1 claim
+rule.
+
 \section{Trajectory Telemetry Contract}
 
 \paragraph{Eligibility.}

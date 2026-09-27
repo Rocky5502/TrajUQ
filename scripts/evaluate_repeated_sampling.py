@@ -17,6 +17,7 @@ from trajuq.evaluation import (
     selective_curve,
 )
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 from trajuq.repeated_sampling import equivalence_cluster_labels, vote_uncertainty
 from trajuq.scoring import canonical_prediction, math500_equivalent
 
@@ -245,6 +246,10 @@ def main() -> None:
 
     cal_by_seed = {int(sig["seed"]): sig for sig in cal_signatures}
     test_by_seed = {int(sig["seed"]): sig for sig in test_signatures}
+    if len(cal_by_seed) != len(cal_signatures):
+        raise SystemExit("Calibration repeated-sampling seeds are not unique.")
+    if len(test_by_seed) != len(test_signatures):
+        raise SystemExit("Test repeated-sampling seeds are not unique.")
     if set(cal_by_seed) != set(test_by_seed):
         raise SystemExit("Calibration/test repeated-sampling seed sets differ.")
     for seed in sorted(cal_by_seed):
@@ -264,6 +269,44 @@ def main() -> None:
     det = error_detection_metrics(y_test, p_test)
     cal = calibration_metrics(y_test, p_test)
     curve = selective_curve(y_test, p_test)
+
+    pred_out: Path | None = None
+    if args.predictions_output:
+        pred_out = Path(args.predictions_output)
+        pred_out.parent.mkdir(parents=True, exist_ok=True)
+        with pred_out.open("w", encoding="utf-8") as f:
+            for item_id, y, p in zip(test_ids, y_test, p_test):
+                f.write(
+                    json.dumps(
+                        {
+                            "example_id": item_id,
+                            "y_error": int(y),
+                            "correct": bool(1 - y),
+                            "p_error_repeated_sampling": float(p),
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+
+    provenance_sources: dict[str, str] = {
+        "cal_target": args.cal_target,
+        "test_target": args.test_target,
+    }
+    provenance_sources.update(
+        {
+            f"cal_sample:{index}": path
+            for index, path in enumerate(args.cal_sample)
+        }
+    )
+    provenance_sources.update(
+        {
+            f"test_sample:{index}": path
+            for index, path in enumerate(args.test_sample)
+        }
+    )
+    if pred_out is not None:
+        provenance_sources["predictions"] = str(pred_out)
 
     payload = {
         "protocol": "trajuq_repeated_sampling_baseline_v2",
@@ -295,6 +338,7 @@ def main() -> None:
                 "the target generation itself is not counted here."
             ),
         },
+        "provenance": analysis_provenance(provenance_sources),
     }
 
     out = Path(args.output)
@@ -302,23 +346,7 @@ def main() -> None:
     out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(payload, indent=2, sort_keys=True))
 
-    if args.predictions_output:
-        pred_out = Path(args.predictions_output)
-        pred_out.parent.mkdir(parents=True, exist_ok=True)
-        with pred_out.open("w", encoding="utf-8") as f:
-            for item_id, y, p in zip(test_ids, y_test, p_test):
-                f.write(
-                    json.dumps(
-                        {
-                            "example_id": item_id,
-                            "y_error": int(y),
-                            "correct": bool(1 - y),
-                            "p_error_repeated_sampling": float(p),
-                        },
-                        sort_keys=True,
-                    )
-                    + "\n"
-                )
+    if pred_out is not None:
         print(f"[TrajUQ] repeated-sampling predictions -> {pred_out}")
 
 

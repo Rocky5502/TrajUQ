@@ -180,7 +180,7 @@ A100/Linux:
 ```bash
 git pull
 git status --short
-python3.11 scripts/start_a100_rental_clock.py
+python3 scripts/start_a100_rental_clock.py
 bash scripts/freeze_preprimary.sh
 ```
 

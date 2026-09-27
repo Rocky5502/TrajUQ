@@ -408,10 +408,8 @@ if ($Stage -in @("pilot", "all")) {
 if ($Stage -in @("parity", "all")) {
     if (Assert-ParityPass $ParityResult $ModelSha $Ledger.git_commit) {
         Write-Host "LLaDA parity already PASS and hash-valid; preserving existing evidence." -ForegroundColor Green
-        if (-not (Test-Path $ParityOverhead)) {
-            Run-Step "Instrumentation overhead" {
-                & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output $ParityOverhead
-            }
+        Run-Step "Validate instrumentation overhead" {
+            & $Python scripts/compare_instrumentation_overhead.py --reference $ParityReference --instrumented $ParityTrajUQ --output $ParityOverhead
         }
     }
     else {

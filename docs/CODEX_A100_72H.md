@@ -123,9 +123,10 @@ The supervisor:
 - enforces the remaining wall-clock budget with `timeout`;
 - leaves incomplete JSONL artifacts resumable rather than declaring success.
 
-The repeated-sampling runner keeps each model resident across its five seeds,
-avoiding five model reloads per partition, and can safely resume a contract-
-matching partial seed prefix.
+The RQ2 resident executor keeps each model resident across all frozen eligible
+partitions, while the shared repeated runner preserves five separately audited
+seed artifacts per partition and safely resumes contract-matching partial
+prefixes.
 
 ## Hourly Codex policy
 

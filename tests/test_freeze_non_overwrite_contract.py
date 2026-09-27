@@ -9,6 +9,9 @@ def test_freeze_producers_refuse_overwrite_by_default():
     gated = Path("scripts/verify_gated_dataset_access.py").read_text(
         encoding="utf-8"
     )
+    contracts = Path("scripts/verify_dataset_contracts.py").read_text(
+        encoding="utf-8"
+    )
     math_audit = Path("scripts/audit_math500_scorer.py").read_text(
         encoding="utf-8"
     )
@@ -20,6 +23,8 @@ def test_freeze_producers_refuse_overwrite_by_default():
     assert "Refusing to overwrite CPU verification evidence" in cpu
     assert '--overwrite' in gated
     assert "Refusing to overwrite gated dataset access evidence" in gated
+    assert '--overwrite' in contracts
+    assert "Refusing to overwrite dataset-contract evidence" in contracts
     assert '--overwrite' in math_audit
     assert "Refusing to overwrite MATH-500 scorer audit evidence" in math_audit
     assert 'math500_audit_argv.append("--overwrite")' in cpu_verifier
@@ -55,6 +60,7 @@ def test_official_freeze_wrappers_preflight_all_core_evidence_before_running():
         assert "results/cpu_verification.json" in text
         assert "results/revision_ledger.json" in text
         assert "results/gated_dataset_access.json" in text
+        assert "results/dataset_contracts.json" in text
         assert "results/math500_scorer_audit.json" in text
         assert "results/cpu_verification_logs" in text
         assert "results/frozen_models" in text

@@ -34,6 +34,10 @@ their expected `results/*` artifacts exist and pass inspection.
 
 ### Frozen execution provenance
 
+- Primary planning now re-hashes every gitignored `results/frozen_models/*.yaml`
+  file and requires both its path and SHA-256 to match revision-ledger v2. A
+  post-freeze change to model generation settings therefore blocks the 18-cell
+  plan even when the tracked git checkout itself remains clean.
 - Primary, primary-analysis, repeated-sampling, and adaptive planners/executors
   reject dirty worktrees and mismatched commits.
 - Run audits are SHA-bound and commit-bound; reusable outputs must remain tied to

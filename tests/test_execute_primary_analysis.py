@@ -399,7 +399,29 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                         "observed_class_counts": {"0": 1},
                     }
                 },
-                "macro_over_eligible_cells": {},
+                "macro_over_eligible_cells": {
+                    view: {
+                        metric: {
+                            "primary_logistic": None,
+                            "isotonic_sensitivity": None,
+                            "isotonic_minus_logistic_improvement": None,
+                        }
+                        for metric in (
+                            "brier",
+                            "nll",
+                            "ece",
+                            "ece_10",
+                            "ece_20",
+                            "aurc",
+                            "risk_at_50_coverage",
+                            "risk_at_80_coverage",
+                        )
+                    }
+                    for view in (
+                        "decision_entropy",
+                        "trajectory_plus_decision",
+                    )
+                },
             }
         ),
         encoding="utf-8",

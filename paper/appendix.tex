@@ -84,7 +84,7 @@ Calibration and test IDs are disjoint and namespaced by dataset and immutable so
 
 Feature selection, calibrator family, adaptive thresholds, and ablation definitions are frozen before final test evaluation.
 The primary calibrator is standardized logistic regression.
-Isotonic regression is a sensitivity analysis only when the calibration partition is large enough to support it.
+Isotonic calibration is supplementary only: for an eligible cell, the same standardized logistic classifier is post-calibrated from five-fold stratified out-of-fold calibration scores with the non-ensemble procedure, and no test label is used for fitting. Eligibility is frozen at at least 1000 calibration examples and at least five examples in each correctness class; ineligible cells remain explicit skips in the complete 18-cell sensitivity artifact. This analysis does not alter the primary logistic RQ1 endpoint or claim gate.
 
 \section{Model-Specific Parity Gates}
 

@@ -82,6 +82,39 @@ def binding_matches(
     return True
 
 
+def binding_sources_intact(
+    provenance: dict,
+    *,
+    expected_commit: str | None = None,
+) -> bool:
+    if provenance.get("protocol") != "trajuq_analysis_source_binding_v1":
+        return False
+    commit = provenance.get("git_commit")
+    if not isinstance(commit, str) or not commit:
+        return False
+    if expected_commit is not None and commit != expected_commit:
+        return False
+    if provenance.get("git_clean") is not True:
+        return False
+
+    sources = provenance.get("sources")
+    if not isinstance(sources, dict) or not sources:
+        return False
+    for spec in sources.values():
+        if not isinstance(spec, dict):
+            return False
+        path = Path(str(spec.get("path", "")))
+        digest = str(spec.get("sha256", ""))
+        if not path.is_file() or not digest:
+            return False
+        try:
+            if sha256_file(path) != digest:
+                return False
+        except OSError:
+            return False
+    return True
+
+
 def compact_binding_matches(
     binding: dict,
     *,

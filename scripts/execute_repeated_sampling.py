@@ -606,13 +606,19 @@ def cell_state(
         )
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
         expected_test_ids = []
+    raw_evaluation_argv = cell.get("evaluate_argv")
+    evaluation_argv = (
+        [str(value) for value in raw_evaluation_argv]
+        if isinstance(raw_evaluation_argv, list)
+        else None
+    )
     evaluation = pair_state(
         Path(str(cell["repeated_metrics"])),
         Path(str(cell["repeated_predictions"])),
         expected_test_ids,
         expected_commit=expected_commit,
-        evaluation_argv=[str(value) for value in cell["evaluate_argv"]],
-        expected_seeds=seeds,
+        evaluation_argv=evaluation_argv,
+        expected_seeds=seeds if evaluation_argv is not None else None,
     )
     comparison = comparison_state(
         Path(str(cell["direct_comparison"])),

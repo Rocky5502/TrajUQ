@@ -75,7 +75,12 @@ def main() -> None:
             f"Analysis plan cell count mismatch: {len(cells)} != {expected}"
         )
 
-    sources: dict[str, Path] = {"analysis_plan": plan_path}
+    primary_config = Path(str(plan.get("primary_config", "")))
+    if not primary_config.is_file():
+        raise SystemExit(
+            f"Missing primary config bound by analysis plan: {primary_config}"
+        )
+    sources: dict[str, Path] = {"primary_config": primary_config}
     eligible_labels: list[str] = []
     skipped_labels: list[str] = []
     per_cell: dict[str, dict] = {}

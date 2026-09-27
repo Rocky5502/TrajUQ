@@ -39,9 +39,9 @@ All model, data, feature, calibration, and statistical choices are frozen before
 Autoregressive language models expose a natural sequence of conditional next-token distributions, and prior work studies whether confidence, entropy, self-consistency, or semantic disagreement can predict when a generated answer is wrong \citep{jiang2021know,kuhn2023semantic}.
 Diffusion language models (dLLMs), however, generate through iterative denoising rather than a single left-to-right pass.
 Recent systems such as LLaDA \citep{nie2025llada}, Dream \citep{ye2025dream}, SDAR \citep{cheng2026sdar}, and FLARE \citep{zhu2026flare} make parallel or blockwise generation increasingly practical.
-Yet uncertainty estimation for these models is still typically reduced to a final confidence snapshot or repeated output sampling.
+Uncertainty quantification for dLLMs is also emerging: DiSE uses sequence regeneration for self-evaluation \citep{zhong2026dise}, while diffusion-specific UQ work exploits trajectory likelihoods, remasking, prediction flips, denoising complexity, and semantic trajectory instability \citep{vazhentsev2026dllmuq}. Recent robustness analysis further shows that surface confidence can remain poorly ranked even when useful correctness information is present internally \citep{yadav2026unsure}.
 
-We ask a different question: \emph{does the denoising process itself contain predictive evidence about eventual correctness?}
+Against this background, we ask a deliberately narrower and stricter question: \emph{does the denoising process contain held-out predictive evidence about eventual correctness beyond a matched decision-time confidence baseline?}
 A token can remain masked for many iterations, oscillate between competing proposals, experience substantial distributional drift, or stabilize only late in the trajectory.
 These behaviors are observable before the benchmark outcome is revealed.
 They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score.
@@ -61,11 +61,11 @@ Our evaluation is organized around four questions:
 \end{description}
 
 The contributions are:
-(1) a model-agnostic telemetry schema for active unresolved positions;
-(2) a frozen set of entropy, drift, revision, persistence, and commitment signals;
-(3) a leak-safe calibration and selective-generation protocol with paired inference;
-(4) an adaptive-compute policy whose threshold is selected from out-of-fold calibration predictions; and
-(5) an open, reproducible evaluation design spanning masked, blockwise, and hybrid diffusion families.
+(1) a model-agnostic telemetry schema that measures only active unresolved positions while preserving native decoding parity;
+(2) a nested test of the incremental value of frozen trajectory dynamics beyond the same per-token decision-time entropy available at commitment;
+(3) a leak-safe, held-out calibration and selective-generation protocol with paired hierarchical inference across three diffusion-model families;
+(4) an adaptive second-pass compute policy whose threshold is selected only from out-of-fold calibration predictions; and
+(5) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
 
 \section{Related Work}
 
@@ -74,11 +74,14 @@ LLaDA established masked diffusion as a scalable alternative to autoregressive f
 Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \citep{ye2025dream}.
 SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \citep{cheng2026sdar}.
 FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \citep{zhu2026flare}.
-Recent decoding work also shows that confidence trajectories are operationally useful in dLLMs. One-shot dynamic thresholding adapts parallel-decoding cutoffs from observed confidence trajectories \citep{shen2025osdt}, while CD4LM uses confidence-adaptive decoding to allocate inference effort \citep{liang2026cd4lm}. DiffuGuard further reports that intra-step and inter-step denoising dynamics can matter for safety failures \citep{li2025diffuguard}. These studies motivate trajectory-aware control, but they do not test whether denoising dynamics provide calibrated, answer-level error prediction beyond a matched final-decision confidence baseline.
+Recent decoding work also shows that confidence trajectories are operationally useful in dLLMs. One-shot dynamic thresholding adapts parallel-decoding cutoffs from observed confidence trajectories \citep{shen2025osdt}, while CD4LM uses confidence-adaptive decoding to allocate inference effort \citep{liang2026cd4lm}. DiffuGuard further reports that intra-step and inter-step denoising dynamics can matter for safety failures \citep{li2025diffuguard}.
+
+\paragraph{Uncertainty in diffusion language models.}
+DiSE estimates sequence-level confidence by asking the dLLM to regenerate tokens in its completed output and also uses self-evaluation to control generation length \citep{zhong2026dise}. Vazhentsev et al. provide a systematic dLLM-UQ study over LLaDA and Dream, including trajectory entropy and likelihood, commitment confidence, remasking and token-flip statistics, denoising complexity, and trajectory-semantic dissimilarity; they evaluate selective rejection and efficiency against broad UQ baselines \citep{vazhentsev2026dllmuq}. Yadav et al. identify a representation--confidence gap under noisy inputs, showing that visible confidence can lose ranking quality even when hidden representations retain useful error information \citep{yadav2026unsure}. These works establish that dLLM-specific confidence and trajectory signals are meaningful. \method therefore does not claim that trajectory-based dLLM uncertainty is new. Instead, it isolates a complementary question: whether a fixed, lightweight telemetry vector from one native generation supplies \emph{incremental} held-out error information beyond matched decision-time entropy, remains calibrated across masked and blockwise families, and supports a frozen selective second-pass compute policy.
 
 \paragraph{Language-model uncertainty.}
 Calibration asks whether predicted confidence reflects empirical correctness \citep{jiang2021know}.
-Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines, but they either summarize a completed generation or require multiple generations. \method asks whether a \emph{single} diffusion trajectory already exposes useful process-level instability before the final answer is scored.
+Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.
 
 \paragraph{Selective prediction.}
 A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.
@@ -297,7 +300,7 @@ Negative results do not trigger post-hoc feature redesign on final test labels.
 
 \ConclusionResultSentence
 \method treats iterative denoising as an observable uncertainty process rather than merely a decoding mechanism.
-Its central empirical question is deliberately falsifiable: if a carefully calibrated trajectory model cannot improve over a strong decision-time baseline on held-out examples and multiple model families, then the denoising trajectory should not be claimed as a useful uncertainty source.
+Prior work already demonstrates useful dLLM-specific uncertainty signals \citep{zhong2026dise,vazhentsev2026dllmuq}; our central empirical question is therefore deliberately incremental and falsifiable. If a carefully calibrated trajectory model cannot improve over the matched decision-time baseline on held-out examples and multiple model families, then the additional trajectory telemetry should not be claimed to provide predictive value beyond decision-time confidence under our protocol.
 The accompanying protocol is designed so that this conclusion can be reached without outcome leakage or post-hoc test tuning.
 
 \section*{Limitations}

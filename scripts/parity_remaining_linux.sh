@@ -219,9 +219,7 @@ run_sdar() {
       exit 1
     fi
   fi
-  if [[ ! -e "$overhead" ]]; then
-    run_step "SDAR instrumentation overhead"       "$PYTHON" scripts/compare_instrumentation_overhead.py         --reference "$ref" --instrumented "$inst" --output "$overhead"
-  fi
+  run_step "Validate SDAR instrumentation overhead"       "$PYTHON" scripts/compare_instrumentation_overhead.py         --reference "$ref" --instrumented "$inst" --output "$overhead"
 }
 
 run_dream() {
@@ -243,9 +241,7 @@ run_dream() {
       exit 1
     fi
   fi
-  if [[ ! -e "$overhead" ]]; then
-    run_step "Dream instrumentation overhead"       "$PYTHON" scripts/compare_instrumentation_overhead.py         --reference "$ref" --instrumented "$inst" --output "$overhead"
-  fi
+  run_step "Validate Dream instrumentation overhead"       "$PYTHON" scripts/compare_instrumentation_overhead.py         --reference "$ref" --instrumented "$inst" --output "$overhead"
 }
 
 if [[ "$MODEL" == "sdar" || "$MODEL" == "all" ]]; then

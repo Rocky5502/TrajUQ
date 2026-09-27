@@ -10,6 +10,7 @@ import numpy as np
 
 from trajuq.adaptive_aggregation import AdaptiveCell, hierarchical_macro_adaptive
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -168,6 +169,20 @@ def main() -> None:
         item for item in plan["fractions"]
         if str(item["key"]) == args.fraction_key
     )
+    provenance_sources: dict[str, str] = {"plan": args.plan}
+    for spec in cells_spec:
+        label = str(spec["cell"])
+        evaluation = spec["evaluations"][args.fraction_key]
+        provenance_sources[f"refined_scored:{label}"] = str(
+            spec["provenance"]["test"]["refined_scored"]
+        )
+        provenance_sources[f"adaptive_result:{label}"] = str(
+            evaluation["result"]
+        )
+        provenance_sources[f"adaptive_predictions:{label}"] = str(
+            evaluation["predictions"]
+        )
+
     payload = {
         "protocol": "trajuq_adaptive_macro_v1",
         "execution_semantics": "selective_second_pass_rerun",
@@ -178,6 +193,7 @@ def main() -> None:
         "expected_cells": expected,
         "observed_cells": len(cells),
         "cell_set_complete": len(cells) == expected,
+        "provenance": analysis_provenance(provenance_sources),
         **result,
     }
 

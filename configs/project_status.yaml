@@ -73,11 +73,14 @@ implementation:
       - scripts/execute_primary_analysis.py
       - tests/test_execute_primary_analysis.py
   - id: rq1_gate
-    label: "Pre-registered positive-claim gate for RQ1"
+    label: "Pre-registered positive-claim gate for RQ1 with frozen-rule reuse re-evaluation"
     state: DONE
     evidence:
       - scripts/evaluate_rq1_claim_gate.py
+      - scripts/execute_primary_analysis.py
+      - scripts/render_results_tex.py
       - tests/test_rq1_claim_gate.py
+      - tests/test_execute_primary_analysis.py
   - id: repeated_sampling
     label: "Hash-bound five-sample baseline with complete 18-cell compute accounting"
     state: DONE

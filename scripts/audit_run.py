@@ -282,6 +282,13 @@ def main() -> None:
 
     commit = git_head()
     clean = git_clean()
+    if args.require_revision:
+        if not commit:
+            failures.append("current git commit could not be resolved")
+        if clean is not True:
+            failures.append(
+                "current git worktree is not clean; frozen run audit cannot PASS"
+            )
 
     provenance_failures, provenance = audit_run_provenance(
         rows,

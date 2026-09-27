@@ -107,3 +107,11 @@ def test_repeated_planner_checks_prediction_coverage_contract():
     text = Path("scripts/plan_repeated_sampling.py").read_text(encoding="utf-8")
     assert "predictions do not exactly" in text
     assert "cover the frozen scored test target" in text
+
+
+def test_repeated_planner_revalidates_primary_analysis_provenance():
+    text = Path("scripts/plan_repeated_sampling.py").read_text(
+        encoding="utf-8"
+    )
+    assert "validate_analysis_plan_provenance" in text
+    assert "primary analysis provenance: " in text

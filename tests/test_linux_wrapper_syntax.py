@@ -14,6 +14,7 @@ LINUX_WRAPPERS = (
     "scripts/parity_remaining_linux.sh",
     "scripts/math500_gate_linux.sh",
     "scripts/a100_campaign_linux.sh",
+    "scripts/a100_72h_autopilot.sh",
 )
 
 

@@ -466,9 +466,9 @@ execution_gates:
     label: "Artifact-derived paper result manifest"
     stage: submission
     issue: 11
-    action: "Run python scripts/render_results_tex.py and python scripts/render_paper_result_figures.py. The text renderer SHA-binds primary, claim-gate, repeated, feature-ablation, prior-aligned signal, adaptive, and primary-config sources; the figure renderer binds primary/config plus all three adaptive-cap sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
+    action: "Run python scripts/render_results_tex.py and python scripts/render_paper_result_figures.py. The text renderer v2 SHA-binds primary, claim-gate, repeated, feature-ablation, prior-aligned signal, supplementary isotonic calibration sensitivity, adaptive, and primary-config sources; the figure renderer binds primary/config plus all three adaptive-cap sources. Commit/stash final tracked paper changes, then run python scripts/submission_readiness.py from a clean submission checkout before ACL pubcheck."
     artifact: paper/generated_results_manifest.json
-    expect: {key: protocol, equals: trajuq_paper_results_render_v1}
+    expect: {key: protocol, equals: trajuq_paper_results_render_v2}
   - id: submission_readiness
     label: "Final repository-side ARR submission readiness"
     stage: submission

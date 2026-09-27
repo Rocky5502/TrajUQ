@@ -17,6 +17,7 @@ project:
   adaptive_primary_cap: 0.50
   adaptive_sensitivity_caps: [0.25, 0.75]
   a100_wall_clock_budget_hours: 72
+  a100_operational_reserve_hours: 6
   dataset_selection_version: sha256_id_rank_v1
   dataset_caps:
     gsm8k: {calibration_max: 500, test_max: 500}

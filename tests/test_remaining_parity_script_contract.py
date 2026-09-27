@@ -9,6 +9,9 @@ def test_remaining_parity_wrapper_binds_frozen_state():
     assert "git status --porcelain" in text
     assert "results/cpu_verification.json" in text
     assert "results/revision_ledger.json" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
+    assert "revision_ledger_sha256" in text
     assert "data/processed/gsm8k/calibration.jsonl" in text
 
 

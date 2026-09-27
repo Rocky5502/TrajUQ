@@ -17,6 +17,8 @@ The planned rental profile is one NVIDIA A100-SXM4-80GB GPU, 16 CPU cores,
 bandwidth. The operational budget is **72 continuous hours**. This profile is
 sufficient to load and execute each frozen primary checkpoint one at a time;
 TrajUQ does not require multi-GPU model parallelism or training.
+The frozen command ledger explicitly requests CUDA with bfloat16, and raw
+artifact reuse is contract-bound to those requested runtime settings.
 
 Generation remains single-GPU, but the A100 campaign uses resident checkpoint
 execution to avoid needless reloads across frozen jobs.

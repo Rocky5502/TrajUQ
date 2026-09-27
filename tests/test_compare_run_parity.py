@@ -31,6 +31,8 @@ def row(
                 "temperature": 0.0,
                 "cfg_scale": 0.0,
                 "remasking": "low_confidence",
+                "torch_version": "2.5.1+cu124",
+                "transformers_version": "4.52.4",
             }
         },
     }
@@ -54,6 +56,8 @@ def test_uniform_run_provenance_has_no_errors():
         "adapter": "llada",
         "seed": 2027,
         "model_revision": "model-sha",
+        "torch_version": "2.5.1+cu124",
+        "transformers_version": "4.52.4",
         "source_git_commit": "frozen-commit",
         "source_git_clean": True,
     }
@@ -177,3 +181,22 @@ def test_environment_provenance_accepts_matching_clean_source():
         clean=True,
         require=True,
     ) == []
+
+
+def test_runtime_provenance_rejects_transformers_mismatch():
+    reference = row()
+    instrumented = row()
+    instrumented["generation"]["metadata"]["transformers_version"] = "4.53.0"
+
+    errors = provenance_mismatches(
+        "example-1",
+        reference,
+        instrumented,
+        require=True,
+    )
+
+    assert any(
+        item["field"] == "generation.metadata.transformers_version"
+        and item["reason"] == "provenance_mismatch"
+        for item in errors
+    )

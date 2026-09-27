@@ -530,8 +530,8 @@ def main() -> None:
         "macro_output": str(macro_path),
         "execution_order": (
             "Generate all calibration/test auxiliary samples, evaluate every "
-            "cell, run paired per-cell comparisons, then macro-aggregate the "
-            "complete 18-cell matrix."
+            "pre-registered eligible cell, run paired per-cell comparisons, "
+            "then macro-aggregate the complete frozen repeated-sampling subset."
         ),
     }
 

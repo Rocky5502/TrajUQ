@@ -28,6 +28,35 @@ if ($LASTEXITCODE -ne 0 -or -not $Head) {
 }
 Write-Host "FROZEN_GIT_COMMIT=$Head" -ForegroundColor Yellow
 
+$ExistingFreezeEvidence = @()
+$FreezeFiles = @(
+    "results/cpu_verification.json",
+    "results/revision_ledger.json",
+    "results/gated_dataset_access.json",
+    "results/math500_scorer_audit.json"
+)
+foreach ($Path in $FreezeFiles) {
+    if (Test-Path $Path) {
+        $ExistingFreezeEvidence += $Path
+    }
+}
+if (Test-Path "results/cpu_verification_logs") {
+    $ExistingFreezeEvidence += @(
+        Get-ChildItem "results/cpu_verification_logs" -File -Filter "*.log" |
+            ForEach-Object { $_.FullName }
+    )
+}
+if (Test-Path "results/frozen_models") {
+    $ExistingFreezeEvidence += @(
+        Get-ChildItem "results/frozen_models" -File -Filter "*.yaml" |
+            ForEach-Object { $_.FullName }
+    )
+}
+if ($ExistingFreezeEvidence.Count -gt 0) {
+    $Rendered = ($ExistingFreezeEvidence | Sort-Object -Unique) -join ", "
+    throw "Refusing to start a mixed pre-primary freeze: existing immutable evidence was found: $Rendered. Inspect/archive it before freezing a new commit."
+}
+
 if (-not $SkipDependencyInstall) {
     Run-Step "Install CPU/model/data verification dependencies" {
         & $Python -m pip install -e ".[dev,math,models]"

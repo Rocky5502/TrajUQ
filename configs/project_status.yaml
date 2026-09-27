@@ -203,6 +203,19 @@ implementation:
       - scripts/execute_primary_analysis.py
       - scripts/execute_repeated_sampling.py
       - scripts/execute_adaptive_plan.py
+  - id: shared_preprimary_validator
+    label: "Shared frozen-state validator for CPU logs, revision/config identity, gated access, and six-dataset contracts"
+    state: DONE
+    evidence:
+      - scripts/validate_frozen_preprimary.py
+      - tests/test_validate_frozen_preprimary.py
+      - scripts/pilot_linux.sh
+      - scripts/pilot_windows.ps1
+      - scripts/parity_remaining_linux.sh
+      - scripts/parity_remaining_windows.ps1
+      - scripts/math500_gate_linux.sh
+      - scripts/math500_gate_windows.ps1
+      - scripts/a100_campaign_linux.sh
   - id: private_handoff
     label: "Privacy-scanned deterministic research handoff bundle and canonical continuation prompt"
     state: DONE

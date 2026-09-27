@@ -163,10 +163,13 @@ It requires a clean worktree, runs the complete CPU verification suite, resolves
 all primary model/data repositories to immutable Hugging Face SHAs, verifies
 record-level access to every gated primary dataset at those exact revisions,
 and writes `results/revision_ledger.json`,
-`results/gated_dataset_access.json`, plus hash-bound configs in
-`results/frozen_models/`. The CPU artifact, revision ledger, and gated-access
-proof must record the same clean git commit; the access proof also binds the
-revision-ledger SHA-256 and stores no gated benchmark content.
+`results/gated_dataset_access.json`, `results/dataset_contracts.json`, plus
+hash-bound configs in `results/frozen_models/`. The CPU artifact, revision
+ledger, gated-access proof, and six-dataset contract proof must record the same
+clean git commit. Both data preflights bind the revision-ledger SHA-256.
+`dataset_contracts.json` streams one exact-revision row from each primary
+dataset, exercises the frozen normalizer/scorer contract, and stores no
+benchmark row content.
 
 Linux/macOS guarded equivalent:
 
@@ -175,8 +178,9 @@ bash scripts/freeze_preprimary.sh
 ```
 
 Both freeze wrappers require a clean checkout, run CPU verification, immutable
-revision resolution, and exact-revision gated-data access verification without
-changing commits, re-check cleanliness afterward,
+revision resolution, exact-revision gated-data access verification, and the
+live six-dataset normalizer/scorer contract smoke without changing commits,
+re-check cleanliness afterward,
 refresh the project-status snapshot, and export a privacy-scanned private
 pre-primary handoff bundle. Primary readiness v2 later requires all three
 parity-v3 artifacts to match this ledger git commit and their ledger-resolved
@@ -518,8 +522,9 @@ The repository tracks the remaining gates as GitHub issues:
 - CI runner allocation.
 
 Do not scale to the primary model × dataset matrix until the clean CPU artifact,
-revision-ledger v2, LLaDA/SDAR/Dream parity-v3 gates, 50-item pilot + human
-review, and MATH-500 automatic/manual scorer gates are complete. Then run
+revision-ledger v2, gated-data access v1, six-dataset contract v1,
+LLaDA/SDAR/Dream parity-v3 gates, 50-item pilot + human review, and MATH-500
+automatic/manual scorer gates are complete. Then run
 `python scripts/primary_readiness.py`. Readiness v2 rejects stale or mixed
 artifacts: CPU verification and all parity files must share the ledger git
 commit; parity source files are re-hashed; pilot raw/scored audits must still
@@ -591,9 +596,9 @@ the archive.
 
 ## Full primary matrix
 
-The tracked YAML files remain generic templates. Freeze one clean experiment
-commit with CPU verification + revision-ledger v2, execute the model parity,
-pilot, and MATH-500 scorer gates at that frozen provenance, and require
+The tracked YAML files remain generic templates. Freeze one clean experiment commit with CPU verification + revision-ledger v2
++ gated-access v1 + six-dataset contract v1, execute the model parity, pilot,
+and MATH-500 scorer gates at that frozen provenance, and require
 `scripts/primary_readiness.py` to PASS. Prepare all six dataset pairs from the
 ledger SHAs and only then generate `results/primary_matrix_plan.json` with
 `scripts/plan_primary_matrix.py`. See `docs/PRIMARY_MATRIX_RUNBOOK.md`. The

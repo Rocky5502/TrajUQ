@@ -37,3 +37,21 @@ def existing_ids(path: str | Path) -> set[str]:
                 raise ValueError(f"Duplicate id already present in {p}: {item_id}")
             ids.add(item_id)
     return ids
+
+
+def write_json_immutable(path: str | Path, payload: dict[str, Any]) -> str:
+    """Write deterministic JSON once; preserve identical reruns, reject drift."""
+
+    p = Path(path)
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    if p.exists():
+        existing = p.read_text(encoding="utf-8")
+        if existing == rendered:
+            return "PRESERVED"
+        raise FileExistsError(
+            f"Refusing to overwrite immutable JSON artifact: {p}. "
+            "Inspect/archive it before creating a different frozen artifact."
+        )
+    p.write_text(rendered, encoding="utf-8")
+    return "CREATED"

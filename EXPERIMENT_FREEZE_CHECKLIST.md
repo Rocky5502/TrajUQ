@@ -19,6 +19,7 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] Adaptive policy and matched-compute comparison frozen.
 
 ## Model/runtime integrity
+- [ ] On a rented A100 server, `results/a100_rental_clock.json` is created immediately after checking out the exact commit, before dependency installation/downloads, and binds the same clean commit to the frozen 72-hour budget.
 - [ ] One clean experiment git commit selected before GPU parity.
 - [ ] `results/cpu_verification.json` is PASS on that exact commit.
 - [ ] `results/revision_ledger.json` is protocol `trajuq_revision_ledger_v2` and PASS on that exact commit.
@@ -35,6 +36,7 @@ Do not start the full primary matrix until every required item is checked.
 - [ ] Every primary parity artifact covers exactly 20 shared prompts with zero output/provenance mismatches.
 - [ ] Every primary parity artifact matches the revision-ledger git commit and model SHA.
 - [ ] Pilot output matches the exact state whose trajectory was logged.
+- [ ] Frozen model configs require `device: cuda` and `dtype: bfloat16`; the A100 reports CUDA available and bfloat16 support.
 - [ ] Precision, CUDA, PyTorch, Transformers, and GPU recorded.
 
 ## Engineering

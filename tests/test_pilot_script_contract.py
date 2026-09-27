@@ -125,6 +125,8 @@ def test_linux_a100_pilot_wrapper_matches_frozen_contract():
     assert "trajuq_pilot_quality_gate_v2" in text
     assert "scripts/export_trace_review.py" in text
     assert "will not delete or overwrite evidence" in text
+    assert '"$PARITY_RESULT"' in text
+    assert '"$PILOT_GATE"' in text
     assert "rm -f" not in text
 
 
@@ -144,6 +146,7 @@ def test_linux_remaining_parity_wrapper_is_guarded():
     assert "mismatch_count" in text
     assert "provenance_mismatch_count" in text
     assert "will not delete or overwrite evidence" in text
+    assert '"$parity"' in text
     assert "rm -f" not in text
 
 

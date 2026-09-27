@@ -79,6 +79,24 @@ particular, the following are implemented and versioned:
 - pilot and MATH-500 human review sheets are source-bound to the exact scored
   calibration artifacts they display; their recorders and primary readiness
   independently revalidate those hashes before the 18-cell matrix can launch;
+- every generated primary/adaptive/repeated raw record is now source-commit aware:
+  frozen audits and resumability reject rows from another commit, a dirty source
+  checkout, a different prompt binding, revision, seed, or adapter-specific
+  sampler contract;
+- protocol-v1 run auditing was repaired and hardened before GPU execution; it
+  now emits coherent run-level provenance instead of the previously broken
+  undefined-variable path, fails frozen audits on dirty checkouts, and writes
+  immutable audit evidence;
+- SDAR telemetry inference is fully no-grad, matching the native reference and
+  counting the KV-cache prefill forward evaluation so memory/compute metadata
+  are not systematically distorted;
+- instrumentation-overhead protocol v2 is clean-commit and SHA-bound to the
+  exact native/instrumented parity runs, immutable on disk, and revalidated by
+  all parity wrappers on resume rather than trusted by filename;
+- manuscript and analysis-plan terminology now states the frozen inference
+  procedure exactly: paired class-stratified resampling within each fixed cell
+  followed by equal-cell macro-averaging, without changing the registered
+  estimator or RQ1 claim gate;
 - immutable frozen-plan writes across primary, primary-analysis, repeated-sampling,
   and adaptive planners: byte-identical reruns are preserved, while any differing
   existing plan is rejected for inspection rather than overwritten;

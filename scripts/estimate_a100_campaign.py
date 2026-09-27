@@ -311,6 +311,39 @@ def seconds_to_hours(seconds: float) -> float:
     return seconds / 3600.0
 
 
+def budget_assessment(
+    *,
+    target_hours: float,
+    mean_hours: float,
+    p90_hours: float,
+) -> dict[str, Any]:
+    if not math.isfinite(target_hours) or target_hours <= 0:
+        raise ValueError("target wall-clock hours must be finite and positive")
+    if not math.isfinite(mean_hours) or mean_hours < 0:
+        raise ValueError("mean projection hours must be finite and non-negative")
+    if not math.isfinite(p90_hours) or p90_hours < 0:
+        raise ValueError("p90 planning hours must be finite and non-negative")
+
+    mean_fits = mean_hours <= target_hours
+    p90_fits = p90_hours <= target_hours
+    if p90_fits:
+        decision = "FULL_SCOPE_P90_PLANNING_FITS"
+    elif mean_fits:
+        decision = "FULL_SCOPE_MEAN_FITS_P90_EXCEEDS"
+    else:
+        decision = "FULL_SCOPE_MEAN_EXCEEDS_BUDGET"
+
+    return {
+        "target_wall_clock_hours": float(target_hours),
+        "mean_projection_hours": float(mean_hours),
+        "p90_planning_hours": float(p90_hours),
+        "mean_fits_budget": bool(mean_fits),
+        "p90_planning_fits_budget": bool(p90_fits),
+        "decision": decision,
+        "p90_is_statistical_runtime_bound": False,
+    }
+
+
 def make_markdown(payload: dict[str, Any]) -> str:
     lines = [
         "# TrajUQ A100 campaign compute estimate",
@@ -339,6 +372,20 @@ def make_markdown(payload: dict[str, Any]) -> str:
         (
             f"Total generation calls in the estimated scope: "
             f"**{payload['counts']['total_generation_calls']}**"
+        ),
+        (
+            f"Frozen wall-clock target: "
+            f"**{payload['budget_assessment']['target_wall_clock_hours']:.2f} h**  "
+        ),
+        (
+            f"Budget assessment: "
+            f"**{payload['budget_assessment']['decision']}**  "
+        ),
+        (
+            "Mean fits budget: "
+            f"**{payload['budget_assessment']['mean_fits_budget']}**; "
+            "P90 planning sum fits budget: "
+            f"**{payload['budget_assessment']['p90_planning_fits_budget']}**"
         ),
         "",
         "## Per-model projection",
@@ -630,6 +677,24 @@ def main() -> None:
             }
         )
 
+    mean_projection_hours = seconds_to_hours(
+        aggregate_mean_seconds
+    )
+    p90_planning_hours = seconds_to_hours(
+        aggregate_p90_seconds
+    )
+    target_wall_clock_hours = float(
+        primary.get("compute_budget", {}).get(
+            "target_wall_clock_hours",
+            0,
+        )
+    )
+    planning_budget = budget_assessment(
+        target_hours=target_wall_clock_hours,
+        mean_hours=mean_projection_hours,
+        p90_hours=p90_planning_hours,
+    )
+
     payload = {
         "protocol": "trajuq_a100_compute_estimate_v1",
         "status": "PASS",
@@ -645,6 +710,7 @@ def main() -> None:
             "optional_rq4",
         ],
         "planning_only": True,
+        "budget_assessment": planning_budget,
         "repeated_eligible_datasets": repeated_eligible,
         "repeated_expected_cells": 3 * len(repeated_eligible),
         "experiment_git_commit": expected_commit,
@@ -664,18 +730,10 @@ def main() -> None:
         },
         "per_model": per_model,
         "aggregate": {
-            "mean_projection_hours": seconds_to_hours(
-                aggregate_mean_seconds
-            ),
-            "p90_planning_hours": seconds_to_hours(
-                aggregate_p90_seconds
-            ),
-            "mean_projection_days_24h": seconds_to_hours(
-                aggregate_mean_seconds
-            ) / 24.0,
-            "p90_planning_days_24h": seconds_to_hours(
-                aggregate_p90_seconds
-            ) / 24.0,
+            "mean_projection_hours": mean_projection_hours,
+            "p90_planning_hours": p90_planning_hours,
+            "mean_projection_days_24h": mean_projection_hours / 24.0,
+            "p90_planning_days_24h": p90_planning_hours / 24.0,
         },
         "caveats": [
             (

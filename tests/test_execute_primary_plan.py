@@ -91,6 +91,26 @@ def test_partition_complete_only_after_both_audited_artifacts(tmp_path):
     assert partition_state(spec)["complete"]
 
 
+def test_complete_resident_raw_hands_off_to_canonical_audit_and_score(tmp_path):
+    source = tmp_path / "input.jsonl"
+    raw = tmp_path / "run.raw.jsonl"
+    scored = tmp_path / "run.scored.jsonl"
+    write_input(source, ["a", "b"])
+    write_run(raw, ["a", "b"])
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(scored),
+    }
+
+    assert artifact_id_state(raw, spec, "frozen-commit") == "COMPLETE"
+    assert not command_needed("generate", spec, "frozen-commit")
+    assert command_needed("audit_raw", spec, "frozen-commit")
+    assert command_needed("score", spec, "frozen-commit")
+    assert command_needed("audit_scored", spec, "frozen-commit")
+    assert not partition_state(spec, "frozen-commit")["complete"]
+
+
 def test_execution_snapshot_counts_complete_partitions(tmp_path):
     cal_input = tmp_path / "calibration.jsonl"
     test_input = tmp_path / "test.jsonl"

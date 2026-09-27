@@ -304,6 +304,7 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
     )
 
     macro = tmp_path / "macro.json"
+    calibration_sensitivity_macro = tmp_path / "calibration_sensitivity_macro.json"
     ablation_macro = tmp_path / "ablation_macro.json"
     prior_macro = tmp_path / "prior_macro.json"
     claim = tmp_path / "claim.json"
@@ -339,6 +340,9 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
         ],
         "final_outputs": {
             "macro_primary": str(macro),
+            "macro_calibration_sensitivity": str(
+                calibration_sensitivity_macro
+            ),
             "macro_feature_ablation": str(ablation_macro),
             "macro_prior_signal_diagnostics": str(prior_macro),
             "rq1_claim_gate": str(claim),
@@ -369,6 +373,33 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                         "risk80",
                     )
                 },
+            }
+        ),
+        encoding="utf-8",
+    )
+    calibration_sensitivity_macro.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_isotonic_calibration_sensitivity_macro_v1",
+                "role": "supplementary_calibration_sensitivity",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "eligibility_policy": _isotonic_contract(),
+                "eligible_cell_count": 0,
+                "skipped_cell_count": 1,
+                "eligible_cells": [],
+                "skipped_cells": ["llada:gsm8k"],
+                "per_cell": {
+                    "llada:gsm8k": {
+                        "status": "SKIP_INSUFFICIENT_CALIBRATION",
+                        "eligible": False,
+                        "n_calibration": 1,
+                        "n_test": 1,
+                        "observed_class_counts": {"0": 1},
+                    }
+                },
+                "macro_over_eligible_cells": {},
             }
         ),
         encoding="utf-8",
@@ -1071,3 +1102,62 @@ def test_calibration_sensitivity_accepts_valid_eligible_pass(tmp_path):
     }
 
     assert semantic_output_valid(cell, "calibration_sensitivity", out)
+
+
+def test_sensitivity_macro_provenance_rejects_cell_artifact_drift(tmp_path):
+    commit = "a" * 40
+    config = tmp_path / "primary.yaml"
+    sensitivity = tmp_path / "calibration_sensitivity.json"
+    config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    sensitivity.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_isotonic_calibration_sensitivity_v1",
+                "status": "SKIP_INSUFFICIENT_CALIBRATION",
+            }
+        ),
+        encoding="utf-8",
+    )
+    plan = {
+        "protocol": "trajuq_primary_analysis_plan_v2",
+        "experiment_git_commit": commit,
+        "primary_config": str(config),
+        "primary_config_sha256": _sha256(config),
+        "cell_analyses": [
+            {
+                "cell": "llada:gsm8k",
+                "outputs": {
+                    "calibration_sensitivity": str(sensitivity),
+                },
+            }
+        ],
+    }
+    provenance = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            "primary_config": {
+                "path": str(config),
+                "sha256": _sha256(config),
+            },
+            "cell:llada:gsm8k": {
+                "path": str(sensitivity),
+                "sha256": _sha256(sensitivity),
+            },
+        },
+    }
+    payload = {"provenance": provenance}
+
+    assert aggregate_provenance_matches(
+        plan,
+        payload,
+        "calibration_sensitivity",
+    )
+
+    sensitivity.write_text('{"tampered":true}', encoding="utf-8")
+    assert not aggregate_provenance_matches(
+        plan,
+        payload,
+        "calibration_sensitivity",
+    )

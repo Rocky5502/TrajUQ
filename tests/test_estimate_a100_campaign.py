@@ -188,6 +188,15 @@ def test_markdown_labels_estimate_as_planning_only():
             "mean_projection_days_24h": 6.25 / 24.0,
             "p90_planning_days_24h": 8.0 / 24.0,
         },
+        "budget_assessment": {
+            "target_wall_clock_hours": 72.0,
+            "mean_projection_hours": 6.25,
+            "p90_planning_hours": 8.0,
+            "mean_fits_budget": True,
+            "p90_planning_fits_budget": True,
+            "decision": "FULL_SCOPE_P90_PLANNING_FITS",
+            "p90_is_statistical_runtime_bound": False,
+        },
     }
 
     text = make_markdown(payload)
@@ -198,6 +207,8 @@ def test_markdown_labels_estimate_as_planning_only():
     assert "6.25 A100-hours" in text
     assert "0.26 days" in text
     assert "0.33 days" in text
+    assert "72.00 h" in text
+    assert "FULL_SCOPE_P90_PLANNING_FITS" in text
     assert "not a statistical 90% confidence bound" in text
 
 

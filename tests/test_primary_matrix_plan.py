@@ -2,6 +2,8 @@ from pathlib import Path
 
 import yaml
 
+from trajuq.datasets import SPLIT_SELECTION_VERSION
+
 from scripts.plan_primary_matrix import (
     generation_args,
     validate_prepared_split_identity,
@@ -108,9 +110,23 @@ def test_prepared_split_identity_matches_frozen_dataset_policy():
         "source_split": None,
         "calibration_fraction": None,
         "split_seed": None,
+        "pre_generation_cap": {
+            "method": SPLIT_SELECTION_VERSION,
+            "seed": "2027",
+            "calibration_max": 500,
+            "test_max": 500,
+        },
     }
     meta = {
         **spec,
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "source_counts": {
+            "source_total": 5,
+            "calibration_before_cap": 2,
+            "test_before_cap": 3,
+        },
+        "n_calibration": 2,
+        "n_test": 3,
         "source_git_commit": "frozen-commit",
         "source_git_clean": True,
         "requested_revision": "dataset-sha",
@@ -135,9 +151,23 @@ def test_prepared_split_identity_rejects_policy_drift():
         "source_split": "train",
         "calibration_fraction": 0.30,
         "split_seed": "2027",
+        "pre_generation_cap": {
+            "method": SPLIT_SELECTION_VERSION,
+            "seed": "2027",
+            "calibration_max": None,
+            "test_max": None,
+        },
     }
     meta = {
         **spec,
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "source_counts": {
+            "source_total": 5,
+            "calibration_before_cap": 2,
+            "test_before_cap": 3,
+        },
+        "n_calibration": 2,
+        "n_test": 3,
         "source_git_commit": "frozen-commit",
         "source_git_clean": True,
         "requested_revision": "dataset-sha",
@@ -166,9 +196,23 @@ def test_prepared_split_identity_rejects_repo_and_revision_drift():
         "source_split": None,
         "calibration_fraction": None,
         "split_seed": None,
+        "pre_generation_cap": {
+            "method": SPLIT_SELECTION_VERSION,
+            "seed": "2027",
+            "calibration_max": 500,
+            "test_max": 500,
+        },
     }
     meta = {
         **spec,
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "source_counts": {
+            "source_total": 5,
+            "calibration_before_cap": 2,
+            "test_before_cap": 3,
+        },
+        "n_calibration": 2,
+        "n_test": 3,
         "source_git_commit": "frozen-commit",
         "source_git_clean": True,
         "hf_id": "other/gsm8k",
@@ -196,9 +240,23 @@ def test_prepared_split_identity_rejects_other_source_commit():
         "source_split": None,
         "calibration_fraction": None,
         "split_seed": None,
+        "pre_generation_cap": {
+            "method": SPLIT_SELECTION_VERSION,
+            "seed": "2027",
+            "calibration_max": 500,
+            "test_max": 500,
+        },
     }
     meta = {
         **spec,
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "source_counts": {
+            "source_total": 5,
+            "calibration_before_cap": 2,
+            "test_before_cap": 3,
+        },
+        "n_calibration": 2,
+        "n_test": 3,
         "source_git_commit": "old-commit",
         "source_git_clean": True,
         "requested_revision": "dataset-sha",
@@ -212,3 +270,51 @@ def test_prepared_split_identity_rejects_other_source_commit():
         "gsm8k", meta, spec, ledger, "frozen-commit"
     )
     assert any("source commit differs" in item for item in failures)
+
+
+
+def test_prepared_split_identity_rejects_cap_policy_drift():
+    spec = {
+        "hf_id": "openai/gsm8k",
+        "config": "main",
+        "strategy": "official",
+        "calibration_split": "train",
+        "test_split": "test",
+        "source_split": None,
+        "calibration_fraction": None,
+        "split_seed": None,
+        "pre_generation_cap": {
+            "method": SPLIT_SELECTION_VERSION,
+            "seed": "2027",
+            "calibration_max": 500,
+            "test_max": 500,
+        },
+    }
+    meta = {
+        **spec,
+        "pre_generation_cap": {
+            **spec["pre_generation_cap"],
+            "test_max": 1000,
+        },
+        "selection_version": SPLIT_SELECTION_VERSION,
+        "source_counts": {
+            "source_total": 1600,
+            "calibration_before_cap": 800,
+            "test_before_cap": 800,
+        },
+        "n_calibration": 500,
+        "n_test": 500,
+        "source_git_commit": "frozen-commit",
+        "source_git_clean": True,
+        "requested_revision": "dataset-sha",
+    }
+    ledger = {
+        "repo_id": "openai/gsm8k",
+        "resolved_sha": "dataset-sha",
+    }
+
+    failures = validate_prepared_split_identity(
+        "gsm8k", meta, spec, ledger, "frozen-commit"
+    )
+
+    assert any("pre_generation_cap differs" in item for item in failures)

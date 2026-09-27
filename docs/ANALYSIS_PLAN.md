@@ -32,7 +32,7 @@ As a stronger but more expensive uncertainty comparator, freeze a five-sample fi
 
 ## RQ2 — Calibration and selective generation
 
-Fit probability calibrators on the frozen calibration partition only. Primary calibrator: standardized logistic regression over the frozen feature vector. Isotonic regression is a nonlinear sensitivity analysis when calibration data are sufficient.
+Fit probability calibrators on the frozen calibration partition only. Primary calibrator: standardized logistic regression over the frozen feature vector. Isotonic calibration is supplementary only: it post-calibrates the same standardized logistic classifier using five-fold stratified out-of-fold scores with `ensemble=False`, never test labels. A model--dataset cell is eligible only when its calibration partition contains at least 1000 examples and at least five examples in each correctness class; otherwise the frozen analysis emits `SKIP_INSUFFICIENT_CALIBRATION`. The complete sensitivity macro retains all 18 cells as either validated PASS or validated SKIP and macro-averages isotonic-vs-logistic calibration deltas only over the pre-registered eligible subset. This sensitivity cannot alter the primary logistic RQ1 endpoint or claim gate.
 
 Report:
 - Brier score;

@@ -42,15 +42,23 @@ Your job is to **continue the existing project**, not restart or redesign it.
   submission artifacts.
 - Planned primary scale/transfer GPU environment: Linux server using
   `ubuntu24.04ubuntu24_cuda13.0` (Ubuntu 24.04 / CUDA 13.0), with one
-  NVIDIA A100-SXM4-80GB GPU and 48 GB system memory.
-- `paper/main.tex` contains an **Experimental Environment** subsection with
-  the scientific compute description; `paper/appendix.tex` expands the resource
-  accounting/provenance description.
+  NVIDIA A100-SXM4-80GB GPU, 16 CPU cores, 48 GB system memory, a 200 GB
+  system disk, and approximately 250 Mbps selected bandwidth.
+- This is a pre-execution rental profile, not a verified runtime claim. The
+  manuscript labels it as planned until frozen artifacts attest the actual
+  environment used.
+- One A100 80GB is sufficient for sequential execution of the three frozen
+  checkpoints; the current generator is single-record/single-GPU, so extra GPUs
+  help only through explicit cell-level parallel workers.
+- Prefer a one-day initial rental: complete pre-primary gates and then run
+  `bash scripts/a100_campaign_linux.sh estimate`. The estimator reports exact
+  frozen generation-call count, serial A100-hours, and equivalent 24/7
+  single-A100 days from real timing traces before committing to a longer rental.
 - Environment availability is not evidence of experiment completion. Only
   inspected, frozen `results/*` artifacts may move execution gates to PASS.
-- Prefer the guarded A100/Linux campaign for expensive execution when available;
-  use the Windows workspace for local development, synchronization, inspection,
-  and the Windows wrappers when needed.
+- Use the guarded A100/Linux campaign as the primary expensive-execution path;
+  use the Windows workspace for local development, synchronization, and
+  evidence inspection.
 
 ## 2. Non-negotiable scientific rules
 

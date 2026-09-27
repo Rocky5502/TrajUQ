@@ -121,6 +121,14 @@ def main() -> None:
         "--output",
         default="results/revision_ledger.json",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help=(
+            "Explicit recovery-only replacement of existing freeze artifacts. "
+            "Never use after parity, pilot, or benchmark outcomes exist."
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -138,6 +146,25 @@ def main() -> None:
         include_diagnostic=args.include_diagnostic,
     )
     dataset_specs = collect_dataset_specs(primary, manifest)
+
+    out = Path(args.output)
+    frozen_root = Path(args.frozen_model_dir)
+    frozen_targets = [
+        frozen_root / f"{spec['adapter']}.yaml"
+        for spec in model_specs
+    ]
+    existing = [
+        path
+        for path in (out, *frozen_targets)
+        if path.exists()
+    ]
+    if existing and not args.overwrite:
+        raise SystemExit(
+            "Refusing to overwrite frozen revision evidence: "
+            + ", ".join(str(path) for path in existing)
+            + ". Inspect/archive it before recovery. The official freeze "
+            "wrappers never overwrite frozen revision evidence."
+        )
 
     api = HfApi()
     failures: list[str] = []
@@ -214,7 +241,6 @@ def main() -> None:
         "failures": failures,
     }
 
-    out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
@@ -227,7 +253,6 @@ def main() -> None:
             "Revision resolution failed. No frozen model configs were written."
         )
 
-    frozen_root = Path(args.frozen_model_dir)
     by_adapter = {spec["adapter"]: spec for spec in model_specs}
     frozen_configs: dict[str, str] = {}
     frozen_hashes: dict[str, str] = {}

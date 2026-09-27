@@ -117,6 +117,50 @@ their expected `results/*` artifacts exist and pass inspection.
 - Added direct tests for create/preserve/reject semantics and a contract test
   requiring every frozen planner to use the immutable writer.
 
+### Source-bound generation/audit hardening (2026-09-27)
+
+- Repaired a critical pre-GPU defect in `scripts/audit_run.py`: the provenance
+  summary previously referenced undefined variables and could crash instead of
+  producing a valid run audit. The repaired audit now emits uniform dataset,
+  model, adapter, seed, revision, and source-commit summaries.
+- Every `run_generation.py` record now stores the source repository commit and
+  whether the source checkout was clean. Frozen raw/scored audits require that
+  per-row source commit to equal the current experiment commit and reject dirty
+  source/current checkouts.
+- Primary and RQ3 adaptive partial-run resume logic now validates every preserved
+  row against the frozen prompt hash, model, adapter, seed, model revision,
+  schema, source input, source git commit, and adapter-specific generation
+  settings before treating an existing JSONL prefix as resumable.
+- Five-seed repeated-sampling reuse now also requires each reused raw row to be
+  source-commit/clean bound in addition to the existing audit, ID, model,
+  revision, seed, and sampler-setting checks.
+- The CPU end-to-end synthetic smoke was updated to carry the same source-commit
+  provenance and to clean only its synthetic audit artifacts before deterministic
+  regeneration.
+- SDAR instrumentation now runs every model forward under `torch.no_grad()`,
+  matching the native reference inference context and avoiding autograd-graph
+  memory inflation. Its forward-evaluation accounting now includes the KV-cache
+  prefill call.
+- Primary readiness and protocol-v1 run audits now use immutable JSON writes;
+  an altered rerun cannot silently replace previously frozen authorization
+  evidence.
+
+### Statistical terminology and overhead evidence (2026-09-27)
+
+- Kept the frozen RQ1/RQ2/RQ3 resampling algorithm unchanged, but clarified the
+  manuscript/analysis-plan wording: confidence intervals use paired,
+  class-stratified resampling within each fixed model--dataset cell followed by
+  equal-cell macro-averaging on every replicate. This avoids implying an
+  unimplemented second-stage resampling of cells while preserving the exact
+  pre-registered estimator.
+- Instrumentation-overhead evidence is now protocol
+  `trajuq_instrumentation_overhead_v2`: it is bound to the clean git commit,
+  exact native/instrumented source paths and SHA-256 hashes, and uniform
+  run-level model/dataset/adapter/seed/revision provenance.
+- Overhead JSON is immutable. LLaDA, SDAR, and Dream parity wrappers re-run the
+  deterministic overhead validator on resume, preserving identical evidence and
+  failing closed if a stale overhead file was produced from different sources.
+
 ### Hosted CI status
 
 GitHub Actions remains infrastructure-blocked before executable runner steps.

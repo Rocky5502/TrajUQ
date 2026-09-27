@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from trajuq.io import read_jsonl
+from trajuq.provenance import binding_matches
 
 
 def sha256_file(path: Path) -> str:
@@ -428,6 +429,47 @@ def cell_state(
     }
 
 
+def repeated_macro_provenance_matches(
+    plan: dict[str, Any],
+    payload: dict,
+) -> bool:
+    # Lightweight unit fixtures may omit the frozen-plan protocol.
+    if plan.get("protocol") != "trajuq_repeated_sampling_plan_v2":
+        return True
+
+    expected_commit = str(plan.get("experiment_git_commit", ""))
+    plan_path = str(plan.get("_plan_path", ""))
+    if not expected_commit or not plan_path or not Path(plan_path).is_file():
+        return False
+
+    sources: dict[str, tuple[str, str]] = {
+        "plan": (plan_path, sha256_file(Path(plan_path))),
+    }
+    for spec in plan.get("cells", []):
+        label = str(spec.get("cell", ""))
+        if not label:
+            return False
+        bindings = {
+            f"scored_target:{label}": spec.get("provenance", {})
+            .get("test", {})
+            .get("scored_target"),
+            f"trajuq_predictions:{label}": spec.get("trajuq_predictions"),
+            f"repeated_metrics:{label}": spec.get("repeated_metrics"),
+            f"repeated_predictions:{label}": spec.get("repeated_predictions"),
+        }
+        for name, raw_path in bindings.items():
+            path = Path(str(raw_path or ""))
+            if not path.is_file():
+                return False
+            sources[name] = (str(path), sha256_file(path))
+
+    return binding_matches(
+        payload.get("provenance", {}),
+        expected_commit=expected_commit,
+        expected_sources=sources,
+    )
+
+
 def macro_state(plan: dict[str, Any]) -> str:
     path = Path(str(plan["macro_output"]))
     if not path.exists():
@@ -474,6 +516,7 @@ def macro_state(plan: dict[str, Any]) -> str:
         and mean_compute < float("inf")
         and mean_p90 >= 0.0
         and mean_p90 < float("inf")
+        and repeated_macro_provenance_matches(plan, payload)
         and set(payload.get("macro", {})) >= {
             "auroc",
             "auprc",
@@ -622,6 +665,7 @@ def main() -> None:
     if not plan_path.exists():
         raise SystemExit(f"Missing repeated-sampling plan: {plan_path}")
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    plan["_plan_path"] = str(plan_path)
     if plan.get("status") != "PASS":
         raise SystemExit("Repeated-sampling plan is not PASS.")
 

@@ -343,9 +343,11 @@ python scripts/execute_primary_analysis.py --execute
 This produces cell-level held-out metrics, nested calibrated comparison,
 feature-family ablations plus exact per-example group probabilities, the
 training-free raw-risk diagnostic, prior-aligned trajectory-entropy and top-1
-revision/flip diagnostics, the complete equal-cell-weight primary macro, the
-complete 18-cell hierarchical feature-ablation macro, the complete 18-cell
-prior-aligned signal diagnostic macro, and the pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
+revision/flip diagnostics, the supplementary calibration-only isotonic
+sensitivity with explicit ineligible-cell skips, the complete equal-cell-weight
+primary macro, the complete 18-cell hierarchical feature-ablation macro, the
+complete 18-cell prior-aligned signal diagnostic macro, the complete 18-cell
+calibration-sensitivity PASS/SKIP macro, and the pre-registered RQ1 claim gate. A negative RQ1 gate is a valid scientific result
 and must not trigger post-hoc analysis redesign.
 
 ## 9. RQ2 expensive five-sample comparator
@@ -381,10 +383,12 @@ trajectory.
 ## 11. Paper rendering and submission checks
 
 Empirical values must enter the manuscript only through artifact-derived
-rendering. The text renderer requires seven SHA-bound sources: the complete
+rendering. The text renderer v2 requires eight SHA-bound sources: the complete
 primary aggregate, RQ1 gate, repeated-sampling aggregate, feature-ablation
-aggregate, prior-aligned signal aggregate, primary 50% adaptive aggregate, and
-frozen primary config. The figure renderer independently binds the primary
+aggregate, prior-aligned signal aggregate, supplementary isotonic calibration-
+sensitivity aggregate, primary 50% adaptive aggregate, and frozen primary
+config. The isotonic source populates an appendix-only sensitivity table and
+does not alter the frozen RQ1 claim gate. The figure renderer independently binds the primary
 aggregate/config plus all three adaptive-cap artifacts before replacing any TBD
 result surface:
 

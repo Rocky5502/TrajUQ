@@ -48,8 +48,9 @@ Your job is to **continue the existing project**, not restart or redesign it.
   manuscript labels it as planned until frozen artifacts attest the actual
   environment used.
 - One A100 80GB is sufficient for sequential execution of the three frozen
-  checkpoints. The repeated-sampling runner keeps a loaded checkpoint resident
-  across its five seeds and safely resumes validated partial prefixes.
+  checkpoints. Primary/RQ3 generation uses resident model execution, and the
+  repeated-sampling A100 path keeps each checkpoint resident across all eligible
+  dataset/partition jobs while safely resuming validated per-seed prefixes.
 - The operational rental envelope is 72 continuous hours. Before model calls,
   the dataset manifest freezes outcome-free SHA-256 ID caps with seed 2027:
   GSM8K calibration/test at 500 each; ARC-Challenge and MMLU-Pro large test

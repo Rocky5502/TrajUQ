@@ -143,8 +143,9 @@ Build the exact anonymous Overleaf source package:
 python scripts/build_overleaf_package.py
 ```
 
-Inspect its `MANIFEST.json`, source commit, ACL-style commit, and included file
-hashes before importing/uploading it to Overleaf.
+Inspect its `MANIFEST.json`, anonymous source-snapshot SHA-256, ACL-style
+commit, and included file hashes before importing/uploading it to Overleaf.
+The development git commit is intentionally not embedded in the anonymous ZIP.
 
 Build the anonymous software archive with
 `python scripts/build_anonymous_supplement.py` and inspect its MANIFEST.json

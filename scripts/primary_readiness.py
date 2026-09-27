@@ -852,6 +852,8 @@ def evaluate_readiness(
                 and payload.get("git_commit") == experiment_commit
                 and run_provenance.get("adapter") == model
                 and str(run_provenance.get("model_revision")) == str(expected_revision)
+                and run_provenance.get("source_git_commit") == experiment_commit
+                and run_provenance.get("source_git_clean") is True
                 and int(shared or 0) == 20
                 and int(mismatch_count or 0) == 0
                 and int(provenance_mismatch_count or 0) == 0
@@ -879,6 +881,7 @@ def evaluate_readiness(
                 "instrumented_audit_ok": instrumented_audit_ok,
                 "run_provenance": run_provenance,
                 "expected_model_revision": expected_revision,
+                "expected_source_git_commit": experiment_commit,
             }
             if not passed:
                 failures.append(

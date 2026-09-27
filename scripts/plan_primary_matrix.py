@@ -164,15 +164,32 @@ def validate_prepared_split_identity(
         ("calibration", "calibration_max", "n_calibration", "calibration_before_cap"),
         ("test", "test_max", "n_test", "test_before_cap"),
     ):
-        cap = cap_spec.get(manifest_key)
-        observed = int(meta.get(count_key, 0))
-        source_count = int(source_counts.get(source_key, observed))
+        try:
+            observed = int(meta.get(count_key, 0))
+        except (TypeError, ValueError):
+            failures.append(f"{dataset}: {role} prepared count is invalid")
+            continue
+        try:
+            source_count = int(source_counts.get(source_key, observed))
+        except (TypeError, ValueError):
+            failures.append(f"{dataset}: {role} pre-cap source count is invalid")
+            continue
+        if observed <= 0:
+            failures.append(f"{dataset}: {role} prepared count is not positive")
         if source_count < observed:
             failures.append(
                 f"{dataset}: {role} source count is smaller than prepared count"
             )
+        cap = cap_spec.get(manifest_key)
         if cap is not None:
-            cap = int(cap)
+            try:
+                cap = int(cap)
+            except (TypeError, ValueError):
+                failures.append(f"{dataset}: {role} frozen cap is invalid")
+                continue
+            if cap <= 0:
+                failures.append(f"{dataset}: {role} frozen cap is not positive")
+                continue
             expected = min(source_count, cap)
             if observed != expected:
                 failures.append(

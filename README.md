@@ -215,14 +215,24 @@ bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
 ```
 
-For the predeclared three-day single-A100 rental, once readiness is PASS run:
+For the predeclared three-day single-A100 rental, start the paid-rental
+clock immediately after checking out the exact server commit, before dependency
+installation, downloads, parity, or human gates:
+
+```bash
+python3.11 scripts/start_a100_rental_clock.py
+```
+
+Once readiness is PASS, run:
 
 ```bash
 BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
-The 72-hour supervisor runs the resumable stages in scientific-priority order
+The 72-hour supervisor inherits that original paid-rental deadline; it does not
+restart the clock after readiness. Its estimate is checked against the hours
+still remaining, then it runs the resumable stages in scientific-priority order
 (primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), uses
 plan-level resident checkpoint execution for primary/RQ3/RQ2 generation, and writes an
 hourly GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable

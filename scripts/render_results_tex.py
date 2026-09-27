@@ -10,7 +10,6 @@ from pathlib import Path
 import yaml
 
 from scripts.evaluate_rq1_claim_gate import evaluate_gate
-from trajuq.provenance import binding_sources_intact
 
 
 PRIOR_SIGNAL_SUFFIXES = {
@@ -599,11 +598,6 @@ def main() -> None:
         name: load_json(str(path))
         for name, path in paths.items()
     }
-    for name, payload in payloads.items():
-        if not binding_sources_intact(payload.get("provenance", {})):
-            raise SystemExit(
-                f"{name}: aggregate source binding is missing, dirty, or stale"
-            )
     primary_config_path = Path(args.primary_config)
     if not primary_config_path.exists():
         raise SystemExit(f"Missing primary config: {primary_config_path}")

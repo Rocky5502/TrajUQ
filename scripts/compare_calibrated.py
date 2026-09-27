@@ -9,6 +9,7 @@ import numpy as np
 from trajuq.calibration import RiskCalibrator
 from trajuq.features import FINAL_BASELINE_FEATURES, PRIMARY_TRAJECTORY_FEATURES
 from trajuq.io import read_jsonl
+from trajuq.provenance import analysis_provenance
 from trajuq.statistics import paired_bootstrap_improvement
 
 
@@ -61,8 +62,16 @@ def main() -> None:
     p_base = baseline.predict_error_probability(x_test_b)
     p_candidate = candidate.predict_error_probability(x_test_t)
 
+    provenance = analysis_provenance(
+        {
+            "calibration": args.calibration,
+            "test": args.test,
+        }
+    )
+
     payload = {
         "protocol": "trajuq_nested_calibrated_comparison_v1",
+        "provenance": provenance,
         "comparison": "trajectory_plus_decision_logistic_vs_decision_entropy_logistic",
         "delta_direction": "positive_means_trajectory_augmented_is_better",
         "n_calibration": len(cal_ids_b),

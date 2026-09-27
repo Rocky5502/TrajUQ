@@ -168,6 +168,24 @@ def make_render_sources(tmp_path):
         "skipped_cell_count": len(sensitivity_skipped),
         "eligible_cells": sensitivity_eligible,
         "skipped_cells": sensitivity_skipped,
+        "aggregation": (
+            "equal_weight_over_pre_registered_eligible_cells_only; all frozen "
+            "ineligible cells remain explicit skips"
+        ),
+        "delta_direction": (
+            "positive means isotonic improves a lower-is-better metric "
+            "relative to the primary logistic calibrator"
+        ),
+        "metrics": [
+            "brier",
+            "nll",
+            "ece",
+            "ece_10",
+            "ece_20",
+            "aurc",
+            "risk_at_50_coverage",
+            "risk_at_80_coverage",
+        ],
         "per_cell": {
             label: {
                 "status": (
@@ -314,11 +332,14 @@ def make_render_sources(tmp_path):
                 "path": str(config),
                 "sha256": config_sha,
             },
-            "cell:llada:gsm8k": {
-                "path": str(calibration_sensitivity_source),
-                "sha256": hashlib.sha256(
-                    calibration_sensitivity_source.read_bytes()
-                ).hexdigest(),
+            **{
+                f"cell:{label}": {
+                    "path": str(calibration_sensitivity_source),
+                    "sha256": hashlib.sha256(
+                        calibration_sensitivity_source.read_bytes()
+                    ).hexdigest(),
+                }
+                for label in sensitivity_labels
             },
         },
     }

@@ -7,7 +7,7 @@ The order below is part of the reproducibility protocol.
 ## 1. Freeze one clean experiment commit, CPU verification, and immutable revisions
 
 Do this **before** model parity. The same git commit must anchor CPU verification,
-the revision ledger, and all three primary-model parity artifacts.
+the revision ledger, the gated-dataset access proof, and all three primary-model parity artifacts.
 
 Windows preferred path:
 
@@ -32,6 +32,9 @@ including GPQA. It writes:
 
 - `results/revision_ledger.json` with protocol
   `trajuq_revision_ledger_v2`;
+- `results/gated_dataset_access.json` with protocol
+  `trajuq_gated_dataset_access_v1`, proving record-level access to every
+  gated primary dataset at the ledger-resolved SHA without storing its content;
 - the experiment git commit;
 - hashes of the primary config and dataset manifest;
 - immutable model and dataset SHAs;
@@ -45,6 +48,7 @@ branch or a different benchmark source.
 Required execution evidence includes:
 
 - `results/cpu_verification.json` = clean PASS at the ledger git commit;
+- `results/gated_dataset_access.json` = clean PASS at the same commit and bound to the current revision-ledger SHA-256;
 - LLaDA exact parity v3 = PASS on exactly 20 shared prompts;
 - LLaDA + GSM8K 50-example calibration pilot quality = PASS;
 - human review of at least 10 pilot trajectories = PASS;
@@ -77,8 +81,9 @@ python scripts/primary_readiness.py
 ```
 
 Readiness protocol v2 rejects stale or mixed provenance. In particular it
-requires the clean CPU artifact and every parity artifact to share the
-revision-ledger git commit, requires each parity model revision to equal the
+requires the clean CPU and gated-dataset-access artifacts plus every parity
+artifact to share the revision-ledger git commit, requires the gated-access
+proof to bind the current ledger SHA, requires each parity model revision to equal the
 ledger SHA, and requires exactly 20 shared parity prompts.
 
 Do not continue unless `results/primary_readiness.json` says `PASS`.

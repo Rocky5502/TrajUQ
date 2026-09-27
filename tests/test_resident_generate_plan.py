@@ -20,6 +20,10 @@ def _argv(adapter: str, output: str = "runs/x.raw.jsonl") -> list[str]:
         output,
         "--seed",
         "2027",
+        "--device",
+        "cuda",
+        "--dtype",
+        "bfloat16",
         "--max-new-tokens",
         "128",
     ]

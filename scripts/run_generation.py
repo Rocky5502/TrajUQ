@@ -5,6 +5,7 @@ import argparse
 import os
 import subprocess
 import time
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 from trajuq.io import append_jsonl, existing_ids, read_jsonl, sha256_text
@@ -189,10 +190,17 @@ def main() -> None:
             torch.cuda.synchronize()
 
         result.metadata["wall_time_seconds"] = time.perf_counter() - start
+        if torch is not None:
+            result.metadata["torch_version"] = torch.__version__
+        try:
+            result.metadata["transformers_version"] = importlib_metadata.version(
+                "transformers"
+            )
+        except importlib_metadata.PackageNotFoundError:
+            result.metadata["transformers_version"] = None
         if torch is not None and args.device.startswith("cuda") and torch.cuda.is_available():
             result.metadata["peak_gpu_memory_bytes"] = int(torch.cuda.max_memory_allocated())
             result.metadata["gpu_name"] = torch.cuda.get_device_name()
-            result.metadata["torch_version"] = torch.__version__
         result.metadata["pid"] = os.getpid()
 
         record = ExampleRecord(

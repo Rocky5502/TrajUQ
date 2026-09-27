@@ -190,8 +190,11 @@ def test_markdown_labels_estimate_as_planning_only():
         },
         "budget_assessment": {
             "target_wall_clock_hours": 72.0,
+            "operational_reserve_hours": 6.0,
             "mean_projection_hours": 6.25,
             "p90_planning_hours": 8.0,
+            "mean_plus_reserve_hours": 12.25,
+            "p90_plus_reserve_hours": 14.0,
             "mean_fits_budget": True,
             "p90_planning_fits_budget": True,
             "decision": "FULL_SCOPE_P90_PLANNING_FITS",
@@ -208,6 +211,7 @@ def test_markdown_labels_estimate_as_planning_only():
     assert "0.26 days" in text
     assert "0.33 days" in text
     assert "72.00 h" in text
+    assert "6.00 h" in text
     assert "FULL_SCOPE_P90_PLANNING_FITS" in text
     assert "not a statistical 90% confidence bound" in text
 
@@ -326,3 +330,17 @@ def test_budget_assessment_rejects_invalid_target():
             mean_hours=1,
             p90_hours=2,
         )
+
+
+
+def test_budget_assessment_applies_operational_reserve():
+    payload = budget_assessment(
+        target_hours=72,
+        mean_hours=67,
+        p90_hours=68,
+        reserve_hours=6,
+    )
+    assert payload["mean_plus_reserve_hours"] == pytest.approx(73)
+    assert payload["p90_plus_reserve_hours"] == pytest.approx(74)
+    assert payload["decision"] == "FULL_SCOPE_MEAN_EXCEEDS_BUDGET"
+    assert payload["mean_fits_budget"] is False

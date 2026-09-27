@@ -186,8 +186,8 @@ def verify_one(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Stream one record from every exact-revision primary dataset and "
-            "verify the frozen normalizer/scorer contract without storing "
+            "Stream a small fixed sample from every exact-revision primary dataset "
+            "and verify the frozen normalizer/scorer contract without storing "
             "benchmark row content."
         )
     )

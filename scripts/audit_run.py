@@ -419,14 +419,20 @@ def main() -> None:
             failures.append(f"row {i}: scored artifact requires boolean correctness")
 
         adapter_name = str(row.get("adapter", ""))
+        generation_metadata = row.get("generation", {}).get("metadata", {})
         if adapter_name in {"llada", "dream", "sdar"}:
-            semantics = row.get("generation", {}).get("metadata", {}).get(
-                "trajectory_semantics"
-            )
+            semantics = generation_metadata.get("trajectory_semantics")
             if semantics != "active_unresolved_positions_v4":
                 failures.append(
                     f"row {i}: trajectory_semantics={semantics!r}; "
                     "expected active_unresolved_positions_v4"
+                )
+        if adapter_name == "dream":
+            telemetry_hook = generation_metadata.get("telemetry_hook")
+            if telemetry_hook != "pre_transfer_generation_logits_hook":
+                failures.append(
+                    f"row {i}: Dream telemetry_hook={telemetry_hook!r}; "
+                    "expected pre_transfer_generation_logits_hook"
                 )
 
     audit = {

@@ -3,6 +3,24 @@ experiment:
   status: PRE_EXPERIMENT_DO_NOT_REPORT_NUMBERS
   seed: 2027
 
+compute_budget:
+  target_wall_clock_hours: 72
+  target_gpu_count: 1
+  target_gpu_class: NVIDIA_A100_SXM4_80GB
+  execution_priority:
+    - primary
+    - primary_analysis
+    - rq3_adaptive
+    - rq2_repeated_sampling
+    - paper_render
+  dataset_cap_policy: sha256_id_rank_v1
+  dataset_cap_manifest: data/manifests/evaluation_splits.json
+  continuous_execution: true
+  note: >
+    The three-day single-A100 envelope is an operational budget, not a claim
+    that runtime is known in advance. Dataset caps are frozen pre-outcome;
+    scientific gates are never weakened to satisfy the wall-clock target.
+
 models:
   primary:
     - configs/models/llada.yaml

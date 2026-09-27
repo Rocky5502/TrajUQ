@@ -48,12 +48,18 @@ Your job is to **continue the existing project**, not restart or redesign it.
   manuscript labels it as planned until frozen artifacts attest the actual
   environment used.
 - One A100 80GB is sufficient for sequential execution of the three frozen
-  checkpoints; the current generator is single-record/single-GPU, so extra GPUs
-  help only through explicit cell-level parallel workers.
-- Prefer a one-day initial rental: complete pre-primary gates and then run
-  `bash scripts/a100_campaign_linux.sh estimate`. The estimator reports exact
-  frozen generation-call count, serial A100-hours, and equivalent 24/7
-  single-A100 days from real timing traces before committing to a longer rental.
+  checkpoints. The repeated-sampling runner keeps a loaded checkpoint resident
+  across its five seeds and safely resumes validated partial prefixes.
+- The operational rental envelope is 72 continuous hours. Before model calls,
+  the dataset manifest freezes outcome-free SHA-256 ID caps with seed 2027:
+  GSM8K calibration/test at 1,000 each; ARC-Challenge and MMLU-Pro large test
+  splits at 1,000; smaller frozen partitions remain complete.
+- Complete pre-primary gates, run
+  `bash scripts/a100_campaign_linux.sh estimate`, then launch
+  `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`.
+  The supervisor prioritizes primary -> analysis -> RQ3 -> expensive RQ2 ->
+  paper and logs GPU/disk/progress hourly without requiring the agent to remain
+  connected.
 - Environment availability is not evidence of experiment completion. Only
   inspected, frozen `results/*` artifacts may move execution gates to PASS.
 - Use the guarded A100/Linux campaign as the primary expensive-execution path;
@@ -71,6 +77,25 @@ Your job is to **continue the existing project**, not restart or redesign it.
 - Keep raw generation pre-outcome: reference answers, correctness labels, benchmark outcomes, and post-grading signals must not enter trajectory features.
 - Preserve the boundary `y ∉ z`, where `y` is eventual correctness and `z` contains only information available before grading.
 - Raw generation and scoring artifacts are separate and joined only through audited IDs, prompt hashes, provenance, and frozen model metadata.
+
+## 2A. Frozen three-day data/compute policy
+
+This policy is pre-outcome and part of the experiment specification:
+
+- selection method: `sha256_id_rank_v1`;
+- selection seed: 2027;
+- GSM8K: at most 1,000 calibration + 1,000 test;
+- ARC-Challenge: full official validation + at most 1,000 test;
+- MMLU-Pro: full official validation + at most 1,000 test;
+- GPQA-Diamond, TruthfulQA, MATH-500: complete deterministic internal holdouts;
+- selection uses only namespaced IDs, never labels, references, prompt text, or
+  model outputs;
+- split manifests record uncapped source counts, caps, selected counts,
+  immutable dataset revision/fingerprint, and output SHA-256 hashes;
+- the 72-hour wall-clock target never permits weakening a failed scientific
+  gate.
+
+The autonomous runbook is `docs/CODEX_A100_72H.md`.
 
 ## 3. Frozen primary scientific design
 
@@ -321,7 +346,8 @@ bash scripts/a100_campaign_linux.sh parity-math
 bash scripts/a100_campaign_linux.sh readiness
 bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
-bash scripts/a100_campaign_linux.sh all-after-readiness
+BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+  bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
 Every successful expensive A100 stage refreshes project status and emits a

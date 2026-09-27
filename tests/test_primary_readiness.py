@@ -36,6 +36,46 @@ def write_cpu_pass(path: Path, commit: str = EXPERIMENT_COMMIT) -> None:
     )
 
 
+def write_gated_access_pass(
+    path: Path,
+    ledger_path: Path,
+    *,
+    commit: str = EXPERIMENT_COMMIT,
+) -> None:
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    gated = [
+        item
+        for item in ledger.get("datasets", [])
+        if item.get("gated") is True
+    ]
+    write_json(
+        path,
+        {
+            "protocol": "trajuq_gated_dataset_access_v1",
+            "status": "PASS",
+            "git_commit": commit,
+            "git_clean": True,
+            "revision_ledger": str(ledger_path),
+            "revision_ledger_sha256": sha256_file(ledger_path),
+            "gated_dataset_names": sorted(
+                str(item["name"]) for item in gated
+            ),
+            "datasets": [
+                {
+                    "name": str(item["name"]),
+                    "repo_id": str(item["repo_id"]),
+                    "resolved_sha": str(item["resolved_sha"]),
+                    "status": "PASS",
+                    "record_accessed": True,
+                }
+                for item in gated
+            ],
+            "failure_count": 0,
+            "failures": [],
+        },
+    )
+
+
 def write_config(path: Path, models: tuple[str, ...]) -> None:
     path.write_text(
         yaml.safe_dump(
@@ -173,6 +213,7 @@ def build_case(
     config = tmp_path / "primary.yaml"
     ledger = tmp_path / "ledger.json"
     cpu = tmp_path / "cpu.json"
+    gated_access = tmp_path / "gated_access.json"
     quality = tmp_path / "quality.json"
     manual = tmp_path / "manual.json"
     math_audit = tmp_path / "math_audit.json"
@@ -181,6 +222,7 @@ def build_case(
     write_config(config, models)
     revisions = write_revision_ledger(ledger, config, models)
     write_cpu_pass(cpu)
+    write_gated_access_pass(gated_access, ledger)
 
     parity: dict[str, str] = {}
     for model in models:
@@ -344,6 +386,7 @@ def build_case(
         "config": config,
         "ledger": ledger,
         "cpu": cpu,
+        "gated_access": gated_access,
         "quality": quality,
         "manual": manual,
         "math_audit": math_audit,
@@ -362,6 +405,7 @@ def evaluate(case: dict) -> dict:
         str(case["math_manual"]),
         str(case["cpu"]),
         str(case["ledger"]),
+        str(case["gated_access"]),
     )
 
 
@@ -371,6 +415,34 @@ def test_primary_readiness_passes_only_with_all_bound_gates(tmp_path):
     assert result["status"] == "PASS"
     assert result["experiment_git_commit"] == EXPERIMENT_COMMIT
     assert not result["failures"]
+
+
+def test_primary_readiness_rejects_missing_gated_access_gate(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    case["gated_access"].unlink()
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "gated dataset access artifact unavailable" in item
+        for item in result["failures"]
+    )
+
+
+def test_primary_readiness_rejects_stale_gated_access_commit(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    payload = json.loads(
+        case["gated_access"].read_text(encoding="utf-8")
+    )
+    payload["git_commit"] = "other-commit"
+    write_json(case["gated_access"], payload)
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "gated primary dataset access" in item
+        for item in result["failures"]
+    )
 
 
 def test_primary_readiness_rejects_stale_cpu_and_parity_commit(tmp_path):
@@ -459,6 +531,7 @@ def test_primary_readiness_can_enforce_current_clean_checkout(tmp_path):
         str(case["math_manual"]),
         str(case["cpu"]),
         str(case["ledger"]),
+        str(case["gated_access"]),
         enforce_current_git=True,
         current_git_commit="different-commit",
         current_git_clean=False,

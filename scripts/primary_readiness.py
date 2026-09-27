@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from trajuq.datasets import NORMALIZER_VERSION
+
 
 DEFAULT_PARITY = {
     "llada": "results/llada_parity.json",
@@ -96,6 +98,7 @@ def collect_readiness_source_bindings(
     cpu_verification_path: str,
     revision_ledger_path: str,
     gated_access_path: str,
+    dataset_contracts_path: str,
 ) -> tuple[list[dict[str, str]], list[str]]:
     candidates: set[Path] = set()
 
@@ -122,6 +125,7 @@ def collect_readiness_source_bindings(
         cpu_verification_path,
         revision_ledger_path,
         gated_access_path,
+        dataset_contracts_path,
         *parity_paths.values(),
     ):
         add(path_text)
@@ -205,6 +209,7 @@ def evaluate_readiness(
     cpu_verification_path: str = "results/cpu_verification.json",
     revision_ledger_path: str = "results/revision_ledger.json",
     gated_access_path: str = "results/gated_dataset_access.json",
+    dataset_contracts_path: str = "results/dataset_contracts.json",
     *,
     enforce_current_git: bool = False,
     current_git_commit: str | None = None,
@@ -388,6 +393,69 @@ def evaluate_readiness(
             )
     except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
         failures.append(f"gated dataset access artifact unavailable/invalid: {exc}")
+
+    try:
+        contracts = load_json(dataset_contracts_path)
+        expected_contract_names = sorted(primary_datasets)
+        observed_contract_names = sorted(
+            str(name) for name in contracts.get("observed_datasets", [])
+        )
+        declared_contract_names = sorted(
+            str(name) for name in contracts.get("expected_datasets", [])
+        )
+        contract_rows = {
+            str(item.get("dataset")): item
+            for item in contracts.get("results", [])
+            if item.get("dataset")
+        }
+        contract_rows_ok = (
+            set(contract_rows) == set(expected_contract_names)
+            and all(
+                contract_rows[name].get("status") == "PASS"
+                and contract_rows[name].get("scorer_smoke_pass") is True
+                and contract_rows[name].get("source_row_content_stored") is False
+                and str(contract_rows[name].get("resolved_revision", ""))
+                == str(ledger_datasets.get(name, {}).get("resolved_sha", ""))
+                and contract_rows[name].get("normalizer_version")
+                == NORMALIZER_VERSION
+                for name in expected_contract_names
+            )
+        )
+        ledger_path = Path(revision_ledger_path)
+        dataset_contracts_pass = (
+            contracts.get("protocol") == "trajuq_dataset_contracts_v1"
+            and contracts.get("status") == "PASS"
+            and contracts.get("git_clean") is True
+            and experiment_commit is not None
+            and contracts.get("git_commit") == experiment_commit
+            and contracts.get("normalizer_version") == NORMALIZER_VERSION
+            and ledger_path.is_file()
+            and contracts.get("revision_ledger_sha256")
+            == sha256_file(ledger_path)
+            and observed_contract_names == expected_contract_names
+            and declared_contract_names == expected_contract_names
+            and int(contracts.get("failure_count", 1)) == 0
+            and contract_rows_ok
+        )
+        checks["dataset_contracts"] = {
+            "path": dataset_contracts_path,
+            "status": contracts.get("status"),
+            "protocol": contracts.get("protocol"),
+            "git_commit": contracts.get("git_commit"),
+            "git_clean": contracts.get("git_clean"),
+            "normalizer_version": contracts.get("normalizer_version"),
+            "expected_datasets": expected_contract_names,
+            "observed_datasets": observed_contract_names,
+            "failure_count": contracts.get("failure_count"),
+            "revision_ledger_sha256": contracts.get("revision_ledger_sha256"),
+            "rows_ok": contract_rows_ok,
+        }
+        if not dataset_contracts_pass:
+            failures.append(
+                "primary dataset normalizer/scorer contracts are not a clean complete revision-bound PASS"
+            )
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        failures.append(f"dataset contract artifact unavailable/invalid: {exc}")
 
     try:
         cpu = load_json(cpu_verification_path)
@@ -772,6 +840,7 @@ def evaluate_readiness(
         cpu_verification_path,
         revision_ledger_path,
         gated_access_path,
+        dataset_contracts_path,
     )
     if missing_bound_sources:
         failures.append(
@@ -816,6 +885,10 @@ def main() -> None:
     parser.add_argument(
         "--gated-dataset-access",
         default="results/gated_dataset_access.json",
+    )
+    parser.add_argument(
+        "--dataset-contracts",
+        default="results/dataset_contracts.json",
     )
     parser.add_argument(
         "--pilot-quality",
@@ -871,6 +944,7 @@ def main() -> None:
         args.cpu_verification,
         args.revision_ledger,
         args.gated_dataset_access,
+        args.dataset_contracts,
         enforce_current_git=not historical,
         current_git_commit=current_commit,
         current_git_clean=(

@@ -35,6 +35,22 @@ Your job is to **continue the existing project**, not restart or redesign it.
 6. Treat GitHub as canonical for repository engineering state, but remember that `results/*` is gitignored. **GitHub alone cannot prove an execution gate passed.**
 7. If local/result artifacts are available in an uploaded handoff ZIP, inspect them before making any claim about completed experiments.
 
+## 1A. Current workspace and compute environment
+
+- Private Windows working copy: `G:\\NAACL Project2`.
+- Never put that local path into the anonymous ACL/ARR manuscript or public
+  submission artifacts.
+- Planned primary scale/transfer GPU environment: Linux server using
+  `ubuntu24.04ubuntu24_cuda13.0` (Ubuntu 24.04 / CUDA 13.0), with one
+  NVIDIA A100-SXM4-80GB GPU and 48 GB system memory.
+- `paper/main.tex` contains an **Experimental Environment** subsection with
+  the scientific compute description.
+- Environment availability is not evidence of experiment completion. Only
+  inspected, frozen `results/*` artifacts may move execution gates to PASS.
+- Prefer the guarded A100/Linux campaign for expensive execution when available;
+  use the Windows workspace for local development, synchronization, inspection,
+  and the Windows wrappers when needed.
+
 ## 2. Non-negotiable scientific rules
 
 - Do not invent empirical results.

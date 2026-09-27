@@ -167,7 +167,8 @@ function Assert-Math500FrozenPair {
         [string]$TestData,
         [string]$SplitManifestPath,
         [string]$SplitAuditPath,
-        [string]$DatasetSha
+        [string]$DatasetSha,
+        [string]$Commit
     )
 
     foreach ($Path in @($CalibrationData, $TestData, $SplitManifestPath, $SplitAuditPath)) {
@@ -180,6 +181,12 @@ function Assert-Math500FrozenPair {
     $Audit = Get-Content $SplitAuditPath -Raw | ConvertFrom-Json
     if ($Split.requested_revision -ne $DatasetSha) {
         throw "Frozen MATH-500 split revision differs from the revision ledger."
+    }
+    if ($Split.source_git_clean -ne $true -or [string]$Split.source_git_commit -ne $Commit) {
+        throw "Frozen MATH-500 split is not bound to the frozen clean experiment commit."
+    }
+    if ($Audit.source_git_clean -ne $true -or [string]$Audit.source_git_commit -ne $Commit) {
+        throw "Frozen MATH-500 split audit is not bound to the frozen clean experiment commit."
     }
     if ($Split.calibration_sha256 -ne (Get-FileSha256 $CalibrationData)) {
         throw "Frozen MATH-500 calibration hash differs from its split manifest."
@@ -262,7 +269,7 @@ if ($Stage -in @("prepare", "all")) {
         )
     }
 
-    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha
+    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha $Head
 
     Run-Step "MATH-500 LLaDA CUDA preflight" {
         & $Python scripts/preflight.py --model-config results/frozen_models/llada.yaml --data $CalData --require-cuda
@@ -271,7 +278,7 @@ if ($Stage -in @("prepare", "all")) {
 
 if ($Stage -in @("pilot", "all")) {
     Require-ScorerAudit $Head
-    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha
+    Assert-Math500FrozenPair $CalData $TestData $SplitManifest $SplitAudit $DatasetSha $Head
 
     Require-No-PilotArtifacts @(
         $Raw,

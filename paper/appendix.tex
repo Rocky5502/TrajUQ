@@ -8,7 +8,10 @@ It is intentionally detailed so that model-specific implementation choices canno
 The planned scale/transfer profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
 CUDA~13.0), 16 CPU cores, 48~GB of system memory, and one
-NVIDIA A100-SXM4-80GB GPU. Because this appendix is still pre-experiment, those
+NVIDIA A100-SXM4-80GB GPU under a predeclared 72-hour continuous rental
+envelope. The wall-clock envelope is operational rather than inferential:
+scientific gates are not relaxed when time is scarce, and incomplete stages
+remain incomplete. Because this appendix is still pre-experiment, those
 resources are a declared execution plan, not a claim that a run has completed;
 the final paper must report the environment attested by the frozen artifacts.
 The experiment freeze records the source commit, immutable model and dataset
@@ -166,20 +169,28 @@ Same-checkpoint AR/diffusion disagreement is a diagnostic, not a correctness lab
 \toprule
 Dataset & Calibration & Test\\
 \midrule
-GSM8K & official train & official test\\
-ARC-Challenge & official validation & official test\\
-MMLU-Pro & official validation & official test\\
-GPQA-Diamond & frozen internal holdout & frozen internal holdout\\
-TruthfulQA & frozen internal holdout & frozen internal holdout\\
-MATH-500 & frozen internal holdout & frozen internal holdout\\
+GSM8K & official train, cap 1,000 & official test, cap 1,000\\
+ARC-Challenge & official validation, full & official test, cap 1,000\\
+MMLU-Pro & official validation, full & official test, cap 1,000\\
+GPQA-Diamond & frozen internal holdout, full & frozen internal holdout, full\\
+TruthfulQA & frozen internal holdout, full & frozen internal holdout, full\\
+MATH-500 & frozen internal holdout, full & frozen internal holdout, full\\
 \bottomrule
 \end{tabular}
-\caption{Frozen split roles. Internal holdouts are created before model calls.}
+\caption{Frozen split roles and pre-generation compute caps. Full means the
+complete partition produced by the declared split rule. Caps are applied
+before model calls by SHA-256 ranking of namespaced IDs with seed 2027 and never
+use labels, references, prompt text, or model outcomes.}
 \end{table}
 
 All prepared example IDs are namespaced as
 \texttt{dataset:source-split:item-id}
 to prevent false overlap when official splits reuse integer row indices.
+For capped partitions, deterministic hash ranking is performed on these
+namespaced IDs. The split manifest records the uncapped source counts, cap
+policy, seed, selected counts, source revision, fingerprints, and SHA-256
+hashes of the resulting calibration/test JSONL files. This makes the compute
+reduction reproducible and auditable without consulting model outcomes.
 
 \section{Correctness Scoring}
 

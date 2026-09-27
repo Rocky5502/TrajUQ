@@ -181,12 +181,14 @@ implementation:
       - tests/test_submission_readiness.py
       - paper/README.md
   - id: a100_campaign
-    label: "Guarded staged A100 campaign runner with explicit human-review stops"
+    label: "Guarded staged A100 campaign runner with explicit human-review stops and stage-specific private progress handoffs"
     state: DONE
     evidence:
       - scripts/a100_campaign_linux.sh
       - docs/A100_EXECUTION.md
+      - tests/test_a100_campaign_contract.py
       - tests/test_pilot_script_contract.py
+      - scripts/export_research_handoff.py
   - id: a100_compute_estimator
     label: "Frozen-input A100 compute forecast from audited model timing traces"
     state: DONE

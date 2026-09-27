@@ -225,6 +225,8 @@ It writes:
 - `paper/generated_results.tex`;
 - `paper/generated_results_manifest.json`.
 
+Required render-manifest protocol: `trajuq_paper_results_render_v2`.
+
 `scripts/submission_readiness.py` deterministically re-renders these macros
 from the bound sources and rejects manual TeX/manifest tampering.
 

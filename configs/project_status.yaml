@@ -338,7 +338,7 @@ execution_gates:
     label: "Frozen 18-cell execution plan"
     stage: primary_execution
     issue: 8
-    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution. Planning re-hashes the readiness source-binding manifest, revision ledger, exact frozen model-config hashes/paths, split manifests/audits, and calibration/test inputs before emitting the 18-cell plan."
+    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution. Planning re-hashes the readiness source-binding manifest and revision ledger, requires every prepared split manifest to match the frozen dataset repo/config/full split policy/resolved SHA/source commit, then re-hashes exact frozen model configs, split manifests/audits, and calibration/test inputs before emitting the 18-cell plan."
     artifact: results/primary_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: a100_compute_estimate

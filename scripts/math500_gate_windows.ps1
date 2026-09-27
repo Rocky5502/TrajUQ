@@ -215,6 +215,10 @@ function Require-No-PilotArtifacts {
 New-Item -ItemType Directory -Force -Path results | Out-Null
 New-Item -ItemType Directory -Force -Path runs | Out-Null
 
+Run-Step "Validate frozen pre-primary evidence" {
+    & $Python scripts/validate_frozen_preprimary.py
+}
+
 $State = Read-FrozenState
 $Ledger = $State.Ledger
 $Head = [string]$State.Head

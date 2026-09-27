@@ -7,6 +7,7 @@ from scripts.execute_repeated_sampling import (
     audit_passes,
     execution_snapshot,
     generation_state,
+    macro_state,
     pair_state,
     validate_plan_provenance,
 )
@@ -414,3 +415,92 @@ def test_pair_state_rejects_non_five_sample_metrics(tmp_path):
     )
     predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
     assert pair_state(metrics, predictions, ["x"]) == "INVALID"
+
+
+def test_repeated_macro_rejects_consumed_source_drift(tmp_path):
+    commit = "frozen-commit"
+    plan_path = tmp_path / "repeated_plan.json"
+    scored = tmp_path / "test.scored.jsonl"
+    trajuq = tmp_path / "trajuq.predictions.jsonl"
+    metrics = tmp_path / "repeated.metrics.json"
+    repeated = tmp_path / "repeated.predictions.jsonl"
+    macro = tmp_path / "macro.json"
+
+    scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    trajuq.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    metrics.write_text('{"protocol":"trajuq_repeated_sampling_baseline_v2"}\n', encoding="utf-8")
+    repeated.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    plan_path.write_text('{"status":"PASS"}\n', encoding="utf-8")
+
+    cell = {
+        "cell": "llada:gsm8k",
+        "provenance": {"test": {"scored_target": str(scored)}},
+        "trajuq_predictions": str(trajuq),
+        "repeated_metrics": str(metrics),
+        "repeated_predictions": str(repeated),
+    }
+    plan = {
+        "protocol": "trajuq_repeated_sampling_plan_v2",
+        "experiment_git_commit": commit,
+        "_plan_path": str(plan_path),
+        "macro_output": str(macro),
+        "expected_cells": 1,
+        "cells": [cell],
+    }
+    sources = {
+        "plan": plan_path,
+        "scored_target:llada:gsm8k": scored,
+        "trajuq_predictions:llada:gsm8k": trajuq,
+        "repeated_metrics:llada:gsm8k": metrics,
+        "repeated_predictions:llada:gsm8k": repeated,
+    }
+    macro.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_vs_repeated_macro_v2",
+                "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "auxiliary_compute": {
+                    "aggregation": "equal_cell_weight_macro",
+                    "expected_cells": 1,
+                    "observed_cells_with_complete_test_wall_time": 1,
+                    "complete": True,
+                    "sample_count": 5,
+                    "mean_test_auxiliary_wall_time_seconds_per_example": 5.0,
+                    "mean_test_p90_auxiliary_wall_time_seconds_per_example": 6.0,
+                },
+                "macro": {
+                    key: {}
+                    for key in (
+                        "auroc",
+                        "auprc",
+                        "brier",
+                        "nll",
+                        "ece15",
+                        "aurc",
+                        "risk50",
+                        "risk80",
+                    )
+                },
+                "provenance": {
+                    "protocol": "trajuq_analysis_source_binding_v1",
+                    "git_commit": commit,
+                    "git_clean": True,
+                    "sources": {
+                        name: {
+                            "path": str(path),
+                            "sha256": _sha256(path),
+                        }
+                        for name, path in sources.items()
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert macro_state(plan) == "COMPLETE"
+    repeated.write_text('{"example_id":"changed"}\n', encoding="utf-8")
+    assert macro_state(plan) == "INVALID"

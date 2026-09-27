@@ -97,7 +97,12 @@ particular, the following are implemented and versioned:
 - a deterministic anonymous Overleaf packager pinned to the official ACL style
   commit, with identity/path scanning and an internal SHA-256 source manifest;
 - artifact-derived paper-state language so pre-experiment disclaimers disappear
-  automatically only after complete frozen results are rendered.
+  automatically only after complete frozen results are rendered;
+- primary-analysis cell outputs now carry protocol-v1 source bindings to the
+  exact scored calibration/test SHA-256 values and frozen experiment commit;
+  the executor and all three macro aggregators independently reject stale
+  predictions, and the primary/ablation/prior-signal macros plus RQ1 claim gate
+  are themselves bound to their exact upstream files before they can be reused.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:

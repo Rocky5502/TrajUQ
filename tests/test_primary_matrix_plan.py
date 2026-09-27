@@ -111,6 +111,8 @@ def test_prepared_split_identity_matches_frozen_dataset_policy():
     }
     meta = {
         **spec,
+        "source_git_commit": "frozen-commit",
+        "source_git_clean": True,
         "requested_revision": "dataset-sha",
     }
     ledger = {
@@ -119,7 +121,7 @@ def test_prepared_split_identity_matches_frozen_dataset_policy():
     }
 
     assert validate_prepared_split_identity(
-        "gsm8k", meta, spec, ledger
+        "gsm8k", meta, spec, ledger, "frozen-commit"
     ) == []
 
 
@@ -136,6 +138,8 @@ def test_prepared_split_identity_rejects_policy_drift():
     }
     meta = {
         **spec,
+        "source_git_commit": "frozen-commit",
+        "source_git_clean": True,
         "requested_revision": "dataset-sha",
         "calibration_fraction": 0.20,
         "split_seed": "other-seed",
@@ -146,7 +150,7 @@ def test_prepared_split_identity_rejects_policy_drift():
     }
 
     failures = validate_prepared_split_identity(
-        "gpqa_diamond", meta, spec, ledger
+        "gpqa_diamond", meta, spec, ledger, "frozen-commit"
     )
     assert any("calibration_fraction differs" in item for item in failures)
     assert any("split_seed differs" in item for item in failures)
@@ -165,6 +169,8 @@ def test_prepared_split_identity_rejects_repo_and_revision_drift():
     }
     meta = {
         **spec,
+        "source_git_commit": "frozen-commit",
+        "source_git_clean": True,
         "hf_id": "other/gsm8k",
         "requested_revision": "wrong-sha",
     }
@@ -174,7 +180,35 @@ def test_prepared_split_identity_rejects_repo_and_revision_drift():
     }
 
     failures = validate_prepared_split_identity(
-        "gsm8k", meta, spec, ledger
+        "gsm8k", meta, spec, ledger, "frozen-commit"
     )
     assert any("repo_id differs" in item for item in failures)
     assert any("revision differs" in item for item in failures)
+
+
+def test_prepared_split_identity_rejects_other_source_commit():
+    spec = {
+        "hf_id": "openai/gsm8k",
+        "config": "main",
+        "strategy": "official",
+        "calibration_split": "train",
+        "test_split": "test",
+        "source_split": None,
+        "calibration_fraction": None,
+        "split_seed": None,
+    }
+    meta = {
+        **spec,
+        "source_git_commit": "old-commit",
+        "source_git_clean": True,
+        "requested_revision": "dataset-sha",
+    }
+    ledger = {
+        "repo_id": "openai/gsm8k",
+        "resolved_sha": "dataset-sha",
+    }
+
+    failures = validate_prepared_split_identity(
+        "gsm8k", meta, spec, ledger, "frozen-commit"
+    )
+    assert any("source commit differs" in item for item in failures)

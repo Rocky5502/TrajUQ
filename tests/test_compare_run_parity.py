@@ -1,4 +1,5 @@
 from scripts.compare_run_parity import (
+    environment_provenance_errors,
     provenance_mismatches,
     summarize_run_provenance,
 )
@@ -148,3 +149,31 @@ def test_record_provenance_rejects_dirty_source_checkout():
         item["reason"] == "source_checkout_not_clean"
         for item in errors
     )
+
+
+def test_environment_provenance_rejects_stale_source_commit():
+    errors = environment_provenance_errors(
+        {
+            "source_git_commit": "old-commit",
+            "source_git_clean": True,
+        },
+        commit="frozen-commit",
+        clean=True,
+        require=True,
+    )
+    assert any(
+        item["reason"] == "source_git_commit_differs_from_comparator"
+        for item in errors
+    )
+
+
+def test_environment_provenance_accepts_matching_clean_source():
+    assert environment_provenance_errors(
+        {
+            "source_git_commit": "frozen-commit",
+            "source_git_clean": True,
+        },
+        commit="frozen-commit",
+        clean=True,
+        require=True,
+    ) == []

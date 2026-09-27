@@ -29,6 +29,7 @@ REPEATED_FEATURES = [
 
 SIGNATURE_METADATA_KEYS = [
     "model_revision",
+    "mask_id",
     "steps_requested",
     "max_new_tokens",
     "gen_length",
@@ -43,6 +44,10 @@ SIGNATURE_METADATA_KEYS = [
     "top_k",
     "remasking_strategy",
     "confidence_threshold",
+    "trajectory_semantics",
+    "upstream_repository",
+    "upstream_commit",
+    "partial_block_transfer_guard",
 ]
 
 

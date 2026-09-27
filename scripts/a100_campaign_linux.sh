@@ -136,6 +136,148 @@ require_primary_readiness() {
   require_json_pass     "results/primary_readiness.json"     "trajuq_primary_readiness_v2"
 }
 
+require_pilot_manual_gate() {
+  require_clean_frozen_checkout
+  "$PYTHON" - <<'PY'
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+
+
+def sha(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def load(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def audit_ok(path: Path, stage: str, commit: str) -> bool:
+    audit_path = path.with_suffix(path.suffix + ".audit.json")
+    if not path.is_file() or not audit_path.is_file():
+        return False
+    try:
+        audit = load(audit_path)
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        audit.get("protocol") == "trajuq_run_audit_v1"
+        and audit.get("status") == "PASS"
+        and audit.get("git_clean") is True
+        and audit.get("git_commit") == commit
+        and audit.get("stage") == stage
+        and str(audit.get("sha256", "")) == sha(path)
+    )
+
+
+manual_path = Path("results/llada_gsm8k_pilot50_manual_review.json")
+if not manual_path.is_file():
+    raise SystemExit(f"Missing required human pilot gate: {manual_path}")
+
+manual = load(manual_path)
+head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+failures: list[str] = []
+
+if manual.get("protocol") != "trajuq_pilot_manual_gate_v2":
+    failures.append("pilot manual gate protocol is not v2")
+if manual.get("status") != "PASS":
+    failures.append("pilot manual gate is not PASS")
+if manual.get("git_clean") is not True or manual.get("git_commit") != head:
+    failures.append("pilot manual gate is not clean/bound to current frozen HEAD")
+if int(manual.get("reviewed_records", 0)) < 10:
+    failures.append("pilot manual gate covers fewer than 10 reviewed records")
+checks = manual.get("checks", {})
+for key in (
+    "trajectory_semantics",
+    "scorer_audit",
+    "parity_artifact_reviewed",
+    "no_leakage_observed",
+):
+    if checks.get(key) is not True:
+        failures.append(f"pilot manual gate check is not confirmed: {key}")
+
+review = Path(str(manual.get("review_sheet", "")))
+if (
+    not review.is_file()
+    or manual.get("review_sheet_sha256") != sha(review)
+):
+    failures.append("pilot review sheet is missing or hash-stale")
+
+parity_path = Path(str(manual.get("parity_artifact", "")))
+if not parity_path.is_file():
+    failures.append("bound LLaDA parity artifact is missing")
+else:
+    parity = load(parity_path)
+    if manual.get("parity_artifact_sha256") != sha(parity_path):
+        failures.append("bound LLaDA parity artifact hash is stale")
+    ref = Path(str(parity.get("reference", "")))
+    inst = Path(str(parity.get("instrumented", "")))
+    parity_ok = (
+        parity.get("protocol") == "trajuq_exact_parity_v3"
+        and parity.get("status") == "PASS"
+        and parity.get("git_clean") is True
+        and parity.get("git_commit") == head
+        and parity.get("require_token_ids") is True
+        and parity.get("require_provenance") is True
+        and int(parity.get("shared_records", -1)) == 20
+        and int(parity.get("mismatch_count", -1)) == 0
+        and int(parity.get("provenance_mismatch_count", -1)) == 0
+        and ref.is_file()
+        and inst.is_file()
+        and parity.get("reference_sha256") == (sha(ref) if ref.is_file() else None)
+        and parity.get("instrumented_sha256") == (sha(inst) if inst.is_file() else None)
+        and audit_ok(inst, "raw", head)
+    )
+    if not parity_ok:
+        failures.append("bound LLaDA parity evidence is no longer a valid exact PASS")
+
+quality_path = Path(str(manual.get("pilot_quality", "")))
+if not quality_path.is_file():
+    failures.append("bound pilot quality artifact is missing")
+else:
+    quality = load(quality_path)
+    if manual.get("pilot_quality_sha256") != sha(quality_path):
+        failures.append("bound pilot quality artifact hash is stale")
+    raw = Path(str(quality.get("raw", "")))
+    scored = Path(str(quality.get("scored", "")))
+    quality_ok = (
+        quality.get("protocol") == "trajuq_pilot_quality_gate_v2"
+        and quality.get("status") == "PASS"
+        and quality.get("git_clean") is True
+        and quality.get("git_commit") == head
+        and raw.is_file()
+        and scored.is_file()
+        and quality.get("raw_sha256") == (sha(raw) if raw.is_file() else None)
+        and quality.get("scored_sha256") == (sha(scored) if scored.is_file() else None)
+        and audit_ok(raw, "raw", head)
+        and audit_ok(scored, "scored", head)
+    )
+    if not quality_ok:
+        failures.append("bound pilot quality/raw/scored evidence is stale or invalid")
+    if manual.get("review_scored_artifact") != str(scored):
+        failures.append("manual review scored path differs from pilot quality source")
+    if scored.is_file() and manual.get("review_scored_sha256") != sha(scored):
+        failures.append("manual review scored SHA differs from current scored pilot")
+
+if manual.get("pilot_raw_audit_ok") is not True:
+    failures.append("manual gate did not attest a valid pilot raw audit")
+if manual.get("pilot_scored_audit_ok") is not True:
+    failures.append("manual gate did not attest a valid pilot scored audit")
+
+if failures:
+    raise SystemExit(
+        "Pilot human-gate validation failed:\n- " + "\n- ".join(failures)
+    )
+
+print(f"[TrajUQ] source-bound human pilot gate PASS: {manual_path}")
+PY
+}
+
 prepare_missing_dataset_pairs() {
   "$PYTHON" - <<'PY'
 import json
@@ -254,8 +396,7 @@ case "$STAGE" in
     ;;
 
   parity-math)
-    require_clean_frozen_checkout
-    require_json_pass       "results/llada_gsm8k_pilot50_manual_review.json"       "trajuq_pilot_manual_gate_v2"
+    require_pilot_manual_gate
     bash scripts/parity_remaining_linux.sh all
     bash scripts/math500_gate_linux.sh prepare
     bash scripts/math500_gate_linux.sh pilot

@@ -320,7 +320,7 @@ if [[ "$STAGE" == "parity" || "$STAGE" == "all" ]]; then
       run_step "Instrumentation overhead"         "$PYTHON" scripts/compare_instrumentation_overhead.py           --reference "$PARITY_REFERENCE"           --instrumented "$PARITY_TRAJUQ"           --output "$PARITY_OVERHEAD"
     fi
   else
-    require_no_existing_artifacts       "$PARITY_REFERENCE"       "$PARITY_TRAJUQ"       "$PARITY_TRAJUQ.audit.json"       "$PARITY_OVERHEAD"
+    require_no_existing_artifacts       "$PARITY_REFERENCE"       "$PARITY_TRAJUQ"       "$PARITY_TRAJUQ.audit.json"       "$PARITY_RESULT"       "$PARITY_OVERHEAD"
 
     run_step "20-prompt native LLaDA reference"       "$PYTHON" scripts/run_llada_reference.py         --model "$MODEL_ID"         --revision "$MODEL_SHA"         --input "$CAL_DATA"         --output "$PARITY_REFERENCE"         --limit 20         --steps 128         --max-new-tokens 128         --block-length 128         --temperature 0
 
@@ -351,7 +351,7 @@ if [[ "$STAGE" == "pilot" || "$STAGE" == "all" ]]; then
       run_step "Export 10-example manual review sheet"         "$PYTHON" scripts/export_trace_review.py           --scored "$PILOT_SCORED"           --output "$PILOT_REVIEW"           --count 10
     fi
   else
-    require_no_existing_artifacts       "$PILOT_RAW"       "$PILOT_RAW.audit.json"       "$PILOT_SCORED"       "$PILOT_SCORED.audit.json"       "$PILOT_REVIEW"       results/llada_gsm8k_pilot50_manual_review.json
+    require_no_existing_artifacts       "$PILOT_RAW"       "$PILOT_RAW.audit.json"       "$PILOT_SCORED"       "$PILOT_SCORED.audit.json"       "$PILOT_GATE"       "$PILOT_REVIEW"       results/llada_gsm8k_pilot50_manual_review.json
 
     run_step "50-example LLaDA + GSM8K pilot"       "$PYTHON" scripts/run_generation.py         --adapter llada         --model "$MODEL_ID"         --revision "$MODEL_SHA"         --input "$CAL_DATA"         --output "$PILOT_RAW"         --limit 50         --steps 128         --max-new-tokens 128         --block-length 128         --temperature 0
 

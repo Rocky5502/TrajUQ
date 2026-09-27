@@ -78,6 +78,10 @@ particular, the following are implemented and versioned:
 - clean-checkout provenance guards across the pilot wrapper, primary readiness,
   all frozen planners, and all primary/repeated/adaptive executors, so an
   uncommitted source edit cannot masquerade under the frozen git SHA;
+- cross-stage provenance is recursively revalidated rather than trusted through
+  outer-plan hashes alone: primary analysis revalidates the primary/readiness
+  chain, RQ2 revalidates the analysis/primary/readiness chain, and RQ3
+  revalidates the primary/readiness chain during both planning and execution;
 - primary-readiness v2 additionally revalidates the revision-ledger dataset
   manifest hash, the exact CPU-verification protocol/step sequence, raw/scored
   pilot audit SHA bindings, clean pilot-quality and MATH-500 automatic-audit

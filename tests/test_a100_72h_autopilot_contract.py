@@ -51,7 +51,8 @@ def test_72h_autopilot_inherits_single_paid_rental_deadline():
     assert 'START_EPOCH="$(date +%s)"' not in text
     assert "check_estimate_against_remaining_budget" in text
     assert "BUDGET_FORECAST_FAIL" in text
-    assert "mean projection exceeds the remaining paid-rental" in text
+    assert "mean projection plus operational reserve exceeds" in text
+    assert "operational_reserve_hours" in text
 
 
 def test_campaign_exposes_rental_start_stage():

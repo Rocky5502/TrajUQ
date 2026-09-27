@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 
 import scripts.execute_adaptive_plan as execute_adaptive_plan
+from trajuq.io import sha256_text
+from trajuq.schema import SCHEMA_VERSION
 from scripts.execute_adaptive_plan import (
     artifact_id_state,
     audit_passes,
@@ -114,6 +116,83 @@ def test_adaptive_partial_scored_artifact_is_not_overwritten(tmp_path):
         assert "partial/invalid adaptive scored artifact" in str(exc)
     else:
         raise AssertionError("partial adaptive scored artifact must not be reused")
+
+
+def test_adaptive_partial_base_rejects_wrong_frozen_generation_settings(tmp_path):
+    source = tmp_path / "calibration.jsonl"
+    raw = tmp_path / "base.raw.jsonl"
+    source.write_text(
+        json.dumps(
+            {"id": "a", "dataset": "gsm8k", "prompt": "adaptive prompt"}
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spec = {
+        "input": str(source),
+        "raw_output": str(raw),
+        "scored_output": str(tmp_path / "base.scored.jsonl"),
+        "generate_argv": [
+            "python",
+            "scripts/run_generation.py",
+            "--adapter",
+            "llada",
+            "--model",
+            "example/llada",
+            "--revision",
+            "model-sha",
+            "--input",
+            str(source),
+            "--output",
+            str(raw),
+            "--seed",
+            "2027",
+            "--steps",
+            "32",
+            "--max-new-tokens",
+            "128",
+            "--block-length",
+            "128",
+            "--temperature",
+            "0.0",
+            "--llada-cfg-scale",
+            "0.0",
+            "--llada-remasking",
+            "low_confidence",
+        ],
+    }
+    row = {
+        "schema_version": SCHEMA_VERSION,
+        "example_id": "a",
+        "dataset": "gsm8k",
+        "prompt_sha256": sha256_text("adaptive prompt"),
+        "model": "example/llada",
+        "adapter": "llada",
+        "seed": 2027,
+        "generation": {
+            "metadata": {
+                "model_id": "example/llada",
+                "model_revision": "model-sha",
+                "steps_requested": 128,
+                "gen_length": 128,
+                "block_length": 128,
+                "temperature": 0.0,
+                "cfg_scale": 0.0,
+                "remasking": "low_confidence",
+            }
+        },
+        "metadata": {
+            "source_input": str(source),
+            "model_revision": "model-sha",
+        },
+    }
+    raw.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    assert artifact_id_state(raw, spec) == "INVALID"
+
+    row["generation"]["metadata"]["steps_requested"] = 32
+    raw.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    assert artifact_id_state(raw, spec) == "COMPLETE"
 
 
 def test_adaptive_evaluation_rejects_partial_pair(tmp_path):

@@ -7,6 +7,9 @@ def test_math500_wrapper_binds_frozen_state_and_llada_parity():
     assert "trajuq_revision_ledger_v2" in text
     assert "trajuq_cpu_verification_v1" in text
     assert "git status --porcelain" in text
+    assert "results/gated_dataset_access.json" in text
+    assert "trajuq_gated_dataset_access_v1" in text
+    assert "revision_ledger_sha256" in text
     assert "trajuq_exact_parity_v3" in text
     assert "$Parity.shared_records -eq 20" in text
     assert "$Parity.mismatch_count -eq 0" in text

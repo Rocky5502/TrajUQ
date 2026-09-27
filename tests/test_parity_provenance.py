@@ -15,10 +15,13 @@ def row(*, revision: str = "sha", prompt: str = "p", seed: int = 2027):
         "generation": {
             "metadata": {
                 "model_revision": revision,
+                "mask_id": 126336,
                 "steps_requested": 128,
                 "gen_length": 128,
                 "block_length": 128,
                 "temperature": 0.0,
+                "cfg_scale": 0.0,
+                "remasking": "low_confidence",
             }
         },
     }

@@ -138,9 +138,40 @@ def validate_timing_source(
     times: list[float] = []
     peak_memory: list[int] = []
     adapters: set[str] = set()
+    source_commits: set[str] = set()
+    source_clean_values: set[bool] = set()
+    model_revisions: set[str] = set()
     for index, row in enumerate(rows):
         adapters.add(str(row.get("adapter", "")))
+        record_metadata = row.get("metadata", {})
+        if not isinstance(record_metadata, dict):
+            raise ValueError(
+                f"{adapter}: row {index} has invalid record metadata"
+            )
+        source_commit = str(record_metadata.get("source_git_commit", "")).strip()
+        source_clean = record_metadata.get("source_git_clean")
+        if not source_commit:
+            raise ValueError(
+                f"{adapter}: row {index} has no source_git_commit"
+            )
+        if source_clean is not True:
+            raise ValueError(
+                f"{adapter}: row {index} was not generated from a clean checkout"
+            )
+        source_commits.add(source_commit)
+        source_clean_values.add(True)
+
         metadata = row.get("generation", {}).get("metadata", {})
+        if not isinstance(metadata, dict):
+            raise ValueError(
+                f"{adapter}: row {index} has invalid generation metadata"
+            )
+        revision = str(metadata.get("model_revision", "")).strip()
+        if not revision:
+            raise ValueError(
+                f"{adapter}: row {index} has no model_revision"
+            )
+        model_revisions.add(revision)
         value = metadata.get("wall_time_seconds")
         try:
             seconds = float(value)
@@ -167,6 +198,33 @@ def validate_timing_source(
         raise ValueError(
             f"{adapter}: timing source adapters are {sorted(adapters)}"
         )
+    if source_commits != {expected_commit}:
+        raise ValueError(
+            f"{adapter}: timing source commit(s) {sorted(source_commits)} "
+            f"differ from experiment commit {expected_commit}"
+        )
+    if source_clean_values != {True}:
+        raise ValueError(
+            f"{adapter}: timing source does not have uniform clean provenance"
+        )
+    audit_source_commits = {
+        str(value)
+        for value in audit.get("source_git_commits", [])
+    }
+    if audit_source_commits != {expected_commit}:
+        raise ValueError(
+            f"{adapter}: timing-source audit row provenance is not bound "
+            "to the experiment commit"
+        )
+    if audit.get("source_git_clean_values") != [True]:
+        raise ValueError(
+            f"{adapter}: timing-source audit does not attest clean source rows"
+        )
+    if len(model_revisions) != 1:
+        raise ValueError(
+            f"{adapter}: timing source model revisions are not uniform: "
+            f"{sorted(model_revisions)}"
+        )
 
     return {
         "path": str(path),
@@ -174,6 +232,9 @@ def validate_timing_source(
         "audit": str(audit_path),
         "audit_sha256": sha256_file(audit_path),
         "records": len(rows),
+        "source_git_commit": next(iter(source_commits)),
+        "source_git_clean": True,
+        "model_revision": next(iter(model_revisions)),
         "wall_time_seconds": {
             "mean": statistics.fmean(times),
             "p50": statistics.median(times),

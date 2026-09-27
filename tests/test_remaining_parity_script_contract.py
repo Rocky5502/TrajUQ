@@ -70,3 +70,10 @@ def test_remaining_parity_wrapper_revalidates_source_and_split_hashes():
     assert "function Test-RunAuditPass" in text
     assert '$InstrumentedAuditOk = Test-RunAuditPass $Instrumented "raw"' in text
     assert "$InstrumentedAuditOk" in text
+
+
+def test_wrappers_use_shared_frozen_preprimary_validator():
+    text = Path("scripts/parity_remaining_windows.ps1").read_text(encoding="utf-8")
+    assert "scripts/validate_frozen_preprimary.py" in text
+    text = Path("scripts/parity_remaining_linux.sh").read_text(encoding="utf-8")
+    assert "scripts/validate_frozen_preprimary.py" in text

@@ -13,6 +13,9 @@ import yaml
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.execute_primary_plan import (  # noqa: E402
+    validate_plan_provenance as validate_primary_plan_provenance,
+)
 from scripts.plan_primary_analysis import scored_source_chain_passes  # noqa: E402
 
 
@@ -132,6 +135,10 @@ def main() -> None:
         failures.append("primary matrix plan protocol is not v2")
     if primary_plan.get("status") != "PASS":
         failures.append("primary matrix plan is not PASS")
+    failures.extend(
+        "primary plan provenance: " + failure
+        for failure in validate_primary_plan_provenance(primary_plan)
+    )
 
     experiment_commit = str(
         primary_plan.get("experiment_git_commit", "")

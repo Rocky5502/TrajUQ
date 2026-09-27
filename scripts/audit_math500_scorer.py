@@ -86,7 +86,23 @@ def main() -> None:
         "--output",
         default="results/math500_scorer_audit.json",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help=(
+            "Explicit recovery-only replacement of an existing scorer-audit "
+            "artifact. Official freeze/verification paths never use this unless "
+            "the operator deliberately requested recovery overwrite."
+        ),
+    )
     args = parser.parse_args()
+
+    out = Path(args.output)
+    if out.exists() and not args.overwrite:
+        raise SystemExit(
+            f"Refusing to overwrite MATH-500 scorer audit evidence: {out}. "
+            "Inspect/archive it before recovery."
+        )
 
     results: list[dict] = []
     for prediction, reference in EQUIVALENT_CASES:
@@ -182,7 +198,6 @@ def main() -> None:
         "failures": failures,
     }
 
-    out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",

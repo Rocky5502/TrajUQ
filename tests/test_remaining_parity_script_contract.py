@@ -88,3 +88,32 @@ def test_linux_remaining_parity_rejects_split_from_other_commit():
     assert 'meta.get("source_git_commit")=="$FROZEN_COMMIT"' in text
     assert 'audit.get("source_git_clean") is True' in text
     assert 'audit.get("source_git_commit")=="$FROZEN_COMMIT"' in text
+
+
+def test_remaining_parity_wrappers_preflight_exact_frozen_models():
+    windows = Path("scripts/parity_remaining_windows.ps1").read_text(
+        encoding="utf-8"
+    )
+    linux = Path("scripts/parity_remaining_linux.sh").read_text(
+        encoding="utf-8"
+    )
+
+    for text in (windows, linux):
+        assert "scripts/preflight.py" in text
+        assert "results/frozen_models/sdar.yaml" in text
+        assert "results/frozen_models/dream.yaml" in text
+        assert "--require-cuda" in text
+
+
+def test_remaining_parity_wrappers_require_source_bound_v3_reuse():
+    windows = Path("scripts/parity_remaining_windows.ps1").read_text(
+        encoding="utf-8"
+    )
+    linux = Path("scripts/parity_remaining_linux.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert "$Parity.run_provenance.source_git_commit -eq $Head" in windows
+    assert "$Parity.run_provenance.source_git_clean -eq $true" in windows
+    assert 'p.get("run_provenance",{}).get("source_git_commit")==commit' in linux
+    assert 'p.get("run_provenance",{}).get("source_git_clean") is True' in linux

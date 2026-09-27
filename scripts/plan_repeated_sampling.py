@@ -140,6 +140,10 @@ def repeated_generation_argv(
         str(top_p),
         "--max-new-tokens",
         arg_value(frozen, "--max-new-tokens"),
+        "--device",
+        arg_value(frozen, "--device"),
+        "--dtype",
+        arg_value(frozen, "--dtype"),
         "--resume-verified",
         "--resume-partial",
     ]

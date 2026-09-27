@@ -470,9 +470,22 @@ def main() -> None:
     repeated = primary["baselines"]["expensive"]["repeated_sampling"]
     samples = int(repeated["samples"])
     seeds = [int(seed) for seed in repeated["seeds"]]
+    repeated_eligible = [
+        str(name) for name in repeated.get("eligible_datasets", [])
+    ]
+    primary_datasets = [str(name) for name in primary.get("datasets", [])]
     if samples <= 0 or len(seeds) != samples or len(set(seeds)) != samples:
         raise SystemExit(
             "Repeated-sampling config must have one unique seed per sample."
+        )
+    if (
+        not repeated_eligible
+        or len(repeated_eligible) != len(set(repeated_eligible))
+        or not set(repeated_eligible).issubset(set(primary_datasets))
+    ):
+        raise SystemExit(
+            "Repeated-sampling eligible datasets are empty, duplicated, or "
+            "outside the frozen primary dataset set."
         )
 
     for adapter in ("llada", "sdar", "dream"):
@@ -548,8 +561,12 @@ def main() -> None:
             example_count += cal_count + test_count
 
         ratio = base_budget_ratio(primary, adapter)
+        rq2_example_count = sum(
+            dataset_counts[name]["total"]
+            for name in repeated_eligible
+        )
         primary_generations = example_count
-        rq2_generations = example_count * samples
+        rq2_generations = rq2_example_count * samples
         rq3_generations = example_count
 
         mean_primary = primary_generations * mean_seconds
@@ -571,6 +588,8 @@ def main() -> None:
                 "timing": timing,
                 "dataset_counts": dataset_counts,
                 "prepared_examples": example_count,
+                "repeated_eligible_datasets": repeated_eligible,
+                "repeated_prepared_examples": rq2_example_count,
                 "repeated_samples": samples,
                 "rq3_base_to_refined_budget_ratio": ratio,
                 "mean_projection_hours": {
@@ -607,6 +626,8 @@ def main() -> None:
             "optional_rq4",
         ],
         "planning_only": True,
+        "repeated_eligible_datasets": repeated_eligible,
+        "repeated_expected_cells": 3 * len(repeated_eligible),
         "experiment_git_commit": expected_commit,
         "primary_plan": str(plan_path),
         "primary_plan_sha256": sha256_file(plan_path),

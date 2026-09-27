@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -253,6 +255,72 @@ def exact_example_id_coverage(path: Path, expected_ids: list[str]) -> bool:
         return False
 
 
+def validate_repeated_scope(
+    plan: dict[str, Any],
+    primary_config: dict[str, Any],
+    primary_plan: dict[str, Any],
+) -> list[str]:
+    failures: list[str] = []
+    repeated_cfg = (
+        primary_config.get("baselines", {})
+        .get("expensive", {})
+        .get("repeated_sampling", {})
+    )
+    eligible = [
+        str(name) for name in repeated_cfg.get("eligible_datasets", [])
+    ]
+    excluded = dict(repeated_cfg.get("excluded_datasets", {}))
+    if not eligible or len(eligible) != len(set(eligible)):
+        failures.append("frozen repeated eligible dataset set is invalid")
+        return failures
+    if set(eligible).intersection(excluded):
+        failures.append("frozen repeated eligible/excluded datasets overlap")
+
+    if [str(name) for name in plan.get("eligible_datasets", [])] != eligible:
+        failures.append(
+            "repeated plan eligible datasets differ from frozen primary config"
+        )
+    if dict(plan.get("excluded_datasets", {})) != excluded:
+        failures.append(
+            "repeated plan excluded datasets differ from frozen primary config"
+        )
+
+    expected_labels = {
+        str(cell.get("cell"))
+        for cell in primary_plan.get("cells", [])
+        if str(cell.get("dataset")) in set(eligible)
+    }
+    observed_labels = [
+        str(cell.get("cell"))
+        for cell in plan.get("cells", [])
+    ]
+    if len(observed_labels) != len(set(observed_labels)):
+        failures.append("repeated plan contains duplicate cell labels")
+    if set(observed_labels) != expected_labels:
+        failures.append(
+            "repeated plan cell set differs from frozen primary eligible subset"
+        )
+
+    expected_cells = len(expected_labels)
+    if int(plan.get("expected_cells", -1)) != expected_cells:
+        failures.append(
+            "repeated plan expected_cells differs from frozen eligible subset"
+        )
+    if int(plan.get("cell_count", -1)) != expected_cells:
+        failures.append(
+            "repeated plan cell_count differs from frozen eligible subset"
+        )
+
+    samples = int(repeated_cfg.get("samples", -1))
+    seeds = [int(seed) for seed in repeated_cfg.get("seeds", [])]
+    if int(plan.get("samples", -1)) != samples:
+        failures.append("repeated plan sample count differs from frozen config")
+    if [int(seed) for seed in plan.get("seeds", [])] != seeds:
+        failures.append("repeated plan seeds differ from frozen config")
+
+    return failures
+
+
 def validate_plan_provenance(
     plan: dict[str, Any],
     *,
@@ -290,6 +358,25 @@ def validate_plan_provenance(
             failures.append(f"repeated plan missing bound {key} artifact")
         elif sha256_file(path) != expected_hash:
             failures.append(f"{key} hash differs from repeated plan")
+
+    primary_config_path = Path(str(plan.get("primary_config", "")))
+    primary_plan_path = Path(str(plan.get("primary_plan", "")))
+    if primary_config_path.is_file() and primary_plan_path.is_file():
+        try:
+            primary_config = yaml.safe_load(
+                primary_config_path.read_text(encoding="utf-8")
+            )
+            primary_plan = json.loads(
+                primary_plan_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError, yaml.YAMLError) as exc:
+            failures.append(
+                f"bound primary config/plan cannot validate repeated scope: {exc}"
+            )
+        else:
+            failures.extend(
+                validate_repeated_scope(plan, primary_config, primary_plan)
+            )
 
     analysis_plan_path = Path(str(plan.get("primary_analysis_plan", "")))
     if analysis_plan_path.is_file():

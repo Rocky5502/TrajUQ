@@ -24,6 +24,10 @@ def llada_cell():
                 "128",
                 "--max-new-tokens",
                 "128",
+                "--device",
+                "cuda",
+                "--dtype",
+                "bfloat16",
                 "--block-length",
                 "128",
                 "--llada-cfg-scale",
@@ -58,6 +62,8 @@ def test_repeated_plan_uses_all_frozen_seeds_and_nonzero_temperature():
         "2031",
     ]
     assert cmd[cmd.index("--steps") + 1] == "128"
+    assert cmd[cmd.index("--device") + 1] == "cuda"
+    assert cmd[cmd.index("--dtype") + 1] == "bfloat16"
 
 
 def test_repeated_plan_requires_frozen_scored_audit(tmp_path):

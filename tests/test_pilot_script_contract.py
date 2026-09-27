@@ -166,6 +166,13 @@ def test_linux_remaining_parity_wrapper_is_guarded():
     assert "rm -f" not in text
 
 
+def test_linux_dream_parity_refuses_existing_parity_artifact():
+    text = Path("scripts/parity_remaining_linux.sh").read_text(encoding="utf-8")
+
+    dream_block = text[text.index("run_dream() {"):]
+    assert 'require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"' in dream_block
+
+
 def test_linux_math500_wrapper_is_guarded():
     text = Path("scripts/math500_gate_linux.sh").read_text(encoding="utf-8")
 

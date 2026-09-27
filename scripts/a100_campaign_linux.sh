@@ -393,6 +393,10 @@ case "$STAGE" in
     "$PYTHON" scripts/project_status.py
     ;;
 
+  rental-start)
+    "$PYTHON" scripts/start_a100_rental_clock.py
+    ;;
+
   pilot)
     require_clean_frozen_checkout
     bash scripts/pilot_linux.sh prepare
@@ -457,6 +461,6 @@ case "$STAGE" in
     ;;
 
   *)
-    fail "Unknown stage '$STAGE'. Use status|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness|autopilot-72h."
+    fail "Unknown stage '$STAGE'. Use status|rental-start|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness|autopilot-72h."
     ;;
 esac

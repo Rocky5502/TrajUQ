@@ -92,8 +92,10 @@ def require_render_source_provenance(
         for label in (
             "primary",
             "claim_gate",
+            "repeated",
             "ablation",
             "prior_signals",
+            "adaptive",
         )
     }
     if len(commits) != 1:

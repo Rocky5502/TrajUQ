@@ -73,7 +73,11 @@ def artifact_ids_complete(path: Path, expected_ids: list[str]) -> bool:
     )
 
 
-def repeated_seed_contract(args, seed: int) -> dict:
+def repeated_seed_contract(
+    args,
+    seed: int,
+    expected_commit: str | None = None,
+) -> dict:
     """Generation settings that must match before an audited seed can be reused."""
 
     metadata = {
@@ -115,12 +119,18 @@ def repeated_seed_contract(args, seed: int) -> dict:
     else:
         raise ValueError(f"unsupported repeated adapter: {args.adapter}")
 
-    return {
+    contract = {
         "adapter": str(args.adapter),
         "model": str(args.model),
         "seed": int(seed),
         "metadata": metadata,
     }
+    if expected_commit is not None:
+        contract["record_metadata"] = {
+            "source_git_commit": str(expected_commit),
+            "source_git_clean": True,
+        }
+    return contract
 
 
 def artifact_generation_contract_matches(path: Path, expected: dict) -> bool:
@@ -152,6 +162,14 @@ def artifact_generation_contract_matches(path: Path, expected: dict) -> bool:
                 except (TypeError, ValueError):
                     return False
             elif observed != value:
+                return False
+
+        record_metadata = expected.get("record_metadata", {})
+        observed_record_metadata = row.get("metadata", {})
+        if not isinstance(observed_record_metadata, dict):
+            return False
+        for key, value in record_metadata.items():
+            if observed_record_metadata.get(key) != value:
                 return False
     return True
 
@@ -294,7 +312,7 @@ def main() -> None:
                 output,
                 commit,
                 expected_ids,
-                repeated_seed_contract(args, seed),
+                repeated_seed_contract(args, seed, commit),
             )
         ):
             print(f"[TrajUQ repeated] verified seed already complete -> {output}")

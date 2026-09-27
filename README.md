@@ -92,7 +92,7 @@ TrajUQ/
 |---|---|---|---|
 | LLaDA-MoE | `inclusionAI/LLaDA-MoE-7B-A1B-Instruct` | primary masked-diffusion family | sampler-aligned pilot adapter; exact GPU parity required |
 | SDAR | `JetLM/SDAR-1.7B-Chat` | primary block-diffusion family | instrumented pilot adapter; on-GPU upstream parity required |
-| Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | hook-based pilot adapter; GPU audit required |
+| Dream | `Dream-org/Dream-v0-Instruct-7B` | primary/extension family | pre-transfer logits-hook telemetry; exact GPU parity required |
 | FLARE / HybridDiffusion | `yuchen-zhu-zyc/HybridDiffusion-2B` | same-checkpoint AR/diffusion diagnostic | native trace bridge implemented; parity + AR/diff export pending |
 
 Exact model/tokenizer revisions must be pinned before primary experiments. A model name alone is not a reproducible experimental specification.

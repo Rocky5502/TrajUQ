@@ -20,6 +20,8 @@ REQUIRED_GENERATION_KEYS_BY_ADAPTER = {
         "temperature",
         "cfg_scale",
         "remasking",
+        "torch_version",
+        "transformers_version",
     ),
     "dream": (
         "model_revision",
@@ -29,6 +31,8 @@ REQUIRED_GENERATION_KEYS_BY_ADAPTER = {
         "top_p",
         "algorithm",
         "algorithm_temperature",
+        "torch_version",
+        "transformers_version",
     ),
     "sdar": (
         "model_revision",
@@ -43,6 +47,8 @@ REQUIRED_GENERATION_KEYS_BY_ADAPTER = {
         "confidence_threshold",
         "upstream_repository",
         "upstream_commit",
+        "torch_version",
+        "transformers_version",
     ),
 }
 
@@ -65,6 +71,8 @@ GENERATION_PROVENANCE_KEYS = (
     "confidence_threshold",
     "upstream_repository",
     "upstream_commit",
+    "torch_version",
+    "transformers_version",
 )
 
 
@@ -331,6 +339,28 @@ def summarize_run_provenance(
             }
         )
     summary["model_revision"] = next(iter(revisions)) if len(revisions) == 1 else None
+
+    for runtime_key in ("torch_version", "transformers_version"):
+        runtime_values = {
+            generation_metadata(reference[item_id]).get(runtime_key)
+            for item_id in shared
+        } | {
+            generation_metadata(instrumented[item_id]).get(runtime_key)
+            for item_id in shared
+        }
+        runtime_values.discard(None)
+        if require and len(runtime_values) != 1:
+            errors.append(
+                {
+                    "id": "__run__",
+                    "reason": "non_uniform_run_provenance",
+                    "field": f"generation.metadata.{runtime_key}",
+                    "values": sorted(str(value) for value in runtime_values),
+                }
+            )
+        summary[runtime_key] = (
+            next(iter(runtime_values)) if len(runtime_values) == 1 else None
+        )
 
     source_commits = {
         record_metadata(reference[item_id]).get("source_git_commit")

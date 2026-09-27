@@ -748,7 +748,7 @@ def main() -> None:
     for key in selected_fraction_keys:
         macro_spec = dict(plan["macro_aggregation"][key])
         macro_spec["fraction_key"] = key
-        state = macro_state(macro_spec, expected)
+        state = macro_state(plan, macro_spec, expected)
         all_key_cells_complete = all(
             cell_state(cell, [key], expected_commit)["complete"]
             for cell in cells

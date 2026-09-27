@@ -37,8 +37,10 @@ their expected `results/*` artifacts exist and pass inspection.
 - Pilot/parity wrappers reject a dirty worktree and require the CPU verification
   artifact and revision ledger to match the frozen HEAD.
 - Primary readiness revalidates the dataset-manifest hash, CPU protocol/step
-  completion, pilot/MATH review bindings, model parity evidence, and clean frozen
-  checkout.
+  completion, per-step CPU verification log SHA-256 values, pilot/MATH review
+  bindings, model parity evidence, and clean frozen checkout. CPU step logs are
+  also included in the readiness source-binding manifest, so later planning and
+  execution detect supporting-log drift.
 
 ### Frozen execution provenance
 

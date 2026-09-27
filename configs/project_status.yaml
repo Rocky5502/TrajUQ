@@ -14,6 +14,15 @@ project:
   repeated_sampling_seeds: [2027, 2028, 2029, 2030, 2031]
   adaptive_primary_cap: 0.50
   adaptive_sensitivity_caps: [0.25, 0.75]
+  a100_wall_clock_budget_hours: 72
+  dataset_selection_version: sha256_id_rank_v1
+  dataset_caps:
+    gsm8k: {calibration_max: 1000, test_max: 1000}
+    arc_challenge: {calibration_max: null, test_max: 1000}
+    mmlu_pro: {calibration_max: null, test_max: 1000}
+    gpqa_diamond: {calibration_max: null, test_max: null}
+    truthfulqa: {calibration_max: null, test_max: null}
+    math500: {calibration_max: null, test_max: null}
 
 implementation:
   - id: trajectory_schema
@@ -51,6 +60,16 @@ implementation:
     evidence:
       - scripts/audit_run.py
       - scripts/score_outputs.py
+  - id: dataset_cap_policy
+    label: "Pre-outcome SHA-256 ID-ranked dataset caps for the 72-hour A100 envelope"
+    state: DONE
+    evidence:
+      - data/manifests/evaluation_splits.json
+      - src/trajuq/datasets.py
+      - src/trajuq/data_integrity.py
+      - scripts/prepare_eval_pair.py
+      - scripts/verify_dataset_contracts.py
+      - tests/test_datasets.py
   - id: primary_planner
     label: "Frozen 3x6 primary-matrix planner"
     state: DONE
@@ -86,7 +105,7 @@ implementation:
       - tests/test_rq1_claim_gate.py
       - tests/test_execute_primary_analysis.py
   - id: repeated_sampling
-    label: "Hash-bound five-sample baseline with complete 18-cell compute accounting"
+    label: "Hash-bound five-sample baseline with resident-model seed execution, safe partial resume, and complete 18-cell compute accounting"
     state: DONE
     evidence:
       - scripts/run_repeated_samples.py
@@ -97,6 +116,7 @@ implementation:
       - tests/test_repeated_protocol.py
       - tests/test_execute_repeated_sampling.py
       - tests/test_repeated_artifact_contract.py
+      - tests/test_repeated_resume.py
   - id: resumable_repeated_executor
     label: "Resumable five-sample executor with frozen-commit seed-audit reuse and source-bound macro validation"
     state: DONE
@@ -189,6 +209,14 @@ implementation:
       - tests/test_a100_campaign_contract.py
       - tests/test_pilot_script_contract.py
       - scripts/export_research_handoff.py
+  - id: a100_72h_autopilot
+    label: "Deadline-aware single-A100 autonomous supervisor with hourly shell-side monitoring"
+    state: DONE
+    evidence:
+      - scripts/a100_72h_autopilot.sh
+      - scripts/a100_campaign_linux.sh
+      - docs/CODEX_A100_72H.md
+      - docs/A100_EXECUTION.md
   - id: a100_compute_estimator
     label: "Frozen-input A100 compute forecast from audited source-commit-bound model timing traces"
     state: DONE
@@ -353,7 +381,7 @@ execution_gates:
     label: "Frozen 18-cell execution plan"
     stage: primary_execution
     issue: 8
-    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution. Planning re-hashes the readiness source-binding manifest and revision ledger, requires every prepared split manifest to match the frozen dataset repo/config/full split policy/resolved SHA/source commit, then re-hashes exact frozen model configs, split manifests/audits, and calibration/test inputs before emitting the 18-cell plan."
+    action: "Run python scripts/plan_primary_matrix.py, inspect, and archive the plan before GPU execution. Planning re-hashes the readiness source-binding manifest and revision ledger, requires every prepared split manifest to match the frozen dataset repo/config/split policy/pre-generation cap/resolved SHA/source commit, then re-hashes exact frozen model configs, split manifests/audits, and calibration/test inputs before emitting the 18-cell plan."
     artifact: results/primary_matrix_plan.json
     expect: {key: status, equals: PASS}
   - id: a100_compute_estimate
@@ -361,7 +389,7 @@ execution_gates:
     stage: primary_execution
     issue: 8
     required: false
-    action: "After primary readiness PASS and primary matrix planning, run python scripts/estimate_a100_campaign.py. It uses exact prepared input counts plus audited LLaDA pilot and SDAR/Dream parity wall times to estimate serial A100-hours for primary, RQ2, and RQ3. Planning only; not a paper result."
+    action: "After primary readiness PASS and primary matrix planning, run python scripts/estimate_a100_campaign.py. It uses exact capped prepared-input counts plus audited LLaDA pilot and SDAR/Dream parity wall times to estimate serial A100-hours and 24/7 days for primary, RQ2, and RQ3. Planning only; not a paper result."
     artifact: results/a100_compute_estimate.json
     expect: {key: status, equals: PASS}
   - id: primary_execution_complete
@@ -396,7 +424,7 @@ execution_gates:
     label: "All 18 five-sample cells plus macro complete"
     stage: analysis
     issue: 9
-    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, from the frozen experiment commit, and match the frozen adapter/model/revision plus sampler settings in both raw records and manifest. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
+    action: "Use python scripts/execute_repeated_sampling.py --execute to resume the five-seed comparator. Each repeated-sampling process keeps its model resident across all five seeds and may resume only an exact contract-matching unaudited prefix after interruption. Upstream scored audits and every reused seed raw audit must be protocol-v1, clean, SHA-bound, from the frozen experiment commit, and match the frozen adapter/model/revision plus sampler settings in both raw records and manifest. Repeated macro protocol v2 additionally requires valid test-time auxiliary wall-clock metadata in all 18 cells and a clean source binding to the frozen plan plus every consumed scored target, TrajUQ prediction, repeated metric, and repeated prediction artifact."
     artifact: results/repeated_sampling_execution_state.json
     expect: {key: status, equals: COMPLETE}
   - id: adaptive_matrix_plan

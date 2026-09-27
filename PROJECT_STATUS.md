@@ -51,7 +51,7 @@ particular, the following are implemented and versioned:
   dependency-version verification, deterministic calibration review-sheet
   export, a guarded calibration-only Windows pilot wrapper, and SHA-bound human
   attestation gate;
-- RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation; adaptive plan protocol v3 binds the primary plan/config plus refined scored artifacts and their audits before low-budget execution;
+- RQ3 adaptive-compute planning/evaluation/18-cell hierarchical aggregation; adaptive plan protocol v3 binds the primary plan/config plus refined scored artifacts and their audits before low-budget execution; SDAR's pre-registered 2-step base control caps per-step transfers to currently masked positions so a partially prompt-filled first block cannot mutate prompt tokens, while the native 4-step parity path is unchanged;
 - same-checkpoint FLARE AR/diffusion RQ4 diagnostic pipeline;
 - revision-ledger protocol v2 binding the experiment git commit, primary/data
   config hashes, immutable model/data SHAs, and frozen model-config hashes;

@@ -20,6 +20,7 @@ from trajuq.aggregation import (  # noqa: E402
 )
 from trajuq.features import FROZEN_FEATURE_GROUPS  # noqa: E402
 from trajuq.io import read_jsonl  # noqa: E402
+from trajuq.provenance import analysis_provenance  # noqa: E402
 
 
 METRICS = ("auroc", "auprc", "aurc")
@@ -200,8 +201,16 @@ def main() -> None:
             },
         }
 
+    provenance_sources = {
+        f"prediction:{spec['cell']}": Path(
+            str(spec["outputs"]["feature_ablation_predictions"])
+        )
+        for spec in specs
+    }
+
     payload = {
         "protocol": "trajuq_feature_ablation_macro_v1",
+        "provenance": analysis_provenance(provenance_sources),
         "baseline": BASELINE,
         "delta_direction": "positive_means_group_is_better_than_decision_only",
         "plan": str(plan_path),

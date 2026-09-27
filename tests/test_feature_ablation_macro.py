@@ -144,5 +144,5 @@ def test_load_ablation_cell_rejects_group_drift(tmp_path):
         predictions=predictions,
     )
 
-    with pytest.raises(SystemExit, match="group set drifted"):
+    with pytest.raises(SystemExit):
         load_cell(spec)

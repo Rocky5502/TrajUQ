@@ -9,9 +9,11 @@ The planned scale/transfer profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
 CUDA~13.0), 16 CPU cores, 48~GB of system memory, and one
 NVIDIA A100-SXM4-80GB GPU under a predeclared 72-hour continuous rental
-envelope. The wall-clock envelope is operational rather than inferential:
-scientific gates are not relaxed when time is scarce, and incomplete stages
-remain incomplete. Because this appendix is still pre-experiment, those
+envelope that starts at server setup. Six hours are reserved a priori for
+checkpoint download/load overhead, CPU analysis/rendering, evidence export,
+and limited retry margin excluded from generation-time projection. The
+wall-clock envelope is operational rather than inferential: scientific gates
+are not relaxed when time is scarce, and incomplete stages remain incomplete. Because this appendix is still pre-experiment, those
 resources are a declared execution plan, not a claim that a run has completed;
 the final paper must report the environment attested by the frozen artifacts.
 The experiment freeze records the source commit, immutable model and dataset

@@ -20,6 +20,14 @@ their expected `results/*` artifacts exist and pass inspection.
 
 ### Continuity and pre-primary hardening
 
+- Official Windows/Linux pre-primary freeze wrappers now perform an atomic
+  evidence preflight before any producer runs. Existing CPU verification,
+  revision-ledger, gated-access, MATH-500 scorer-audit, CPU-log, or frozen-model
+  evidence stops the freeze before mixed-commit artifacts can be created.
+- CPU verification, revision resolution, gated-access verification, and the
+  automatic MATH-500 scorer audit refuse overwrite by default; explicit
+  overwrite is recovery-only and is never requested by the official freeze
+  wrappers.
 - Added and versioned `NEW_CHAT_MASTER_PROMPT.md`.
 - Made the private research-handoff exporter fail closed when required context is
   missing.
@@ -38,6 +46,10 @@ their expected `results/*` artifacts exist and pass inspection.
   file and requires both its path and SHA-256 to match revision-ledger v2. A
   post-freeze change to model generation settings therefore blocks the 18-cell
   plan even when the tracked git checkout itself remains clean.
+- Primary readiness now emits a SHA-256 source-binding manifest covering every
+  file it validated, including nested parity/pilot/MATH artifacts and audits.
+  Both primary planning and primary execution re-hash those bindings, closing
+  the readiness-to-plan/execution time-of-check/time-of-use gap.
 - Primary, primary-analysis, repeated-sampling, and adaptive planners/executors
   reject dirty worktrees and mismatched commits.
 - Run audits are SHA-bound and commit-bound; reusable outputs must remain tied to

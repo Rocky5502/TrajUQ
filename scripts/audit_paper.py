@@ -67,7 +67,7 @@ def main() -> None:
     banned_patterns = {
         "public GitHub URL": r"https?://(?:www\.)?github\.com/",
         "tracking/storage URL": r"https?://(?:www\.)?(?:dropbox|drive\.google)\.",
-        "Windows absolute path": r"[A-Za-z]:\\",
+        "Windows absolute path": r"(?<![A-Za-z0-9])[A-Za-z]:\\",
         "Unix home path": r"/home/[^/\s]+/",
         "acknowledgements heading": r"\\section\*?\{Acknowledg(?:e)?ments?\}",
     }

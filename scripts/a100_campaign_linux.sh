@@ -365,6 +365,8 @@ run_rq2() {
   require_primary_readiness
   "$PYTHON" scripts/plan_repeated_sampling.py
   "$PYTHON" scripts/execute_repeated_sampling.py
+  "$PYTHON" scripts/resident_generate_repeated_plan.py \
+    --plan results/repeated_sampling_plan.json
   "$PYTHON" scripts/execute_repeated_sampling.py --execute
   export_progress_handoff "rq2"
 }

@@ -64,7 +64,7 @@ paid-rental clock immediately after the exact commit is checked out, before
 dependency installation or model/data downloads:
 
 ```bash
-python3.11 scripts/start_a100_rental_clock.py
+python3 scripts/start_a100_rental_clock.py
 nvidia-smi
 python --version
 bash scripts/freeze_preprimary.sh

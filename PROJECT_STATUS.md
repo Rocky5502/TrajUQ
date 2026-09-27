@@ -102,7 +102,12 @@ particular, the following are implemented and versioned:
   exact scored calibration/test SHA-256 values and frozen experiment commit;
   the executor and all three macro aggregators independently reject stale
   predictions, and the primary/ablation/prior-signal macros plus RQ1 claim gate
-  are themselves bound to their exact upstream files before they can be reused.
+  are themselves bound to their exact upstream files before they can be reused;
+- RQ2 repeated-sampling and RQ3 adaptive aggregate macros are now source-bound
+  to the frozen plan and every consumed per-cell result/prediction artifact;
+  their executors re-hash those sources before reusing an existing macro, and
+  paper rendering/final submission revalidate aggregate provenance before any
+  number can enter the manuscript.
 
 Machine-readable implementation evidence and expected runtime artifacts live in
 configs/project_status.yaml. Run:

@@ -804,3 +804,42 @@ def test_primary_readiness_rejects_dataset_contract_revision_drift(tmp_path):
         "normalizer/scorer contracts" in item
         for item in result["failures"]
     )
+
+
+def test_primary_readiness_rejects_dataset_repo_identity_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    ledger = json.loads(case["ledger"].read_text(encoding="utf-8"))
+    ledger["datasets"][0]["repo_id"] = "other/gsm8k"
+    write_json(case["ledger"], ledger)
+    write_gated_access_pass(case["gated_access"], case["ledger"])
+    write_dataset_contracts_pass(case["dataset_contracts"], case["ledger"])
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "revision-ledger repo_id differs from dataset manifest" in item
+        for item in result["failures"]
+    )
+
+
+def test_primary_readiness_rejects_frozen_model_identity_drift(tmp_path):
+    case = build_case(tmp_path, ("llada",))
+    ledger = json.loads(case["ledger"].read_text(encoding="utf-8"))
+    frozen_path = Path(ledger["frozen_model_configs"]["llada"])
+    frozen = yaml.safe_load(frozen_path.read_text(encoding="utf-8"))
+    frozen["model_id"] = "other/model"
+    frozen_path.write_text(
+        yaml.safe_dump(frozen),
+        encoding="utf-8",
+    )
+    ledger["frozen_model_config_sha256"]["llada"] = sha256_file(frozen_path)
+    write_json(case["ledger"], ledger)
+    write_gated_access_pass(case["gated_access"], case["ledger"])
+    write_dataset_contracts_pass(case["dataset_contracts"], case["ledger"])
+
+    result = evaluate(case)
+    assert result["status"] == "FAIL"
+    assert any(
+        "frozen config model_id differs from revision ledger" in item
+        for item in result["failures"]
+    )

@@ -8,6 +8,7 @@ import pytest
 
 from scripts.estimate_a100_campaign import (
     base_budget_ratio,
+    budget_assessment,
     make_markdown,
     repeated_prepared_example_count,
     validate_timing_source,
@@ -277,4 +278,40 @@ def test_repeated_prepared_count_rejects_missing_eligible_dataset():
         repeated_prepared_example_count(
             {"gsm8k": {"total": 1000}},
             ["gsm8k", "math500"],
+        )
+
+
+
+def test_budget_assessment_distinguishes_p90_mean_and_exceeded_states():
+    assert budget_assessment(
+        target_hours=72,
+        mean_hours=50,
+        p90_hours=65,
+    )["decision"] == "FULL_SCOPE_P90_PLANNING_FITS"
+
+    mean_only = budget_assessment(
+        target_hours=72,
+        mean_hours=60,
+        p90_hours=80,
+    )
+    assert mean_only["decision"] == "FULL_SCOPE_MEAN_FITS_P90_EXCEEDS"
+    assert mean_only["mean_fits_budget"] is True
+    assert mean_only["p90_planning_fits_budget"] is False
+
+    exceeded = budget_assessment(
+        target_hours=72,
+        mean_hours=75,
+        p90_hours=90,
+    )
+    assert exceeded["decision"] == "FULL_SCOPE_MEAN_EXCEEDS_BUDGET"
+    assert exceeded["mean_fits_budget"] is False
+    assert exceeded["p90_is_statistical_runtime_bound"] is False
+
+
+def test_budget_assessment_rejects_invalid_target():
+    with pytest.raises(ValueError, match="target wall-clock"):
+        budget_assessment(
+            target_hours=0,
+            mean_hours=1,
+            p90_hours=2,
         )

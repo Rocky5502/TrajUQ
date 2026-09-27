@@ -33,6 +33,7 @@ $FreezeFiles = @(
     "results/cpu_verification.json",
     "results/revision_ledger.json",
     "results/gated_dataset_access.json",
+    "results/dataset_contracts.json",
     "results/math500_scorer_audit.json"
 )
 foreach ($Path in $FreezeFiles) {
@@ -75,9 +76,14 @@ Run-Step "Verify frozen gated-dataset access" {
     & $Python scripts/verify_gated_dataset_access.py --revision-ledger results/revision_ledger.json --output results/gated_dataset_access.json
 }
 
+Run-Step "Verify exact-revision dataset normalizer/scorer contracts" {
+    & $Python scripts/verify_dataset_contracts.py --revision-ledger results/revision_ledger.json --output results/dataset_contracts.json
+}
+
 $Cpu = Get-Content results/cpu_verification.json -Raw | ConvertFrom-Json
 $Ledger = Get-Content results/revision_ledger.json -Raw | ConvertFrom-Json
 $Gated = Get-Content results/gated_dataset_access.json -Raw | ConvertFrom-Json
+$Contracts = Get-Content results/dataset_contracts.json -Raw | ConvertFrom-Json
 
 if ($Cpu.protocol -ne "trajuq_cpu_verification_v1") {
     throw "Unexpected CPU-verification protocol: $($Cpu.protocol)"
@@ -110,6 +116,26 @@ if ($Gated.revision_ledger_sha256 -ne $LedgerHash) {
     throw "Gated dataset access is not bound to the current revision ledger."
 }
 
+if ($Contracts.protocol -ne "trajuq_dataset_contracts_v1") {
+    throw "Unexpected dataset-contract protocol: $($Contracts.protocol)"
+}
+if ($Contracts.status -ne "PASS") { throw "Dataset contracts did not PASS." }
+if ($Contracts.git_clean -ne $true) {
+    throw "Dataset contracts were not recorded from a clean worktree."
+}
+if ($Contracts.git_commit -ne $Head) {
+    throw "Dataset-contract commit $($Contracts.git_commit) does not match frozen HEAD $Head."
+}
+if ($Contracts.revision_ledger_sha256 -ne $LedgerHash) {
+    throw "Dataset contracts are not bound to the current revision ledger."
+}
+if (@($Contracts.observed_datasets).Count -ne @($Contracts.expected_datasets).Count) {
+    throw "Dataset-contract coverage is incomplete."
+}
+if ((Compare-Object @($Contracts.observed_datasets) @($Contracts.expected_datasets))) {
+    throw "Dataset-contract observed/expected dataset sets differ."
+}
+
 $DirtyAfterFreeze = (& git status --porcelain) -join "`n"
 if ($LASTEXITCODE -ne 0) { throw "Unable to re-check git worktree after freeze." }
 if ($DirtyAfterFreeze) {
@@ -130,6 +156,7 @@ Write-Host "Frozen commit: $Head"
 Write-Host "CPU artifact: results/cpu_verification.json"
 Write-Host "Revision ledger: results/revision_ledger.json"
 Write-Host "Gated dataset access: results/gated_dataset_access.json"
+Write-Host "Dataset contracts: results/dataset_contracts.json"
 Write-Host "Frozen model configs: results/frozen_models/"
 Write-Host "Private handoff: dist/trajuq_preprimary_handoff.zip"
 Write-Host ""

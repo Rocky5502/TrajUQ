@@ -218,6 +218,9 @@ completion count cannot be mistaken for completed empirical work.
   outcome-free SHA-256 ID caps before any model calls: GSM8K calibration/test
   at 500 each; ARC-Challenge and MMLU-Pro large test splits at 500; smaller
   frozen partitions remain complete.
+- Frozen generation commands explicitly carry `--device cuda` and
+  `--dtype bfloat16`; primary/adaptive raw-contract checks and repeated-seed
+  reuse reject requested runtime drift.
 - The manuscript labels this hardware/software setup and 72-hour budget as
   **planned** until frozen run artifacts attest the environment actually used.
 - For expensive execution, use the guarded A100/Linux campaign as the primary

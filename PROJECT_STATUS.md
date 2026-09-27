@@ -261,7 +261,8 @@ Do not edit tracked experiment code after the freeze. The estimator reports the
 exact prepared-call count and serial A100 forecast from real
 LLaDA/SDAR/Dream timing traces. The autonomous supervisor logs GPU/disk/progress
 once per hour, prioritizes primary -> analysis -> RQ3 -> expensive RQ2 -> paper,
-and compares the measured campaign estimate with the paid hours still remaining
+and requires the measured mean generation forecast plus a frozen 6-hour
+non-generation operational reserve to fit the paid hours still remaining
 before scale. It preserves resumable evidence if the original 72-hour envelope
 is exhausted. Keep
 experiment evidence on persistent storage or copy `results/`, `runs/`,

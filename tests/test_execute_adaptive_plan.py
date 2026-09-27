@@ -10,6 +10,7 @@ from scripts.execute_adaptive_plan import (
     command_needed,
     evaluation_state,
     execution_snapshot,
+    macro_state,
     validate_plan_provenance,
 )
 
@@ -318,3 +319,80 @@ def test_adaptive_audit_rejects_other_commit(tmp_path):
     raw = tmp_path / "base.raw.jsonl"
     write_audited(raw, "raw", commit="other-commit")
     assert not audit_passes(raw, "raw", "frozen-commit")
+
+
+def test_adaptive_macro_rejects_consumed_source_drift(tmp_path):
+    commit = "frozen-commit"
+    plan_path = tmp_path / "adaptive_plan.json"
+    refined = tmp_path / "refined.scored.jsonl"
+    result = tmp_path / "cap.result.json"
+    predictions = tmp_path / "cap.predictions.jsonl"
+    macro = tmp_path / "macro.json"
+
+    plan_path.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    refined.write_text('{"example_id":"x"}\n', encoding="utf-8")
+    result.write_text('{"protocol":"trajuq_adaptive_evaluation_v2"}\n', encoding="utf-8")
+    predictions.write_text('{"example_id":"x"}\n', encoding="utf-8")
+
+    plan = {
+        "protocol": "trajuq_adaptive_matrix_plan_v3",
+        "experiment_git_commit": commit,
+        "_plan_path": str(plan_path),
+        "cells": [
+            {
+                "cell": "llada:gsm8k",
+                "provenance": {
+                    "test": {"refined_scored": str(refined)},
+                },
+                "evaluations": {
+                    "cap_050": {
+                        "result": str(result),
+                        "predictions": str(predictions),
+                    }
+                },
+            }
+        ],
+    }
+    spec = {
+        "output": str(macro),
+        "fraction_key": "cap_050",
+        "max_refine_fraction": 0.5,
+        "primary": True,
+    }
+    sources = {
+        "plan": plan_path,
+        "refined_scored:llada:gsm8k": refined,
+        "adaptive_result:llada:gsm8k": result,
+        "adaptive_predictions:llada:gsm8k": predictions,
+    }
+    macro.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_adaptive_macro_v1",
+                "execution_semantics": "selective_second_pass_rerun",
+                "cell_set_complete": True,
+                "expected_cells": 1,
+                "observed_cells": 1,
+                "fraction_key": "cap_050",
+                "max_refine_fraction": 0.5,
+                "is_primary_fraction": True,
+                "provenance": {
+                    "protocol": "trajuq_analysis_source_binding_v1",
+                    "git_commit": commit,
+                    "git_clean": True,
+                    "sources": {
+                        name: {
+                            "path": str(path),
+                            "sha256": _sha256(path),
+                        }
+                        for name, path in sources.items()
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert macro_state(plan, spec, 1) == "COMPLETE"
+    predictions.write_text('{"example_id":"changed"}\n', encoding="utf-8")
+    assert macro_state(plan, spec, 1) == "INVALID"

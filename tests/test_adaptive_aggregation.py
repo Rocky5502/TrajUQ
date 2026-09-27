@@ -98,3 +98,102 @@ def test_adaptive_macro_rejects_partial_frozen_test_coverage(tmp_path):
 
     with pytest.raises(SystemExit, match="exactly cover"):
         load_prediction_cell(spec, "cap_050")
+
+
+def test_adaptive_aggregator_rejects_stale_evaluation_binding(tmp_path):
+    import hashlib
+
+    commit = "frozen-commit"
+    sources = {}
+    source_sha = {}
+    for name in ("cal_base", "cal_refined", "test_base", "test_refined"):
+        path = tmp_path / f"{name}.scored.jsonl"
+        path.write_text('{"example_id":"a"}\n', encoding="utf-8")
+        sources[name] = path
+        source_sha[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    provenance = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "sources": {
+            name: {
+                "path": str(path),
+                "sha256": source_sha[name],
+            }
+            for name, path in sources.items()
+        },
+    }
+    compact = {
+        "protocol": "trajuq_analysis_source_binding_v1",
+        "git_commit": commit,
+        "git_clean": True,
+        "source_sha256": source_sha,
+    }
+
+    predictions = tmp_path / "predictions.jsonl"
+    predictions.write_text(
+        json.dumps(
+            {
+                "example_id": "a",
+                "threshold": 0.5,
+                "max_refine_fraction": 0.5,
+                "execution_semantics": "selective_second_pass_rerun",
+                "selected": True,
+                "base_compute": 32,
+                "refined_compute": 128,
+                "base_correct": False,
+                "refined_correct": True,
+                "analysis_provenance": compact,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = tmp_path / "result.json"
+    result.write_text(
+        json.dumps(
+            {
+                "protocol": "trajuq_adaptive_evaluation_v2",
+                "execution_semantics": "selective_second_pass_rerun",
+                "n_test": 1,
+                "max_refine_fraction": 0.5,
+                "selected_on_calibration": {"threshold": 0.5},
+                "test": {"refine_fraction": 1.0},
+                "provenance": provenance,
+            }
+        ),
+        encoding="utf-8",
+    )
+    spec = {
+        "cell": "llada:gsm8k",
+        "adapter": "llada",
+        "dataset": "gsm8k",
+        "calibration_base": {"scored_output": str(sources["cal_base"])},
+        "test_base": {"scored_output": str(sources["test_base"])},
+        "provenance": {
+            "calibration": {
+                "refined_scored": str(sources["cal_refined"]),
+            },
+            "test": {
+                "refined_scored": str(sources["test_refined"]),
+            },
+        },
+        "evaluations": {
+            "cap_050": {
+                "predictions": str(predictions),
+                "result": str(result),
+                "max_refine_fraction": 0.5,
+            }
+        },
+    }
+
+    cell = load_prediction_cell(spec, "cap_050", commit)
+    assert cell.label == "llada:gsm8k"
+
+    sources["cal_base"].write_text(
+        '{"example_id":"changed"}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(SystemExit, match="source binding is stale"):
+        load_prediction_cell(spec, "cap_050", commit)

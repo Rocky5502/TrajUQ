@@ -12,7 +12,7 @@ For SDAR, each active block emits mergeable position- and step-level sufficient 
 
 ## Primary endpoint and claim gate
 
-The single primary RQ1 endpoint is the equal-cell-weight hierarchical macro improvement in AUROC of the trajectory-augmented logistic model over the decision-time entropy logistic baseline. AUPRC and AURC improvements are secondary endpoints. A positive RQ1 claim requires the 95\% hierarchical bootstrap interval for macro AUROC improvement to lie above zero and positive point improvement in at least two of the three primary model families. Cell-level and secondary results are reported regardless of direction; this gate is frozen to prevent choosing the most favorable metric after test inspection. The primary macro aggregator rejects an incomplete model--dataset cell set unless `--allow-partial` is explicitly used for exploration, and `scripts/evaluate_rq1_claim_gate.py` converts the frozen rules into a machine-readable claim decision.
+The single primary RQ1 endpoint is the equal-cell-weight macro improvement in AUROC of the trajectory-augmented logistic model over the decision-time entropy logistic baseline. AUPRC and AURC improvements are secondary endpoints. A positive RQ1 claim requires the 95\% paired class-stratified within-cell bootstrap interval for macro AUROC improvement to lie above zero and positive point improvement in at least two of the three primary model families. Cell-level and secondary results are reported regardless of direction; this gate is frozen to prevent choosing the most favorable metric after test inspection. The primary macro aggregator rejects an incomplete model--dataset cell set unless `--allow-partial` is explicitly used for exploration, and `scripts/evaluate_rq1_claim_gate.py` converts the frozen rules into a machine-readable claim decision.
 
 ## RQ1 — Does the trajectory add predictive information?
 
@@ -41,7 +41,7 @@ Report:
 - risk–coverage and AURC;
 - risk at frozen coverage points.
 
-For cross-cell RQ2 summaries, report equal-cell-weight hierarchical macro differences for Brier, NLL, 15-bin ECE, AURC, and risk at 50\% and 80\% coverage, with positive improvement always defined as better (therefore baseline minus TrajUQ for lower-is-better metrics).
+For cross-cell RQ2 summaries, report equal-cell-weight macro differences for Brier, NLL, 15-bin ECE, AURC, and risk at 50\% and 80\% coverage using the same paired class-stratified within-cell bootstrap, with positive improvement always defined as better (therefore baseline minus TrajUQ for lower-is-better metrics).
 
 Raw TrajUQ risk must not be described as an error probability.
 
@@ -66,7 +66,7 @@ For the frozen TrajUQ policy, report paired bootstrap confidence intervals for a
 
 The primary RQ3 summary macro-averages all 18 model--dataset cells with equal cell weight. Its confidence intervals use a paired within-cell bootstrap followed by macro-averaging on each replicate. Report adaptive accuracy, deltas versus base/refined/random, selected fraction, and nominal cost ratio to the base budget. The 50\% cap is primary; the 25\% and 75\% caps are reported as frozen sensitivity analyses rather than alternative thresholds chosen after test inspection.
 
-The repository's `evaluate_adaptive.py` implements the per-cell policy and exports per-example decisions; `aggregate_adaptive.py` implements the full-matrix hierarchical summary. Model-native schedulers remain model-specific.
+The repository's `evaluate_adaptive.py` implements the per-cell policy and exports per-example decisions; `aggregate_adaptive.py` implements the full-matrix equal-cell macro summary with paired within-cell resampling. Model-native schedulers remain model-specific.
 
 ## RQ4 — Sampler/denoiser diagnostics
 

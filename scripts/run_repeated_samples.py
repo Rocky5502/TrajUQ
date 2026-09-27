@@ -73,10 +73,90 @@ def artifact_ids_complete(path: Path, expected_ids: list[str]) -> bool:
     )
 
 
+def repeated_seed_contract(args, seed: int) -> dict:
+    """Generation settings that must match before an audited seed can be reused."""
+
+    metadata = {
+        "model_revision": str(args.revision),
+        "temperature": float(args.temperature),
+    }
+    if args.adapter == "llada":
+        metadata.update(
+            {
+                "steps_requested": int(args.steps),
+                "gen_length": int(args.max_new_tokens),
+                "block_length": int(args.block_length),
+                "cfg_scale": float(args.llada_cfg_scale),
+                "remasking": str(args.llada_remasking),
+            }
+        )
+    elif args.adapter == "dream":
+        metadata.update(
+            {
+                "steps_requested": int(args.steps),
+                "max_new_tokens": int(args.max_new_tokens),
+                "top_p": float(args.top_p),
+                "algorithm": str(args.dream_alg),
+                "algorithm_temperature": float(args.dream_alg_temp),
+            }
+        )
+    elif args.adapter == "sdar":
+        metadata.update(
+            {
+                "gen_length": int(args.max_new_tokens),
+                "block_length": int(args.block_length),
+                "top_p": float(args.top_p),
+                "denoising_steps": int(args.sdar_denoising_steps),
+                "top_k": int(args.sdar_top_k),
+                "remasking_strategy": str(args.sdar_remasking_strategy),
+                "confidence_threshold": float(args.sdar_confidence_threshold),
+            }
+        )
+    else:
+        raise ValueError(f"unsupported repeated adapter: {args.adapter}")
+
+    return {
+        "adapter": str(args.adapter),
+        "model": str(args.model),
+        "seed": int(seed),
+        "metadata": metadata,
+    }
+
+
+def artifact_generation_contract_matches(path: Path, expected: dict) -> bool:
+    try:
+        rows = list(read_jsonl(path))
+    except Exception:
+        return False
+    if not rows:
+        return False
+
+    for row in rows:
+        if (
+            str(row.get("adapter", "")) != str(expected["adapter"])
+            or str(row.get("model", "")) != str(expected["model"])
+            or int(row.get("seed", -1)) != int(expected["seed"])
+        ):
+            return False
+        metadata = row.get("generation", {}).get("metadata", {})
+        for key, value in expected["metadata"].items():
+            observed = metadata.get(key)
+            if isinstance(value, float):
+                try:
+                    if float(observed) != value:
+                        return False
+                except (TypeError, ValueError):
+                    return False
+            elif observed != value:
+                return False
+    return True
+
+
 def verified_raw_artifact(
     path: Path,
     expected_commit: str | None,
     expected_ids: list[str],
+    expected_contract: dict | None = None,
 ) -> bool:
     audit = path.with_suffix(path.suffix + ".audit.json")
     if not path.exists() or not audit.exists():
@@ -85,8 +165,13 @@ def verified_raw_artifact(
         payload = json.loads(audit.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
+    contract_ok = (
+        expected_contract is None
+        or artifact_generation_contract_matches(path, expected_contract)
+    )
     return (
         artifact_ids_complete(path, expected_ids)
+        and contract_ok
         and payload.get("protocol") == "trajuq_run_audit_v1"
         and payload.get("status") == "PASS"
         and payload.get("git_clean") is True
@@ -126,8 +211,8 @@ def main() -> None:
         action="store_true",
         help=(
             "Skip an existing seed only when its protocol-v1 raw audit is a "
-            "clean PASS at the current frozen git commit and its SHA-256 "
-            "matches the current artifact."
+            "clean PASS at the current frozen git commit, its SHA-256 matches, "
+            "and every record matches the requested model/seed/sampler settings."
         ),
     )
     args = parser.parse_args()
@@ -201,7 +286,12 @@ def main() -> None:
         if (
             output.exists()
             and args.resume_verified
-            and verified_raw_artifact(output, commit, expected_ids)
+            and verified_raw_artifact(
+                output,
+                commit,
+                expected_ids,
+                repeated_seed_contract(args, seed),
+            )
         ):
             print(f"[TrajUQ repeated] verified seed already complete -> {output}")
             manifest["runs"].append(

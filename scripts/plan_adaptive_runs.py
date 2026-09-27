@@ -17,6 +17,7 @@ from scripts.execute_primary_plan import (  # noqa: E402
     validate_plan_provenance as validate_primary_plan_provenance,
 )
 from scripts.plan_primary_analysis import scored_source_chain_passes  # noqa: E402
+from trajuq.io import write_json_immutable  # noqa: E402
 
 
 def sha256_file(path: Path) -> str:
@@ -174,11 +175,7 @@ def main() -> None:
             "cells": [],
         }
         out = Path(args.output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(
-            json.dumps(payload, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        write_state = write_json_immutable(out, payload)
         print(json.dumps(payload, indent=2, sort_keys=True))
         raise SystemExit(1)
 
@@ -479,11 +476,7 @@ def main() -> None:
     }
 
     out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    write_state = write_json_immutable(out, payload)
     print(
         json.dumps(
             {

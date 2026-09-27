@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from trajuq.io import read_jsonl
+from trajuq.io import read_jsonl, sha256_text
+from trajuq.schema import SCHEMA_VERSION
 
 
 STEP_KEYS = (
@@ -196,14 +197,174 @@ def artifact_example_ids(path: Path) -> list[str]:
     return ids
 
 
+def argv_value(argv: list[str], flag: str) -> str:
+    try:
+        index = argv.index(flag)
+    except ValueError as exc:
+        raise ValueError(f"frozen generation argv is missing {flag}") from exc
+    if index + 1 >= len(argv):
+        raise ValueError(f"frozen generation argv has no value for {flag}")
+    return str(argv[index + 1])
+
+
+def expected_generation_contract(spec: dict[str, Any]) -> dict[str, Any] | None:
+    raw_argv = spec.get("generate_argv")
+    if not raw_argv:
+        # Lightweight unit fixtures may omit the real frozen command.
+        return None
+    argv = [str(value) for value in raw_argv]
+    adapter = argv_value(argv, "--adapter")
+    contract: dict[str, Any] = {
+        "adapter": adapter,
+        "model": argv_value(argv, "--model"),
+        "revision": argv_value(argv, "--revision"),
+        "seed": int(argv_value(argv, "--seed")),
+        "generation_metadata": {},
+    }
+    metadata = contract["generation_metadata"]
+
+    if adapter == "llada":
+        metadata.update(
+            {
+                "steps_requested": int(argv_value(argv, "--steps")),
+                "gen_length": int(argv_value(argv, "--max-new-tokens")),
+                "block_length": int(argv_value(argv, "--block-length")),
+                "temperature": float(argv_value(argv, "--temperature")),
+                "cfg_scale": float(argv_value(argv, "--llada-cfg-scale")),
+                "remasking": argv_value(argv, "--llada-remasking"),
+            }
+        )
+    elif adapter == "dream":
+        metadata.update(
+            {
+                "steps_requested": int(argv_value(argv, "--steps")),
+                "max_new_tokens": int(argv_value(argv, "--max-new-tokens")),
+                "temperature": float(argv_value(argv, "--temperature")),
+                "top_p": float(argv_value(argv, "--top-p")),
+                "algorithm": argv_value(argv, "--dream-alg"),
+                "algorithm_temperature": float(
+                    argv_value(argv, "--dream-alg-temp")
+                ),
+            }
+        )
+    elif adapter == "sdar":
+        metadata.update(
+            {
+                "gen_length": int(argv_value(argv, "--max-new-tokens")),
+                "block_length": int(argv_value(argv, "--block-length")),
+                "denoising_steps": int(
+                    argv_value(argv, "--sdar-denoising-steps")
+                ),
+                "temperature": float(argv_value(argv, "--temperature")),
+                "top_k": int(argv_value(argv, "--sdar-top-k")),
+                "top_p": float(argv_value(argv, "--top-p")),
+                "remasking_strategy": argv_value(
+                    argv, "--sdar-remasking-strategy"
+                ),
+                "confidence_threshold": float(
+                    argv_value(argv, "--sdar-confidence-threshold")
+                ),
+                "partial_block_transfer_guard": (
+                    "cap_requested_transfers_to_masked_positions"
+                ),
+            }
+        )
+    else:
+        raise ValueError(f"unsupported frozen adapter in generation argv: {adapter}")
+    return contract
+
+
+def value_matches(actual: Any, expected: Any) -> bool:
+    if isinstance(expected, bool):
+        return actual is expected
+    if isinstance(expected, int):
+        try:
+            return not isinstance(actual, bool) and int(actual) == expected
+        except (TypeError, ValueError):
+            return False
+    if isinstance(expected, float):
+        try:
+            return float(actual) == expected
+        except (TypeError, ValueError):
+            return False
+    return str(actual) == str(expected)
+
+
+def row_matches_generation_contract(
+    row: dict[str, Any],
+    input_row: dict[str, Any],
+    spec: dict[str, Any],
+    contract: dict[str, Any],
+) -> bool:
+    prompt = input_row.get("prompt")
+    if prompt is None:
+        return False
+    expected_dataset = str(input_row.get("dataset", "unknown"))
+    if (
+        str(row.get("example_id", "")) != str(input_row.get("id", ""))
+        or str(row.get("dataset", "")) != expected_dataset
+        or str(row.get("prompt_sha256", "")) != sha256_text(str(prompt))
+        or str(row.get("model", "")) != str(contract["model"])
+        or str(row.get("adapter", "")) != str(contract["adapter"])
+        or not value_matches(row.get("seed"), contract["seed"])
+        or row.get("schema_version") != SCHEMA_VERSION
+    ):
+        return False
+
+    record_metadata = row.get("metadata", {})
+    generation = row.get("generation", {})
+    generation_metadata = generation.get("metadata", {})
+    if not isinstance(record_metadata, dict) or not isinstance(generation_metadata, dict):
+        return False
+    if (
+        str(record_metadata.get("model_revision", ""))
+        != str(contract["revision"])
+        or str(generation_metadata.get("model_revision", ""))
+        != str(contract["revision"])
+        or str(generation_metadata.get("model_id", ""))
+        != str(contract["model"])
+        or str(record_metadata.get("source_input", ""))
+        != str(Path(str(spec["input"])))
+    ):
+        return False
+
+    return all(
+        value_matches(generation_metadata.get(key), expected)
+        for key, expected in contract["generation_metadata"].items()
+    )
+
+
 def artifact_id_state(path: Path, spec: dict[str, Any]) -> str:
     if not path.exists():
         return "MISSING"
-    expected = expected_input_ids(spec)
     try:
-        observed = artifact_example_ids(path)
-    except (OSError, json.JSONDecodeError, ValueError):
+        input_rows = list(read_jsonl(spec["input"]))
+        expected = [str(row.get("id", "")) for row in input_rows]
+        rows = list(read_jsonl(path))
+        observed = [str(row.get("example_id", "")) for row in rows]
+        if (
+            not input_rows
+            or any(not item_id for item_id in expected)
+            or len(expected) != len(set(expected))
+            or any(not item_id for item_id in observed)
+            or len(observed) != len(set(observed))
+        ):
+            return "INVALID"
+        contract = expected_generation_contract(spec)
+        if contract is not None and any(
+            not row_matches_generation_contract(
+                row,
+                input_rows[index],
+                spec,
+                contract,
+            )
+            for index, row in enumerate(rows)
+            if index < len(input_rows)
+        ):
+            return "INVALID"
+    except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError):
         return "INVALID"
+
     if observed == expected:
         return "COMPLETE"
     if len(observed) < len(expected) and observed == expected[: len(observed)]:

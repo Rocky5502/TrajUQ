@@ -275,8 +275,8 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                 "n_test": 1,
                 "eligibility": {
                     "eligible": False,
-                    "min_calibration_samples_required": 1000,
-                    "min_class_count_required": 5,
+                    "min_calibration_samples_required": 250,
+                    "min_class_count_required": 25,
                     "cv_folds_requested": 5,
                     "observed_class_counts": {"0": 1},
                     "observed_min_class_count": 1,
@@ -322,8 +322,8 @@ def test_analysis_snapshot_requires_macro_and_claim_gate(tmp_path):
                     "base_estimator": "standardized_logistic",
                     "cv_folds": 5,
                     "ensemble": False,
-                    "min_calibration_samples": 1000,
-                    "min_class_count": 5,
+                    "min_calibration_samples": 250,
+                    "min_class_count": 25,
                 },
                 "inputs": {
                     "calibration": {
@@ -941,8 +941,8 @@ def _isotonic_contract() -> dict:
         "base_estimator": "standardized_logistic",
         "cv_folds": 5,
         "ensemble": False,
-        "min_calibration_samples": 1000,
-        "min_class_count": 5,
+        "min_calibration_samples": 250,
+        "min_class_count": 25,
     }
 
 
@@ -976,8 +976,8 @@ def test_calibration_sensitivity_accepts_recomputed_insufficient_skip(tmp_path):
         "n_test": 1,
         "eligibility": {
             "eligible": False,
-            "min_calibration_samples_required": 1000,
-            "min_class_count_required": 5,
+            "min_calibration_samples_required": 250,
+            "min_class_count_required": 25,
             "cv_folds_requested": 5,
             "observed_class_counts": {"0": 1, "1": 1},
             "observed_min_class_count": 1,
@@ -1026,8 +1026,8 @@ def test_calibration_sensitivity_rejects_forged_skip_when_eligible(tmp_path):
         "n_test": 2,
         "eligibility": {
             "eligible": False,
-            "min_calibration_samples_required": 1000,
-            "min_class_count_required": 5,
+            "min_calibration_samples_required": 250,
+            "min_class_count_required": 25,
             "cv_folds_requested": 5,
             "observed_class_counts": {"0": 500, "1": 500},
             "observed_min_class_count": 500,
@@ -1086,8 +1086,8 @@ def test_calibration_sensitivity_accepts_valid_eligible_pass(tmp_path):
         "n_test": 2,
         "eligibility": {
             "eligible": True,
-            "min_calibration_samples_required": 1000,
-            "min_class_count_required": 5,
+            "min_calibration_samples_required": 250,
+            "min_class_count_required": 25,
             "cv_folds_requested": 5,
             "observed_class_counts": {"0": 500, "1": 500},
             "observed_min_class_count": 500,

@@ -183,6 +183,8 @@ def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
     assert "scripts/math500_gate_linux.sh pilot" in text
     assert "STOP FOR HUMAN MATH-500 REVIEW" in text
     assert "scripts/plan_primary_matrix.py" in text
+    assert "scripts/estimate_a100_campaign.py" in text
+    assert "estimate)" in text
     assert "scripts/execute_primary_plan.py --execute" in text
     assert "scripts/plan_primary_analysis.py" in text
     assert "scripts/execute_primary_analysis.py --execute" in text

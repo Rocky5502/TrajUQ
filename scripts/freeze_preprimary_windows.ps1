@@ -64,6 +64,18 @@ if (-not $SkipDependencyInstall) {
     }
 }
 
+Run-Step "Repeated runner standalone import smoke" {
+    & $Python scripts/run_repeated_samples.py --help
+}
+
+Run-Step "Resident generator standalone import smoke" {
+    & $Python scripts/resident_generate_plan.py --help
+}
+
+Run-Step "Resident repeated generator standalone import smoke" {
+    & $Python scripts/resident_generate_repeated_plan.py --help
+}
+
 Run-Step "Clean-commit CPU verification" {
     & $Python scripts/verify_cpu.py --output results/cpu_verification.json --logs-dir results/cpu_verification_logs
 }

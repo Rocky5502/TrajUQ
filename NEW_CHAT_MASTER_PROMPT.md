@@ -233,9 +233,10 @@ The live six-dataset normalizer/scorer contract proof must exist and PASS:
 Both data preflights must be from the same clean experiment commit and bind the
 current revision-ledger SHA-256. Gated access proves one record can be streamed
 from every gated primary dataset (currently GPQA-Diamond). Dataset-contract v1
-streams one row from each of all six exact-revision primary datasets, exercises
-the frozen normalizer and scorer with a constructed correct final answer, and
-stores no benchmark row content.
+streams four rows from each of all six exact-revision primary datasets, exercises
+the frozen normalizer and scorer on every sampled row with a constructed correct
+final answer, stores no benchmark row content, and is rejected if it only contains
+legacy one-row evidence.
 
 Then, in order:
 1. LLaDA 20-prompt exact parity v3;

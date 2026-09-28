@@ -1,7 +1,7 @@
 name: dream_v0_instruct_7b
 adapter: dream
 model_id: Dream-org/Dream-v0-Instruct-7B
-revision: null
+revision: 05334cb9faaf763692dcf9d8737c642be2b2a6ae
 trust_remote_code: true
 dtype: bfloat16
 device: cuda

@@ -1,7 +1,7 @@
 name: sdar_1_7b_chat
 adapter: sdar
 model_id: JetLM/SDAR-1.7B-Chat
-revision: null
+revision: 14fcc4b796f05b9a11aa565b2353199af757d079
 device: cuda
 dtype: bfloat16
 upstream:

@@ -257,6 +257,8 @@ def write_parity(
                 "model_revision": revision,
                 "source_git_commit": commit,
                 "source_git_clean": True,
+                "torch_version": "2.7.1+cu126",
+                "transformers_version": "4.52.4",
             },
         },
     )

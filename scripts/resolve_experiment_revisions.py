@@ -162,7 +162,7 @@ def main() -> None:
         raise SystemExit(
             "Refusing to overwrite frozen revision evidence: "
             + ", ".join(str(path) for path in existing)
-            + ". Inspect/archive it before recovery. The official freeze "
+            + ". Inspect/archive it before recovery. Official freeze "
             "wrappers never overwrite frozen revision evidence."
         )
 

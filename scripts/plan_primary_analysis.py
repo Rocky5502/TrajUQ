@@ -315,8 +315,8 @@ def main() -> None:
     if (
         required_isotonic["cv_folds"] != 5
         or required_isotonic["ensemble"] is not False
-        or required_isotonic["min_calibration_samples"] != 1000
-        or required_isotonic["min_class_count"] != 5
+        or required_isotonic["min_calibration_samples"] != 250
+        or required_isotonic["min_class_count"] != 25
     ):
         raise SystemExit("Unexpected frozen isotonic sensitivity contract.")
     root = Path(args.output_root)

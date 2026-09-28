@@ -6,10 +6,10 @@ def test_72h_autopilot_requires_readiness_and_prioritizes_core_stages():
 
     assert "bash scripts/a100_campaign_linux.sh readiness" in text
     assert 'BUDGET_HOURS="${BUDGET_HOURS:-72}"' in text
-    assert 'MONITOR_SECONDS="${MONITOR_SECONDS:-3600}"' in text
+    assert 'MONITOR_SECONDS="${MONITOR_SECONDS:-2700}"' in text
     assert "timeout --foreground --signal=TERM" in text
     assert "nvidia-smi" in text
-    assert "hourly_monitor.log" in text
+    assert "monitor_45m.log" in text
     assert "a100_72h_autopilot_state.json" in text
     assert "for stage in estimate primary analysis rq3 rq2 paper" in text
 

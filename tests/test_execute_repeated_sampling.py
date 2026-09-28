@@ -2,6 +2,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import yaml
+
 import scripts.execute_repeated_sampling as execute_repeated_sampling
 from scripts.execute_repeated_sampling import (
     audit_passes,

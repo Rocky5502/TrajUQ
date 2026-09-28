@@ -137,6 +137,10 @@ def audit_run_provenance(
             failures.append(
                 f"row {i}: generation metadata model revision is not pinned"
             )
+        if record_revision:
+            revisions.add(str(record_revision))
+        if generation_revision:
+            revisions.add(str(generation_revision))
         if (
             record_revision
             and generation_revision
@@ -145,9 +149,6 @@ def audit_run_provenance(
             failures.append(
                 f"row {i}: record/generation model revisions disagree"
             )
-        revision = generation_revision or record_revision
-        if revision:
-            revisions.add(str(revision))
 
         record_metadata = row.get("metadata", {})
         source_commit = (

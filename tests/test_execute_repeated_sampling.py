@@ -475,9 +475,41 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
     scored_audit = tmp_path / "calibration.scored.jsonl.audit.json"
     predictions = tmp_path / "trajuq_predictions.jsonl"
 
-    primary_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    primary_plan.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "cells": [
+                    {
+                        "cell": "llada:gsm8k",
+                        "adapter": "llada",
+                        "dataset": "gsm8k",
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     analysis_plan.write_text('{"status":"PASS"}\n', encoding="utf-8")
-    primary_config.write_text("experiment:\n  seed: 2027\n", encoding="utf-8")
+    primary_config.write_text(
+        yaml.safe_dump(
+            {
+                "experiment": {"seed": 2027},
+                "baselines": {
+                    "expensive": {
+                        "repeated_sampling": {
+                            "samples": 5,
+                            "seeds": [2027, 2028, 2029, 2030, 2031],
+                            "eligible_datasets": ["gsm8k"],
+                            "excluded_datasets": {},
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     generation_input.write_text('{"example_id":"x"}\n', encoding="utf-8")
     scored.write_text('{"example_id":"x"}\n', encoding="utf-8")
     scored_audit.write_text(
@@ -517,6 +549,12 @@ def test_repeated_provenance_rejects_primary_prediction_drift(
         "primary_analysis_plan_sha256": _sha256(analysis_plan),
         "primary_config": str(primary_config),
         "primary_config_sha256": _sha256(primary_config),
+        "eligible_datasets": ["gsm8k"],
+        "excluded_datasets": {},
+        "expected_cells": 1,
+        "cell_count": 1,
+        "samples": 5,
+        "seeds": [2027, 2028, 2029, 2030, 2031],
         "cells": [
             {
                 "cell": "llada:gsm8k",

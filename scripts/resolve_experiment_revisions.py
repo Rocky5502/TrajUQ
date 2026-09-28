@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -28,6 +29,97 @@ def git_head() -> str | None:
         ).strip()
     except Exception:
         return None
+
+
+def _http_status_code(exc: Exception) -> int | None:
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    try:
+        return int(status) if status is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def is_retryable_remote_error(exc: Exception) -> bool:
+    """Return True only for transport/rate/server failures worth retrying."""
+
+    status = _http_status_code(exc)
+    if status is not None:
+        if status in {408, 409, 425, 429} or 500 <= status <= 599:
+            return True
+        if status in {400, 401, 403, 404}:
+            return False
+
+    name = type(exc).__name__.lower()
+    retryable_names = (
+        "connecterror",
+        "connecttimeout",
+        "readtimeout",
+        "writetimeout",
+        "pooltimeout",
+        "proxyerror",
+        "networkerror",
+        "sslerror",
+        "timeout",
+    )
+    if any(token in name for token in retryable_names):
+        return True
+
+    message = str(exc).lower()
+    retryable_markers = (
+        "unexpected_eof_while_reading",
+        "unexpected eof",
+        "connection reset",
+        "connection aborted",
+        "temporarily unavailable",
+        "temporary failure",
+        "timed out",
+        "timeout",
+        "rate limit",
+        "too many requests",
+        "server error",
+    )
+    return any(marker in message for marker in retryable_markers)
+
+
+def resolve_remote_sha(
+    fetch_info,
+    *,
+    label: str,
+    max_attempts: int = 5,
+    base_delay_seconds: float = 2.0,
+    sleep_fn=time.sleep,
+) -> str:
+    """Resolve one Hub object SHA with bounded deterministic retry."""
+
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be >= 1")
+    if base_delay_seconds < 0:
+        raise ValueError("base_delay_seconds must be >= 0")
+
+    last_exc: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            info = fetch_info()
+            resolved_sha = getattr(info, "sha", None)
+            if not resolved_sha:
+                raise RuntimeError("Hugging Face returned no SHA")
+            return str(resolved_sha)
+        except Exception as exc:
+            last_exc = exc
+            retryable = is_retryable_remote_error(exc)
+            if not retryable or attempt >= max_attempts:
+                raise
+            delay = min(base_delay_seconds * (2 ** (attempt - 1)), 30.0)
+            print(
+                f"[TrajUQ] transient Hub failure while resolving {label}; "
+                f"retry {attempt + 1}/{max_attempts} in {delay:.1f}s "
+                f"({type(exc).__name__})"
+            )
+            sleep_fn(delay)
+
+    assert last_exc is not None
+    raise last_exc
 
 
 def collect_model_specs(primary: dict, include_diagnostic: bool = False) -> list[dict]:
@@ -129,7 +221,27 @@ def main() -> None:
             "Never use after parity, pilot, or benchmark outcomes exist."
         ),
     )
+    parser.add_argument(
+        "--max-attempts",
+        type=int,
+        default=5,
+        help=(
+            "Maximum attempts for transient Hugging Face metadata failures. "
+            "Authentication/not-found errors fail immediately."
+        ),
+    )
+    parser.add_argument(
+        "--retry-base-seconds",
+        type=float,
+        default=2.0,
+        help="Initial deterministic backoff between transient Hub retries.",
+    )
     args = parser.parse_args()
+
+    if args.max_attempts < 1:
+        raise SystemExit("--max-attempts must be >= 1")
+    if args.retry_base_seconds < 0:
+        raise SystemExit("--retry-base-seconds must be >= 0")
 
     try:
         from huggingface_hub import HfApi
@@ -176,13 +288,15 @@ def main() -> None:
 
     for spec in model_specs:
         try:
-            info = api.model_info(
-                spec["model_id"],
-                revision=spec["requested_revision"],
+            resolved_sha = resolve_remote_sha(
+                lambda spec=spec: api.model_info(
+                    spec["model_id"],
+                    revision=spec["requested_revision"],
+                ),
+                label=f"model {spec['model_id']}",
+                max_attempts=args.max_attempts,
+                base_delay_seconds=args.retry_base_seconds,
             )
-            resolved_sha = getattr(info, "sha", None)
-            if not resolved_sha:
-                raise RuntimeError("Hugging Face returned no SHA")
             model_results.append(
                 {
                     **{
@@ -205,13 +319,15 @@ def main() -> None:
 
     for spec in dataset_specs:
         try:
-            info = api.dataset_info(
-                spec["repo_id"],
-                revision=spec["requested_revision"],
+            resolved_sha = resolve_remote_sha(
+                lambda spec=spec: api.dataset_info(
+                    spec["repo_id"],
+                    revision=spec["requested_revision"],
+                ),
+                label=f"dataset {spec['name']} / {spec['repo_id']}",
+                max_attempts=args.max_attempts,
+                base_delay_seconds=args.retry_base_seconds,
             )
-            resolved_sha = getattr(info, "sha", None)
-            if not resolved_sha:
-                raise RuntimeError("Hugging Face returned no SHA")
             dataset_results.append(
                 {
                     **spec,

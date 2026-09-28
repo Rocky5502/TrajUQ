@@ -253,14 +253,14 @@ bash scripts/a100_campaign_linux.sh parity-math
 bash scripts/a100_campaign_linux.sh readiness
 bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
-BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
 Do not edit tracked experiment code after the freeze. The estimator reports the
 exact prepared-call count and serial A100 forecast from real
 LLaDA/SDAR/Dream timing traces. The autonomous supervisor logs GPU/disk/progress
-once per hour, prioritizes primary -> analysis -> RQ3 -> expensive RQ2 -> paper,
+every 45 minutes, prioritizes primary -> analysis -> RQ3 -> expensive RQ2 -> paper,
 and requires the measured mean generation forecast plus a frozen 6-hour
 non-generation operational reserve to fit the paid hours still remaining
 before scale. It preserves resumable evidence if the original 72-hour envelope

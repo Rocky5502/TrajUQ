@@ -106,7 +106,7 @@ deadline created at first server connection; it does **not** restart a new
 72-hour timer:
 
 ```bash
-BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
@@ -138,8 +138,8 @@ The supervisor:
 
 - writes `results/a100_72h_autopilot_state.json`;
 - writes the current stage to `results/a100_72h_current_stage.txt`;
-- logs one GPU/disk/progress snapshot per hour to
-  `logs/a100_72h/hourly_monitor.log`;
+- logs one GPU/disk/progress snapshot every 45 minutes to
+  `logs/a100_72h/monitor_45m.log`;
 - maintains per-attempt stage logs under `logs/a100_72h/`;
 - retries a resumable failed stage at most once by default;
 - enforces the remaining wall-clock budget with `timeout`;
@@ -150,7 +150,7 @@ partitions, while the shared repeated runner preserves five separately audited
 seed artifacts per partition and safely resumes contract-matching partial
 prefixes.
 
-## Hourly Codex policy
+## 45-minute Codex monitoring policy
 
 Codex does not need to stay active continuously. When an hourly check is
 available, inspect only:

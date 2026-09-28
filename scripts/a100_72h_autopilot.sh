@@ -3,7 +3,7 @@ set -euo pipefail
 
 PYTHON="${PYTHON:-python}"
 BUDGET_HOURS="${BUDGET_HOURS:-72}"
-MONITOR_SECONDS="${MONITOR_SECONDS:-3600}"
+MONITOR_SECONDS="${MONITOR_SECONDS:-2700}"
 MAX_STAGE_ATTEMPTS="${MAX_STAGE_ATTEMPTS:-2}"
 LOG_ROOT="${LOG_ROOT:-logs/a100_72h}"
 STATE_PATH="${STATE_PATH:-results/a100_72h_autopilot_state.json}"
@@ -172,7 +172,7 @@ remaining_seconds() {
 }
 
 monitor_loop() {
-  local log="$LOG_ROOT/hourly_monitor.log"
+  local log="$LOG_ROOT/monitor_45m.log"
   while true; do
     local now remaining stage
     now="$(date +%s)"

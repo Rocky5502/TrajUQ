@@ -1,3 +1,5 @@
+> **Codex autonomous execution:** before a rented-GPU campaign, read `CODEX_SUPER_MASTER_PRO_MAX.md` together with `docs/CODEX_A100_72H.md`. The super-master prompt is the operator handoff; live tracked code and machine-readable artifacts remain authoritative.
+
 # TrajUQ
 
 **Trajectory-Aware Uncertainty for Diffusion Language Models**

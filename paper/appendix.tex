@@ -339,15 +339,6 @@ so that a macro gain cannot hide systematic regressions.
 The following figures are generated only from complete frozen aggregate artifacts.
 They are conditionally included so the same frozen source remains compilable before and after result artifacts are produced.
 
-\IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}
-\caption{Held-out AUROC improvement of \method over the decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty.}
-\label{fig:primary-auroc-matrix}
-\end{figure*}
-}{}
-
 \IfFileExists{figures/generated/family_macro_auroc_improvement.pdf}{
 \begin{figure}[t]
 \centering

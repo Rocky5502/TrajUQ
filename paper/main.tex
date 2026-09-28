@@ -213,7 +213,7 @@ GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.
 Where official calibration/test splits exist, they are kept separate.
 Single-split datasets use a deterministic pre-generation internal holdout and are reported explicitly as such.
 To keep the complete $3\times6$ study inside a predeclared three-day single-A100
-compute envelope, large source partitions are capped emph{before any model
+compute envelope, large source partitions are capped \emph{before any model
 call} using SHA-256 ranking of namespaced example IDs with seed 2027.
 The cap is 500 examples per role where specified: GSM8K train/test are capped
 at 500 each, while ARC-Challenge and MMLU-Pro retain their smaller official
@@ -285,6 +285,15 @@ Decision entropy & \PrimaryDecisionAUROC & \PrimaryDecisionAUPRC & \PrimaryDecis
 \caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values are populated only from traceable frozen result artifacts.}
 \label{tab:main}
 \end{table*}
+
+\IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}
+\caption{Held-out AUROC improvement of \method over the matched decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty; the figure is rendered only from the complete provenance-bound 18-cell aggregate.}
+\label{fig:primary-auroc-matrix}
+\end{figure*}
+}{}
 
 \begin{table}[t]
 \centering

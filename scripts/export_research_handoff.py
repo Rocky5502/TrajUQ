@@ -101,6 +101,15 @@ def collect_files(root: Path, max_file_bytes: int) -> tuple[list[Path], list[str
         for path in results_root.rglob("*"):
             if not path.is_file():
                 continue
+            result_rel = path.relative_to(results_root)
+            if (
+                result_rel.parts
+                and result_rel.parts[0].lower().startswith("pytest_")
+            ):
+                # Pytest basetemp trees are disposable test scratch, not
+                # experiment evidence. Tests may intentionally place
+                # secret-like fixtures there to verify rejection behavior.
+                continue
             rel = path.relative_to(root)
             if path.suffix.lower() not in RESULT_SUFFIXES:
                 continue

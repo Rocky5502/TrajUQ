@@ -61,7 +61,7 @@ Your job is to **continue the existing project**, not restart or redesign it.
 - Run `python3 scripts/start_a100_rental_clock.py` immediately after the
   exact rented-server checkout. Complete the pre-primary/parity/human gates,
   run `bash scripts/a100_campaign_linux.sh estimate`, then launch
-  `BUDGET_HOURS=72 MONITOR_SECONDS=3600 bash scripts/a100_campaign_linux.sh autopilot-72h`;
+  `BUDGET_HOURS=72 MONITOR_SECONDS=2700 bash scripts/a100_campaign_linux.sh autopilot-72h`;
   the supervisor inherits the original deadline and checks mean projected
   generation time plus the frozen 6-hour operational reserve against the hours
   still remaining.
@@ -357,7 +357,7 @@ bash scripts/a100_campaign_linux.sh parity-math
 bash scripts/a100_campaign_linux.sh readiness
 bash scripts/a100_campaign_linux.sh estimate
 cat results/a100_compute_estimate.md
-BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 

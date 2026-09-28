@@ -415,10 +415,6 @@ if ($Stage -in @("parity", "pilot", "all")) {
         -DatasetSha $DatasetSha `
         -Commit $Ledger.git_commit
 }
-if ($Stage -in @("pilot", "all")) {
-    if (-not (Test-Path $TestData)) { throw "Missing $TestData. Run -Stage prepare first." }
-}
-
 if ($Stage -in @("parity", "all")) {
     if (Assert-ParityPass $ParityResult $ModelSha $Ledger.git_commit) {
         Write-Host "LLaDA parity already PASS and hash-valid; preserving existing evidence." -ForegroundColor Green

@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import time
 from itertools import islice
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,6 +39,52 @@ def git_text(*args: str) -> str | None:
         ).strip()
     except Exception:
         return None
+
+
+def is_retryable_remote_error(exc: Exception) -> bool:
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    try:
+        status_code = int(status) if status is not None else None
+    except (TypeError, ValueError):
+        status_code = None
+    if status_code is not None:
+        if status_code in {408, 409, 425, 429} or 500 <= status_code <= 599:
+            return True
+        if status_code in {400, 401, 403, 404}:
+            return False
+    name = type(exc).__name__.lower()
+    message = str(exc).lower()
+    return (
+        any(
+            token in name
+            for token in (
+                "connecterror",
+                "connecttimeout",
+                "readtimeout",
+                "writetimeout",
+                "proxyerror",
+                "sslerror",
+                "timeout",
+            )
+        )
+        or any(
+            token in message
+            for token in (
+                "unexpected_eof_while_reading",
+                "unexpected eof",
+                "connection reset",
+                "connection aborted",
+                "temporarily unavailable",
+                "temporary failure",
+                "timed out",
+                "timeout",
+                "rate limit",
+                "too many requests",
+                "server error",
+            )
+        )
+    )
 
 
 def contract_split(spec: dict[str, Any]) -> str:
@@ -216,6 +263,8 @@ def main() -> None:
             "normalizer/scorer contract smoke check."
         ),
     )
+    parser.add_argument("--max-attempts", type=int, default=5)
+    parser.add_argument("--retry-base-seconds", type=float, default=2.0)
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -225,6 +274,10 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+    if args.max_attempts < 1:
+        raise SystemExit("--max-attempts must be >= 1")
+    if args.retry_base_seconds < 0:
+        raise SystemExit("--retry-base-seconds must be >= 0")
 
     out = Path(args.output)
     if out.exists() and not args.overwrite:
@@ -307,13 +360,35 @@ def main() -> None:
                 failures.append(f"{name}: missing resolved dataset revision")
                 continue
             try:
-                result = verify_one(
-                    name=name,
-                    spec=spec,
-                    revision=revision,
-                    load_dataset=load_dataset,
-                    sample_count=args.sample_count,
-                )
+                result = None
+                for attempt in range(1, args.max_attempts + 1):
+                    try:
+                        result = verify_one(
+                            name=name,
+                            spec=spec,
+                            revision=revision,
+                            load_dataset=load_dataset,
+                            sample_count=args.sample_count,
+                        )
+                        break
+                    except Exception as exc:
+                        if (
+                            not is_retryable_remote_error(exc)
+                            or attempt >= args.max_attempts
+                        ):
+                            raise
+                        delay = min(
+                            args.retry_base_seconds * (2 ** (attempt - 1)),
+                            30.0,
+                        )
+                        print(
+                            f"[TrajUQ] transient dataset-contract failure for "
+                            f"{name}; retry {attempt + 1}/{args.max_attempts} "
+                            f"in {delay:.1f}s ({type(exc).__name__})"
+                        )
+                        time.sleep(delay)
+                if result is None:
+                    raise RuntimeError("dataset contract retry loop returned no result")
             except Exception as exc:
                 result = {
                     "dataset": name,

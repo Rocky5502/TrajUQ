@@ -187,7 +187,7 @@ def main() -> None:
     scored_audit_ok, _ = scored_audit_passes(scored_path, commit)
     if not scored_audit_ok:
         failures.append(
-            "reviewed MATH-500 scored artifact has no current clean PASS audit at this commit"
+            "reviewed MATH-500 scored artifact has no current PASS audit at this commit or the audit is not clean"
         )
 
     normalized_input = str(input_path).replace("\\", "/")

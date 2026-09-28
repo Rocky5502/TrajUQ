@@ -588,6 +588,161 @@ def fmt_optional(value: float | None, *, signed: bool = False) -> str:
     return fmt_signed(value) if signed else fmt(value)
 
 
+def _latex_cell_label(value: str) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "_": r"\_",
+        "%": r"\%",
+        "&": r"\&",
+        "#": r"\#",
+    }
+    return "".join(replacements.get(ch, ch) for ch in value)
+
+
+def render_primary_detail_table(
+    primary: dict,
+    primary_cfg: dict | None = None,
+) -> str:
+    """Render the complete 18-cell descriptive table from frozen artifacts."""
+
+    per_cell = primary.get("per_cell")
+    if not isinstance(per_cell, dict) or not per_cell:
+        return ""
+
+    cells = list(per_cell.values())
+    by_pair = {
+        (str(cell.get("model_family", "")), str(cell.get("dataset", ""))): cell
+        for cell in cells
+    }
+    if len(by_pair) != len(cells):
+        raise ValueError("Primary per-cell table has duplicate model/dataset pairs.")
+
+    if primary_cfg is not None:
+        dataset_order = [str(x) for x in primary_cfg.get("datasets", [])]
+    else:
+        dataset_order = []
+    if not dataset_order:
+        dataset_order = sorted({dataset for _, dataset in by_pair})
+
+    observed_adapters: list[str] = []
+    for cell in cells:
+        adapter = str(cell.get("model_family", ""))
+        if adapter and adapter not in observed_adapters:
+            observed_adapters.append(adapter)
+
+    preferred = ["llada", "sdar", "dream"]
+    adapter_order = [a for a in preferred if a in observed_adapters]
+    adapter_order.extend(a for a in observed_adapters if a not in adapter_order)
+
+    expected_pairs = {
+        (adapter, dataset)
+        for adapter in adapter_order
+        for dataset in dataset_order
+    }
+    if set(by_pair) != expected_pairs:
+        missing = sorted(expected_pairs - set(by_pair))
+        extra = sorted(set(by_pair) - expected_pairs)
+        raise ValueError(
+            "Detailed primary table cell set differs from the frozen matrix: "
+            f"missing={missing} extra={extra}"
+        )
+
+    model_labels = {
+        "llada": "LLaDA",
+        "sdar": "SDAR",
+        "dream": "Dream",
+    }
+    dataset_labels = {
+        "gsm8k": "GSM8K",
+        "math500": "MATH-500",
+        "gpqa_diamond": "GPQA-Diamond",
+        "arc_challenge": "ARC-Challenge",
+        "mmlu_pro": "MMLU-Pro",
+        "truthfulqa": "TruthfulQA",
+    }
+
+    rows: list[str] = []
+    for adapter_index, adapter in enumerate(adapter_order):
+        for dataset in dataset_order:
+            cell = by_pair[(adapter, dataset)]
+            metrics = cell.get("metrics", {})
+            auroc = metrics.get("auroc", {})
+            aurc = metrics.get("aurc", {})
+            required = (
+                "candidate",
+                "baseline",
+                "improvement",
+            )
+            if any(key not in auroc for key in required):
+                raise ValueError(
+                    f"Detailed table missing AUROC fields for {adapter}:{dataset}"
+                )
+            if any(key not in aurc for key in required):
+                raise ValueError(
+                    f"Detailed table missing AURC fields for {adapter}:{dataset}"
+                )
+            n = int(cell.get("n", 0))
+            if n <= 0:
+                raise ValueError(
+                    f"Detailed table has non-positive n for {adapter}:{dataset}"
+                )
+            error_rate = float(cell.get("error_rate", math.nan))
+            if not math.isfinite(error_rate):
+                raise ValueError(
+                    f"Detailed table has invalid error rate for {adapter}:{dataset}"
+                )
+            rows.append(
+                " & ".join(
+                    [
+                        _latex_cell_label(model_labels.get(adapter, adapter)),
+                        _latex_cell_label(dataset_labels.get(dataset, dataset)),
+                        str(n),
+                        f"{100.0 * error_rate:.1f}\\%",
+                        fmt(auroc["baseline"]),
+                        fmt(auroc["candidate"]),
+                        fmt_signed(auroc["improvement"]),
+                        fmt(aurc["baseline"]),
+                        fmt(aurc["candidate"]),
+                        fmt_signed(aurc["improvement"]),
+                    ]
+                )
+                + r"\\"
+            )
+        if adapter_index != len(adapter_order) - 1:
+            rows.append(r"\addlinespace[1pt]")
+
+    body = "\n".join(rows)
+    return (
+        "\\section{Per-Cell Held-Out Results}\n"
+        "\\label{sec:per-cell-results}\n"
+        "\\begin{table*}[t]\n"
+        "\\centering\n"
+        "\\scriptsize\n"
+        "\\setlength{\\tabcolsep}{2.8pt}\n"
+        "\\renewcommand{\\arraystretch}{1.08}\n"
+        "\\begin{tabular*}{\\textwidth}{@{\\extracolsep{\\fill}}llrrrrrrrr@{}}\n"
+        "\\toprule\n"
+        "Model & Dataset & $n$ & Err. & "
+        "\\multicolumn{3}{c}{AUROC $\\uparrow$} & "
+        "\\multicolumn{3}{c}{AURC $\\downarrow$}\\\\\n"
+        "\\cmidrule(lr){5-7}\\cmidrule(lr){8-10}\n"
+        " & & & (\\%) & Decision & \\method & $\\Delta$ & "
+        "Decision & \\method & $\\Delta$\\\\\n"
+        "\\midrule\n"
+        f"{body}\n"
+        "\\bottomrule\n"
+        "\\end{tabular*}\n"
+        "\\caption{Per-cell held-out discrimination and selective-risk results "
+        "for the complete frozen $3\\times6$ matrix. $\\Delta$ is oriented so "
+        "positive values favor \\method: candidate minus baseline for AUROC and "
+        "baseline minus candidate for lower-is-better AURC. The table is generated "
+        "directly from the same provenance-bound primary aggregate used by the "
+        "macro analysis.}\n"
+        "\\label{tab:per-cell-primary}\n"
+        "\\end{table*}"
+    )
+
+
 def build_macros(
     primary: dict,
     claim: dict,
@@ -764,6 +919,10 @@ def build_macros(
     macros["ResultsResultSentence"] = results_sentence
     macros["ConclusionResultSentence"] = conclusion_sentence
     macros["PaperStateLimitationsSentence"] = ""
+    macros["DetailedPrimaryTable"] = render_primary_detail_table(
+        primary,
+        primary_cfg,
+    )
     return macros
 
 

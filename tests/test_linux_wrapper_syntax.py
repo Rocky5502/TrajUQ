@@ -28,7 +28,7 @@ def test_linux_wrapper_parses_with_bash(script: str):
     assert path.is_file(), f"missing Linux wrapper: {script}"
 
     completed = subprocess.run(
-        [bash, "-n", str(path)],
+        [bash, "-n", path.as_posix()],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,

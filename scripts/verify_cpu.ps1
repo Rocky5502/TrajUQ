@@ -7,6 +7,10 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+# scripts/verify_cpu.py is the authoritative CPU verifier and runs compileall,
+# Ruff, pytest, smoke_metrics.py, smoke_end_to_end.py, audit_math500_scorer.py,
+# and audit_paper.py.
+
 function Run-Step {
     param([string]$Name, [scriptblock]$Command)
     Write-Host ""

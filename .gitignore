@@ -32,6 +32,11 @@ mlruns/
 *.pth
 *.ckpt
 
+# Operator-owned credentials / rental connection details
+private/
+GPU_RENTAL_INFO.private.*
+*.secret.*
+
 .env
 *.key
 *.pem

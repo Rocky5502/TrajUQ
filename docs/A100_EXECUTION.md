@@ -128,7 +128,7 @@ gates. The supervisor reuses the deadline already started before setup; it
 never grants a fresh 72 hours:
 
 ```bash
-BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
@@ -139,7 +139,7 @@ must fit before scale; a P90+reserve-only overrun is reported as a planning
 warning rather than used to weaken the frozen science.
 
 It prioritizes primary generation, primary analysis, and RQ3 before the
-expensive repeated-sampling comparator, writes an hourly GPU/disk/progress log,
+expensive repeated-sampling comparator, writes a 45-minute GPU/disk/progress log,
 and does not require Codex or another agent to remain connected continuously.
 
 Every successful campaign milestone now refreshes the machine-readable project

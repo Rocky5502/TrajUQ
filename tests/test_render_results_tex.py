@@ -9,6 +9,7 @@ from scripts.render_results_tex import (
     CALIBRATION_SENSITIVITY_METRICS,
     PRIOR_SIGNAL_SUFFIXES,
     build_macros,
+    render_primary_detail_table,
     require_repeated,
 )
 
@@ -499,3 +500,48 @@ def test_repeated_renderer_rejects_scope_drift_from_frozen_config():
 
     with pytest.raises(ValueError, match="eligible datasets differ"):
         require_repeated(payload, cfg)
+
+
+def test_detailed_primary_table_renders_complete_18_cell_matrix():
+    payload = primary()
+    payload["per_cell"] = {}
+    datasets = [
+        "gsm8k",
+        "math500",
+        "gpqa_diamond",
+        "arc_challenge",
+        "mmlu_pro",
+        "truthfulqa",
+    ]
+    for adapter in ("llada", "sdar", "dream"):
+        for dataset in datasets:
+            payload["per_cell"][f"{adapter}_{dataset}"] = {
+                "model_family": adapter,
+                "dataset": dataset,
+                "n": 100,
+                "error_rate": 0.25,
+                "metrics": {
+                    "auroc": {
+                        "baseline": 0.60,
+                        "candidate": 0.70,
+                        "improvement": 0.10,
+                    },
+                    "aurc": {
+                        "baseline": 0.30,
+                        "candidate": 0.22,
+                        "improvement": 0.08,
+                    },
+                },
+            }
+
+    table = render_primary_detail_table(
+        payload,
+        {"datasets": datasets},
+    )
+
+    assert r"\label{tab:per-cell-primary}" in table
+    assert "GPQA-Diamond" in table
+    assert "MATH-500" in table
+    assert table.count(r"\\") >= 20
+    assert "+0.100" in table
+    assert "+0.080" in table

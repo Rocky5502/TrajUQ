@@ -35,8 +35,8 @@ def probe_remote_assets(
     cfg: dict,
 ) -> tuple[dict[str, object], list[str]]:
     failures: list[str] = []
-    model_id = str(cfg.get("model_id", "")).strip()
-    revision = str(cfg.get("revision", "")).strip()
+    model_id = str(cfg.get("model_id") or "").strip()
+    revision = str(cfg.get("revision") or "").strip()
     trust_remote_code = bool(cfg.get("trust_remote_code", True))
     payload: dict[str, object] = {
         "attempted": False,

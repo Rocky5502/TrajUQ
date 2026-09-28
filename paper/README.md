@@ -41,7 +41,7 @@ After all three adaptive-cap macros exist, also run:
 
     python scripts/render_paper_result_figures.py
 
-This writes three vector PDFs plus `paper/figures/generated/result_figure_manifest.json` protocol v2. The manifest binds the primary/config/adaptive sources and each PDF hash; the appendix includes those figures conditionally, and final submission readiness rejects stale or missing figure evidence.
+This writes three ACL-style vector PDFs plus `paper/figures/generated/result_figure_manifest.json` protocol v2. The manifest binds the primary/config/adaptive sources and each PDF hash. The primary 18-cell AUROC matrix is conditionally included in the main Results section; the family-level AUROC and adaptive accuracy--cost figures remain in the appendix. The renderer also emits a complete artifact-derived 18-cell descriptive table through `generated_results.tex`. Final submission readiness rejects stale or missing figure/table evidence.
 
 ## Main-page budget
 

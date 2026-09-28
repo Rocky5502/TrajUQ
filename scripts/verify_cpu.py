@@ -154,7 +154,14 @@ def main() -> None:
         ),
         (
             "pytest",
-            [py, "-m", "pytest", "-q"],
+            [
+                py,
+                "-m",
+                "pytest",
+                "-q",
+                "--basetemp",
+                "results/pytest_tmp",
+            ],
         ),
         (
             "metric_smoke",

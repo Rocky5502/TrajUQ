@@ -115,6 +115,25 @@ def test_bundle_rejects_missing_required_context(tmp_path, monkeypatch):
         handoff.build_handoff(root, root / "dist" / "handoff.zip")
 
 
+def test_bundle_ignores_pytest_scratch_secret_fixture(tmp_path, monkeypatch):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(handoff, "git_value", fake_git_value)
+    scratch = root / "results" / "pytest_tmp" / "test_secret_fixture"
+    scratch.mkdir(parents=True)
+    (scratch / "bad.json").write_text(
+        json.dumps({"token": "hf_abcdefghijklmnopqrstuvwxyz123456"}),
+        encoding="utf-8",
+    )
+    output = root / "dist" / "handoff.zip"
+
+    payload = handoff.build_handoff(root, output)
+
+    assert payload["status"] == "PASS"
+    with zipfile.ZipFile(output) as zf:
+        names = set(zf.namelist())
+    assert not any(name.startswith("results/pytest_") for name in names)
+
+
 def test_bundle_rejects_secret_like_token(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     monkeypatch.setattr(handoff, "git_value", fake_git_value)

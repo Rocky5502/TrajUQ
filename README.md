@@ -226,7 +226,7 @@ python3 scripts/start_a100_rental_clock.py
 Once readiness is PASS, run:
 
 ```bash
-BUDGET_HOURS=72 MONITOR_SECONDS=3600 \
+BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
   bash scripts/a100_campaign_linux.sh autopilot-72h
 ```
 
@@ -236,7 +236,7 @@ non-generation operational reserve must fit the hours still remaining, then it
 runs the resumable stages in scientific-priority order
 (primary, analysis, RQ3, expensive five-sample RQ2, paper rendering), uses
 plan-level resident checkpoint execution for primary/RQ3/RQ2 generation, and writes an
-hourly GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable
+45-minute GPU/disk/progress log under `logs/a100_72h/`, retries a failed resumable
 stage once, and stops rather than weakening a scientific gate if the wall-clock
 budget is exhausted. It does not require an AI agent to remain connected while
 the GPU process is healthy.

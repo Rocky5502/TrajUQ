@@ -93,10 +93,10 @@ def specs_and_rows():
             },
             {
                 "Question": "Private synthetic question",
-                "Correct Answer": "correct",
-                "Incorrect Answer 1": "wrong1",
-                "Incorrect Answer 2": "wrong2",
-                "Incorrect Answer 3": "wrong3",
+                "Correct Answer": "SENSITIVE_CORRECT_VALUE",
+                "Incorrect Answer 1": "SENSITIVE_WRONG_1",
+                "Incorrect Answer 2": "SENSITIVE_WRONG_2",
+                "Incorrect Answer 3": "SENSITIVE_WRONG_3",
                 "Subdomain": "synthetic",
             },
         ),
@@ -132,8 +132,8 @@ def test_dataset_contract_artifact_exposes_schema_not_row_content():
 
     rendered = str(result)
     assert "Private synthetic question" not in rendered
-    assert "correct" not in rendered
-    assert "wrong1" not in rendered
+    assert "SENSITIVE_CORRECT_VALUE" not in rendered
+    assert "SENSITIVE_WRONG_1" not in rendered
     assert set(result["upstream_fields"]) == set(row)
 
 

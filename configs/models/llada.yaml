@@ -1,7 +1,7 @@
 name: llada_moe_7b_a1b_instruct
 adapter: llada
 model_id: inclusionAI/LLaDA-MoE-7B-A1B-Instruct
-revision: null
+revision: 783d3467f108d28ac0a78d3e41af16ab05cabd8d
 trust_remote_code: true
 dtype: bfloat16
 device: cuda

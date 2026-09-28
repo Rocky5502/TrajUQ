@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 import re
 from functools import lru_cache
 
@@ -57,18 +58,68 @@ def _math500_metric():
             'pip install -e ".[math]"'
         ) from exc
 
-    return math_metric(
-        gold_extraction_target=(
-            LatexExtractionConfig(boxed_match_priority=0),
-            ExprExtractionConfig(),
-        ),
-        pred_extraction_target=(
-            LatexExtractionConfig(boxed_match_priority=0),
-            ExprExtractionConfig(),
-        ),
-        aggregation_function=max,
-        precision=6,
+    gold_targets = (
+        LatexExtractionConfig(boxed_match_priority=0),
+        ExprExtractionConfig(),
     )
+    pred_targets = (
+        LatexExtractionConfig(boxed_match_priority=0),
+        ExprExtractionConfig(),
+    )
+
+    if os.name != "nt":
+        return math_metric(
+            gold_extraction_target=gold_targets,
+            pred_extraction_target=pred_targets,
+            aggregation_function=max,
+            precision=6,
+        )
+
+    # math-verify 0.9.0's timeout decorator uses multiprocessing in a way
+    # that is incompatible with Windows spawn semantics. Keep the exact same
+    # parser/verifier semantics for the Windows CPU gate, but disable only the
+    # library's internal timeout wrapper. Authoritative experiment scoring runs
+    # on Linux and continues to use the official math_metric path above.
+    from math_verify import parse, verify
+
+    def windows_metric(
+        golds: list[str],
+        predictions: list[str],
+    ) -> tuple[float, None]:
+        extracted_golds = [
+            parse(
+                gold,
+                extraction_config=gold_targets,
+                parsing_timeout=None,
+            )
+            for gold in golds
+        ]
+        extracted_predictions = [
+            parse(
+                prediction,
+                extraction_config=pred_targets,
+                parsing_timeout=None,
+            )
+            for prediction in predictions
+        ]
+        if any(len(items) == 0 for items in extracted_golds):
+            raise ValueError("Math-Verify could not parse one or more gold targets")
+
+        grades: list[float] = []
+        for prediction_items in extracted_predictions:
+            matched = any(
+                verify(
+                    gold_items,
+                    prediction_items,
+                    float_rounding=6,
+                    timeout_seconds=None,
+                )
+                for gold_items in extracted_golds
+            )
+            grades.append(1.0 if matched else 0.0)
+        return (max(grades, default=0.0), None)
+
+    return windows_metric
 
 
 def _boxed_math(text: str) -> str:

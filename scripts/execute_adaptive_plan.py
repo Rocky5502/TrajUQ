@@ -501,16 +501,24 @@ def cell_state(
         expected_test_ids = expected_input_ids(cell["test_base"])
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
         expected_test_ids = []
-    evaluation_sources = {
-        "cal_base": str(cell["calibration_base"]["scored_output"]),
-        "cal_refined": str(
-            cell["provenance"]["calibration"]["refined_scored"]
-        ),
-        "test_base": str(cell["test_base"]["scored_output"]),
-        "test_refined": str(
-            cell["provenance"]["test"]["refined_scored"]
-        ),
-    }
+    provenance = cell.get("provenance", {})
+    calibration_provenance = provenance.get("calibration", {})
+    test_provenance = provenance.get("test", {})
+    has_bound_refined_sources = bool(
+        expected_commit
+        and calibration_provenance.get("refined_scored")
+        and test_provenance.get("refined_scored")
+    )
+    evaluation_sources = (
+        {
+            "cal_base": str(cell["calibration_base"]["scored_output"]),
+            "cal_refined": str(calibration_provenance["refined_scored"]),
+            "test_base": str(cell["test_base"]["scored_output"]),
+            "test_refined": str(test_provenance["refined_scored"]),
+        }
+        if has_bound_refined_sources
+        else None
+    )
     evaluations = {
         key: evaluation_state(
             cell["evaluations"][key],

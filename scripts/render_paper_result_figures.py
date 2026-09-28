@@ -145,10 +145,30 @@ def main() -> None:
 
     try:
         import matplotlib.pyplot as plt
+        from matplotlib.colors import TwoSlopeNorm
     except ImportError as exc:
         raise SystemExit(
             'Install analysis extras first: pip install -e ".[analysis]"'
         ) from exc
+
+    # ACL-friendly vector-figure defaults: compact typography, embedded
+    # TrueType fonts, restrained axes, and dimensions that fit ACL columns.
+    plt.rcParams.update(
+        {
+            "font.size": 8.0,
+            "axes.labelsize": 8.0,
+            "xtick.labelsize": 7.5,
+            "ytick.labelsize": 7.5,
+            "legend.fontsize": 7.5,
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "axes.linewidth": 0.7,
+            "lines.linewidth": 1.2,
+            "savefig.pad_inches": 0.02,
+        }
+    )
 
     primary_path = Path(args.primary)
     adaptive_paths = {
@@ -219,26 +239,43 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     heatmap_path = out_dir / "primary_auroc_improvement_matrix.pdf"
-    fig, ax = plt.subplots(figsize=(7.2, 3.2))
-    image = ax.imshow(matrix, aspect="auto")
+    max_abs = max(float(np.max(np.abs(matrix))), 1e-6)
+    norm = TwoSlopeNorm(vmin=-max_abs, vcenter=0.0, vmax=max_abs)
+    fig, ax = plt.subplots(figsize=(6.75, 2.45))
+    image = ax.imshow(
+        matrix,
+        aspect="auto",
+        cmap="RdBu_r",
+        norm=norm,
+        interpolation="nearest",
+    )
     ax.set_xticks(np.arange(len(datasets)))
-    ax.set_xticklabels(datasets, rotation=30, ha="right")
+    ax.set_xticklabels(datasets, rotation=24, ha="right")
     ax.set_yticks(np.arange(len(adapters)))
     ax.set_yticklabels(adapters)
     ax.set_xlabel("Dataset")
-    ax.set_ylabel("Diffusion model family")
+    ax.set_ylabel("Model family")
     for row in range(matrix.shape[0]):
         for col in range(matrix.shape[1]):
+            value = float(matrix[row, col])
             ax.text(
                 col,
                 row,
-                f"{matrix[row, col]:+.3f}",
+                f"{value:+.3f}",
                 ha="center",
                 va="center",
-                fontsize=8,
+                fontsize=7.4,
+                fontweight="semibold" if abs(value) >= 0.5 * max_abs else "normal",
             )
-    fig.colorbar(image, ax=ax, label="AUROC improvement over decision entropy")
-    fig.tight_layout()
+    cbar = fig.colorbar(
+        image,
+        ax=ax,
+        fraction=0.026,
+        pad=0.02,
+    )
+    cbar.set_label("$\\Delta$ AUROC vs. decision entropy", fontsize=8)
+    cbar.ax.tick_params(labelsize=7)
+    fig.tight_layout(pad=0.25)
     fig.savefig(heatmap_path, bbox_inches="tight")
     plt.close(fig)
 
@@ -255,15 +292,16 @@ def main() -> None:
         [float(family_values[adapter]) for adapter in adapters],
         dtype=float,
     )
-    fig, ax = plt.subplots(figsize=(4.7, 3.2))
+    fig, ax = plt.subplots(figsize=(3.25, 2.35))
     positions = np.arange(len(adapters))
     ax.bar(positions, values)
     ax.axhline(0.0, linewidth=1.0)
     ax.set_xticks(positions)
     ax.set_xticklabels(adapters)
-    ax.set_ylabel("Macro AUROC improvement")
+    ax.set_ylabel("$\\Delta$ AUROC (macro)")
     ax.set_xlabel("Model family")
-    fig.tight_layout()
+    ax.grid(axis="y", linewidth=0.45, alpha=0.35)
+    fig.tight_layout(pad=0.25)
     fig.savefig(family_path, bbox_inches="tight")
     plt.close(fig)
 
@@ -295,7 +333,7 @@ def main() -> None:
         adaptive["cap_050"]["macro"]["refined_cost_ratio_to_base"]
     )
 
-    fig, ax = plt.subplots(figsize=(4.9, 3.5))
+    fig, ax = plt.subplots(figsize=(3.25, 2.45))
     ax.plot(costs, accuracy, marker="o", label="TrajUQ adaptive")
     ax.scatter([1.0], [base_accuracy], marker="s", label="Base budget")
     ax.scatter(
@@ -312,10 +350,11 @@ def main() -> None:
             textcoords="offset points",
             fontsize=8,
         )
-    ax.set_xlabel("Nominal cost / base-generation cost")
+    ax.set_xlabel("Nominal cost / base cost")
     ax.set_ylabel("Accuracy")
-    ax.legend(frameon=False)
-    fig.tight_layout()
+    ax.grid(linewidth=0.45, alpha=0.30)
+    ax.legend(frameon=False, loc="best")
+    fig.tight_layout(pad=0.25)
     fig.savefig(tradeoff_path, bbox_inches="tight")
     plt.close(fig)
 

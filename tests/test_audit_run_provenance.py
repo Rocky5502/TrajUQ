@@ -8,7 +8,11 @@ def base_row(**overrides):
         "model": "org/model",
         "adapter": "llada",
         "seed": 2027,
-        "metadata": {"model_revision": "model-sha"},
+        "metadata": {
+            "model_revision": "model-sha",
+            "source_git_commit": "source-sha",
+            "source_git_clean": True,
+        },
         "generation": {
             "metadata": {"model_revision": "model-sha"},
         },
@@ -30,6 +34,8 @@ def test_run_provenance_accepts_one_coherent_run():
         "adapters": ["llada"],
         "seeds": [2027],
         "model_revisions": ["model-sha"],
+        "source_git_commits": ["source-sha"],
+        "source_git_clean_values": [True],
     }
 
 
@@ -37,7 +43,11 @@ def test_run_provenance_rejects_mixed_dataset_seed_and_revision():
     other = base_row(
         dataset="math500",
         seed=2028,
-        metadata={"model_revision": "other-sha"},
+        metadata={
+            "model_revision": "other-sha",
+            "source_git_commit": "source-sha",
+            "source_git_clean": True,
+        },
         generation={"metadata": {"model_revision": "other-sha"}},
     )
     failures, _ = audit_run_provenance(
@@ -52,7 +62,11 @@ def test_run_provenance_rejects_mixed_dataset_seed_and_revision():
 
 def test_run_provenance_rejects_record_generation_revision_disagreement():
     row = base_row(
-        metadata={"model_revision": "record-sha"},
+        metadata={
+            "model_revision": "record-sha",
+            "source_git_commit": "source-sha",
+            "source_git_clean": True,
+        },
         generation={"metadata": {"model_revision": "generation-sha"}},
     )
     failures, _ = audit_run_provenance(
@@ -81,7 +95,13 @@ def test_run_provenance_rejects_missing_or_malformed_prompt_hash():
 
 
 def test_run_provenance_requires_revision_when_requested():
-    row = base_row(metadata={}, generation={"metadata": {}})
+    row = base_row(
+        metadata={
+            "source_git_commit": "source-sha",
+            "source_git_clean": True,
+        },
+        generation={"metadata": {}},
+    )
 
     failures, provenance = audit_run_provenance(
         [row],
@@ -95,7 +115,11 @@ def test_run_provenance_requires_revision_when_requested():
 
 def test_run_provenance_requires_adapter_reported_revision():
     row = base_row(
-        metadata={"model_revision": "model-sha"},
+        metadata={
+            "model_revision": "model-sha",
+            "source_git_commit": "source-sha",
+            "source_git_clean": True,
+        },
         generation={"metadata": {}},
     )
 

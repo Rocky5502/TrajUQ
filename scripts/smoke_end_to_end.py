@@ -20,7 +20,7 @@ def make_features(is_error: bool, rng: random.Random) -> dict[str, float]:
     entropy_mean = 0.28 + 0.28 * e + jitter(0.04)
     entropy_p90 = 0.34 + 0.35 * e + jitter(0.04)
     entropy_final = 0.32 + 0.12 * e + jitter(0.08)
-    decision_entropy = 0.30 + 0.16 * e + jitter(0.07)  # intentionally weaker baseline
+    decision_entropy = 0.44 + 0.04 * e + jitter(0.12)  # intentionally weaker baseline
     margin_mean = 0.72 - 0.40 * e + jitter(0.04)
     revision = 0.04 + 0.42 * e + jitter(0.025)
     late_revision = 0.02 + 0.48 * e + jitter(0.02)

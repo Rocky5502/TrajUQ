@@ -220,8 +220,7 @@ def verify_generated_results(
 
     expected_rendered_text: str | None = None
     if (
-        adaptive_plan_path is not None
-        and required_sources.issubset(source_paths)
+        required_sources.issubset(source_paths)
         and source_hashes_valid
     ):
         try:
@@ -411,7 +410,7 @@ def verify_result_figures(
             continue
         path = Path(str(source.get("path", "")))
         source_paths[name] = path
-        if not path.exists():
+        if not path.is_file():
             source_hashes_valid = False
             failures.append(f"result-figure source missing: {name} -> {path}")
             continue
@@ -419,7 +418,11 @@ def verify_result_figures(
             source_hashes_valid = False
             failures.append(f"result-figure source hash changed: {name}")
 
-    if required_sources.issubset(source_paths) and source_hashes_valid:
+    if (
+        adaptive_plan_path is not None
+        and required_sources.issubset(source_paths)
+        and source_hashes_valid
+    ):
         try:
             primary = load_json(source_paths["primary"])
             cap_payloads = {
@@ -533,7 +536,7 @@ def verify_result_figures(
             failures.append(f"result-figure output entry is invalid: {name}")
             continue
         path = Path(str(item.get("path", "")))
-        if not path.exists():
+        if not path.is_file():
             failures.append(f"result figure missing: {name} -> {path}")
             continue
         if path.suffix.lower() != ".pdf":

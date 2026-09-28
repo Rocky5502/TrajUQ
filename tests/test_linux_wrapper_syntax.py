@@ -27,11 +27,21 @@ def test_linux_wrapper_parses_with_bash(script: str):
     path = Path(script)
     assert path.is_file(), f"missing Linux wrapper: {script}"
 
+    # Windows Git checkouts may expose CRLF even when the committed shell
+    # scripts are intended for Linux. Syntax-check normalized committed text
+    # through stdin so this cross-platform test validates Bash grammar rather
+    # than the host checkout's newline conversion. .gitattributes separately
+    # forces *.sh to LF for future checkouts and Linux execution.
+    source = path.read_text(encoding="utf-8")
+    normalized = source.replace("\r\n", "\n").replace("\r", "\n")
     completed = subprocess.run(
-        [bash, "-n", path.as_posix()],
+        [bash, "-n"],
+        input=normalized,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         check=False,
     )
-    assert completed.returncode == 0, completed.stdout
+    assert completed.returncode == 0, (
+        f"{script} failed Bash syntax validation:\n{completed.stdout}"
+    )

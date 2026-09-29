@@ -53,11 +53,16 @@ At step $t$, telemetry is computed only over positions that are both active for 
 Prompt tokens, inactive future blocks, and already committed tokens are excluded.
 We then aggregate a frozen feature vector and fit a post-hoc error calibrator using a disjoint calibration partition.
 
-Our evaluation is organized around four questions:
+Our evaluation follows a single evidentiary chain: first establish whether one
+native trajectory contains incremental predictive information, then test
+whether that information is competitive with substantially more expensive
+repeated sampling, and finally ask whether the calibrated risk is actionable
+for compute allocation. It is organized around three primary questions and one
+diagnostic question:
 \begin{description}[leftmargin=0.8cm,labelwidth=0.65cm]
 \item[RQ1:] Does the denoising trajectory predict answer failure beyond a strong per-token decision-time confidence baseline?
-\item[RQ2:] Does trajectory-aware calibration improve selective generation across model families and tasks?
-\item[RQ3:] Can calibrated trajectory risk decide which answers merit a second higher-budget generation more effectively than random refinement?
+\item[RQ2:] How does calibrated single-trajectory uncertainty compare with a five-sample disagreement baseline in reliability, selective prediction, and inference cost?
+\item[RQ3:] Given the RQ1 risk model, can it decide which answers merit a second higher-budget generation more effectively than random refinement at matched selection rates?
 \item[RQ4:] Which failure modes are associated with distributional instability, revision churn, late commitment, and---where available---same-checkpoint AR/diffusion disagreement?
 \end{description}
 
@@ -107,6 +112,15 @@ $y\in\{0,1\}$, where $y=1$ denotes a correct answer.
 The raw generation artifact is immutable and does not contain $y$ or the reference answer.
 The uncertainty task is to estimate error probability
 $P(y=0\mid z)$ from a feature vector $z$ computed only from the pre-outcome trajectory.
+The resulting information firewall is
+\begin{equation}
+\boxed{y\notin z,\qquad r\notin z,}
+\label{eq:outcome-firewall}
+\end{equation}
+where $r$ is the benchmark reference. Neither value is available to generation,
+telemetry extraction, feature construction, or policy selection. They enter
+only in the subsequent scoring stage, after immutable example identity and
+prompt hashes have been checked.
 
 \section{\method}
 
@@ -164,6 +178,12 @@ This is the information available immediately before each token's commitment dec
 The frozen primary feature vector contains:
 decision-time entropy; mean, 90th-percentile, and temporal slope of trajectory entropy; mean and minimum margin; mean, 90th-percentile, slope, and late mean of JS drift; overall and late revision rates; mask persistence; late mask fraction; and mean commitment time.
 Upper-tail statistics target localized instability while temporal slopes capture whether uncertainty is resolving or increasing.
+Distribution features describe the level and tail of uncertainty; stability
+features measure whether predictions move while positions remain unresolved;
+and persistence features measure how long the model postpones commitment.
+Appendix~\ref{sec:feature-definitions} gives the exact eligibility sets,
+normalizations, temporal summaries, and edge-case conventions used to compute
+every coordinate.
 
 \subsection{Calibration}
 
@@ -330,8 +350,10 @@ Random matched & \AdaptiveRandomAccuracy & \AdaptiveRandomCost & 0\\
 
 \section{Analysis Plan}
 
-We will first test whether trajectory information improves the nested decision-entropy baseline.
-We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
+RQ1 first tests whether trajectory information improves the nested decision-entropy baseline and then examines calibration, risk--coverage behavior, feature-family ablations, heterogeneity, and failure cases.
+RQ2 holds the target examples fixed and asks whether one instrumented trajectory provides competitive uncertainty information relative to five auxiliary generations, with inference time reported alongside predictive metrics.
+RQ3 consumes the calibration-only RQ1 risk model and evaluates a pre-registered selective second pass against base, fully refined, and random matched-compute policies. Thus RQ2 tests whether the signal is economical, while RQ3 tests whether it is actionable; neither changes the RQ1 claim gate.
+The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
 For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
 Negative results do not trigger post-hoc feature redesign on final test labels.
 
@@ -347,6 +369,12 @@ The accompanying protocol is designed so that this conclusion can be reached wit
 \PaperStateLimitationsSentence
 The primary evaluation focuses on answer-level correctness for reasoning and QA tasks; it does not establish calibration for long-form factuality, safety, or human preference.
 Trajectory instrumentation is model-runtime dependent and must be parity-validated.
+Exact parity controls observational equivalence under the tested runtime, but it
+does not prove equivalence under every kernel, driver, GPU architecture, or
+future library version. In particular, fused normalization and attention
+kernels can introduce execution-order effects even when sampling seeds match;
+our runtime therefore records and enforces the qualified backends rather than
+assuming that a nominal seed alone guarantees reproducibility.
 Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.
 Post-hoc logistic calibration requires a representative calibration partition and can degrade under distribution shift.
 Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
@@ -355,6 +383,11 @@ partitions use predeclared deterministic caps; consequently those reported
 numbers are frozen-subset estimates rather than full-split leaderboard scores.
 The repeated-sampling baseline has substantially higher inference cost. For MATH-500, its vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.
 Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
+The benchmark suite is concentrated on short-form reasoning and QA, and the
+three primary checkpoints do not represent all diffusion parameterizations,
+scales, training objectives, languages, or deployment hardware. Consequently,
+cross-family consistency within this matrix should not be read as universal
+generalization to diffusion language models.
 
 \section*{Ethical Considerations}
 

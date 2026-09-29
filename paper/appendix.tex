@@ -48,6 +48,38 @@ If a token first appears committed at observation $k$, the decision is assigned 
 A token still unresolved in the final pre-transfer observation is assigned the final active decision index.
 
 \section{Frozen Feature Definitions}
+\label{sec:feature-definitions}
+
+Let $S_t=|\mathcal{U}_t|$ and let
+$\bar H_t=S_t^{-1}\sum_{j\in\mathcal{U}_t}H_{t,j}$ denote step-level entropy
+when $S_t>0$. The analogous step summaries $\bar m_t$ and $\bar J_t$ use the
+same active-unresolved eligibility rule (and, for JS, the consecutive-step
+intersection). Global means are weighted over eligible position--observation
+pairs rather than giving sparsely populated late steps disproportionate
+weight. Quantiles are computed over the same eligible pairs. Temporal slopes
+are ordinary least-squares slopes of step summaries against normalized active
+time $u_t\in[0,1]$; ``late'' statistics restrict to the final quarter of active
+observations. If a statistic has no eligible pair, the extractor follows the
+frozen schema's explicit missing-value convention and the downstream audit
+checks that convention before calibration.
+
+For generated position $j$, write $d_j$ for its final unresolved observation
+and $c_j=d_j/(T_j-1)$ for its normalized decision index within an active window
+of length $T_j$ (with the frozen singleton-window convention). Then
+$H_j^{\mathrm{dec}}=H_{d_j,j}$ and
+$\texttt{decision\_entropy\_mean}=|G|^{-1}\sum_{j\in G}H_j^{\mathrm{dec}}$.
+Mask persistence is the active-position-weighted discrete area under the
+unresolved fraction,
+\begin{equation}
+\operatorname{maskAUC}=
+\frac{\sum_{t\in\mathcal{T}}|\mathcal{U}_t|}
+{\sum_{t\in\mathcal{T}}|\mathcal{A}_t|},
+\end{equation}
+where $\mathcal{A}_t$ is the active generated-position set. Commitment time is
+$|G|^{-1}\sum_{j\in G}c_j$. Revision rates divide the number of top-1 changes
+by the number of eligible consecutive unresolved comparisons, never by all
+tokens or all steps. These definitions prevent prompt tokens, inactive future
+blocks, or already committed positions from diluting a trajectory statistic.
 
 \begin{table*}[t]
 \centering
@@ -154,6 +186,19 @@ Telemetry is captured from the active generated positions of each block before t
 The adapter is compared against the pinned upstream block-diffusion runtime.
 The aggregate feature semantics and block boundaries are recorded in run metadata.
 Primary SDAR numbers are blocked until parity passes.
+
+During pre-primary parity qualification, repeated seed-matched executions
+localized a reproducibility failure to the fused RMSNorm execution path: the
+first differing logits appeared before telemetry and sampling, while CUDA RNG
+state remained unchanged across observation. The authoritative runtime
+therefore selects the deterministic Torch float32 RMSNorm implementation and
+fails fast if that backend or its deterministic runtime controls are absent.
+Regression coverage requires native self-repeatability, instrumented
+self-repeatability, exact native--instrumented token equality, unchanged RNG
+state across telemetry, and explicit backend provenance. This is an
+engineering reproducibility control, not evidence for or against the paper's
+uncertainty hypotheses; the failed qualification evidence remains preserved
+separately from the accepted experiment chain.
 
 \subsection{FLARE / HybridDiffusion}
 

@@ -151,6 +151,7 @@ def main() -> None:
         failures.append("one or more data rows have no prompt")
 
     cuda_payload = {"required": bool(args.require_cuda), "available": None, "device": None}
+    sdar_runtime = None
     if args.require_cuda:
         try:
             import torch
@@ -158,6 +159,10 @@ def main() -> None:
             cuda_payload["available"] = bool(torch.cuda.is_available())
             if torch.cuda.is_available():
                 cuda_payload["device"] = torch.cuda.get_device_name(0)
+                if cfg.get("adapter") == "sdar":
+                    from trajuq.sdar_runtime import configure_sdar_runtime
+
+                    sdar_runtime = configure_sdar_runtime(torch)
             else:
                 failures.append("CUDA required but torch.cuda.is_available() is false")
         except Exception as exc:
@@ -178,6 +183,7 @@ def main() -> None:
         },
         "remote_assets": remote_assets,
         "cuda": cuda_payload,
+        "sdar_runtime": sdar_runtime,
         "failures": failures,
     }
     print(json.dumps(payload, indent=2, sort_keys=True))

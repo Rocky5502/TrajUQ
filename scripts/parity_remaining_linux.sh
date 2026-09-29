@@ -209,17 +209,28 @@ PY
 run_sdar() {
   local ref="runs/sdar_parity_reference.jsonl"
   local inst="runs/sdar_parity_trajuq.raw.jsonl"
+  local ref_repeat="runs/sdar_parity_reference_repeat.jsonl"
+  local inst_repeat="runs/sdar_parity_trajuq_repeat.raw.jsonl"
   local parity="results/sdar_parity.json"
+  local native_repeatability="results/sdar_native_repeatability.json"
+  local instrumented_repeatability="results/sdar_instrumented_repeatability.json"
   local overhead="results/sdar_instrumentation_overhead.json"
 
   if parity_passes sdar "$SDAR_SHA" "$parity"; then
     printf 'SDAR parity already PASS and hash-valid; preserving evidence.\n'
   else
-    require_no_existing_artifacts "$ref" "$inst" "$inst.audit.json" "$parity" "$overhead"
+    require_no_existing_artifacts "$ref" "$ref_repeat" "$inst" "$inst_repeat" \
+      "$inst.audit.json" "$inst_repeat.audit.json" "$parity" \
+      "$native_repeatability" "$instrumented_repeatability" "$overhead"
     run_step "SDAR exact-revision CUDA preflight"       "$PYTHON" scripts/preflight.py         --model-config results/frozen_models/sdar.yaml         --data "$CAL_DATA"         --require-cuda
     run_step "SDAR 20-prompt native reference"       "$PYTHON" scripts/run_sdar_reference.py         --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$ref" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --denoising-steps 4         --temperature 1.0 --top-k 0 --top-p 1.0         --remasking-strategy low_confidence_dynamic --confidence-threshold 0.85         --device cuda --dtype bfloat16
+    run_step "SDAR 20-prompt native repeat"       "$PYTHON" scripts/run_sdar_reference.py         --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$ref_repeat" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --denoising-steps 4         --temperature 1.0 --top-k 0 --top-p 1.0         --remasking-strategy low_confidence_dynamic --confidence-threshold 0.85         --device cuda --dtype bfloat16
     run_step "SDAR 20-prompt TrajUQ telemetry"       "$PYTHON" scripts/run_generation.py         --adapter sdar --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$inst" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --sdar-denoising-steps 4         --temperature 1.0 --sdar-top-k 0 --top-p 1.0         --sdar-remasking-strategy low_confidence_dynamic         --sdar-confidence-threshold 0.85         --device cuda --dtype bfloat16
+    run_step "SDAR 20-prompt TrajUQ telemetry repeat"       "$PYTHON" scripts/run_generation.py         --adapter sdar --model "$SDAR_MODEL" --revision "$SDAR_SHA"         --input "$CAL_DATA" --output "$inst_repeat" --limit 20 --seed 2027         --max-new-tokens 128 --block-length 4 --sdar-denoising-steps 4         --temperature 1.0 --sdar-top-k 0 --top-p 1.0         --sdar-remasking-strategy low_confidence_dynamic         --sdar-confidence-threshold 0.85         --device cuda --dtype bfloat16
     run_step "Audit SDAR parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst" --stage raw --require-revision
+    run_step "Audit repeated SDAR parity telemetry"       "$PYTHON" scripts/audit_run.py --run "$inst_repeat" --stage raw --require-revision
+    run_step "Exact SDAR native self-repeatability"       "$PYTHON" scripts/compare_run_parity.py         --reference "$ref" --instrumented "$ref_repeat"         --require-token-ids --require-provenance --output "$native_repeatability"
+    run_step "Exact SDAR instrumented self-repeatability"       "$PYTHON" scripts/compare_run_parity.py         --reference "$inst" --instrumented "$inst_repeat"         --require-token-ids --require-provenance --output "$instrumented_repeatability"
     run_step "Exact SDAR token parity v3"       "$PYTHON" scripts/compare_run_parity.py         --reference "$ref" --instrumented "$inst"         --require-token-ids --require-provenance --output "$parity"
     if ! parity_passes sdar "$SDAR_SHA" "$parity"; then
       printf 'SDAR parity failed. STOP.\n' >&2

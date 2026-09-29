@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from trajuq.adapters.base import BaseAdapter
 from trajuq.schema import GenerationResult
+from trajuq.sdar_runtime import configure_sdar_runtime
 from trajuq.trajectory import (
     TrajectoryAccumulator,
     TrajectoryFeaturePayload,
@@ -58,6 +59,8 @@ class SDARAdapter(BaseAdapter):
         self.model_id = model_id
         self.revision = revision
         dtype_obj = getattr(torch, dtype)
+
+        self.runtime_provenance = configure_sdar_runtime(torch)
 
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
@@ -372,5 +375,6 @@ class SDARAdapter(BaseAdapter):
                 ),
                 "model_forward_evaluations": int(forward_evals),
                 "parity_status": "PENDING_GPU_AUDIT",
+                "runtime": dict(self.runtime_provenance),
             },
         )

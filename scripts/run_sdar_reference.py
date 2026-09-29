@@ -9,6 +9,7 @@ from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 from trajuq.io import read_jsonl, sha256_text
+from trajuq.sdar_runtime import configure_sdar_runtime
 
 
 def git_text(*args: str) -> str | None:
@@ -262,6 +263,8 @@ def main() -> None:
     if args.device.startswith("cuda") and not torch.cuda.is_available():
         raise SystemExit("CUDA requested but unavailable.")
 
+    runtime_provenance = configure_sdar_runtime(torch)
+
     out = Path(args.output)
     if out.exists():
         raise SystemExit(f"Refusing to overwrite {out}")
@@ -393,6 +396,7 @@ def main() -> None:
                         "transformers_version": importlib_metadata.version(
                             "transformers"
                         ),
+                        "runtime": dict(runtime_provenance),
                     },
                 },
             }

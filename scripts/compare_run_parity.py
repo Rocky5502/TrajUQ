@@ -49,6 +49,7 @@ REQUIRED_GENERATION_KEYS_BY_ADAPTER = {
         "upstream_commit",
         "torch_version",
         "transformers_version",
+        "runtime",
     ),
 }
 
@@ -73,6 +74,7 @@ GENERATION_PROVENANCE_KEYS = (
     "upstream_commit",
     "torch_version",
     "transformers_version",
+    "runtime",
 )
 
 

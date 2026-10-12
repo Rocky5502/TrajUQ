@@ -8,6 +8,7 @@ def test_rq4_freeze_is_clean_outcome_blind_and_non_overwriting():
     assert '"outcomes_observed": False' in text
     assert "local_files_only=True" in text
     assert "rendered_prompt_sha256" in text
+    assert 'parser.add_argument("--data-root"' in text
 
 
 def test_rq4_configs_bind_the_freeze_producer_and_schema():

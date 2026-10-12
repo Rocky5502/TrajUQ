@@ -55,6 +55,7 @@ def main() -> None:
     parser.add_argument("--model-config", default="configs/models/llama31_ar.yaml")
     parser.add_argument("--telemetry-schema", default="configs/schemas/rq4_ar_telemetry_v1.json")
     parser.add_argument("--cache-dir", default=os.environ.get("HUGGINGFACE_HUB_CACHE"))
+    parser.add_argument("--data-root", default="data/processed")
     parser.add_argument("--output", default="results/rq4/freeze_manifest.json")
     parser.add_argument("--prompt-ledger", default="results/rq4/prompt_render_ledger.jsonl")
     args = parser.parse_args()
@@ -113,7 +114,7 @@ def main() -> None:
     for dataset in config["datasets"]:
         for split in ("calibration", "test"):
             contract = config["partitions"]["assets"][dataset][split]
-            path = Path("data") / "processed" / dataset / f"{split}.jsonl"
+            path = Path(args.data_root) / dataset / f"{split}.jsonl"
             rows = json_lines(path)
             observed_hash = sha256_file(path)
             if len(rows) != int(contract["rows"]) or observed_hash != str(contract["sha256"]):

@@ -20,3 +20,10 @@ def test_live_ledger_is_secret_free_and_freeze_bound():
     assert "freeze_sha256" in text
     assert "SILICONFLOW_API_KEY" not in text
     assert "Authorization" not in text
+
+
+def test_budget_watch_has_absolute_stop_path():
+    text = Path("scripts/watch_rq5_budget.py").read_text(encoding="utf-8")
+    assert 'ledger["cost_watch_mode"] == "HARD_STOP"' in text
+    assert 'not ledger["paid_execution_allowed"]' in text
+    assert "signal.SIGTERM" in text

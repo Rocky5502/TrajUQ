@@ -62,6 +62,14 @@ class Runner:
         expected_sha = self.freeze_path.with_suffix(self.freeze_path.suffix + ".sha256").read_text().strip()
         if self.freeze["status"] != "PASS" or self.freeze_sha != expected_sha:
             raise RuntimeError("RQ5 freeze evidence is not PASS or its hash drifted")
+        authorization_path = Path("configs/operations/rq5_budget_authorization_af0347a.yaml")
+        authorization = yaml.safe_load(authorization_path.read_text(encoding="utf-8"))
+        if authorization["freeze_sha256"] != self.freeze_sha:
+            raise RuntimeError("Operational budget authorization is not bound to this freeze")
+        self.budget_authorization_sha256 = sha256_bytes(authorization_path.read_bytes())
+        self.preferred_target = float(authorization["preferred_target_rmb"])
+        self.warning_threshold = float(authorization["warning_threshold_rmb"])
+        self.absolute_hard_cap = float(authorization["absolute_hard_stop_rmb"])
         self.token = read_secret(Path(args.secret))
         pricing = json.loads(Path(self.config["provider"]["pricing_contract"]).read_text(encoding="utf-8"))
         self.prices = {row["model_id"]: {item["specification"]: float(item["price"]) for item in row["pricing"]} for row in pricing["models"]}
@@ -80,15 +88,23 @@ class Runner:
         root = self.output / ("smoke" if smoke else "records") / safe_model / dataset / split
         result_path = root / f"{request_uuid}.json"
         pending_path = root / f"{request_uuid}.pending"
+        error_path = self.output / "errors" / safe_model / dataset / split / f"{request_uuid}.json"
         if result_path.exists():
             return {"state": "SKIP_SUCCESS", "path": str(result_path)}
+        if error_path.exists():
+            return {"state": "SKIP_TERMINAL_ERROR", "path": str(error_path)}
+        if pending_path.exists():
+            return {"state": "AMBIGUOUS_MISSING_NOT_RESUBMITTED", "path": str(pending_path)}
+        with LOCK:
+            if self.cost >= self.absolute_hard_cap:
+                raise RuntimeError("RQ5 absolute hard cost stop reached")
         root.mkdir(parents=True, exist_ok=True)
         try:
             descriptor = os.open(pending_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             os.write(descriptor, (json.dumps({"request_uuid": request_uuid, "created_utc": datetime.now(timezone.utc).isoformat()}) + "\n").encode())
             os.close(descriptor)
-        except FileExistsError as exc:
-            raise RuntimeError(f"Ambiguous prior request blocks duplicate submission: {request_uuid}") from exc
+        except FileExistsError:
+            return {"state": "AMBIGUOUS_MISSING_NOT_RESUBMITTED", "path": str(pending_path)}
 
         decoding = self.config["decoding"]
         payload = {
@@ -141,8 +157,6 @@ class Runner:
             estimated_cost = input_tokens / 1_000_000 * price["prompt"] + output_tokens / 1_000_000 * price["completion"]
             with LOCK:
                 projected = self.cost + estimated_cost
-                if projected > float(self.config["execution"]["hard_cost_cap_rmb"]):
-                    raise RuntimeError("RQ5 hard cost cap reached")
                 self.cost = projected
             record = {
                 "freeze_sha256": self.freeze_sha,
@@ -169,13 +183,35 @@ class Runner:
                 "provider_trace_id": trace_id,
                 "system_fingerprint": response_json.get("system_fingerprint"),
                 "estimated_cost_rmb": estimated_cost,
+                "budget_authorization_sha256": self.budget_authorization_sha256,
             }
             atomic_json(result_path, record)
             pending_path.unlink()
             return {"state": "PASS", "path": str(result_path), "cost": estimated_cost}
-        except Exception:
-            # Preserve the pending marker: an interrupted or uncertain request must never be silently duplicated.
-            raise
+        except Exception as exc:
+            confirmed_provider_error = isinstance(exc, urllib.error.HTTPError)
+            error = {
+                "schema": "trajuq_rq5_request_error_v1",
+                "freeze_sha256": self.freeze_sha,
+                "request_uuid": request_uuid,
+                "requested_model": model,
+                "dataset": dataset,
+                "split": split,
+                "example_id": example_id,
+                "repeat_index": repeat,
+                "utc_timestamp": datetime.now(timezone.utc).isoformat(),
+                "error_type": type(exc).__name__,
+                "http_status": status,
+                "retry_number": retry_number,
+                "confirmed_provider_error": confirmed_provider_error,
+                "will_resubmit": False,
+            }
+            atomic_json(error_path, error)
+            if confirmed_provider_error and pending_path.exists():
+                pending_path.unlink()
+                return {"state": "TERMINAL_PROVIDER_ERROR", "path": str(error_path)}
+            # Network/process uncertainty retains the marker and is an explicit missing request.
+            return {"state": "AMBIGUOUS_MISSING_NOT_RESUBMITTED", "path": str(pending_path)}
 
     def smoke(self) -> None:
         prompt = "What is 2 + 2? End with exactly: FINAL_ANSWER: <answer> and CONFIDENCE: <integer from 0 to 100>."
@@ -198,7 +234,7 @@ class Runner:
                     for repeat in range(int(self.config["decoding"]["repeated_samples"])):
                         self.request(model, dataset, split, str(row["id"]), repeat, messages, False)
                         with LOCK:
-                            atomic_json(self.status_path, {"schema": "trajuq_rq5_campaign_status_v1", "state": "RUNNING", "updated_utc": datetime.now(timezone.utc).isoformat(), "estimated_cost_rmb": self.cost, "hard_cost_cap_rmb": self.config["execution"]["hard_cost_cap_rmb"]})
+                            atomic_json(self.status_path, {"schema": "trajuq_rq5_campaign_status_v1", "state": "RUNNING", "updated_utc": datetime.now(timezone.utc).isoformat(), "estimated_cost_rmb": self.cost, "preferred_target_rmb": self.preferred_target, "warning_threshold_rmb": self.warning_threshold, "absolute_hard_stop_rmb": self.absolute_hard_cap})
 
     def execute(self) -> None:
         smoke = json.loads((self.output / "smoke_manifest.json").read_text(encoding="utf-8"))
@@ -208,7 +244,7 @@ class Runner:
             futures = [pool.submit(self.execute_model, model) for model in self.config["models"]]
             for future in futures:
                 future.result()
-        atomic_json(self.status_path, {"schema": "trajuq_rq5_campaign_status_v1", "state": "COMPLETE", "updated_utc": datetime.now(timezone.utc).isoformat(), "estimated_cost_rmb": self.cost, "hard_cost_cap_rmb": self.config["execution"]["hard_cost_cap_rmb"]})
+        atomic_json(self.status_path, {"schema": "trajuq_rq5_campaign_status_v1", "state": "COMPLETE", "updated_utc": datetime.now(timezone.utc).isoformat(), "estimated_cost_rmb": self.cost, "preferred_target_rmb": self.preferred_target, "warning_threshold_rmb": self.warning_threshold, "absolute_hard_stop_rmb": self.absolute_hard_cap})
 
 
 def main() -> None:

@@ -27,3 +27,10 @@ def test_budget_watch_has_absolute_stop_path():
     assert 'ledger["cost_watch_mode"] == "HARD_STOP"' in text
     assert 'not ledger["paid_execution_allowed"]' in text
     assert "signal.SIGTERM" in text
+
+
+def test_executor_honors_addendum_and_never_resubmits_ambiguous_requests():
+    text = Path("scripts/run_rq5_siliconflow.py").read_text(encoding="utf-8")
+    assert "self.absolute_hard_cap" in text
+    assert "AMBIGUOUS_MISSING_NOT_RESUBMITTED" in text
+    assert '"will_resubmit": False' in text

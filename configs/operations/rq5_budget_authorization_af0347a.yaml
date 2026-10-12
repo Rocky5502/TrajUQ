@@ -1,0 +1,24 @@
+schema: trajuq_rq5_operational_budget_authorization_v1
+freeze_sha256: af0347a777d4a683c158407b9d0c53b7bff7236b8d35a63129077f6848886abc
+scope: execution_cost_only_no_scientific_change
+preferred_target_rmb: 1200.0
+warning_threshold_rmb: 1500.0
+absolute_hard_stop_rmb: 1600.0
+at_preferred_target: continue_only_if_projected_completion_rmb_lte_absolute_hard_stop
+at_warning_threshold: strict_cost_watch_frozen_required_requests_only
+at_absolute_hard_stop: stop_all_paid_api_execution
+authorized_uses:
+  - execution_of_already_frozen_design
+  - registered_bounded_retries
+  - provider_or_network_failures
+  - token_length_variability
+  - live_pricing_drift
+  - completion_of_missing_frozen_requests
+forbidden:
+  - increasing_sample_count
+  - adding_models
+  - changing_repetitions
+  - changing_analysis_from_outcomes
+  - spending_for_significance
+  - selective_reruns
+preserve_all_findings: [positive, negative, null, heterogeneous]

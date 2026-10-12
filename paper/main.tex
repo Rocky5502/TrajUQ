@@ -15,6 +15,7 @@
 \newcommand{\calp}{\widehat{p}_{\mathrm{err}}}
 \newcommand{\cmark}{\checkmark}
 \input{generated_results}
+\input{generated_rq5}
 
 \title{When Language Models Are Unsure During Generation:\\
 Trajectory-Aware Uncertainty Across Open and Black-Box Decoding}
@@ -318,6 +319,24 @@ decision-only; decision plus distributional trajectory features; decision plus s
 \label{sec:results}
 
 \ResultsResultSentence
+
+\subsection{Black-Box RQ5 Results}
+
+The RQ5 tables and figures are generated only from schema- and
+provenance-validated API artifacts. During execution, incomplete cells remain
+explicitly pending and do not support final claims. The authoritative version
+will be regenerated from the complete immutable registry after all validation
+and statistical gates pass.
+
+\RQFiveTables
+
+\IfFileExists{figures/generated/rq5_risk_coverage.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_risk_coverage.pdf}}{}
+\IfFileExists{figures/generated/rq5_calibration.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_calibration.pdf}}{}
+\IfFileExists{figures/generated/rq5_uncertainty_auroc.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_uncertainty_auroc.pdf}}{}
+\IfFileExists{figures/generated/rq5_signal_ablation.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_signal_ablation.pdf}}{}
+\IfFileExists{figures/generated/rq5_heterogeneity.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_heterogeneity.pdf}}{}
+\IfFileExists{figures/generated/rq5_observability_overview.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_observability_overview.pdf}}{}
+\IfFileExists{figures/generated/rq5_cost_valid_evidence.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_cost_valid_evidence.pdf}}{}
 
 \begin{table*}[t]
 \centering

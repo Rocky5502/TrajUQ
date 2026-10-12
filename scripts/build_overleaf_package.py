@@ -21,6 +21,7 @@ PAPER_FILES = (
     "appendix.tex",
     "references.bib",
     "generated_results.tex",
+    "generated_rq5.tex",
 )
 RESULTS_MANIFEST = "generated_results_manifest.json"
 FIGURE_MANIFEST = "figures/generated/result_figure_manifest.json"
@@ -254,6 +255,18 @@ def build_package(
         # an explicit offline style directory in tests). Official style files
         # may contain their own repository URL, which is not an identity leak.
         files[name] = data
+
+    rq5_tex = root / "results" / "rq5" / "paper" / "generated_rq5.tex"
+    rq5_manifest_path = root / "results" / "rq5" / "paper" / "generated_rq5_manifest.json"
+    if rq5_tex.exists() and rq5_manifest_path.exists():
+        rq5_manifest = json.loads(rq5_manifest_path.read_text(encoding="utf-8"))
+        rq5_data = rq5_tex.read_bytes()
+        if rq5_manifest.get("status") != "PASS":
+            raise ValueError("RQ5 generated-paper manifest is not PASS")
+        if rq5_manifest.get("generated_tex_sha256") != sha256_bytes(rq5_data):
+            raise ValueError("RQ5 generated-paper TeX hash drift")
+        failures.extend(scan_text("generated_rq5.tex", rq5_data))
+        files["generated_rq5.tex"] = rq5_data
 
     if submission_ready:
         files.update(submission_result_files(paper_dir))

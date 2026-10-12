@@ -34,3 +34,10 @@ def test_executor_honors_addendum_and_never_resubmits_ambiguous_requests():
     assert "self.absolute_hard_cap" in text
     assert "AMBIGUOUS_MISSING_NOT_RESUBMITTED" in text
     assert '"will_resubmit": False' in text
+    assert 'campaign_status.{self.worker_id}.json' in text
+
+
+def test_budget_watch_covers_all_transport_workers():
+    text = Path("scripts/watch_rq5_budget.py").read_text(encoding="utf-8")
+    assert 'default="results/rq5/api/run_pids"' in text
+    assert "for pid in live_pids" in text

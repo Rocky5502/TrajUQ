@@ -74,7 +74,8 @@ class Runner:
         pricing = json.loads(Path(self.config["provider"]["pricing_contract"]).read_text(encoding="utf-8"))
         self.prices = {row["model_id"]: {item["specification"]: float(item["price"]) for item in row["pricing"]} for row in pricing["models"]}
         self.output = Path(args.output_dir)
-        self.status_path = self.output / "campaign_status.json"
+        self.worker_id = str(args.worker_id)
+        self.status_path = self.output / f"campaign_status.{self.worker_id}.json"
         self.cost = 0.0
         for path in self.output.glob("records/*/*/*/*.json"):
             try:
@@ -184,6 +185,7 @@ class Runner:
                 "system_fingerprint": response_json.get("system_fingerprint"),
                 "estimated_cost_rmb": estimated_cost,
                 "budget_authorization_sha256": self.budget_authorization_sha256,
+                "transport_worker_id": self.worker_id,
             }
             atomic_json(result_path, record)
             pending_path.unlink()
@@ -257,6 +259,7 @@ def main() -> None:
     parser.add_argument("--freeze", default="results/rq5/TMLR_RQ5_BLACKBOX_FREEZE.json")
     parser.add_argument("--data-root", default="data/processed")
     parser.add_argument("--output-dir", default="results/rq5/api")
+    parser.add_argument("--worker-id", default="worker0")
     args = parser.parse_args()
     if not args.smoke and not args.execute:
         config = yaml.safe_load(Path(args.config).read_text(encoding="utf-8"))

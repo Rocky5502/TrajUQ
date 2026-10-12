@@ -13,13 +13,14 @@ def test_paper_audit_passes_in_pre_results_mode():
 def _write_minimal_paper_tree(root: Path, *, extra_appendix: str = "") -> None:
     root.mkdir(parents=True, exist_ok=True)
     (root / "main.tex").write_text(
-        "\\usepackage[review]{acl}\n"
+        "\\usepackage{tmlr}\n"
         "\\title{When Diffusion Language Models Are Unsure:\\\\\n"
         "Trajectory-Aware Uncertainty}\n"
-        "\\author{Anonymous ACL Submission}\n"
+        "\\author{\\name Anonymous Authors}\n"
         "\\begin{document}\n"
         "\\section{Conclusion}\n"
         "\\section*{Limitations}\n"
+        "\\bibliographystyle{tmlr}\n"
         "\\bibliography{references}\n"
         "\\input{appendix}\n"
         "\\end{document}\n",

@@ -1,15 +1,14 @@
-\documentclass[11pt]{article}
-\usepackage[review]{acl}
-\usepackage{times}
-\usepackage{latexsym}
+\documentclass[10pt]{article}
+\usepackage{tmlr}
 \usepackage{microtype}
-\usepackage{inconsolata}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{url}
 
 \newcommand{\method}{\textsc{TrajUQ}\xspace}
 \newcommand{\tbd}{\textsc{TBD}}
@@ -17,12 +16,13 @@
 \newcommand{\cmark}{\checkmark}
 \input{generated_results}
 
-\title{When Diffusion Language Models Are Unsure:\\
-Trajectory-Aware Uncertainty for Selective and Adaptive Generation}
-\author{Anonymous ACL Submission}
+\title{When Language Models Are Unsure During Generation:\\
+Trajectory-Aware Uncertainty Across Diffusion and Autoregressive Decoding}
+\author{\name Anonymous Authors}
 
 \begin{document}
 \maketitle
+\footnotetext{Large language models were used as general-purpose assistive tools for language editing and software support. The authors reviewed all content and take full responsibility for the ideas, claims, analyses, and reported results.}
 
 \begin{abstract}
 Diffusion language models generate text by repeatedly revising partially masked sequences, exposing a temporal signal that autoregressive confidence estimators do not observe.
@@ -31,7 +31,8 @@ We introduce \method, a training-free telemetry framework with post-hoc calibrat
 Its features combine predictive entropy and margin, consecutive-step Jensen--Shannon drift, proposal revisions, mask persistence, and commitment timing.
 A held-out calibrator maps these pre-outcome signals to error probability, which supports selective generation and a two-budget adaptive-compute policy.
 The primary test is deliberately nested: a trajectory-augmented predictor must improve over a strong per-token decision-time entropy baseline evaluated on the same held-out examples.
-We further compare against repeated-sampling disagreement under explicit compute accounting and study three open diffusion families plus a hybrid AR/diffusion diagnostic.
+We further compare against repeated-sampling disagreement under explicit compute accounting, study three open diffusion families, and prospectively evaluate Llama-3.1-8B-Instruct as an autoregressive control on the same frozen tasks and partitions.
+This cross-paradigm analysis separates uncertainty dynamics shared by sequential generation from revision, persistence, and commitment signals specific to iterative denoising.
 All model, data, feature, calibration, and statistical choices are frozen before primary test outcomes are inspected.
 \AbstractResultSentence
 \end{abstract}
@@ -42,10 +43,10 @@ Diffusion language models (dLLMs), however, generate through iterative denoising
 Recent systems such as LLaDA \citep{nie2025llada}, Dream \citep{ye2025dream}, SDAR \citep{cheng2026sdar}, and FLARE \citep{zhu2026flare} make parallel or blockwise generation increasingly practical.
 Uncertainty quantification for dLLMs is also emerging: DiSE uses sequence regeneration for self-evaluation \citep{zhong2026dise}, while diffusion-specific UQ work exploits trajectory likelihoods, remasking, prediction flips, denoising complexity, and semantic trajectory instability \citep{vazhentsev2026dllmuq}. Recent robustness analysis further shows that surface confidence can remain poorly ranked even when useful correctness information is present internally \citep{yadav2026unsure}.
 
-Against this background, we ask a deliberately narrower and stricter question: \emph{does the denoising process contain held-out predictive evidence about eventual correctness beyond a matched decision-time confidence baseline?}
+Against this background, we first ask a deliberately narrow and strict question: \emph{does the denoising process contain held-out predictive evidence about eventual correctness beyond a matched decision-time confidence baseline?}
 A token can remain masked for many iterations, oscillate between competing proposals, experience substantial distributional drift, or stabilize only late in the trajectory.
 These behaviors are observable before the benchmark outcome is revealed.
-They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score.
+They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score. For the journal extension, we then ask a broader external-validity question: which temporal uncertainty signals persist under irreversible left-to-right generation, and which gains require the ability to revise and delay commitment?
 
 This paper introduces \method, a trajectory-aware uncertainty framework for open diffusion language models.
 The key design principle is strict \emph{pre-outcome isolation}: the generation record contains no reference answer and no correctness label.
@@ -58,7 +59,7 @@ Our evaluation is organized around four questions:
 \item[RQ1:] Does the denoising trajectory predict answer failure beyond a strong per-token decision-time confidence baseline?
 \item[RQ2:] Does trajectory-aware calibration improve selective generation across model families and tasks?
 \item[RQ3:] Can calibrated trajectory risk decide which answers merit a second higher-budget generation more effectively than random refinement?
-\item[RQ4:] Which failure modes are associated with distributional instability, revision churn, late commitment, and---where available---same-checkpoint AR/diffusion disagreement?
+\item[RQ4:] Which inference-time uncertainty dynamics are shared between diffusion and autoregressive language models, which are paradigm-specific, and how well do calibrated risk rankings transfer across architectures?
 \end{description}
 
 The contributions are:
@@ -66,7 +67,8 @@ The contributions are:
 (2) a nested test of the incremental value of frozen trajectory dynamics beyond the same per-token decision-time entropy available at commitment;
 (3) a leak-safe, held-out calibration and selective-generation protocol with paired class-stratified within-cell inference across three diffusion-model families;
 (4) an adaptive second-pass compute policy whose threshold is selected only from out-of-fold calibration predictions; and
-(5) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
+(5) a prospectively registered Llama-3.1-8B autoregressive control that separates shared token-level uncertainty dynamics from diffusion-specific revision and commitment signals; and
+(6) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
 
 \section{Related Work}
 
@@ -83,6 +85,18 @@ DiSE estimates sequence-level confidence by asking the dLLM to regenerate tokens
 \paragraph{Language-model uncertainty.}
 Calibration asks whether predicted confidence reflects empirical correctness \citep{jiang2021know}.
 Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.
+
+Autoregressive uncertainty is commonly summarized from token probabilities,
+sequence likelihood, verbalized confidence, or disagreement among repeated
+generations \citep{kadavath2022language,manakul2023selfcheckgpt}. These signals
+collapse or sample around an irreversible left-to-right history. Entropy can
+also drift systematically over long AR generations rather than behaving as a
+stable probability-of-correctness surrogate \citep{cao2025entropy}. Our RQ4
+therefore uses Llama 3.1 8B \citep{dubey2024llama3} as a matched open-weight AR
+control: shared temporal summaries are evaluated in both paradigms, while
+revision churn, mask persistence, and commitment timing remain explicitly
+diffusion-specific. This design tests architectural external validity without
+pretending that an AR trace is a denoising trajectory.
 
 \paragraph{Selective prediction.}
 A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.
@@ -364,6 +378,7 @@ We avoid using correctness labels during generation and record provenance needed
 No proprietary user data are required by the frozen benchmark suite.
 Gated datasets are used according to their access conditions and are not redistributed.
 
+\bibliographystyle{tmlr}
 \bibliography{references}
 \appendix
 \input{appendix}

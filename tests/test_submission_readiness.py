@@ -478,8 +478,9 @@ def write_overleaf_zip(path, *, extra_pdf: bool = False, ready: bool = True):
         "appendix.tex": b"appendix\n",
         "references.bib": b"bib\n",
         "generated_results.tex": b"results\n",
-        "acl.sty": b"style\n",
-        "acl_natbib.bst": b"bst\n",
+        "tmlr.sty": b"style\n",
+        "tmlr.bst": b"bst\n",
+        "fancyhdr.sty": b"dependency\n",
         "PAPER_STATUS.md": b"status\n",
         "figures/generated/primary_auroc_improvement_matrix.pdf": (
             b"%PDF-1.4\nprimary\n"
@@ -495,10 +496,10 @@ def write_overleaf_zip(path, *, extra_pdf: bool = False, ready: bool = True):
         payloads["figures/generated/stale.pdf"] = b"%PDF-1.4\nstale\n"
 
     manifest = {
-        "protocol": "trajuq_overleaf_package_v1",
+        "protocol": "trajuq_tmlr_overleaf_package_v1",
         "anonymous": True,
         "submission_ready": ready,
-        "acl_style_commit": submission_readiness.ACL_STYLE_COMMIT,
+        "tmlr_style_commit": submission_readiness.TMLR_STYLE_COMMIT,
         "files": [
             {
                 "path": name,

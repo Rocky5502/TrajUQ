@@ -1,32 +1,32 @@
-# TrajUQ ARR / ACL manuscript
+# TrajUQ TMLR manuscript
 
 This directory is an anonymous **pre-results** long-paper source.
 
-Current ARR formatting target:
-- official ACL style with review mode;
-- at most 8 pages of main content for a long paper;
-- a mandatory **Limitations** section after the conclusion;
-- optional **Ethical Considerations**;
-- references and appendices in the same PDF;
-- appendices remain double-column unless a math-heavy subsection genuinely requires otherwise.
+Current submission target:
+- the official TMLR style in anonymous review mode;
+- double-blind review through OpenReview;
+- length justified by content (TMLR has no fixed page limit);
+- a Statement of Broader Impact when the work carries significant risk of harm;
+- references followed by the optional appendix in the same PDF;
+- anonymized supplementary material, up to 100 MB, in PDF or ZIP format.
 
 Do not add author names, acknowledgements, the public GitHub URL, institution-revealing paths, or result numbers during anonymous review.
 
 ## Build
 
-Start from the current official ACL Overleaf template and replace its main.tex with this file, then add:
+Start from the current official TMLR Overleaf template and replace its main.tex with this file, then add:
 - appendix.tex
 - references.bib
 - generated_results.tex
 
-The official ACL style is not vendored in the repository. Build a deterministic
+The official TMLR style is not vendored in the repository. Build a deterministic
 anonymous Overleaf ZIP from the pinned official style commit with:
 
     python scripts/build_overleaf_package.py
 
 The package contains `main.tex`, `appendix.tex`, `references.bib`,
-`generated_results.tex`, the pinned official `acl.sty` /
-`acl_natbib.bst`, generated result PDFs when present, and an internal SHA-256
+`generated_results.tex`, the pinned official `tmlr.sty`, `tmlr.bst`, and
+`fancyhdr.sty`, generated result PDFs when present, and an internal SHA-256
 manifest. Packaging requires a clean checkout.
 
 ## Result-population rule
@@ -41,11 +41,11 @@ After all three adaptive-cap macros exist, also run:
 
     python scripts/render_paper_result_figures.py
 
-This writes three ACL-style vector PDFs plus `paper/figures/generated/result_figure_manifest.json` protocol v2. The manifest binds the primary/config/adaptive sources and each PDF hash. The primary 18-cell AUROC matrix is conditionally included in the main Results section; the family-level AUROC and adaptive accuracy--cost figures remain in the appendix. The renderer also emits a complete artifact-derived 18-cell descriptive table through `generated_results.tex`. Final submission readiness rejects stale or missing figure/table evidence.
+This writes three publication-ready vector PDFs plus `paper/figures/generated/result_figure_manifest.json` protocol v2. The manifest binds the primary/config/adaptive sources and each PDF hash. The primary 18-cell AUROC matrix is conditionally included in the main Results section; the family-level AUROC and adaptive accuracy--cost figures remain in the appendix. The renderer also emits a complete artifact-derived 18-cell descriptive table through `generated_results.tex`. Final submission readiness rejects stale or missing figure/table evidence.
 
-## Main-page budget
+## Length and review format
 
-Keep the main scientific content within 8 pages. Limitations, optional ethics, references, and appendices follow the current ARR rules and should remain in the same PDF. Run the official ACL pubcheck before submission.
+TMLR imposes no fixed page limit, but length must be justified by content and unusually long submissions may face review delays. Keep the paper concise and complete, preserve double-blind anonymity, and compile the exact final ZIP with the pinned official TMLR template before submission.
 
 
 ## Static audit
@@ -54,7 +54,7 @@ During development (this also checks citation-key integrity, duplicate labels, a
 
     python scripts/audit_paper.py
 
-Immediately before ARR submission:
+Immediately before TMLR submission:
 
     python scripts/audit_paper.py --submission-ready
 
@@ -62,12 +62,12 @@ Submission-ready mode fails if any TBD placeholder remains, in addition to the
 anonymity and structural checks.
 
 
-## NAACL 2027 target
+## TMLR target
 
-The target is the ARR October 2026 cycle for NAACL 2027. The current official
-ARR deadline is **2026-10-12 (AoE)**. See `docs/NAACL2027_SUBMISSION.md` for the
-verified submission/anonymity/service checklist. The development repository
-must not be linked from the anonymous review PDF.
+The target is the rolling Transactions on Machine Learning Research review
+process through OpenReview. See `docs/TMLR_EXTENSION.md` for the prospective
+RQ4 boundary and venue requirements. The development repository must not be
+linked from the anonymous review PDF.
 
 
 ## Final repository-side submission gate
@@ -89,6 +89,7 @@ JSON records SHA-256 values for **both** archives. Submission-ready Overleaf
 packaging includes only the three result PDFs named by the validated figure
 manifest; stale or unlisted generated PDFs are excluded.
 
-The remaining external checks are compiling the exact recorded Overleaf ZIP,
-running ACL pubcheck, inspecting page/anonymity constraints, and uploading the
-exact archives whose hashes are recorded in `results/submission_readiness.json`.
+The remaining external checks are compiling the exact recorded Overleaf ZIP
+with the pinned official TMLR template, inspecting anonymity and OpenReview
+metadata, and uploading the exact archives whose hashes are recorded in
+`results/submission_readiness.json`.

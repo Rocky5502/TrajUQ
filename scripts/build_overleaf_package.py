@@ -10,12 +10,12 @@ import zipfile
 from pathlib import Path
 
 
-ACL_STYLE_COMMIT = "d5adc823ff0f80f98c80405ca0ab66c68e684409"
-ACL_STYLE_BASE = (
-    "https://raw.githubusercontent.com/acl-org/acl-style-files/"
-    + ACL_STYLE_COMMIT
+TMLR_STYLE_COMMIT = "7bf90efe3a0debbba703c05c43f3ff7e4d4a2992"
+TMLR_STYLE_BASE = (
+    "https://raw.githubusercontent.com/JmlrOrg/tmlr-style-file/"
+    + TMLR_STYLE_COMMIT
 )
-STYLE_FILES = ("acl.sty", "acl_natbib.bst")
+STYLE_FILES = ("tmlr.sty", "tmlr.bst", "fancyhdr.sty")
 PAPER_FILES = (
     "main.tex",
     "appendix.tex",
@@ -67,10 +67,10 @@ def read_style_file(name: str, style_dir: Path | None) -> bytes:
     if style_dir is not None:
         path = style_dir / name
         if not path.exists():
-            raise ValueError(f"missing ACL style file: {path}")
+            raise ValueError(f"missing TMLR style file: {path}")
         return path.read_bytes()
 
-    url = f"{ACL_STYLE_BASE}/{name}"
+    url = f"{TMLR_STYLE_BASE}/{name}"
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "TrajUQ-Overleaf-Packager/1.0"},
@@ -80,10 +80,10 @@ def read_style_file(name: str, style_dir: Path | None) -> bytes:
             data = response.read()
     except Exception as exc:
         raise ValueError(
-            f"failed to fetch pinned ACL style file {name}: {exc}"
+            f"failed to fetch pinned TMLR style file {name}: {exc}"
         ) from exc
     if not data:
-        raise ValueError(f"pinned ACL style file is empty: {name}")
+        raise ValueError(f"pinned TMLR style file is empty: {name}")
     return data
 
 
@@ -214,7 +214,7 @@ def paper_status_text(
 This package is generated from the frozen anonymous manuscript source.
 
 Anonymous source snapshot SHA-256: `{source_snapshot_sha256}`
-Official ACL style commit: `{ACL_STYLE_COMMIT}`
+Official TMLR style commit: `{TMLR_STYLE_COMMIT}`
 
 {state}
 
@@ -250,9 +250,9 @@ def build_package(
 
     for name in STYLE_FILES:
         data = read_style_file(name, style_dir)
-        # These bytes come only from the pinned official ACL style commit (or
-        # an explicit offline style directory in tests). Official acl.sty
-        # contains its own acl-org GitHub URL, which is not an anonymity leak.
+        # These bytes come only from the pinned official TMLR style commit (or
+        # an explicit offline style directory in tests). Official style files
+        # may contain their own repository URL, which is not an identity leak.
         files[name] = data
 
     if submission_ready:
@@ -287,10 +287,10 @@ def build_package(
         )
 
     manifest = {
-        "protocol": "trajuq_overleaf_package_v1",
+        "protocol": "trajuq_tmlr_overleaf_package_v1",
         "source_snapshot_sha256": source_snapshot_sha256,
-        "acl_style_repository": "acl-org/acl-style-files",
-        "acl_style_commit": ACL_STYLE_COMMIT,
+        "tmlr_style_repository": "JmlrOrg/tmlr-style-file",
+        "tmlr_style_commit": TMLR_STYLE_COMMIT,
         "anonymous": True,
         "submission_ready": bool(submission_ready),
         "files": [
@@ -316,11 +316,11 @@ def build_package(
 
     archive = output.read_bytes()
     return {
-        "protocol": "trajuq_overleaf_package_v1",
+        "protocol": "trajuq_tmlr_overleaf_package_v1",
         "status": "PASS",
         "output": str(output.relative_to(root)),
         "source_git_commit": git_commit,
-        "acl_style_commit": ACL_STYLE_COMMIT,
+        "tmlr_style_commit": TMLR_STYLE_COMMIT,
         "file_count": len(files) + 1,
         "archive_bytes": len(archive),
         "archive_sha256": sha256_bytes(archive),
@@ -345,19 +345,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Build a deterministic anonymous Overleaf ZIP from the current "
-            "TrajUQ paper source and pinned official ACL style files."
+            "TrajUQ paper source and pinned official TMLR style files."
         )
     )
     parser.add_argument("--root", default=".")
     parser.add_argument(
         "--output",
-        default="dist/TrajUQ_NAACL2027_ARR_Overleaf.zip",
+        default="dist/TrajUQ_TMLR_Overleaf.zip",
     )
     parser.add_argument(
-        "--acl-style-dir",
+        "--tmlr-style-dir",
         default=None,
         help=(
-            "Optional directory containing acl.sty and acl_natbib.bst. "
+            "Optional directory containing tmlr.sty, tmlr.bst, and "
+            "fancyhdr.sty. "
             "Used for offline/test builds; otherwise fetch the pinned commit."
         ),
     )
@@ -374,8 +375,8 @@ def main() -> None:
     root = Path(args.root).resolve()
     output = (root / args.output).resolve()
     style_dir = (
-        Path(args.acl_style_dir).resolve()
-        if args.acl_style_dir
+        Path(args.tmlr_style_dir).resolve()
+        if args.tmlr_style_dir
         else None
     )
     commit = git_value(root, "rev-parse", "HEAD")

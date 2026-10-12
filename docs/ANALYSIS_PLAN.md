@@ -68,9 +68,28 @@ The primary RQ3 summary macro-averages all 18 model--dataset cells with equal ce
 
 The repository's `evaluate_adaptive.py` implements the per-cell policy and exports per-example decisions; `aggregate_adaptive.py` implements the full-matrix equal-cell macro summary with paired within-cell resampling. Model-native schedulers remain model-specific.
 
-## RQ4 — Sampler/denoiser diagnostics
+## RQ4 — Cross-paradigm uncertainty dynamics (prospective TMLR extension)
 
-Vary denoising budgets/remasking settings and measure calibration transfer. For FLARE/HybridDiffusion, if both paths are instrumented, treat AR/diffusion disagreement as a diagnostic feature only. AR output is not ground truth.
+RQ4 asks which inference-time uncertainty dynamics are shared between diffusion
+and autoregressive language models, which are paradigm-specific, and how well
+calibrated risk rankings transfer across architectures. The AR control is
+Llama-3.1-8B-Instruct at the immutable revision recorded in
+`configs/models/llama31_ar.yaml`, evaluated on the same frozen calibration and
+test IDs as the original six-dataset matrix.
+
+The shared feature space contains mean/max/late token entropy, mean selected-token
+negative log likelihood, minimum margin, entropy slope, and entropy volatility.
+Diffusion-only revision churn, JS drift, mask persistence, and commitment timing
+remain separate additions and are never imputed for Llama. Report within-paradigm
+held-out calibration, single-run versus five-sample semantic disagreement, and
+unrefit diffusion-to-AR and AR-to-diffusion transfer. The primary RQ4 endpoint is
+equal-cell macro AURC improvement over mean token entropy; AUROC, AUPRC, Brier,
+NLL, ECE, and fixed-coverage risks are secondary.
+
+RQ4 is prospectively registered and cannot alter the original RQ1 claim gate.
+AR output is not ground truth, test outcomes cannot select features, and null or
+negative transfer results must be reported. The full contract is in
+`configs/experiments/tmlr_rq4.yaml` and `docs/TMLR_EXTENSION.md`.
 
 ## Selective-risk convention
 

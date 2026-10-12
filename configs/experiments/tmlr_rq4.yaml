@@ -1,0 +1,134 @@
+protocol: trajuq_tmlr_rq4_cross_paradigm_v1
+status: PROSPECTIVE_FREEZE_REQUIRES_PASS_MANIFEST_BEFORE_GENERATION
+role: PROSPECTIVE_TMLR_EXTENSION_NOT_ORIGINAL_RQ1_GATE
+source_commit: 28002055c828c6910840de6f2105aa6367514144
+source_bindings:
+  original_primary_config_sha256: d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788
+  original_primary_plan_sha256: 28b6948b7bfb642daa6dfaf2a753c1fbffd938773ed91f756491f43851746c16
+  original_primary_readiness_sha256: e677eb58b5b389b3a98eed4c1e50b9990d04d4ef22c0734726ddddc0e89d2fcf
+research_question: >-
+  Which inference-time uncertainty dynamics are shared between diffusion and
+  autoregressive language models, which are paradigm-specific, and how well do
+  calibrated risk rankings transfer across architectures?
+autoregressive_model_config: configs/models/llama31_ar.yaml
+datasets:
+  - gsm8k
+  - math500
+  - gpqa_diamond
+  - arc_challenge
+  - mmlu_pro
+  - truthfulqa
+partitions:
+  reuse_original_frozen_ids: true
+  calibration: calibration
+  test: test
+  assets:
+    gsm8k:
+      calibration: {rows: 500, sha256: a5f6cf887692007c69fecb71af374b2685b683b1ea6f2f995d771c92932fe0ad}
+      test: {rows: 500, sha256: fbb5f06f7d37eae1042e5945fc71a596849b13229eea79579e1384551fcc625d}
+      manifest_sha256: e24b21fa1c9ca44f18d703cbb08cf55ca41467a0e075fd2251269ea0d488037d
+      audit_sha256: 994b84753513f41013241e260651b2becc97c661ab2aafecd1a96d411221b9a9
+    math500:
+      calibration: {rows: 153, sha256: 672d321af5bc136b2f9a316e3aa01c9f9ac58676b973290b9a240153094bdf1e}
+      test: {rows: 347, sha256: bf0d2990a495f55a854dd0e2a95bf3b0af88c611febb26b02b3fc031e6ccc7ba}
+      manifest_sha256: e8e927719604683f92f3da0073cfe62ed4d5319f7344e64d78fcab1dc2faef7f
+      audit_sha256: b3425e72eaf0414fbe2f8c7ea0beb5e18df0c37971339f129e4753c72723386e
+    gpqa_diamond:
+      calibration: {rows: 56, sha256: 0cf9ea7c30d8b6fc8b62ee099054dad19e8b4ea00879ce843e0c190e7d55b792}
+      test: {rows: 142, sha256: 8396540768f17abe6913623be9bdf1dc6d7eb6ba56476a8d332fd9a96c13c2ca}
+      manifest_sha256: 6ac30c34c5503dca99a320602befff4d1fe221eb6a00179fd366414f6e46c244
+      audit_sha256: b56785691348ed1bfd58ad1a530d6bc6c077b37e3dd05bf7a942e18103a815d8
+    arc_challenge:
+      calibration: {rows: 299, sha256: 51200901c297b3086c058f4b860d35f256b32fcf01a34d23471f29f7958d6be7}
+      test: {rows: 500, sha256: ec7ad94d0581e8cdda51a195f2371ef2b8d2287582ba31471d85cb5dbe8368de}
+      manifest_sha256: eab966aa2dcc0b991c00086af251f099936d86e338700ef7934a275090191d84
+      audit_sha256: fa30d0970ceb81e127a18c4e2207e295110d8c2f6c7c35745b443e68893ab65c
+    mmlu_pro:
+      calibration: {rows: 70, sha256: 3b98deef6f207e53ce72d3049c9cc1a0b9835bdfc118dfd9b5b88c7f1a40f9a2}
+      test: {rows: 500, sha256: 811c96f55719b7cc90398282667cd678a5450d0b1dd6bf85374d9e9bcb25e91d}
+      manifest_sha256: 762223c9f89e583da6edef89e2b75ba8d59bc3020285e909d570d55bb1d46628
+      audit_sha256: a0df3e19b9540f42555080ce4bb005aac74d780ea3ed8d6d80df68f1bd67685c
+    truthfulqa:
+      calibration: {rows: 245, sha256: e68e9c0d581130c6dad9600c7c61136552a79d0af7fad4ed481d3a39a11eb063}
+      test: {rows: 572, sha256: 21da819237f86a37c8675078d52e34559e448bbf707fb76a52d6dc15129f16b9}
+      manifest_sha256: c4ccd3235ac934479fedbb697bb8eff2b3bcb3209c8c563edc30624fa889483b
+      audit_sha256: e6f3baa84cef667ba8329b00569c91f0c020f6b2a017ef1d407211faf26f9281
+generation:
+  deterministic_trace_seed: 2027
+  prompt_source: exact_prompt_field_from_hash_bound_original_partition
+  prompt_rendering: tokenizer_apply_chat_template_single_user_message_add_generation_prompt
+  outcome_blind_canary_rows_per_dataset: 2
+  five_sample_baseline:
+    seeds: [2027, 2028, 2029, 2030, 2031]
+    do_sample: true
+    temperature: 0.7
+    top_p: 0.95
+    top_k: 0
+    max_new_tokens: 512
+comparators:
+  - mean_token_entropy
+  - max_token_entropy
+  - late_token_entropy
+  - mean_selected_token_nll
+  - min_token_margin
+  - entropy_slope
+  - entropy_volatility
+  - five_sample_semantic_disagreement
+models:
+  within_paradigm:
+    type: standardized_logistic
+    fit_on: calibration_only
+    standardization: calibration_mean_and_population_std
+    penalty: l2
+    regularization_c: 1.0
+    solver: lbfgs
+    max_iter: 2000
+    random_state: 2027
+  transfer:
+    directions:
+      - diffusion_to_ar
+      - ar_to_diffusion
+    feature_space: shared_trajectory_summaries_only
+endpoints:
+  primary: equal_cell_macro_aurc_improvement_over_mean_token_entropy
+  secondary:
+    - auroc
+    - auprc
+    - brier
+    - nll
+    - ece_15
+    - risk_at_50_coverage
+    - risk_at_80_coverage
+hypotheses:
+  h4a: Within-paradigm trajectory summaries improve selective risk over endpoint confidence.
+  h4b: Diffusion-specific revision and commitment features add information unavailable to AR token traces.
+  h4c: Cross-paradigm calibration transfer is weaker than within-paradigm calibration, revealing architecture-specific uncertainty geometry.
+reporting:
+  retain_negative_results: true
+  no_pooling_across_cells: true
+  equal_cell_weight: true
+  paired_class_stratified_bootstrap: true
+  bootstrap_replicates: 10000
+  bootstrap_seed: 2027
+  confidence_level: 0.95
+  confirmatory_family: [h4a, h4b, h4c]
+  multiplicity_correction: holm_bonferroni
+  two_sided_alpha: 0.05
+  distinguish_confirmatory_from_exploratory: true
+freeze_gate:
+  producer: scripts/freeze_rq4.py
+  required_artifact: results/rq4/freeze_manifest.json
+  required_before_any_rq4_generation:
+    - exact_tokenizer_revision_matches_model_revision
+    - tokenizer_files_sha256_ledger
+    - rendered_chat_template_sha256
+    - model_config_sha256
+    - dataset_partition_hashes_match_this_file
+    - telemetry_schema_sha256
+    - clean_source_commit
+forbidden:
+  - modifying_the_original_rq1_gate
+  - adding_test_labels_to_raw_telemetry
+  - choosing_features_after_test_results
+  - claiming_ar_output_is_ground_truth
+  - treating_cross_architecture_scores_as_calibrated_without_held_out_validation

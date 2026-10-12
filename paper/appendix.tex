@@ -25,6 +25,32 @@ These resource measurements are used for compute accounting and instrumentation
 overhead analysis; they do not change the frozen primary endpoint or RQ1 claim
 rule.
 
+RQ5 uses remote hosted inference and consumes no A100 generation capacity. Its
+provider inventory, pricing page, target availability, request parameters,
+cost projection, and prompt-render ledger are captured and SHA-256 bound before
+the first benchmark request. The API credential is read only from an
+operator-owned secret file and is excluded from logs, records, Git, and
+reproducibility packages.
+
+\section{Black-Box RQ5 Request and Recovery Contract}
+
+The three target model identifiers, all twelve frozen dataset partitions, five
+repeats, prompt suffix, decoding parameters, retry statuses, statistical tests,
+and a RMB~1200 hard cost ceiling are fixed before outcomes. The captured
+outcome-blind projection contains 58,260 requests, with an expected cost of
+RMB~523.42 and a conservative upper projection of RMB~955.94 under the
+registered token assumptions. These values are budget controls, not results.
+
+Every request has a UUIDv5 derived from the freeze hash, model, dataset, split,
+example ID, and repeat index. A pending marker is created atomically before the
+network call. Successful responses are stored once and skipped on resume; an
+orphaned pending marker blocks automatic replay because the provider may have
+accepted the request before a local interruption. Retries are limited to the
+registered HTTP statuses and backoff schedule. Stored records exclude the API
+credential, authorization header, benchmark reference, and correctness label.
+The provider-visible \texttt{reasoning\_content} field is retained as metadata
+but is not interpreted as faithful chain of thought.
+
 \section{Trajectory Telemetry Contract}
 
 \paragraph{Eligibility.}

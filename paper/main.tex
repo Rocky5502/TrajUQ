@@ -17,7 +17,7 @@
 \input{generated_results}
 
 \title{When Language Models Are Unsure During Generation:\\
-Trajectory-Aware Uncertainty Across Diffusion and Autoregressive Decoding}
+Trajectory-Aware Uncertainty Across Open and Black-Box Decoding}
 \author{\name Anonymous Authors}
 
 \begin{document}
@@ -32,7 +32,8 @@ Its features combine predictive entropy and margin, consecutive-step Jensen--Sha
 A held-out calibrator maps these pre-outcome signals to error probability, which supports selective generation and a two-budget adaptive-compute policy.
 The primary test is deliberately nested: a trajectory-augmented predictor must improve over a strong per-token decision-time entropy baseline evaluated on the same held-out examples.
 We further compare against repeated-sampling disagreement under explicit compute accounting, study three open diffusion families, and prospectively evaluate Llama-3.1-8B-Instruct as an autoregressive control on the same frozen tasks and partitions.
-This cross-paradigm analysis separates uncertainty dynamics shared by sequential generation from revision, persistence, and commitment signals specific to iterative denoising.
+A separately registered black-box extension evaluates three hosted API families using only deployment-visible behavioral signals.
+Together, these comparisons separate uncertainty dynamics shared by sequential generation from revision, persistence, and commitment signals specific to iterative denoising, and test what remains useful when internal probabilities are unavailable.
 All model, data, feature, calibration, and statistical choices are frozen before primary test outcomes are inspected.
 \AbstractResultSentence
 \end{abstract}
@@ -46,7 +47,7 @@ Uncertainty quantification for dLLMs is also emerging: DiSE uses sequence regene
 Against this background, we first ask a deliberately narrow and strict question: \emph{does the denoising process contain held-out predictive evidence about eventual correctness beyond a matched decision-time confidence baseline?}
 A token can remain masked for many iterations, oscillate between competing proposals, experience substantial distributional drift, or stabilize only late in the trajectory.
 These behaviors are observable before the benchmark outcome is revealed.
-They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score. For the journal extension, we then ask a broader external-validity question: which temporal uncertainty signals persist under irreversible left-to-right generation, and which gains require the ability to revise and delay commitment?
+They may therefore provide a useful form of process-level uncertainty unavailable to a final-state confidence score. For the journal extension, we then ask a broader external-validity question: which temporal uncertainty signals persist under irreversible left-to-right generation, which gains require the ability to revise and delay commitment, and what can be recovered when a hosted interface exposes only text, usage, latency, and optional provider-visible reasoning metadata?
 
 This paper introduces \method, a trajectory-aware uncertainty framework for open diffusion language models.
 The key design principle is strict \emph{pre-outcome isolation}: the generation record contains no reference answer and no correctness label.
@@ -54,12 +55,13 @@ At step $t$, telemetry is computed only over positions that are both active for 
 Prompt tokens, inactive future blocks, and already committed tokens are excluded.
 We then aggregate a frozen feature vector and fit a post-hoc error calibrator using a disjoint calibration partition.
 
-Our evaluation is organized around four questions:
+Our evaluation is organized around five questions:
 \begin{description}[leftmargin=0.8cm,labelwidth=0.65cm]
 \item[RQ1:] Does the denoising trajectory predict answer failure beyond a strong per-token decision-time confidence baseline?
 \item[RQ2:] Does trajectory-aware calibration improve selective generation across model families and tasks?
 \item[RQ3:] Can calibrated trajectory risk decide which answers merit a second higher-budget generation more effectively than random refinement?
 \item[RQ4:] Which inference-time uncertainty dynamics are shared between diffusion and autoregressive language models, which are paradigm-specific, and how well do calibrated risk rankings transfer across architectures?
+\item[RQ5:] Under black-box API access, how much selective-prediction and calibration utility remains in repeated behavioral signals, and how heterogeneous is that utility across hosted model families?
 \end{description}
 
 The contributions are:
@@ -67,8 +69,9 @@ The contributions are:
 (2) a nested test of the incremental value of frozen trajectory dynamics beyond the same per-token decision-time entropy available at commitment;
 (3) a leak-safe, held-out calibration and selective-generation protocol with paired class-stratified within-cell inference across three diffusion-model families;
 (4) an adaptive second-pass compute policy whose threshold is selected only from out-of-fold calibration predictions; and
-(5) a prospectively registered Llama-3.1-8B autoregressive control that separates shared token-level uncertainty dynamics from diffusion-specific revision and commitment signals; and
-(6) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
+(5) a prospectively registered Llama-3.1-8B autoregressive control that separates shared token-level uncertainty dynamics from diffusion-specific revision and commitment signals;
+(6) a separately frozen three-family black-box extension that tests disagreement, semantic consistency, verbalized confidence, stability, and refusal signals without claiming access to hidden states; and
+(7) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
 
 \section{Related Work}
 
@@ -97,6 +100,14 @@ control: shared temporal summaries are evaluated in both paradigms, while
 revision churn, mask persistence, and commitment timing remain explicitly
 diffusion-specific. This design tests architectural external validity without
 pretending that an AR trace is a denoising trajectory.
+
+Black-box uncertainty methods instead infer reliability from observable model
+behavior, including repeated-sample disagreement and self-consistency
+\citep{manakul2023selfcheckgpt}. RQ5 studies this restricted regime using three
+hosted model families behind one OpenAI-compatible provider interface
+\citep{siliconflowchat,siliconflowreasoning}. The provider's optional
+\texttt{reasoning\_content} field is treated only as provider-visible response
+metadata, never as a faithful chain of thought or mechanistic observation.
 
 \paragraph{Selective prediction.}
 A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.
@@ -220,6 +231,12 @@ LLaDA-MoE-7B-A1B-Instruct, SDAR-1.7B-Chat, and Dream-v0-Instruct-7B.
 FLARE/HybridDiffusion-2B is a diagnostic extension because one checkpoint supports both AR and diffusion inference \citep{zhu2026flare}.
 Exact checkpoint and runtime revisions are frozen before model calls.
 Each adapter must pass an exact token-level parity gate against an uninstrumented reference before its results enter the paper.
+RQ4 adds the pinned open-weight Llama-3.1-8B-Instruct control after the original
+RQ1--RQ3 campaign. RQ5 is a separate black-box observability study over the
+frozen SiliconFlow identifiers \texttt{Pro/deepseek-ai/DeepSeek-V3.2},
+\texttt{Pro/zai-org/GLM-5.1}, and
+\texttt{Pro/moonshotai/Kimi-K2.6}. These API systems do not enter the original
+diffusion claim gate or the RQ4 cross-architecture control.
 
 \subsection{Tasks}
 
@@ -266,6 +283,22 @@ We compare against:
 (iii) a five-sample final-answer disagreement baseline using variation ratio, normalized vote entropy, and unique-answer fraction.
 The repeated-sampling baseline is more expensive and its generation cost is reported separately.
 For MATH-500, sampled answers are clustered pairwise with the pinned symbolic equivalence scorer rather than string matching.
+
+\subsection{Black-Box RQ5 Protocol}
+
+RQ5 reuses the exact six frozen calibration/test partitions and requests five
+responses per example from each of the three registered API model identifiers.
+The prompt requires an explicit final answer and integer confidence. Frozen
+decoding uses temperature $0.6$, top-$p$ $0.95$, a 256-token answer budget,
+provider reasoning mode with a 512-token thinking budget, and no provider seed
+because the endpoint does not expose a supported seed contract. Observable
+signals are answer disagreement, semantic consistency, verbalized confidence,
+answer stability, refusal, output length, token usage, latency, and any
+provider-visible reasoning metadata. No signal is described as a hidden-state
+measurement. Requests are assigned stable UUIDs, successful responses are
+never resubmitted, ambiguous interrupted requests are quarantined, and the
+registered cost ceiling is enforced from provider token usage and a captured
+pricing contract \citep{siliconflowpricing}.
 
 \subsection{Statistics}
 
@@ -348,6 +381,13 @@ We will first test whether trajectory information improves the nested decision-e
 We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
 For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
 Negative results do not trigger post-hoc feature redesign on final test labels.
+RQ5 is analyzed only after its separately hashed prospective freeze. Its
+behavioral calibrators are fit on calibration partitions and evaluated on the
+corresponding held-out tests with the same equal-cell principle, paired
+class-stratified bootstrap, and Holm correction. The confirmatory questions
+concern black-box selective prediction, cross-family heterogeneity, and the
+observability gap relative to the open-model regimes; positive, negative,
+null, and heterogeneous outcomes are retained.
 
 \section{Conclusion}
 
@@ -369,6 +409,12 @@ partitions use predeclared deterministic caps; consequently those reported
 numbers are frozen-subset estimates rather than full-split leaderboard scores.
 The repeated-sampling baseline has substantially higher inference cost. For MATH-500, its vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.
 Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
+The hosted RQ5 models are provider-managed systems: exact server-side weights,
+kernels, and routing are not inspectable, and provider revisions can change
+despite stable public identifiers. RQ5 therefore binds the requested and
+returned identifiers, capture time, provider trace metadata, pricing snapshot,
+and raw response. Its conclusions are about deployment-visible behavior under
+that frozen request contract, not mechanistic equivalence to open models.
 
 \section*{Ethical Considerations}
 

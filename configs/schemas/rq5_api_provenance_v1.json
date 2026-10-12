@@ -1,0 +1,38 @@
+{
+  "schema": "trajuq-rq5-api-provenance-v1",
+  "required": [
+    "freeze_sha256",
+    "request_uuid",
+    "requested_model",
+    "returned_model",
+    "utc_timestamp",
+    "endpoint",
+    "prompt_template_sha256",
+    "dataset",
+    "split",
+    "example_id",
+    "repeat_index",
+    "decoding",
+    "raw_provider_response",
+    "parsed_final_answer",
+    "verbalized_confidence",
+    "reasoning_content",
+    "usage",
+    "finish_reason",
+    "http_status",
+    "latency_seconds",
+    "retry_number",
+    "provider_trace_id",
+    "system_fingerprint",
+    "estimated_cost_rmb"
+  ],
+  "forbidden": [
+    "authorization",
+    "api_key",
+    "secret",
+    "reference",
+    "correct",
+    "gold"
+  ],
+  "reasoning_content_semantics": "provider_visible_response_metadata_only"
+}

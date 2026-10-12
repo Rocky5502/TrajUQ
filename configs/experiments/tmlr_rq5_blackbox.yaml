@@ -1,0 +1,107 @@
+protocol: trajuq_tmlr_rq5_blackbox_v1
+status: PROSPECTIVE_FREEZE_REQUIRED_BEFORE_ANY_BENCHMARK_REQUEST
+role: BLACKBOX_EXTERNAL_VALIDITY_NOT_RQ1_RQ4
+original_authoritative_commit: 28002055c828c6910840de6f2105aa6367514144
+rq4_source_commit: e9009629dca74fa62c656c57e58da3a05030cbcd
+research_question: >-
+  How much uncertainty information remains usable when language models are
+  accessible only through black-box APIs, and do selective-prediction and
+  calibration conclusions generalize to deployment-visible behavioral signals?
+provider:
+  name: SiliconFlow
+  endpoint: https://api.siliconflow.cn/v1/chat/completions
+  inventory_endpoint: https://api.siliconflow.cn/v1/models?sub_type=chat
+  inventory_snapshot: results/rq5/provider_snapshot/authenticated_models_chat.json
+  provider_snapshot: results/rq5/provider_snapshot/provider_snapshot.json
+  pricing_contract: results/rq5/provider_snapshot/pricing_contract.json
+models:
+  - Pro/deepseek-ai/DeepSeek-V3.2
+  - Pro/zai-org/GLM-5.1
+  - Pro/moonshotai/Kimi-K2.6
+datasets: [gsm8k, math500, gpqa_diamond, arc_challenge, mmlu_pro, truthfulqa]
+partitions:
+  reuse_original_frozen_ids: true
+  assets:
+    gsm8k:
+      calibration: {rows: 500, sha256: a5f6cf887692007c69fecb71af374b2685b683b1ea6f2f995d771c92932fe0ad}
+      test: {rows: 500, sha256: fbb5f06f7d37eae1042e5945fc71a596849b13229eea79579e1384551fcc625d}
+    math500:
+      calibration: {rows: 153, sha256: 672d321af5bc136b2f9a316e3aa01c9f9ac58676b973290b9a240153094bdf1e}
+      test: {rows: 347, sha256: bf0d2990a495f55a854dd0e2a95bf3b0af88c611febb26b02b3fc031e6ccc7ba}
+    gpqa_diamond:
+      calibration: {rows: 56, sha256: 0cf9ea7c30d8b6fc8b62ee099054dad19e8b4ea00879ce843e0c190e7d55b792}
+      test: {rows: 142, sha256: 8396540768f17abe6913623be9bdf1dc6d7eb6ba56476a8d332fd9a96c13c2ca}
+    arc_challenge:
+      calibration: {rows: 299, sha256: 51200901c297b3086c058f4b860d35f256b32fcf01a34d23471f29f7958d6be7}
+      test: {rows: 500, sha256: ec7ad94d0581e8cdda51a195f2371ef2b8d2287582ba31471d85cb5dbe8368de}
+    mmlu_pro:
+      calibration: {rows: 70, sha256: 3b98deef6f207e53ce72d3049c9cc1a0b9835bdfc118dfd9b5b88c7f1a40f9a2}
+      test: {rows: 500, sha256: 811c96f55719b7cc90398282667cd678a5450d0b1dd6bf85374d9e9bcb25e91d}
+    truthfulqa:
+      calibration: {rows: 245, sha256: e68e9c0d581130c6dad9600c7c61136552a79d0af7fad4ed481d3a39a11eb063}
+      test: {rows: 572, sha256: 21da819237f86a37c8675078d52e34559e448bbf707fb76a52d6dc15129f16b9}
+prompt:
+  system: >-
+    Answer the benchmark question directly. Do not mention evaluation or hidden
+    reference answers. End with exactly two lines using the requested labels.
+  suffix: |-
+
+    End your response with exactly:
+    FINAL_ANSWER: <your final answer>
+    CONFIDENCE: <an integer from 0 to 100>
+decoding:
+  repeated_samples: 5
+  temperature: 0.6
+  top_p: 0.95
+  max_tokens: 256
+  enable_thinking: true
+  thinking_budget: 512
+  seed_policy: provider_seed_not_supported_no_seed_sent
+  stream: false
+execution:
+  timeout_seconds: 180
+  max_retries: 2
+  retry_http_statuses: [429, 503, 504]
+  retry_backoff_seconds: [10, 30]
+  malformed_response: retain_raw_mark_invalid_no_replacement_sampling
+  provider_error: retain_error_retry_only_if_registered_status
+  missing_data: report_and_exclude_only_from_metric_requiring_valid_response
+  hard_cost_cap_rmb: 1200.0
+signals:
+  primary:
+    - repeated_sampling_disagreement
+    - answer_self_consistency
+    - semantic_response_consistency
+    - verbalized_confidence
+    - answer_stability
+    - abstention_or_refusal
+  diagnostics:
+    - response_length
+    - output_token_usage
+    - reasoning_token_metadata
+    - latency
+  reasoning_content_interpretation: provider_visible_metadata_not_mechanistic_evidence
+analysis:
+  calibration_fit: calibration_partition_only
+  test_evaluation: held_out_test_only
+  equal_cell_weight: true
+  no_pooling_across_cells: true
+  bootstrap: paired_class_stratified
+  bootstrap_replicates: 10000
+  bootstrap_seed: 2027
+  confidence_level: 0.95
+  confirmatory_family: [rq5_behavioral_selective_prediction, rq5_cross_model_heterogeneity, rq5_observability_gap]
+  multiplicity_correction: holm_bonferroni
+  alpha: 0.05
+  retain_positive_negative_null_heterogeneous: true
+freeze:
+  producer: scripts/freeze_rq5.py
+  required_artifact: results/rq5/TMLR_RQ5_BLACKBOX_FREEZE.json
+  smoke_required_before_benchmark: true
+forbidden:
+  - replacing_models_after_outcomes
+  - adding_models_to_confirmatory_family
+  - treating_reasoning_content_as_hidden_state_or_faithful_chain_of_thought
+  - changing_samples_or_settings_for_cost_or_significance
+  - persisting_secrets_or_authorization_headers
+  - duplicate_successful_requests

@@ -258,24 +258,17 @@ MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used 
 
 \subsection{Experimental Environment}
 
-The planned primary GPU execution profile is a Linux server using the
-\texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
-CUDA~13.0), with 16 CPU cores, 48~GB of system memory, and one
-NVIDIA A100-SXM4-80GB GPU. The operational rental envelope is 72 continuous
-hours, including setup and review gates, with a predeclared 6-hour reserve for
-model-load/download overhead, CPU analysis/rendering, evidence export, and
-limited retry margin not included in generation timing projections. This budget
-is frozen before outcomes and never changes parity, correctness, calibration,
-or statistical gates. This is a pre-execution
-resource plan rather than evidence that the campaign has run; the final
-manuscript will retain only the environment actually attested by frozen run
-artifacts.
-All model and dataset revisions, software dependencies, generation settings,
-and source-checkout provenance are frozen before the corresponding primary
-artifacts are produced.
-The repository records per-example wall-clock time and peak allocated GPU
-memory where available; these measurements are treated as execution metadata
-and are not substituted for the pre-registered uncertainty endpoints.
+The attested execution host runs \ComputeOS{} with one \ComputeGPUName{}
+(\ComputeGPUMemoryMiB{} MiB), driver \ComputeDriverVersion{}, CUDA runtime
+\ComputeCUDARuntime{}, PyTorch \ComputeTorchVersion{}, Transformers
+\ComputeTransformersVersion{}, FlashAttention
+\ComputeFlashAttentionVersion{}, and Triton \ComputeTritonVersion{} under
+Python \ComputePythonVersion{}. The host provides \ComputeLogicalCPUs{}
+logical CPUs (\ComputeCPUModel{}), \ComputeRAMGiB{} GiB RAM, and a
+\ComputeDataDiskGiB{} GiB data volume. These values come from the hashed
+environment manifest, not from the provider image label or manuscript memory.
+All model and dataset revisions, generation settings, and source-checkout
+provenance are frozen before the corresponding artifacts are produced.
 
 \subsection{Computational Budget and Infrastructure}
 

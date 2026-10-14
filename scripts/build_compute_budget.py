@@ -213,7 +213,8 @@ def main() -> None:
     def row(key, stage, access, usage):
         m=models[key]
         p=tex_escape(params(m["total_parameters"], m["active_parameters"]))
-        return f"{tex_escape(m['display_name'])} & {p} & {access} & {tex_escape(m['precision'])} & {usage} & {stage} \\\\"
+        precision = "provider-managed" if m["total_parameters"] is None else tex_escape(m["precision"])
+        return f"{tex_escape(m['display_name'])} ({stage}) & {p} & {access} & {precision} & {usage} \\\\"
 
     primary_hours = stage_hours["primary"]
     r23 = stage_hours["rq2"] + stage_hours["rq3"]
@@ -235,17 +236,31 @@ def main() -> None:
         f"\\newcommand{{\\RQFiveOutputTokens}}{{{output_tokens:,}}}",
         f"\\newcommand{{\\RQFiveCostRMB}}{{{cost:.2f}}}",
         f"\\newcommand{{\\CurrentRentalElapsedHours}}{{{elapsed:.1f}}}" if elapsed is not None else "\\newcommand{\\CurrentRentalElapsedHours}{unavailable}",
+        f"\\newcommand{{\\ComputeGPUName}}{{{tex_escape(str((env.get('gpu') or {}).get('name') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeGPUMemoryMiB}}{{{int((env.get('gpu') or {}).get('memory_mib') or 0):,}}}",
+        f"\\newcommand{{\\ComputeDriverVersion}}{{{tex_escape(str((env.get('gpu') or {}).get('driver') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeCUDARuntime}}{{{tex_escape(str((env.get('runtime') or {}).get('cuda_runtime') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeTorchVersion}}{{{tex_escape(str((env.get('runtime') or {}).get('torch') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeTransformersVersion}}{{{tex_escape(str((env.get('runtime') or {}).get('transformers') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeFlashAttentionVersion}}{{{tex_escape(str((env.get('runtime') or {}).get('flash_attention') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeTritonVersion}}{{{tex_escape(str((env.get('runtime') or {}).get('triton') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeCPUModel}}{{{tex_escape(str((env.get('cpu') or {}).get('model') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputeLogicalCPUs}}{{{int((env.get('cpu') or {}).get('logical_cpus') or 0)}}}",
+        f"\\newcommand{{\\ComputeRAMGiB}}{{{float((env.get('memory') or {}).get('ram_bytes') or 0) / 2**30:.1f}}}",
+        f"\\newcommand{{\\ComputeDataDiskGiB}}{{{float((env.get('storage') or {}).get('total_bytes') or 0) / 2**30:.1f}}}",
+        f"\\newcommand{{\\ComputeOS}}{{{tex_escape(str((env.get('os') or {}).get('description') or 'unavailable'))}}}",
+        f"\\newcommand{{\\ComputePythonVersion}}{{{tex_escape(str((env.get('os') or {}).get('python') or 'unavailable'))}}}",
         "\\newcommand{\\ComputeBudgetTable}{%",
         "\\begin{table*}[t]\\centering\\small",
-        "\\begin{tabular}{@{}p{0.18\\textwidth}p{0.17\\textwidth}p{0.13\\textwidth}p{0.14\\textwidth}p{0.17\\textwidth}p{0.08\\textwidth}@{}}\\toprule",
-        "Model & Parameters & Hardware/access & Precision & GPU-hours/requests & Role \\\\ \\midrule",
+        "\\begin{tabular}{@{}p{0.22\\textwidth}p{0.19\\textwidth}p{0.16\\textwidth}p{0.15\\textwidth}p{0.20\\textwidth}@{}}\\toprule",
+        "Model/stage & Parameters & Hardware/access & Precision & Measured usage \\\\ \\midrule",
         row("dream", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("llada", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("sdar", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("llama31", "RQ4", "A100 80GB", "\\TotalRQFourGPUHours{}"),
-        row("deepseek_v32", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared requests"),
-        row("glm51", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared requests"),
-        row("kimi_k26", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared requests"),
+        row("deepseek_v32", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
+        row("glm51", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
+        row("kimi_k26", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
         "\\bottomrule\\end{tabular}",
         "\\caption{Artifact-derived compute snapshot. Shared totals are not repeated per model when the registry currently aggregates a stage. Parameter counts are exact pinned-artifact tensor counts for open models; hosted-model counts are not disclosed. Final release regenerates this table from the immutable completed ledger.}",
         "\\label{tab:compute-budget}\\end{table*}}",

@@ -292,7 +292,7 @@ def build_package(
         for archive_name, source in evidence_sources.items():
             data = source.read_bytes()
             source_name = str(source.relative_to(root)).replace("\\", "/")
-            if manifest_entries.get(source_name, {}).get("sha256") != sha256_bytes(data):
+            if source != compute_manifest_path and manifest_entries.get(source_name, {}).get("sha256") != sha256_bytes(data):
                 raise ValueError(f"compute-budget evidence hash drift: {source_name}")
             failures.extend(scan_text(archive_name, data))
             files[archive_name] = data

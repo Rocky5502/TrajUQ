@@ -256,7 +256,7 @@ def main() -> None:
         f"\\newcommand{{\\ComputeOS}}{{{tex_escape(str((env.get('os') or {}).get('description') or 'unavailable'))}}}",
         f"\\newcommand{{\\ComputePythonVersion}}{{{tex_escape(str((env.get('os') or {}).get('python') or 'unavailable'))}}}",
         "\\newcommand{\\ComputeBudgetTable}{%",
-        "\\begin{table*}[t]\\centering\\small",
+        "\\begin{table*}[t]\\centering\\small\\setlength{\\tabcolsep}{4pt}",
         "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.20\\textwidth}>{\\raggedright\\arraybackslash}p{0.19\\textwidth}>{\\raggedright\\arraybackslash}p{0.16\\textwidth}>{\\raggedright\\arraybackslash}p{0.15\\textwidth}>{\\raggedright\\arraybackslash}p{0.22\\textwidth}@{}}\\toprule",
         "Model/stage & Parameters & Hardware/access & Precision & Measured usage \\\\ \\midrule",
         row("dream", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),

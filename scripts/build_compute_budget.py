@@ -210,11 +210,16 @@ def main() -> None:
     atomic(summary_path, json_bytes(summary))
 
     models = {m["key"]: m for m in registry["models"]}
+    table_labels = {
+        "dream": "Dream-7B", "llada": "LLaDA-MoE-7B-A1B", "sdar": "SDAR-1.7B",
+        "llama31": "Llama-3.1-8B", "deepseek_v32": "DeepSeek-V3.2",
+        "glm51": "GLM-5.1", "kimi_k26": "Kimi-K2.6",
+    }
     def row(key, stage, access, usage):
         m=models[key]
         p=tex_escape(params(m["total_parameters"], m["active_parameters"]))
         precision = "provider-managed" if m["total_parameters"] is None else tex_escape(m["precision"])
-        return f"{tex_escape(m['display_name'])} ({stage}) & {p} & {access} & {precision} & {usage} \\\\"
+        return f"{tex_escape(table_labels[key])} ({stage}) & {p} & {access} & {precision} & {usage} \\\\"
 
     primary_hours = stage_hours["primary"]
     r23 = stage_hours["rq2"] + stage_hours["rq3"]
@@ -252,15 +257,15 @@ def main() -> None:
         f"\\newcommand{{\\ComputePythonVersion}}{{{tex_escape(str((env.get('os') or {}).get('python') or 'unavailable'))}}}",
         "\\newcommand{\\ComputeBudgetTable}{%",
         "\\begin{table*}[t]\\centering\\small",
-        "\\begin{tabular}{@{}p{0.22\\textwidth}p{0.19\\textwidth}p{0.16\\textwidth}p{0.15\\textwidth}p{0.20\\textwidth}@{}}\\toprule",
+        "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.20\\textwidth}>{\\raggedright\\arraybackslash}p{0.19\\textwidth}>{\\raggedright\\arraybackslash}p{0.16\\textwidth}>{\\raggedright\\arraybackslash}p{0.15\\textwidth}>{\\raggedright\\arraybackslash}p{0.22\\textwidth}@{}}\\toprule",
         "Model/stage & Parameters & Hardware/access & Precision & Measured usage \\\\ \\midrule",
         row("dream", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("llada", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("sdar", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
         row("llama31", "RQ4", "A100 80GB", "\\TotalRQFourGPUHours{}"),
-        row("deepseek_v32", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
-        row("glm51", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
-        row("kimi_k26", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} requests (shared)"),
+        row("deepseek_v32", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared API requests"),
+        row("glm51", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared API requests"),
+        row("kimi_k26", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared API requests"),
         "\\bottomrule\\end{tabular}",
         "\\caption{Artifact-derived compute snapshot. Shared totals are not repeated per model when the registry currently aggregates a stage. Parameter counts are exact pinned-artifact tensor counts for open models; hosted-model counts are not disclosed. Final release regenerates this table from the immutable completed ledger.}",
         "\\label{tab:compute-budget}\\end{table*}}",

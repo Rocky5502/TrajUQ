@@ -1,0 +1,105 @@
+{
+  "schema": "trajuq_model_parameter_registry_v1",
+  "retrieved_utc": "2026-10-14T15:00:00Z",
+  "models": [
+    {
+      "key": "llada",
+      "display_name": "LLaDA-MoE-7B-A1B-Instruct",
+      "provider_repository": "inclusionAI/LLaDA-MoE-7B-A1B-Instruct",
+      "revision": "783d3467f108d28ac0a78d3e41af16ab05cabd8d",
+      "architecture_class": "masked diffusion mixture-of-experts language model",
+      "total_parameters": 7356880896,
+      "active_parameters": 1400000000,
+      "precision": "bfloat16",
+      "parameter_evidence": {
+        "total": "https://huggingface.co/api/models/inclusionAI/LLaDA-MoE-7B-A1B-Instruct",
+        "active": "https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct"
+      },
+      "notes": "Exact artifact tensor count is from official Hub safetensors metadata; the official model card reports 1.4B active parameters during inference."
+    },
+    {
+      "key": "sdar",
+      "display_name": "SDAR-1.7B-Chat",
+      "provider_repository": "JetLM/SDAR-1.7B-Chat",
+      "revision": "14fcc4b796f05b9a11aa565b2353199af757d079",
+      "architecture_class": "blockwise diffusion language model",
+      "total_parameters": 2031739904,
+      "active_parameters": 2031739904,
+      "precision": "bfloat16",
+      "parameter_evidence": {
+        "total": "https://huggingface.co/api/models/JetLM/SDAR-1.7B-Chat"
+      },
+      "notes": "Exact artifact tensor count is from official Hub safetensors metadata."
+    },
+    {
+      "key": "dream",
+      "display_name": "Dream-v0-Instruct-7B",
+      "provider_repository": "Dream-org/Dream-v0-Instruct-7B",
+      "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+      "architecture_class": "masked diffusion language model",
+      "total_parameters": 7615616512,
+      "active_parameters": 7615616512,
+      "precision": "bfloat16",
+      "parameter_evidence": {
+        "total": "https://huggingface.co/api/models/Dream-org/Dream-v0-Instruct-7B"
+      },
+      "notes": "Exact artifact tensor count is from official Hub safetensors metadata."
+    },
+    {
+      "key": "llama31",
+      "display_name": "Llama-3.1-8B-Instruct",
+      "provider_repository": "meta-llama/Llama-3.1-8B-Instruct",
+      "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "architecture_class": "autoregressive decoder-only transformer",
+      "total_parameters": 8030261248,
+      "active_parameters": 8030261248,
+      "precision": "bfloat16",
+      "parameter_evidence": {
+        "total": "https://huggingface.co/api/models/meta-llama/Llama-3.1-8B-Instruct"
+      },
+      "notes": "Exact artifact tensor count is from official Hub safetensors metadata for the pinned revision."
+    },
+    {
+      "key": "deepseek_v32",
+      "display_name": "DeepSeek-V3.2",
+      "provider_repository": "SiliconFlow",
+      "revision": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "architecture_class": "black-box hosted language model",
+      "total_parameters": null,
+      "active_parameters": null,
+      "precision": "provider-managed; not disclosed",
+      "parameter_evidence": {
+        "provider_inventory": "https://api.siliconflow.cn/v1/models?sub_type=chat"
+      },
+      "notes": "Parameter count and provider-side hardware are not disclosed or independently verifiable through the frozen API interface."
+    },
+    {
+      "key": "glm51",
+      "display_name": "GLM-5.1",
+      "provider_repository": "SiliconFlow",
+      "revision": "Pro/zai-org/GLM-5.1",
+      "architecture_class": "black-box hosted language model",
+      "total_parameters": null,
+      "active_parameters": null,
+      "precision": "provider-managed; not disclosed",
+      "parameter_evidence": {
+        "provider_inventory": "https://api.siliconflow.cn/v1/models?sub_type=chat"
+      },
+      "notes": "Parameter count and provider-side hardware are not disclosed or independently verifiable through the frozen API interface."
+    },
+    {
+      "key": "kimi_k26",
+      "display_name": "Kimi-K2.6",
+      "provider_repository": "SiliconFlow",
+      "revision": "Pro/moonshotai/Kimi-K2.6",
+      "architecture_class": "black-box hosted language model",
+      "total_parameters": null,
+      "active_parameters": null,
+      "precision": "provider-managed; not disclosed",
+      "parameter_evidence": {
+        "provider_inventory": "https://api.siliconflow.cn/v1/models?sub_type=chat"
+      },
+      "notes": "Parameter count and provider-side hardware are not disclosed or independently verifiable through the frozen API interface."
+    }
+  ]
+}

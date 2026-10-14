@@ -4,6 +4,7 @@ The appendix records the complete frozen experimental contract and supplementary
 It is intentionally detailed so that model-specific implementation choices cannot be changed silently after test outcomes are observed.
 
 \section{Execution Environment and Resource Accounting}
+\label{sec:compute-accounting}
 
 The planned scale/transfer profile is a Linux server using the
 \texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
@@ -24,6 +25,17 @@ when available.
 These resource measurements are used for compute accounting and instrumentation
 overhead analysis; they do not change the frozen primary endpoint or RQ1 claim
 rule.
+
+The canonical ledger is regenerated from run records rather than manuscript
+prose. Finalized entries require a SHA-256-bound output and audit artifact.
+Active or unaudited files remain visible in the JSONL ledger but do not enter
+the authoritative total. Measured per-example generation time excludes model
+loading, scoring, and orchestration overhead; the separate rental-wall-clock
+field therefore must not be interpreted as result-producing GPU time. The
+earlier 72-hour rental envelope is verified, but its exact active GPU fraction
+cannot be recovered from the retained evidence and is marked unavailable.
+
+\ComputeBudgetAppendixTable
 
 RQ5 uses remote hosted inference and consumes no A100 generation capacity. Its
 provider inventory, pricing page, target availability, request parameters,

@@ -16,6 +16,7 @@
 \newcommand{\cmark}{\checkmark}
 \input{generated_results}
 \input{generated_rq5}
+\input{generated_compute}
 
 \title{When Language Models Are Unsure During Generation:\\
 Trajectory-Aware Uncertainty Across Open and Black-Box Decoding}
@@ -275,6 +276,34 @@ artifacts are produced.
 The repository records per-example wall-clock time and peak allocated GPU
 memory where available; these measurements are treated as execution metadata
 and are not substituted for the pre-registered uncertainty endpoints.
+
+\subsection{Computational Budget and Infrastructure}
+
+All open-weight experiments are inference-only. A machine-readable ledger
+records the pinned model revision, artifact-derived parameter count, attested
+runtime, output hash, and measured generation time for every run. At the
+current \ComputeLedgerStatus{} snapshot, finalized result-producing generation
+accounts for \TotalAuthoritativeGPUHours{} A100 GPU-hours
+(\TotalPrimaryGPUHours{} primary, \TotalRQTwoThreeGPUHours{} RQ2--RQ3, and
+\TotalRQFourGPUHours{} RQ4). GPU-hours are wall time multiplied by GPU count;
+utilization is reported separately and is never used as a multiplier.
+Development, qualification, recovery, and lost earlier-rental compute remain
+separate; exact active time for the earlier rental is not reconstructable and
+is therefore not included in a false-precision project total.
+
+The current attested environment uses one NVIDIA A100-SXM4-80GB with
+bfloat16 open-weight inference. Exact driver, CUDA, PyTorch, Transformers,
+FlashAttention, Triton, CPU, memory, storage, operating-system, and Python
+versions are canonicalized in the hashed environment manifest. Exact official
+parameter-evidence URLs and pinned revisions are preserved in the accompanying
+model-parameter registry. RQ5 instead
+reports \RQFiveRequests{} saved API responses, \RQFiveInputTokens{} input
+tokens, \RQFiveOutputTokens{} output tokens, and RMB~\RQFiveCostRMB{} from the
+provider-usage ledger. Provider-side hardware, precision, GPU count, and
+GPU-hours are not observable through the black-box API and are not reported.
+Detailed per-run accounting appears in Appendix~\ref{sec:compute-accounting}.
+
+\ComputeBudgetTable
 
 \subsection{Baselines}
 

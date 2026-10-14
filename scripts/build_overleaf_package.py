@@ -21,7 +21,6 @@ PAPER_FILES = (
     "appendix.tex",
     "references.bib",
     "generated_results.tex",
-    "generated_rq5.tex",
 )
 RESULTS_MANIFEST = "generated_results_manifest.json"
 FIGURE_MANIFEST = "figures/generated/result_figure_manifest.json"
@@ -267,6 +266,36 @@ def build_package(
             raise ValueError("RQ5 generated-paper TeX hash drift")
         failures.extend(scan_text("generated_rq5.tex", rq5_data))
         files["generated_rq5.tex"] = rq5_data
+
+    compute_tex = root / "results" / "compute_budget" / "generated_compute.tex"
+    compute_manifest_path = root / "results" / "compute_budget" / "compute_budget_manifest.json"
+    if compute_tex.exists() and compute_manifest_path.exists():
+        compute_manifest = json.loads(compute_manifest_path.read_text(encoding="utf-8"))
+        compute_data = compute_tex.read_bytes()
+        if compute_manifest.get("status") != "PASS":
+            raise ValueError("compute-budget manifest is not PASS")
+        entries = {item["path"]: item for item in compute_manifest.get("files", [])}
+        expected = entries.get("results/compute_budget/generated_compute.tex", {}).get("sha256")
+        if expected != sha256_bytes(compute_data):
+            raise ValueError("compute-budget generated TeX hash drift")
+        failures.extend(scan_text("generated_compute.tex", compute_data))
+        files["generated_compute.tex"] = compute_data
+        evidence_sources = {
+            "compute_budget/compute_summary.json": root / "results" / "compute_budget" / "compute_summary.json",
+            "compute_budget/compute_ledger.jsonl": root / "results" / "compute_budget" / "compute_ledger.jsonl",
+            "compute_budget/environment_manifest.json": root / "results" / "compute_budget" / "environment_manifest.json",
+            "compute_budget/compute_budget_manifest.json": compute_manifest_path,
+            "compute_budget/model_parameter_registry.json": root / "configs" / "operations" / "model_parameter_registry.json",
+            "compute_budget/historical_evidence.json": root / "results" / "compute_budget" / "historical_evidence.json",
+        }
+        manifest_entries = {item["path"]: item for item in compute_manifest.get("files", [])}
+        for archive_name, source in evidence_sources.items():
+            data = source.read_bytes()
+            source_name = str(source.relative_to(root)).replace("\\", "/")
+            if manifest_entries.get(source_name, {}).get("sha256") != sha256_bytes(data):
+                raise ValueError(f"compute-budget evidence hash drift: {source_name}")
+            failures.extend(scan_text(archive_name, data))
+            files[archive_name] = data
 
     if submission_ready:
         files.update(submission_result_files(paper_dir))

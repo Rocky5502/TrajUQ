@@ -270,18 +270,20 @@ def main() -> None:
         "\\caption{Artifact-derived compute snapshot. Shared totals are not repeated per model when the registry currently aggregates a stage. Parameter counts are exact pinned-artifact tensor counts for open models; hosted-model counts are not disclosed. Final release regenerates this table from the immutable completed ledger.}",
         "\\label{tab:compute-budget}\\end{table*}}",
         "\\newcommand{\\ComputeBudgetAppendixTable}{%",
-        "\\begin{table*}[t]\\centering\\footnotesize",
-        "\\begin{tabular}{@{}p{0.08\\textwidth}p{0.20\\textwidth}p{0.13\\textwidth}p{0.10\\textwidth}rrp{0.15\\textwidth}@{}}\\toprule",
-        "Stage & Model & Dataset & Split & Examples & GPU-h & Evidence \\\\ \\midrule",
+        "\\begingroup\\footnotesize\\setlength{\\LTpre}{0pt}\\setlength{\\LTpost}{0pt}",
+        "\\begin{longtable}{@{}p{0.08\\textwidth}p{0.20\\textwidth}p{0.13\\textwidth}p{0.10\\textwidth}rrp{0.15\\textwidth}@{}}",
+        "\\caption{Detailed finalized-run accounting. Active and unaudited files are retained in the machine-readable ledger but excluded here until their audit passes. Per-example generation times exclude model-load and orchestration overhead.}\\label{tab:compute-budget-detail}\\\\",
+        "\\toprule Stage & Model & Dataset & Split & Examples & GPU-h & Evidence \\\\ \\midrule\\endfirsthead",
+        "\\toprule Stage & Model & Dataset & Split & Examples & GPU-h & Evidence \\\\ \\midrule\\endhead",
+        "\\midrule\\multicolumn{7}{r}{Continued on next page}\\\\\\endfoot",
+        "\\bottomrule\\endlastfoot",
     ]
     for r in counted:
         tex.append(f"{tex_escape(str(r['experiment_stage']))} & {tex_escape(str(r.get('model') or '---'))} & {tex_escape(str(r.get('dataset') or '---'))} & {tex_escape(str(r.get('split') or '---'))} & {int(r.get('examples') or 0)} & {float(r.get('gpu_hours') or 0):.3f} & SHA-bound + audit \\\\ ")
     if not counted:
         tex.append("--- & --- & --- & --- & 0 & 0.000 & pending \\\\ ")
     tex += [
-        "\\bottomrule\\end{tabular}",
-        "\\caption{Detailed finalized-run accounting. Active and unaudited files are retained in the machine-readable ledger but excluded here until their audit passes. Per-example generation times exclude model-load and orchestration overhead.}",
-        "\\label{tab:compute-budget-detail}\\end{table*}}",
+        "\\end{longtable}\\endgroup}",
     ]
     tex_path = OUT / "generated_compute.tex"
     atomic(tex_path, ("\n".join(tex) + "\n").encode())

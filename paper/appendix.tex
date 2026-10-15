@@ -6,17 +6,17 @@ It is intentionally detailed so that model-specific implementation choices canno
 \section{Execution Environment and Resource Accounting}
 \label{sec:compute-accounting}
 
-The planned scale/transfer profile is a Linux server using the
-\texttt{ubuntu24.04ubuntu24\_cuda13.0} environment (Ubuntu~24.04 with
-CUDA~13.0), 16 CPU cores, 48~GB of system memory, and one
-NVIDIA A100-SXM4-80GB GPU under a predeclared 72-hour continuous rental
-envelope that starts at server setup. Six hours are reserved a priori for
-checkpoint download/load overhead, CPU analysis/rendering, evidence export,
-and limited retry margin excluded from generation-time projection. The
-wall-clock envelope is operational rather than inferential: scientific gates
-are not relaxed when time is scarce, and incomplete stages remain incomplete. Because this appendix is still pre-experiment, those
-resources are a declared execution plan, not a claim that a run has completed;
-the final paper must report the environment attested by the frozen artifacts.
+The original prospective scale/transfer plan specified a Linux server with
+16 CPU cores, 48~GB of system memory, and one NVIDIA A100-SXM4-80GB GPU under
+a 72-hour continuous-rental envelope. Six hours were reserved a priori for
+checkpoint loading, CPU analysis/rendering, evidence export, and bounded retry
+margin. We retain that plan as historical protocol evidence rather than
+silently rewriting it after execution. The result-producing environment and
+measured compute reported in the main text and in the detailed table below
+come instead from the hashed runtime manifest and finalized run ledger. Rental
+continuations used to finish the already frozen protocol do not relax scientific
+gates or alter model, sample, seed, decoding, precision, or analysis settings;
+unfinished stages remain explicitly provisional.
 The experiment freeze records the source commit, immutable model and dataset
 revisions, frozen model configurations, and dependency-sensitive scorer
 requirements before expensive execution.
@@ -47,8 +47,11 @@ reproducibility packages.
 \section{Black-Box RQ5 Request and Recovery Contract}
 
 The three target model identifiers, all twelve frozen dataset partitions, five
-repeats, prompt suffix, decoding parameters, retry statuses, statistical tests,
-and a RMB~1200 hard cost ceiling are fixed before outcomes. The captured
+repeats, prompt suffix, decoding parameters, retry statuses, and statistical
+tests are fixed before outcomes. The operational budget uses RMB~1200 as the
+preferred target, RMB~1500 as a strict-warning threshold, and RMB~1600 as the
+absolute hard stop; these ceilings cannot be used to add samples, models, or
+outcome-dependent retries. The captured
 outcome-blind projection contains 58,260 requests, with an expected cost of
 RMB~523.42 and a conservative upper projection of RMB~955.94 under the
 registered token assumptions. These values are budget controls, not results.

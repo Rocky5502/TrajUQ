@@ -16,6 +16,7 @@
 \newcommand{\calp}{\widehat{p}_{\mathrm{err}}}
 \newcommand{\cmark}{\checkmark}
 \input{generated_results}
+\IfFileExists{generated_rq1.tex}{\input{generated_rq1}}{}
 \input{generated_rq5}
 \input{generated_compute}
 
@@ -361,20 +362,7 @@ and statistical gates pass.
 \IfFileExists{figures/generated/rq5_observability_overview.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_observability_overview.pdf}}{}
 \IfFileExists{figures/generated/rq5_cost_valid_evidence.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_cost_valid_evidence.pdf}}{}
 
-\begin{table*}[t]
-\centering
-\small
-\begin{tabular}{lccccc}
-\toprule
-Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & Brier $\downarrow$ & ECE $\downarrow$ & AURC $\downarrow$\\
-\midrule
-Decision entropy & \PrimaryDecisionAUROC & \PrimaryDecisionAUPRC & \PrimaryDecisionBrier & \PrimaryDecisionECE & \PrimaryDecisionAURC\\
-\method & \PrimaryTrajAUROC & \PrimaryTrajAUPRC & \PrimaryTrajBrier & \PrimaryTrajECE & \PrimaryTrajAURC\\
-\bottomrule
-\end{tabular}
-\caption{Primary held-out uncertainty results, macro-averaged with equal weight over the complete $3\times6$ model--dataset matrix. Values are populated only from traceable frozen result artifacts.}
-\label{tab:main}
-\end{table*}
+\RQOneSummaryTable
 
 \IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
 \begin{figure*}[t]
@@ -383,6 +371,15 @@ Decision entropy & \PrimaryDecisionAUROC & \PrimaryDecisionAUPRC & \PrimaryDecis
 \caption{Held-out AUROC improvement of \method over the matched decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty; the figure is rendered only from the complete provenance-bound 18-cell aggregate.}
 \label{fig:primary-auroc-matrix}
 \end{figure*}
+}{}
+
+\IfFileExists{figures/generated/rq1_feature_ablation.pdf}{
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\columnwidth]{figures/generated/rq1_feature_ablation.pdf}
+\caption{Frozen feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\% confidence intervals.}
+\label{fig:rq1-ablation}
+\end{figure}
 }{}
 
 \begin{table}[t]
@@ -433,14 +430,14 @@ null, and heterogeneous outcomes are retained.
 
 \section{Conclusion}
 
-\ConclusionResultSentence
+\ConclusionResultSentence\ 
 \method treats iterative denoising as an observable uncertainty process rather than merely a decoding mechanism.
 Prior work already demonstrates useful dLLM-specific uncertainty signals \citep{zhong2026dise,vazhentsev2026dllmuq}; our central empirical question is therefore deliberately incremental and falsifiable. If a carefully calibrated trajectory model cannot improve over the matched decision-time baseline on held-out examples and multiple model families, then the additional trajectory telemetry should not be claimed to provide predictive value beyond decision-time confidence under our protocol.
 The accompanying protocol is designed so that this conclusion can be reached without outcome leakage or post-hoc test tuning.
 
 \section*{Limitations}
 
-\PaperStateLimitationsSentence
+\PaperStateLimitationsSentence\ 
 The primary evaluation focuses on answer-level correctness for reasoning and QA tasks; it does not establish calibration for long-form factuality, safety, or human preference.
 Trajectory instrumentation is model-runtime dependent and must be parity-validated.
 Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.

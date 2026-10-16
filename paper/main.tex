@@ -44,7 +44,7 @@ All model, data, feature, calibration, and statistical choices are frozen before
 \end{abstract}
 
 \section{Introduction}
-Autoregressive language models expose a natural sequence of conditional next-token distributions, and prior work studies whether confidence, entropy, self-consistency, or semantic disagreement can predict when a generated answer is wrong \citep{jiang2021know,kuhn2023semantic}.
+Autoregressive language models expose a natural sequence of conditional next-token distributions, and prior work studies whether confidence, entropy, self-consistency, or semantic disagreement can predict when a generated answer is wrong \citep{jiang2021know,kuhn2023semantic,farquhar2024semantic,kapoor2024taught}.
 Diffusion language models (dLLMs), however, generate through iterative denoising rather than a single left-to-right pass.
 Recent systems such as LLaDA \citep{nie2025llada}, Dream \citep{ye2025dream}, SDAR \citep{cheng2026sdar}, and FLARE \citep{zhu2026flare} make parallel or blockwise generation increasingly practical.
 Uncertainty quantification for dLLMs is also emerging: DiSE uses sequence regeneration for self-evaluation \citep{zhong2026dise}, while diffusion-specific UQ work exploits trajectory likelihoods, remasking, prediction flips, denoising complexity, and semantic trajectory instability \citep{vazhentsev2026dllmuq}. Recent robustness analysis further shows that surface confidence can remain poorly ranked even when useful correctness information is present internally \citep{yadav2026unsure}.
@@ -69,19 +69,17 @@ Our evaluation is organized around five questions:
 \item[RQ5:] Under black-box API access, how much selective-prediction and calibration utility remains in repeated behavioral signals, and how heterogeneous is that utility across hosted model families?
 \end{description}
 
-The contributions are:
-(1) a model-agnostic telemetry schema that measures only active unresolved positions while preserving native decoding parity;
-(2) a nested test of the incremental value of frozen trajectory dynamics beyond the same per-token decision-time entropy available at commitment;
-(3) a leak-safe, held-out calibration and selective-generation protocol with paired class-stratified within-cell inference across three diffusion-model families;
-(4) an adaptive second-pass compute policy whose threshold is selected only from out-of-fold calibration predictions; and
-(5) a prospectively registered Llama-3.1-8B autoregressive control that separates shared token-level uncertainty dynamics from diffusion-specific revision and commitment signals;
-(6) a separately frozen three-family black-box extension that tests disagreement, semantic consistency, verbalized confidence, stability, and refusal signals without claiming access to hidden states; and
-(7) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to frozen artifacts.
+The contributions are fourfold:
+(1) a model-agnostic, parity-validated telemetry schema that measures only active unresolved positions and a nested test of its incremental value beyond matched decision-time entropy;
+(2) a leak-safe calibration, selective-generation, and adaptive-compute protocol with paired within-cell inference across three diffusion-model families;
+(3) prospectively frozen comparisons across three observability regimes---open diffusion trajectories, an open autoregressive trace, and hosted black-box behavior---without retroactively changing the original claim gate; and
+(4) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to immutable artifacts.
 
 \section{Related Work}
 
 \paragraph{Diffusion language models.}
-LLaDA established masked diffusion as a scalable alternative to autoregressive factorization \citep{nie2025llada}.
+Discrete denoising diffusion models connected absorbing-state corruption to masked and autoregressive generation \citep{austin2021d3pm}, while modern masked diffusion objectives substantially narrowed the language-modeling gap to autoregressive systems \citep{sahoo2024mdlm}.
+LLaDA then established masked diffusion as a scalable large-language-model alternative to autoregressive factorization \citep{nie2025llada}.
 Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \citep{ye2025dream}.
 SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \citep{cheng2026sdar}.
 FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \citep{zhu2026flare}.
@@ -91,8 +89,8 @@ Recent decoding work also shows that confidence trajectories are operationally u
 DiSE estimates sequence-level confidence by asking the dLLM to regenerate tokens in its completed output and also uses self-evaluation to control generation length \citep{zhong2026dise}. Vazhentsev et al. provide a systematic dLLM-UQ study over LLaDA and Dream, including trajectory entropy and likelihood, commitment confidence, remasking and token-flip statistics, denoising complexity, and trajectory-semantic dissimilarity; they evaluate selective rejection and efficiency against broad UQ baselines \citep{vazhentsev2026dllmuq}. Yadav et al. identify a representation--confidence gap under noisy inputs, showing that visible confidence can lose ranking quality even when hidden representations retain useful error information \citep{yadav2026unsure}. These works establish that dLLM-specific confidence and trajectory signals are meaningful. \method therefore does not claim that trajectory-based dLLM uncertainty is new. Instead, it isolates a complementary question: whether a fixed, lightweight telemetry vector from one native generation supplies \emph{incremental} held-out error information beyond matched decision-time entropy, remains calibrated across masked and blockwise families, and supports a frozen selective second-pass compute policy.
 
 \paragraph{Language-model uncertainty.}
-Calibration asks whether predicted confidence reflects empirical correctness \citep{jiang2021know}.
-Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.
+Calibration asks whether predicted confidence reflects empirical correctness \citep{guo2017calibration,jiang2021know}.
+Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \citep{kuhn2023semantic,farquhar2024semantic}; kernel language entropy and semantic density refine this sampling-based view in continuous semantic spaces \citep{nikitin2024kernel,qiu2024density}. MARS reweights token-level sequence likelihood by semantic contribution \citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.
 
 Autoregressive uncertainty is commonly summarized from token probabilities,
 sequence likelihood, verbalized confidence, or disagreement among repeated
@@ -105,6 +103,13 @@ control: shared temporal summaries are evaluated in both paradigms, while
 revision churn, mask persistence, and commitment timing remain explicitly
 diffusion-specific. This design tests architectural external validity without
 pretending that an AR trace is a denoising trajectory.
+This distinction matters operationally: supervised uncertainty adaptation can
+outperform zero-shot verbal or sampling baselines, but requires graded data and
+changes the model or an auxiliary predictor \citep{kapoor2024taught}; our
+cross-paradigm comparison instead keeps the generators frozen. Model confidence
+also need not be communicated faithfully to users, motivating a separation
+between statistical calibration and human-perceived confidence
+\citep{steyvers2025confidence}.
 
 Black-box uncertainty methods instead infer reliability from observable model
 behavior, including repeated-sample disagreement and self-consistency
@@ -116,6 +121,7 @@ metadata, never as a faithful chain of thought or mechanistic observation.
 
 \paragraph{Selective prediction.}
 A calibrated error score can be used to abstain on uncertain examples or defer them to a more expensive procedure.
+This reject-option framing is formalized by selective classification \citep{geifman2017selective}; recent selective-generation work extends risk control to free-form outputs using textual entailment \citep{lee2024selectivegeneration}.
 We therefore report both discrimination and calibration, together with risk--coverage behavior and compute-aware refinement.
 Our adaptive policy does not use test labels to choose a threshold.
 

@@ -1,0 +1,34 @@
+{
+  "schema": "trajuq_final_rq_evidence_v1",
+  "registry_version": "paper-evidence-v1",
+  "rq": "RQ2",
+  "status": "FINAL",
+  "experiment_commit": "REPLACE_WITH_40_HEX_COMMIT",
+  "generated_at_utc": "REPLACE_WITH_ARTIFACT_GENERATION_TIMESTAMP",
+  "analysis_script": "scripts/REPLACE_WITH_FROZEN_ANALYSIS_SCRIPT.py",
+  "analysis_script_sha256": "REPLACE_WITH_64_HEX_SHA256",
+  "audit_status": "PASS",
+  "identifiers": {
+    "models": ["REPLACE"],
+    "datasets": ["REPLACE"],
+    "seeds": [2027]
+  },
+  "gates": {
+    "generation_complete": true,
+    "audits_pass": true,
+    "uniqueness_pass": true,
+    "completeness_pass": true,
+    "scoring_complete": true,
+    "analysis_complete": true,
+    "claim_gate_decided": true,
+    "registry_frozen": true,
+    "seed_jobs_expected": 120,
+    "seed_jobs_complete": 120
+  },
+  "sources": [
+    {"path": "results/REPLACE_SOURCE", "sha256": "REPLACE_WITH_64_HEX_SHA256"}
+  ],
+  "outputs": [
+    {"path": "paper/generated/REPLACE_OUTPUT.tex", "sha256": "REPLACE_WITH_64_HEX_SHA256"}
+  ]
+}

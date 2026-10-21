@@ -19,6 +19,11 @@
 \input{generated_results}
 \IfFileExists{generated_rq1.tex}{\input{generated_rq1}}{}
 \input{generated_rq5}
+\IfFileExists{generated_synthesis.tex}{\input{generated_synthesis}}{
+  \newcommand{\CrossModelSynthesisTable}{}
+  \newcommand{\CrossModelAppendixTable}{}
+  \newcommand{\CrossModelSignalTable}{}
+}
 \input{generated_compute}
 
 \title{When Language Models Are Unsure During Generation:\\
@@ -368,6 +373,31 @@ and statistical gates pass.
 \IfFileExists{figures/generated/rq5_heterogeneity.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_heterogeneity.pdf}}{}
 \IfFileExists{figures/generated/rq5_observability_overview.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_observability_overview.pdf}}{}
 \IfFileExists{figures/generated/rq5_cost_valid_evidence.pdf}{\includegraphics[width=0.48\textwidth]{figures/generated/rq5_cost_valid_evidence.pdf}}{}
+
+\subsection{Cross-Model and Cross-Observability Synthesis}
+\label{sec:cross-observability-synthesis}
+
+This synthesis introduces no new research question or experiment. It organizes
+the already authorized RQ1--RQ5 evidence around a narrower interpretive
+question: what uncertainty information is observable and useful under open
+diffusion trajectories, an open autoregressive trace, and hosted black-box
+behavior? Direct statistical comparisons are restricted to systems sharing the
+same outcome definition, calibration/evaluation protocol, metric definition,
+and aggregation rule. Across observability regimes, we therefore report a
+descriptive synthesis rather than a raw model ranking or a causal architectural
+claim. Pending cells are regenerated from immutable registries and remain
+explicitly pending until every contributing gate is authoritative.
+
+\CrossModelSynthesisTable
+
+\IfFileExists{figures/generated/cross_observability_synthesis.pdf}{
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/generated/cross_observability_synthesis.pdf}
+\caption{Within-regime uncertainty improvement across three observability regimes. Panels deliberately separate diffusion-trajectory, autoregressive-trace, and black-box behavioral protocols; their horizontal positions are not a cross-regime statistical ranking. Points and intervals are shown only when a compatible authoritative registry supplies them. During execution, missing authoritative aggregates are labeled pending rather than estimated.}
+\label{fig:cross-observability-synthesis}
+\end{figure*}
+}{}
 
 \RQOneSummaryTable
 

@@ -282,6 +282,62 @@ def build_package(
         failures.extend(scan_text("generated_rq5.tex", rq5_data))
         files["generated_rq5.tex"] = rq5_data
 
+    synthesis_tex = paper_dir / "generated_synthesis.tex"
+    synthesis_manifest_path = (
+        root / "results" / "cross_model_synthesis" / "synthesis_manifest.json"
+    )
+    if synthesis_tex.exists() and synthesis_manifest_path.exists():
+        synthesis_manifest = load_json(synthesis_manifest_path)
+        if synthesis_manifest.get("schema") != "trajuq_cross_model_synthesis_manifest_v1":
+            raise ValueError("cross-model synthesis manifest protocol is not recognized")
+        if synthesis_manifest.get("status") != "PASS":
+            raise ValueError("cross-model synthesis manifest is not PASS")
+        if submission_ready and not synthesis_manifest.get("final", False):
+            raise ValueError("submission-ready package requires a final cross-model synthesis")
+        output_entries = {
+            item["path"]: item for item in synthesis_manifest.get("outputs", [])
+        }
+        synthesis_paths = {
+            "paper/generated_synthesis.tex": synthesis_tex,
+            "results/cross_model_synthesis/registry.json": (
+                root / "results" / "cross_model_synthesis" / "registry.json"
+            ),
+            "results/cross_model_synthesis/compatibility_report.json": (
+                root
+                / "results"
+                / "cross_model_synthesis"
+                / "compatibility_report.json"
+            ),
+            "results/cross_model_synthesis/visual_qa.json": (
+                root / "results" / "cross_model_synthesis" / "visual_qa.json"
+            ),
+        }
+        for source_name, source in synthesis_paths.items():
+            if not source.is_file():
+                raise ValueError(f"missing cross-model synthesis artifact: {source_name}")
+            data = source.read_bytes()
+            if output_entries.get(source_name, {}).get("sha256") != sha256_bytes(data):
+                raise ValueError(f"cross-model synthesis hash drift: {source_name}")
+            failures.extend(scan_text(source_name, data))
+            archive_name = (
+                "generated_synthesis.tex"
+                if source_name == "paper/generated_synthesis.tex"
+                else source_name.replace("results/cross_model_synthesis/", "synthesis/")
+            )
+            files[archive_name] = data
+        for suffix in ("pdf", "svg"):
+            source_name = f"paper/figures/generated/cross_observability_synthesis.{suffix}"
+            source = root / source_name
+            if not source.is_file():
+                raise ValueError(f"missing cross-model synthesis figure: {source_name}")
+            data = source.read_bytes()
+            if output_entries.get(source_name, {}).get("sha256") != sha256_bytes(data):
+                raise ValueError(f"cross-model synthesis figure hash drift: {source_name}")
+            files[f"figures/generated/{source.name}"] = data
+        manifest_data = synthesis_manifest_path.read_bytes()
+        failures.extend(scan_text("synthesis/synthesis_manifest.json", manifest_data))
+        files["synthesis/synthesis_manifest.json"] = manifest_data
+
     compute_tex = root / "results" / "compute_budget" / "generated_compute.tex"
     compute_manifest_path = root / "results" / "compute_budget" / "compute_budget_manifest.json"
     if compute_tex.exists() and compute_manifest_path.exists():

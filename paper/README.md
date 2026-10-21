@@ -93,3 +93,23 @@ The remaining external checks are compiling the exact recorded Overleaf ZIP
 with the pinned official TMLR template, inspecting anonymity and OpenReview
 metadata, and uploading the exact archives whose hashes are recorded in
 `results/submission_readiness.json`.
+
+## Fail-closed RQ2 finalization
+
+After the authoritative RQ2 GPU campaign has finished all 120 frozen seed
+jobs, start the complete CPU-side chain with one command:
+
+    python scripts/finalize_rq2_paper.py --experiment-root /path/to/authoritative/TrajUQ
+
+The command first requires the exact authoritative commit, a clean experiment
+checkout, exact generation completeness, per-seed audit/hash validity, and the
+frozen plan provenance. It performs no generation while any partition is
+incomplete. Once those checks pass it invokes the repository-supported
+resumable scorer/comparator/aggregator, builds the immutable RQ2 evidence
+manifest, and hands control to the all-RQ paper evidence gate. Missing or
+invalid artifacts stop the chain; nothing is silently overwritten.
+
+Audit only canonical paper/config/code sources, excluding tests and temporary
+trees, with:
+
+    python scripts/source_only_manuscript_audit.py --require-clean

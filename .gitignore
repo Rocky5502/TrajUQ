@@ -3,6 +3,7 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .pytest-*/
+.pytest*/
 .mypy_cache/
 .ruff_cache/
 .venv/
@@ -58,3 +59,11 @@ GPU_RENTAL_INFO.private.*
 *.synctex.gz
 
 dist/
+tmp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.toc
+*.xdv
+*.synctex

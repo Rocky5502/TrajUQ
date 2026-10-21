@@ -1,0 +1,141 @@
+{
+  "protocol": "trajuq_cross_model_synthesis_contract_v1",
+  "authoritative_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "purpose": "Descriptive synthesis of already-authorized RQ1-RQ5 evidence; not a new research question or experiment.",
+  "model_order": [
+    "dream",
+    "llada",
+    "sdar",
+    "llama31",
+    "deepseek_v32",
+    "glm51",
+    "kimi_k26"
+  ],
+  "dataset_order": [
+    "gsm8k",
+    "math500",
+    "gpqa_diamond",
+    "arc_challenge",
+    "mmlu_pro",
+    "truthfulqa"
+  ],
+  "required_final_sources": {
+    "rq1": "results/primary_analysis/rq1_claim_gate.json",
+    "rq2": "results/repeated_sampling/macro_repeated.json",
+    "rq3": "results/adaptive/macro_cap_50.json",
+    "rq4": "results/rq4/analysis/cross_model_macro.json",
+    "rq5": "results/rq5/analysis/cross_model_macro.json"
+  },
+  "regimes": {
+    "diffusion_trajectory": {
+      "display_name": "Diffusion trajectory",
+      "compatibility_group": "open_diffusion_primary_v1",
+      "outcome_definition": "externally_scored_answer_error",
+      "calibration_protocol": "calibration_only_logistic_mapping",
+      "evaluation_protocol": "held_out_frozen_test_partition",
+      "aggregation_rule": "equal_weight_per_model_dataset_cell",
+      "direct_comparison_scope": "within_regime_only"
+    },
+    "autoregressive_trace": {
+      "display_name": "Autoregressive trace",
+      "compatibility_group": "open_ar_rq4_v1",
+      "outcome_definition": "externally_scored_answer_error",
+      "calibration_protocol": "prospectively_frozen_rq4_protocol",
+      "evaluation_protocol": "held_out_frozen_test_partition",
+      "aggregation_rule": "prospectively_frozen_rq4_rule",
+      "direct_comparison_scope": "within_regime_only"
+    },
+    "black_box_behavior": {
+      "display_name": "Black-box behavior",
+      "compatibility_group": "hosted_black_box_rq5_v1",
+      "outcome_definition": "externally_scored_answer_error",
+      "calibration_protocol": "prospectively_frozen_rq5_protocol",
+      "evaluation_protocol": "held_out_frozen_test_partition",
+      "aggregation_rule": "prospectively_frozen_rq5_rule",
+      "direct_comparison_scope": "within_regime_only"
+    }
+  },
+  "models": {
+    "dream": {
+      "regime": "diffusion_trajectory",
+      "uncertainty_signal": "Decision entropy + native denoising trajectory telemetry",
+      "revision_signal": "available",
+      "persistence_signal": "available",
+      "commitment_signal": "available"
+    },
+    "llada": {
+      "regime": "diffusion_trajectory",
+      "uncertainty_signal": "Decision entropy + native denoising trajectory telemetry",
+      "revision_signal": "available",
+      "persistence_signal": "available",
+      "commitment_signal": "available"
+    },
+    "sdar": {
+      "regime": "diffusion_trajectory",
+      "uncertainty_signal": "Decision entropy + blockwise denoising trajectory telemetry",
+      "revision_signal": "available",
+      "persistence_signal": "available",
+      "commitment_signal": "available"
+    },
+    "llama31": {
+      "regime": "autoregressive_trace",
+      "uncertainty_signal": "Autoregressive token-level trace under the frozen RQ4 protocol",
+      "revision_signal": "not_applicable",
+      "persistence_signal": "not_applicable",
+      "commitment_signal": "not_applicable"
+    },
+    "deepseek_v32": {
+      "regime": "black_box_behavior",
+      "uncertainty_signal": "Verbalized confidence + repeated-sample behavioral disagreement",
+      "revision_signal": "not_applicable",
+      "persistence_signal": "not_applicable",
+      "commitment_signal": "not_applicable"
+    },
+    "glm51": {
+      "regime": "black_box_behavior",
+      "uncertainty_signal": "Verbalized confidence + repeated-sample behavioral disagreement",
+      "revision_signal": "not_applicable",
+      "persistence_signal": "not_applicable",
+      "commitment_signal": "not_applicable"
+    },
+    "kimi_k26": {
+      "regime": "black_box_behavior",
+      "uncertainty_signal": "Verbalized confidence + repeated-sample behavioral disagreement",
+      "revision_signal": "not_applicable",
+      "persistence_signal": "not_applicable",
+      "commitment_signal": "not_applicable"
+    }
+  },
+  "metric_definitions": {
+    "auroc": {
+      "direction": "higher_is_better",
+      "definition": "area_under_receiver_operating_characteristic_for_answer_error"
+    },
+    "auprc": {
+      "direction": "higher_is_better",
+      "definition": "area_under_precision_recall_curve_for_answer_error"
+    },
+    "aurc": {
+      "direction": "lower_is_better",
+      "definition": "mean_selective_risk_over_k_over_n"
+    },
+    "ece15": {
+      "direction": "lower_is_better",
+      "definition": "expected_calibration_error_15_bins"
+    },
+    "risk50": {
+      "direction": "lower_is_better",
+      "definition": "tie_aware_selective_risk_at_50_percent_coverage"
+    },
+    "within_regime_auroc_improvement": {
+      "direction": "higher_is_better",
+      "definition": "candidate_auroc_minus_pre_registered_within_regime_baseline_auroc"
+    }
+  },
+  "finalization_rule": {
+    "all_required_sources_complete": true,
+    "regenerate_from_scratch": true,
+    "forbid_cross_regime_statistical_ranking": true,
+    "allow_descriptive_cross_regime_synthesis": true
+  }
+}

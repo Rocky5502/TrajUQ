@@ -272,13 +272,30 @@ def build_package(
 
     rq5_tex = root / "results" / "rq5" / "paper" / "generated_rq5.tex"
     rq5_manifest_path = root / "results" / "rq5" / "paper" / "generated_rq5_manifest.json"
+    rq5_admitted = False
     if rq5_tex.exists() and rq5_manifest_path.exists():
-        rq5_manifest = json.loads(rq5_manifest_path.read_text(encoding="utf-8"))
-        rq5_data = rq5_tex.read_bytes()
-        if rq5_manifest.get("status") != "PASS":
-            raise ValueError("RQ5 generated-paper manifest is not PASS")
-        if rq5_manifest.get("generated_tex_sha256") != sha256_bytes(rq5_data):
-            raise ValueError("RQ5 generated-paper TeX hash drift")
+        try:
+            rq5_manifest = load_json(rq5_manifest_path)
+            rq5_data = rq5_tex.read_bytes()
+            if rq5_manifest.get("status") != "PASS":
+                raise ValueError("RQ5 generated-paper manifest is not PASS")
+            if rq5_manifest.get("generated_tex_sha256") != sha256_bytes(rq5_data):
+                raise ValueError("RQ5 generated-paper TeX hash drift")
+            failures.extend(scan_text("generated_rq5.tex", rq5_data))
+            files["generated_rq5.tex"] = rq5_data
+            rq5_admitted = True
+        except ValueError:
+            if submission_ready:
+                raise
+    if not rq5_admitted and b"generated_rq5" in files["main.tex"]:
+        # Development packages remain compilable using the committed, explicit
+        # pre-results fallback.  A malformed or incomplete ignored execution
+        # artifact is never admitted silently, and submission-ready mode has
+        # already failed closed above.
+        rq5_fallback = paper_dir / "generated_rq5.tex"
+        if not rq5_fallback.is_file():
+            raise ValueError("missing committed RQ5 fallback TeX")
+        rq5_data = rq5_fallback.read_bytes()
         failures.extend(scan_text("generated_rq5.tex", rq5_data))
         files["generated_rq5.tex"] = rq5_data
 

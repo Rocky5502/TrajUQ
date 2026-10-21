@@ -240,7 +240,7 @@
     },
     {
       "path": "scripts/build_overleaf_package.py",
-      "sha256": "0c2de36b1f1bbbf9aca692964c722e528b05d5e20b12395041bd9e4e0c149e78"
+      "sha256": "f587670470a9c44b7a6a950b6ec046ee5d1d2fefcdb83c5d499114d427da0720"
     },
     {
       "path": "scripts/build_rq1_final_evidence.py",

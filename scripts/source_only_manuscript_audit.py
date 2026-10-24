@@ -148,7 +148,11 @@ def audit(root: Path) -> dict[str, object]:
             or path.startswith("configs/templates/")
             or path.startswith("scripts/")
             or path == "paper/README.md"
-            or (path == "paper/main.tex" and line == 16 and token == "TBD")
+            or (
+                path == "paper/main.tex"
+                and token == "TBD"
+                and r"\newcommand{\tbd}{\textsc{TBD}}" in texts[root / Path(path)]
+            )
         )
         if intentional:
             intentional_placeholders.append(item)

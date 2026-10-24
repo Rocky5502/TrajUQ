@@ -5,9 +5,9 @@
     "bibliography_entries": 33,
     "blocking_placeholders": 0,
     "citations": 33,
-    "intentional_placeholders": 140,
+    "intentional_placeholders": 142,
     "labels": 25,
-    "placeholder_markers": 140,
+    "placeholder_markers": 142,
     "provisional_terms": 290,
     "references": 2,
     "source_files": 165
@@ -164,11 +164,11 @@
     },
     {
       "path": "paper/generated_synthesis.tex",
-      "sha256": "6a61959d34b72ff23b4ff3f91abd45c50b63c4bc545873a9b87e90f5729d0911"
+      "sha256": "4ed71aeb660306992c2eadbd6ba2b977e5ccaf5091e1a2eedec2cc21727fb1e7"
     },
     {
       "path": "paper/main.tex",
-      "sha256": "21a8786503e05c46e9c4fa54afdd34aba1ffdf6f63427fb579c42dde70aeb48e"
+      "sha256": "3568cfb8d806dec9b9c227ed411189be0230ba77baf70c760d0f54341ef7cbfd"
     },
     {
       "path": "paper/README.md",
@@ -236,7 +236,7 @@
     },
     {
       "path": "scripts/build_cross_model_synthesis.py",
-      "sha256": "1f5d21a5c722472ad539dc8c017fb17f16b21e8be562e59706ec6cf3c23148a3"
+      "sha256": "f217706bf9db321aed15020b324b31297b6fd8adfccd612820fed97bc2275fe3"
     },
     {
       "path": "scripts/build_overleaf_package.py",
@@ -520,7 +520,7 @@
     },
     {
       "path": "scripts/source_only_manuscript_audit.py",
-      "sha256": "ad4b96dab25c53bc79eb4f1a394645627e7c3282522cd166517d9a2fb5411d75"
+      "sha256": "bfbe38a95048a902f18ac1b12e4c99cbdf371562d5b28e60b84b28d8662d347c"
     },
     {
       "path": "scripts/split_inputs.py",
@@ -691,7 +691,7 @@
     "FIXME": 1,
     "NOT YET AUTHORIZED": 16,
     "PLACEHOLDER": 3,
-    "TBD": 118,
+    "TBD": 120,
     "TODO": 1,
     "XXX": 1
   },

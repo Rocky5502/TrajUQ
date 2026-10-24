@@ -60,6 +60,7 @@ GPU_RENTAL_INFO.private.*
 
 dist/
 tmp/
+output/
 *.tmp
 *.temp
 *.bak

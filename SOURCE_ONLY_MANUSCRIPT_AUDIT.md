@@ -15,8 +15,8 @@ This audit scans only canonical manuscript/code/config sources. Tests, temporary
 | Check | Count |
 |---|---:|
 | source files | 165 |
-| placeholder markers | 140 |
-| intentional placeholders | 140 |
+| placeholder markers | 142 |
+| intentional placeholders | 142 |
 | blocking placeholders | 0 |
 | provisional terms | 290 |
 | labels | 25 |

@@ -12,11 +12,11 @@ TrajUQ asks what uncertainty remains useful as observability decreases from nati
 
 Candidates:
 
-1. **What Uncertainty Remains Useful as Observability Decreases? Trajectory-Aware Risk Estimation in Language Generation**
-2. **From Denoising Trajectories to Black-Box Behavior: What Uncertainty Survives Reduced Observability?**
+1. **What Uncertainty Survives Reduced Observability? Trajectory-Aware Risk Estimation in Language Generation**
+2. **What Uncertainty Remains Useful as Observability Decreases?**
 3. **Trajectory-Aware Uncertainty Beyond Decision-Time Confidence**
 
-Candidate 1 is selected. It states the journal-level scientific question, names the technical contribution, and avoids implying that unfinished cross-regime experiments already support a positive conclusion. Candidate 2 overweights the black-box extension; candidate 3 understates the registered observability ladder.
+Candidate 1 is selected. It states the journal-level scientific question, names the technical contribution, avoids implying that unfinished cross-regime experiments already support a positive conclusion, and renders cleanly in the official template. Candidate 2 is less specific about the technical contribution; candidate 3 understates the registered observability ladder.
 
 ## Paragraph-level classification
 

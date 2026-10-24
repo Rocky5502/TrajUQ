@@ -192,9 +192,9 @@ def render_signal_table(registry: dict[str, Any]) -> str:
     return rf"""
 \begin{{table*}}[p]
 \centering
-\small
-\setlength{{\tabcolsep}}{{3pt}}
-\begin{{tabular}}{{p{{2.7cm}}p{{5.2cm}}rrrrr}}
+\scriptsize
+\setlength{{\tabcolsep}}{{2pt}}
+\begin{{tabular}}{{p{{2.5cm}}p{{4.6cm}}rrrrr}}
 \toprule
 System & Architecture/access & Parameters & Cost$^\ddagger$ & Revision & Persistence & Commitment \\
 \midrule
@@ -239,6 +239,7 @@ def render_figure(registry: dict[str, Any], output_base: Path) -> list[Path]:
             "axes.spines.right": False,
             "pdf.fonttype": 42,
             "svg.fonttype": "none",
+            "svg.hashsalt": "trajuq-cross-model-synthesis-v1",
         }
     )
     regimes = [
@@ -333,6 +334,11 @@ def render_figure(registry: dict[str, Any], output_base: Path) -> list[Path]:
         metadata={"CreationDate": None, "ModDate": None, "Title": None},
     )
     fig.savefig(outputs[1], metadata={"Date": None})
+    svg_text = outputs[1].read_text(encoding="utf-8")
+    outputs[1].write_text(
+        "\n".join(line.rstrip() for line in svg_text.splitlines()) + "\n",
+        encoding="utf-8",
+    )
     fig.savefig(outputs[2], dpi=300, metadata={"Date": None})
     plt.close(fig)
     return outputs

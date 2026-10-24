@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "experiment_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "source_manifest": "results/compute_budget/environment_manifest.json",
+  "source_sha256": "d5471ac9e9e679b6834605bb7ea5d2516c4ead67497d8473db6efff69e2eadad",
+  "runtime": {
+    "os": "Ubuntu 24.04.3 LTS",
+    "python": "3.12.3",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.52.4",
+    "cuda_runtime": "12.4",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "gpu_memory_mib": 81920,
+    "dtype": "bfloat16"
+  },
+  "note": "Concise reviewer manifest. The hash-bound source contains the complete captured environment."
+}
+

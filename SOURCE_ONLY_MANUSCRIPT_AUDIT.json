@@ -8,9 +8,9 @@
     "intentional_placeholders": 140,
     "labels": 25,
     "placeholder_markers": 140,
-    "provisional_terms": 285,
+    "provisional_terms": 290,
     "references": 2,
-    "source_files": 164
+    "source_files": 165
   },
   "duplicate_labels": {},
   "evidence_firewall": {
@@ -168,7 +168,7 @@
     },
     {
       "path": "paper/main.tex",
-      "sha256": "afc282c71afafa3f781cec9ba3215149e1d7310491a215206c800084ce3f861d"
+      "sha256": "21a8786503e05c46e9c4fa54afdd34aba1ffdf6f63427fb579c42dde70aeb48e"
     },
     {
       "path": "paper/README.md",
@@ -537,6 +537,10 @@
     {
       "path": "scripts/validate_frozen_preprimary.py",
       "sha256": "6f5ed235ba2fd04566e5e1cf5a04231cca836e0c4c2b4e3ed92bbdca38d7a384"
+    },
+    {
+      "path": "scripts/validate_release_manifest.py",
+      "sha256": "43fd687739f8c31357ad60fdc8cf546f0f7d15e6645e4bbb1548235664438afe"
     },
     {
       "path": "scripts/verify_a100_machine.py",

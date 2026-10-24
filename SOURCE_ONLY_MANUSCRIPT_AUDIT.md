@@ -14,11 +14,11 @@ This audit scans only canonical manuscript/code/config sources. Tests, temporary
 
 | Check | Count |
 |---|---:|
-| source files | 164 |
+| source files | 165 |
 | placeholder markers | 140 |
 | intentional placeholders | 140 |
 | blocking placeholders | 0 |
-| provisional terms | 285 |
+| provisional terms | 290 |
 | labels | 25 |
 | references | 2 |
 | citations | 33 |

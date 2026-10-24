@@ -26,8 +26,8 @@
 }
 \input{generated_compute}
 
-\title{When Language Models Are Unsure During Generation:\\
-Trajectory-Aware Uncertainty Across Open and Black-Box Decoding}
+\title{What Uncertainty Remains Useful as Observability Decreases?\\
+Trajectory-Aware Risk Estimation in Language Generation}
 \author{\name Anonymous Authors}
 
 \begin{document}
@@ -35,17 +35,14 @@ Trajectory-Aware Uncertainty Across Open and Black-Box Decoding}
 \footnotetext{Large language models were used as general-purpose assistive tools for language editing and software support. The authors reviewed all content and take full responsibility for the ideas, claims, analyses, and reported results.}
 
 \begin{abstract}
-Diffusion language models generate text by repeatedly revising partially masked sequences, exposing a temporal signal that autoregressive confidence estimators do not observe.
-We study whether this denoising trajectory can reveal answer-level failure \emph{before} benchmark correctness is known.
-We introduce \method, a training-free telemetry framework with post-hoc calibration that measures uncertainty only on positions that are active and unresolved at each denoising step.
-Its features combine predictive entropy and margin, consecutive-step Jensen--Shannon drift, proposal revisions, mask persistence, and commitment timing.
-A held-out calibrator maps these pre-outcome signals to error probability, which supports selective generation and a two-budget adaptive-compute policy.
-The primary test is deliberately nested: a trajectory-augmented predictor must improve over a strong per-token decision-time entropy baseline evaluated on the same held-out examples.
-We further compare against repeated-sampling disagreement under explicit compute accounting, study three open diffusion families, and prospectively evaluate Llama-3.1-8B-Instruct as an autoregressive control on the same frozen tasks and partitions.
-A separately registered black-box extension evaluates three hosted API families using only deployment-visible behavioral signals.
-Together, these comparisons separate uncertainty dynamics shared by sequential generation from revision, persistence, and commitment signals specific to iterative denoising, and test what remains useful when internal probabilities are unavailable.
-All model, data, feature, calibration, and statistical choices are frozen before primary test outcomes are inspected.
+Language-model uncertainty is easiest to study when internal token distributions are visible, but deployed systems increasingly expose only partial traces or repeated outputs.
+We ask what uncertainty remains useful as observability decreases from open diffusion trajectories, to an open autoregressive trace, to hosted black-box behavior.
+We introduce \method, a pre-outcome telemetry and post-hoc calibration framework that summarizes only active, unresolved positions during denoising using entropy, margin, distributional drift, proposal revisions, persistence, and commitment timing.
+Its primary test is deliberately nested: trajectory features must improve held-out error ranking over the same model's calibrated decision-time entropy on identical examples.
+The registered evaluation spans three diffusion families and six frozen tasks, with paired within-cell inference, explicit compute accounting, and separate prospective protocols for an autoregressive control and black-box APIs.
 \AbstractResultSentence
+Later selective-generation, adaptive-compute, cross-architecture, and black-box claims remain reportable only after their own immutable artifact gates pass.
+The study therefore tests a bounded claim about uncertainty signals under three access regimes rather than treating confidence as a universal probability of truth.
 \end{abstract}
 
 \section{Introduction}
@@ -75,10 +72,10 @@ Our evaluation is organized around five questions:
 \end{description}
 
 The contributions are fourfold:
-(1) a model-agnostic, parity-validated telemetry schema that measures only active unresolved positions and a nested test of its incremental value beyond matched decision-time entropy;
-(2) a leak-safe calibration, selective-generation, and adaptive-compute protocol with paired within-cell inference across three diffusion-model families;
+(1) a parity-validated telemetry schema that measures only active unresolved positions and tests incremental value beyond matched decision-time entropy;
+(2) a leak-safe calibration, selective-generation, and adaptive-compute protocol with paired within-cell inference across three diffusion families;
 (3) prospectively frozen comparisons across three observability regimes---open diffusion trajectories, an open autoregressive trace, and hosted black-box behavior---without retroactively changing the original claim gate; and
-(4) an auditable evaluation design that binds raw pre-outcome telemetry, scoring, provenance, compute accounting, and manuscript claims to immutable artifacts.
+(4) an evidence pipeline that binds generation, scoring, provenance, compute accounting, tables, figures, and manuscript claims to immutable artifacts.
 
 \section{Related Work}
 
@@ -240,6 +237,15 @@ Every example first incurs $B_0$; selected examples then launch a second $B_1$ r
 
 \section{Experimental Design}
 
+\subsection{Observability Ladder and Claim Boundaries}
+
+The study separates three access regimes rather than pooling unlike signals.
+In the \emph{open diffusion} regime, the generator exposes native stepwise distributions, unresolved masks, revisions, persistence, and commitment.
+In the \emph{open autoregressive} regime, the model exposes token distributions and temporal summaries but cannot revise committed tokens; diffusion-specific features are therefore structurally inapplicable.
+In the \emph{black-box} regime, only responses, repeated-answer behavior, latency, usage, and optional provider-visible metadata are observed.
+Every statistical comparison is made within a regime against its registered baseline.
+Cross-regime synthesis is descriptive unless outcome, partition, metric, and aggregation contracts are identical; it cannot establish that architecture alone caused a difference.
+
 \subsection{Models}
 
 We use three open diffusion families as the primary matrix:
@@ -351,12 +357,103 @@ ECE is reported with 15 bins plus 10- and 20-bin sensitivity.
 We freeze the following groups before primary outcomes are inspected:
 decision-only; decision plus distributional trajectory features; decision plus stability (JS drift and revisions); decision plus persistence/commitment; the full model; and leave-family-out variants removing JS, revisions, or persistence.
 
+\section{Registered Analysis Contract}
+
+We first test whether trajectory information improves the nested decision-entropy baseline.
+We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
+For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
+Negative results do not trigger post-hoc feature redesign on final test labels.
+RQ5 is analyzed only after its separately hashed prospective freeze. Its behavioral calibrators are fit on calibration partitions and evaluated on the corresponding held-out tests with the same equal-cell principle, paired class-stratified bootstrap, and Holm correction. Positive, negative, null, and heterogeneous outcomes are retained.
+
 \section{Results}
 \label{sec:results}
 
-\ResultsResultSentence
+\subsection{RQ1: Incremental Predictive Signal}
 
-\subsection{Black-Box RQ5 Results}
+\paragraph{Question.} Do native denoising dynamics rank answer failures beyond matched decision-time entropy?
+\paragraph{Design.} The two logistic calibrators share examples, splits, preprocessing, and inference; the candidate adds only the frozen trajectory vector. The confirmatory endpoint is equal-cell macro AUROC difference with a paired within-cell bootstrap and a two-of-three-family direction gate.
+\paragraph{Evidence and answer.} \ResultsResultSentence
+\paragraph{Boundary.} This result establishes average held-out ranking value under the frozen matrix; it does not imply uniform family/task gains, better calibration on every metric, or mechanistic causality.
+
+\RQOneSummaryTable
+
+\IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}
+\caption{Held-out AUROC improvement of \method over the matched decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty; the figure is rendered only from the complete provenance-bound 18-cell aggregate.}
+\label{fig:primary-auroc-matrix}
+\end{figure*}
+}{}
+
+\IfFileExists{figures/generated/rq1_feature_ablation.pdf}{
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\columnwidth]{figures/generated/rq1_feature_ablation.pdf}
+\caption{Frozen feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\% confidence intervals.}
+\label{fig:rq1-ablation}
+\end{figure}
+}{}
+
+\subsection{RQ2: Selective Generation}
+
+\paragraph{Question.} Does calibrated trajectory risk improve held-out risk--coverage behavior over the registered comparators?
+\paragraph{Design.} The unchanged five-seed command validates or reuses exact-complete artifacts, and all comparisons remain paired on identical examples.
+\paragraph{Evidence and answer.} The table below is populated only after the RQ2 completeness, provenance, uniqueness, and statistical gates pass; pending macros are not estimates.
+\paragraph{Boundary.} The repeated-sampling comparison covers only its pre-registered representative subset and includes its auxiliary-generation cost.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
+\midrule
+Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
+\method (single trajectory) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
+\bottomrule
+\end{tabular}
+\caption{Expensive five-sample baseline on the pre-registered \RepeatedCellCount-cell ($3\times\RepeatedDatasetCount$) representative subset. Values remain blocked until the RQ2 registry is complete and audited.}
+\label{tab:repeated}
+\end{table}
+
+\subsection{RQ3: Adaptive Compute}
+
+\paragraph{Question.} Can frozen calibrated risk allocate a second generation budget more effectively than random refinement at matched selection rate?
+\paragraph{Design.} Thresholds are selected only from out-of-fold calibration predictions; test correctness never selects the policy.
+\paragraph{Evidence and answer.} The artifact-generated table remains pending until the complete adaptive registry and paired comparison pass.
+\paragraph{Boundary.} The experiment tests two registered budgets and cannot justify arbitrary dynamic schedules.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Policy & Accuracy $\uparrow$ & Cost/base $\downarrow$ & $\Delta$ vs.\ random\\
+\midrule
+Base budget & \AdaptiveBaseAccuracy & \AdaptiveBaseCost & --\\
+Fixed refined & \AdaptiveRefinedAccuracy & \AdaptiveRefinedCost & --\\
+Random matched & \AdaptiveRandomAccuracy & \AdaptiveRandomCost & 0\\
+\method adaptive & \AdaptiveAccuracy & \AdaptiveCost & \AdaptiveDeltaRandom\\
+\bottomrule
+\end{tabular}
+\caption{Primary adaptive second-pass evaluation at the frozen 50\% selection cap. Pending macros are execution-time interfaces, not empirical values.}
+\label{tab:adaptive}
+\end{table}
+
+\subsection{RQ4: Open Autoregressive Control and Cross-Regime Synthesis}
+
+\paragraph{Question.} Which temporal uncertainty summaries remain useful without revision, persistence, and delayed commitment?
+\paragraph{Design.} A separately frozen Llama-3.1-8B-Instruct control uses the same tasks and partitions; within-regime comparisons use the registered AR baseline.
+\paragraph{Evidence and answer.} RQ4 entries enter the synthesis only after the immutable analysis registry authorizes them. Missing entries remain explicitly pending.
+\paragraph{Boundary.} Cross-regime contrasts are descriptive and do not identify an architectural causal effect.
+
+\subsection{RQ5: Black-Box Behavioral Uncertainty}
+
+\paragraph{Question.} How much error-ranking and selective-prediction utility remains when internal probabilities are unavailable?
+\paragraph{Design.} Three hosted model families use the frozen request, retry, cost, and partition contracts; only deployment-visible signals enter the calibrators.
+\paragraph{Evidence and answer.} Incomplete cells remain pending and support no final claim. Final tables and figures are regenerated only from the complete validated registry.
+\paragraph{Boundary.} Provider-side weights, routing, precision, and hardware are unobserved; the result concerns the captured API contract, not model internals.
 
 The RQ5 tables and figures are generated only from schema- and
 provenance-validated API artifacts. During execution, incomplete cells remain
@@ -399,71 +496,9 @@ explicitly pending until every contributing gate is authoritative.
 \end{figure*}
 }{}
 
-\RQOneSummaryTable
+\section*{AI-Assisted Tools}
 
-\IfFileExists{figures/generated/primary_auroc_improvement_matrix.pdf}{
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.96\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}
-\caption{Held-out AUROC improvement of \method over the matched decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty; the figure is rendered only from the complete provenance-bound 18-cell aggregate.}
-\label{fig:primary-auroc-matrix}
-\end{figure*}
-}{}
-
-\IfFileExists{figures/generated/rq1_feature_ablation.pdf}{
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.96\columnwidth]{figures/generated/rq1_feature_ablation.pdf}
-\caption{Frozen feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\% confidence intervals.}
-\label{fig:rq1-ablation}
-\end{figure}
-}{}
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{lccc}
-\toprule
-Method & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$\\
-\midrule
-Repeated sampling & \RepeatedAUROC & \RepeatedAUPRC & \RepeatedAURC\\
-\method (single trajectory) & \RepeatedTrajAUROC & \RepeatedTrajAUPRC & \RepeatedTrajAURC\\
-\bottomrule
-\end{tabular}
-\caption{Expensive five-sample baseline on the pre-registered \RepeatedCellCount-cell ($3\times\RepeatedDatasetCount$) representative subset spanning GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro. The five auxiliary generations require \RepeatedAuxWallTime\ s/example on average (equal-cell macro; target generation excluded). MATH-500 votes use reference-free pairwise symbolic-equivalence clustering. ARC-Challenge and TruthfulQA remain in the complete 18-cell primary and adaptive analyses but are excluded from this secondary compute-intensive comparator before outcomes are observed.}
-\label{tab:repeated}
-\end{table}
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{lccc}
-\toprule
-Policy & Accuracy $\uparrow$ & Cost/base $\downarrow$ & $\Delta$ vs.\ random\\
-\midrule
-Base budget & \AdaptiveBaseAccuracy & \AdaptiveBaseCost & --\\
-Fixed refined & \AdaptiveRefinedAccuracy & \AdaptiveRefinedCost & --\\
-Random matched & \AdaptiveRandomAccuracy & \AdaptiveRandomCost & 0\\
-\method adaptive & \AdaptiveAccuracy & \AdaptiveCost & \AdaptiveDeltaRandom\\
-\bottomrule
-\end{tabular}
-\caption{Primary adaptive second-pass evaluation at the frozen 50\% selection cap, macro-averaged over all 18 cells. Cost is normalized to the complete base-generation budget; 25\% and 75\% caps are sensitivity analyses.}
-\label{tab:adaptive}
-\end{table}
-
-\section{Analysis Plan}
-
-We will first test whether trajectory information improves the nested decision-entropy baseline.
-We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\ref{tab:feature-ablation}.
-For FLARE, same-checkpoint AR/diffusion disagreement is treated as a diagnostic feature, never as ground truth.
-Negative results do not trigger post-hoc feature redesign on final test labels.
-RQ5 is analyzed only after its separately hashed prospective freeze. Its
-behavioral calibrators are fit on calibration partitions and evaluated on the
-corresponding held-out tests with the same equal-cell principle, paired
-class-stratified bootstrap, and Holm correction. The confirmatory questions
-concern black-box selective prediction, cross-family heterogeneity, and the
-observability gap relative to the open-model regimes; positive, negative,
-null, and heterogeneous outcomes are retained.
+Large language models were used only as assistive tools for language editing, code support, and checklist generation. They did not originate the research questions, hypotheses, experimental design, evidence, or scientific claims. The authors inspected the source changes, verified citations and artifact bindings, and remain fully responsible for the manuscript and software. This disclosure supplements the first-page note required for review.
 
 \section{Conclusion}
 
@@ -475,14 +510,13 @@ The accompanying protocol is designed so that this conclusion can be reached wit
 \section*{Limitations}
 
 \PaperStateLimitationsSentence\ 
-The primary evaluation focuses on answer-level correctness for reasoning and QA tasks; it does not establish calibration for long-form factuality, safety, or human preference.
-Trajectory instrumentation is model-runtime dependent and must be parity-validated.
-Exact full-vocabulary JS drift adds memory and compute overhead, which is measured but may reduce throughput.
-Post-hoc logistic calibration requires a representative calibration partition and can degrade under distribution shift.
-Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
+\paragraph{Construct validity.} The primary outcome is answer-level correctness on reasoning and QA tasks; it is not a measure of long-form factuality, safety, human preference, or calibrated truth. Provider-visible reasoning metadata is not treated as a faithful chain of thought.
+\paragraph{Internal validity.} Trajectory instrumentation is runtime-dependent and must pass exact parity gates. Full-vocabulary JS drift adds memory and compute overhead. Post-hoc calibration requires a representative calibration partition and may degrade under shift. The registered design reduces leakage and selective analysis but cannot remove all implementation risk.
+\paragraph{External validity.} Three open diffusion families, one autoregressive control, and three hosted families do not span all architectures or deployments. Single-split benchmarks use internal holdouts, so their values are not directly comparable to standard full-benchmark leaderboard scores.
 For compute-bounded reproducibility, GSM8K and the larger ARC-Challenge/MMLU-Pro
 partitions use predeclared deterministic caps; consequently those reported
 numbers are frozen-subset estimates rather than full-split leaderboard scores.
+\paragraph{Statistical-conclusion validity.} Equal-cell macro estimates prevent large datasets from dominating, but small cells yield uncertain family/task effects. Multiple endpoints and heterogeneous cells are interpreted through the registered hierarchy and paired intervals; absence of a detected gain is not evidence of equivalence.
 The repeated-sampling baseline has substantially higher inference cost. For MATH-500, its vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.
 Finally, adaptive refinement is evaluated with two frozen budgets; richer dynamic schedules are left to future work.
 The hosted RQ5 models are provider-managed systems: exact server-side weights,
@@ -491,6 +525,7 @@ despite stable public identifiers. RQ5 therefore binds the requested and
 returned identifiers, capture time, provider trace metadata, pricing snapshot,
 and raw response. Its conclusions are about deployment-visible behavior under
 that frozen request contract, not mechanistic equivalence to open models.
+\paragraph{Reproducibility limits.} Open-model artifacts bind exact revisions and runtime manifests, but future hardware and library stacks may not be bitwise identical. Gated benchmark rows, model weights, credentials, and provider internals cannot be redistributed; the release therefore provides hashes, manifests, schemas, frozen IDs, and deterministic regeneration commands instead.
 
 \section*{Ethical Considerations}
 

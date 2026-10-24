@@ -26,13 +26,16 @@ runs/*
 results/*
 !results/rq1/
 results/rq1/*
-!results/rq1/paper/
-results/rq1/paper/*
-!results/rq1/paper/rq1_paper_manifest.json
-paper/build-*/
-!results/.gitkeep
+dist/
+tmp/
+output/
 wandb/
 mlruns/
+
+# Manuscript/venue authoring is intentionally maintained outside this repository.
+paper/
+manuscript/
+overleaf/
 
 *.safetensors
 *.bin
@@ -40,14 +43,23 @@ mlruns/
 *.pth
 *.ckpt
 
-# Operator-owned credentials / rental connection details
+# Operator-owned credentials / connection details.
 private/
+.secrets/
 GPU_RENTAL_INFO.private.*
 *.secret.*
+credentials.*
+auth.private.*
 
 .env
+.env.*
+!.env.example
 *.key
 *.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
 
 *.aux
 *.bbl
@@ -57,14 +69,10 @@ GPU_RENTAL_INFO.private.*
 *.fdb_latexmk
 *.fls
 *.synctex.gz
+*.toc
+*.xdv
 
-dist/
-tmp/
-output/
 *.tmp
 *.temp
 *.bak
 *.swp
-*.toc
-*.xdv
-*.synctex

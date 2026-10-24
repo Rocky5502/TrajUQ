@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use TrajUQ, please cite the associated paper once public."
-title: "TrajUQ: Trajectory-Aware Uncertainty for Diffusion Language Models"
+message: "If you use the TrajUQ software, please cite this repository. Add the associated paper citation once it is public."
+title: "TrajUQ: Trajectory-Aware Uncertainty for Language Generation"
 type: software
 authors:
   - family-names: "Sah"
@@ -8,4 +8,4 @@ authors:
 repository-code: "https://github.com/Rocky5502/TrajUQ"
 license: MIT
 version: 0.1.0
-date-released: 2026-09-26
+date-released: 2026-10-24

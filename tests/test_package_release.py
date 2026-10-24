@@ -8,42 +8,20 @@ from pathlib import Path
 from scripts.package_release import build_release
 
 
-def make_repository(tmp_path: Path) -> tuple[Path, Path]:
+def make_repository(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
-    paper = root / "paper"
-    figures = paper / "figures"
-    styles = tmp_path / "styles"
-    figures.mkdir(parents=True)
-    styles.mkdir()
-    (root / "scripts").mkdir()
+    (root / "scripts").mkdir(parents=True)
     (root / "results").mkdir()
-    (paper / "main.tex").write_text(
-        "\\documentclass{article}\n"
-        "\\begin{document}\\input{section}"
-        "\\includegraphics{figures/chart.pdf}"
-        "\\bibliographystyle{tmlr}\\bibliography{references}\\end{document}\n",
-        encoding="utf-8",
-    )
-    (paper / "section.tex").write_text("text\n", encoding="utf-8")
-    (paper / "references.bib").write_text("@misc{x,title={X}}\n", encoding="utf-8")
-    (figures / "chart.pdf").write_bytes(b"%PDF-1.4\n")
-    (paper / "private-analysis.json").write_text("{}\n", encoding="utf-8")
+    (root / "paper").mkdir()
     (root / "scripts" / "run.py").write_text("print('x')\n", encoding="utf-8")
     (root / "results" / "evidence.json").write_text("{}\n", encoding="utf-8")
-    for name in ("tmlr.sty", "tmlr.bst", "fancyhdr.sty"):
-        (styles / name).write_text(f"% {name}\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    (root / "paper" / "main.tex").write_text("private manuscript\n", encoding="utf-8")
     (root / ".project-id").write_text(
         "TrajUQ\nRocky5502/TrajUQ\n", encoding="utf-8"
     )
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(
-        [
-            "git",
-            "remote",
-            "add",
-            "origin",
-            "https://github.com/Rocky5502/TrajUQ.git",
-        ],
+        ["git", "remote", "add", "origin", "https://github.com/Rocky5502/TrajUQ.git"],
         cwd=root,
         check=True,
     )
@@ -62,51 +40,36 @@ def make_repository(tmp_path: Path) -> tuple[Path, Path]:
         cwd=root,
         check=True,
     )
-    return root, styles
+    return root
 
 
-def test_release_archives_are_deterministic_and_disjoint(tmp_path: Path) -> None:
-    root, styles = make_repository(tmp_path)
+def test_release_archive_is_deterministic_and_excludes_paper(tmp_path: Path) -> None:
+    root = make_repository(tmp_path)
     first = root / "dist-a"
     second = root / "dist-b"
-    payload_a = build_release(
-        root=root, output_dir=first, release_date="20261020", style_dir=styles
-    )
-    payload_b = build_release(
-        root=root, output_dir=second, release_date="20261020", style_dir=styles
-    )
+    payload_a = build_release(root=root, output_dir=first, release_date="20261024")
+    payload_b = build_release(root=root, output_dir=second, release_date="20261024")
 
-    assert payload_a["archives"] == payload_b["archives"]
-    for name in (
-        "TrajUQ_TMLR_CODE_20261020.zip",
-        "TrajUQ_TMLR_OVERLEAF_20261020.zip",
-    ):
-        assert (first / name).read_bytes() == (second / name).read_bytes()
+    assert payload_a["archive"] == payload_b["archive"]
+    name = "TrajUQ_CODE_20261024.zip"
+    assert (first / name).read_bytes() == (second / name).read_bytes()
 
-    with zipfile.ZipFile(first / "TrajUQ_TMLR_CODE_20261020.zip") as archive:
-        code_names = set(archive.namelist())
-    with zipfile.ZipFile(first / "TrajUQ_TMLR_OVERLEAF_20261020.zip") as archive:
-        paper_names = set(archive.namelist())
+    with zipfile.ZipFile(first / name) as archive:
+        names = set(archive.namelist())
         internal = json.loads(archive.read("SHA256_MANIFEST.json"))
 
-    assert "scripts/run.py" in code_names
-    assert "results/evidence.json" in code_names
-    assert not any(name.startswith("paper/") for name in code_names)
-    assert "main.tex" in paper_names
-    assert "figures/chart.pdf" in paper_names
-    assert "private-analysis.json" not in paper_names
-    assert not any(name.startswith("results/") for name in paper_names)
-    assert internal["kind"] == "OVERLEAF"
+    assert "scripts/run.py" in names
+    assert "results/evidence.json" in names
+    assert not any(path.startswith("paper/") for path in names)
+    assert internal["kind"] == "CODE"
 
 
 def test_release_manifest_records_archive_sha256(tmp_path: Path) -> None:
-    root, styles = make_repository(tmp_path)
+    root = make_repository(tmp_path)
     output = root / "dist"
-    payload = build_release(
-        root=root, output_dir=output, release_date="20261020", style_dir=styles
-    )
+    payload = build_release(root=root, output_dir=output, release_date="20261024")
     persisted = json.loads(
-        (output / "TrajUQ_TMLR_BUILD_20261020.json").read_text(encoding="utf-8")
+        (output / "TrajUQ_BUILD_20261024.json").read_text(encoding="utf-8")
     )
     assert persisted == {key: value for key, value in payload.items() if key != "manifest"}
-    assert {item["kind"] for item in persisted["archives"]} == {"CODE", "OVERLEAF"}
+    assert persisted["archive"]["kind"] == "CODE"

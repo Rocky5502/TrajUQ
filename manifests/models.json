@@ -1,10 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "experiment_commit": "28002055c828c6910840de6f2105aa6367514144",
   "models": [
     {
       "role": "primary_diffusion",
       "id": "inclusionAI/LLaDA-MoE-7B-A1B-Instruct",
+      "source_url": "https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct",
       "revision": "783d3467f108d28ac0a78d3e41af16ab05cabd8d",
       "config": "configs/models/llada.yaml",
       "config_sha256": "8248340498347a341deaa46ee0499f52bf64f24afc9bbc19c1fe98d5c1d13e25"
@@ -12,6 +13,7 @@
     {
       "role": "primary_diffusion",
       "id": "JetLM/SDAR-1.7B-Chat",
+      "source_url": "https://huggingface.co/JetLM/SDAR-1.7B-Chat",
       "revision": "14fcc4b796f05b9a11aa565b2353199af757d079",
       "config": "configs/models/sdar.yaml",
       "config_sha256": "8ca205737f81ba300cc95d95ce7260d5f59ec2bd7d191f4514c7ca4bb0d1b614"
@@ -19,6 +21,7 @@
     {
       "role": "primary_diffusion",
       "id": "Dream-org/Dream-v0-Instruct-7B",
+      "source_url": "https://huggingface.co/Dream-org/Dream-v0-Instruct-7B",
       "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
       "config": "configs/models/dream.yaml",
       "config_sha256": "71edc78903b6bf98050647790790d7f434d289ec14995965a62759265853ac8e"
@@ -26,16 +29,24 @@
     {
       "role": "prospective_autoregressive_control",
       "id": "meta-llama/Llama-3.1-8B-Instruct",
+      "source_url": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct",
       "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
       "config": "configs/models/llama31_ar.yaml",
       "config_sha256": "b87f3eb921dadf3611d47f63f694d0596290ee6939459017153b2943922a4f52"
+    },
+    {
+      "role": "diagnostic_only",
+      "id": "yuchen-zhu-zyc/HybridDiffusion-2B",
+      "source_url": "https://huggingface.co/yuchen-zhu-zyc/HybridDiffusion-2B",
+      "revision": null,
+      "config": "configs/models/flare.yaml",
+      "note": "Upstream runtime is pinned separately; this diagnostic is not part of the primary confirmatory matrix."
     }
   ],
   "black_box_models": [
-    "Pro/deepseek-ai/DeepSeek-V3.2",
-    "Pro/zai-org/GLM-5.1",
-    "Pro/moonshotai/Kimi-K2.6"
+    {"provider": "SiliconFlow", "model_id": "Pro/deepseek-ai/DeepSeek-V3.2"},
+    {"provider": "SiliconFlow", "model_id": "Pro/zai-org/GLM-5.1"},
+    {"provider": "SiliconFlow", "model_id": "Pro/moonshotai/Kimi-K2.6"}
   ],
-  "black_box_boundary": "Requested/returned identifiers are recorded, but provider-side revisions and hardware are not observable."
+  "black_box_boundary": "Provider-visible identifiers are recorded; provider-side model revisions, weights, precision, routing, and hardware are not assumed observable."
 }
-

@@ -15,9 +15,9 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.build_overleaf_package import (  # noqa: E402
-    ACL_STYLE_COMMIT,
     PAPER_FILES,
     REQUIRED_RESULT_FIGURES,
+    TMLR_STYLE_COMMIT,
 )
 from scripts.execute_adaptive_plan import (  # noqa: E402
     validate_plan_provenance as validate_adaptive_provenance,
@@ -586,19 +586,20 @@ def verify_overleaf_package(
             manifest = json.loads(
                 zf.read("MANIFEST.json").decode("utf-8")
             )
-            if manifest.get("protocol") != "trajuq_overleaf_package_v1":
+            if manifest.get("protocol") != "trajuq_tmlr_overleaf_package_v1":
                 failures.append("Overleaf package protocol is not recognized")
             if manifest.get("anonymous") is not True:
                 failures.append("Overleaf package is not marked anonymous")
             if manifest.get("submission_ready") is not True:
                 failures.append("Overleaf package is not submission-ready")
-            if manifest.get("acl_style_commit") != ACL_STYLE_COMMIT:
-                failures.append("Overleaf package ACL style commit drifted")
+            if manifest.get("tmlr_style_commit") != TMLR_STYLE_COMMIT:
+                failures.append("Overleaf package TMLR style commit drifted")
 
             required_names = {
                 *PAPER_FILES,
-                "acl.sty",
-                "acl_natbib.bst",
+                "tmlr.sty",
+                "tmlr.bst",
+                "fancyhdr.sty",
                 "PAPER_STATUS.md",
                 "MANIFEST.json",
                 "figures/generated/primary_auroc_improvement_matrix.pdf",
@@ -821,7 +822,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--overleaf",
-        default="dist/TrajUQ_NAACL2027_ARR_Overleaf.zip",
+        default="dist/TrajUQ_TMLR_Overleaf.zip",
     )
     parser.add_argument(
         "--supplement",
@@ -973,8 +974,8 @@ def main() -> None:
         "supplement": supplement,
         "remaining_external_checks": [
             "Compile the exact recorded anonymous Overleaf source ZIP.",
-            "Run the official ACL pubcheck on the final PDF.",
-            "Confirm page limits, anonymity, and submission-form metadata.",
+            "Compile the exact source with the pinned official TMLR template.",
+            "Confirm anonymity and OpenReview submission metadata.",
             (
                 "Upload the exact Overleaf and anonymous supplement archives "
                 "whose SHA-256 values are recorded here."

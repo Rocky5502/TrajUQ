@@ -1,0 +1,33 @@
+{
+  "schema": "trajuq-ar-token-trace-v1",
+  "observation": "processed_prediction_scores_before_token_commit",
+  "outcome_fields_forbidden": [
+    "correct",
+    "reference",
+    "target",
+    "gold"
+  ],
+  "per_token_fields": [
+    "step",
+    "selected_token_id",
+    "selected_token_logprob",
+    "entropy",
+    "margin",
+    "top_token_ids",
+    "top_token_logprobs"
+  ],
+  "top_k": 20,
+  "entropy_normalization": "natural_log_vocab_size",
+  "summary_features": [
+    "mean_token_entropy",
+    "max_token_entropy",
+    "late_token_entropy",
+    "mean_selected_token_nll",
+    "min_token_margin",
+    "entropy_slope",
+    "entropy_volatility"
+  ],
+  "late_fraction": 0.25,
+  "revision_features_applicable": false,
+  "commitment_features_applicable": false
+}

@@ -1,0 +1,1032 @@
+{
+  "cell_set_complete": true,
+  "comparison": "trajuq_vs_prior_aligned_single_trajectory_signals",
+  "delta_direction": "positive_means_trajuq_is_better",
+  "expected_cells": 18,
+  "macro": {
+    "top1_revision_rate": {
+      "auprc": {
+        "baseline_macro": 0.6449845882022572,
+        "candidate_macro": 0.6845007693029097,
+        "improvement_ci_high": 0.05193150303061192,
+        "improvement_ci_low": 0.028067075087566323,
+        "improvement_macro": 0.039516181100652664,
+        "model_family_macro_improvement": {
+          "dream": 0.03944199900520867,
+          "llada": 0.04860759527884786,
+          "sdar": 0.030498949017901473
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 3,
+        "positive_cells": 15,
+        "positive_model_families": 3,
+        "zero_cells": 0
+      },
+      "aurc": {
+        "baseline_macro": 0.581749002107684,
+        "candidate_macro": 0.5292866435186895,
+        "improvement_ci_high": 0.06438105237914017,
+        "improvement_ci_low": 0.04067474766682198,
+        "improvement_macro": 0.05246235858899456,
+        "model_family_macro_improvement": {
+          "dream": 0.04680113074461126,
+          "llada": 0.08372498302781713,
+          "sdar": 0.026860961994555305
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 5,
+        "positive_cells": 13,
+        "positive_model_families": 3,
+        "zero_cells": 0
+      },
+      "auroc": {
+        "baseline_macro": 0.5439551605173629,
+        "candidate_macro": 0.6049081247149406,
+        "improvement_ci_high": 0.08082950582208118,
+        "improvement_ci_low": 0.041619870246216814,
+        "improvement_macro": 0.06095296419757782,
+        "model_family_macro_improvement": {
+          "dream": 0.05919044243133665,
+          "llada": 0.08829257993422501,
+          "sdar": 0.03537587022717179
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 4,
+        "positive_cells": 14,
+        "positive_model_families": 3,
+        "zero_cells": 0
+      }
+    },
+    "trajectory_entropy": {
+      "auprc": {
+        "baseline_macro": 0.6624158354265702,
+        "candidate_macro": 0.6845007693029097,
+        "improvement_ci_high": 0.033437970528980586,
+        "improvement_ci_low": 0.010274878599023478,
+        "improvement_macro": 0.022084933876339603,
+        "model_family_macro_improvement": {
+          "dream": 0.03098542982327923,
+          "llada": 0.04137997603064701,
+          "sdar": -0.006110604224907436
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 7,
+        "positive_cells": 11,
+        "positive_model_families": 2,
+        "zero_cells": 0
+      },
+      "aurc": {
+        "baseline_macro": 0.5707737320822426,
+        "candidate_macro": 0.5292866435186895,
+        "improvement_ci_high": 0.05300865097215018,
+        "improvement_ci_low": 0.02960320918258986,
+        "improvement_macro": 0.041487088563553064,
+        "model_family_macro_improvement": {
+          "dream": 0.04181718400465362,
+          "llada": 0.07494134310653076,
+          "sdar": 0.0077027385794748255
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 5,
+        "positive_cells": 13,
+        "positive_model_families": 3,
+        "zero_cells": 0
+      },
+      "auroc": {
+        "baseline_macro": 0.5670517882469416,
+        "candidate_macro": 0.6049081247149406,
+        "improvement_ci_high": 0.05646214871834796,
+        "improvement_ci_low": 0.01828291850158756,
+        "improvement_macro": 0.037856336467999054,
+        "model_family_macro_improvement": {
+          "dream": 0.051018075518747236,
+          "llada": 0.07564963771184004,
+          "sdar": -0.0130987038265901
+        },
+        "n_boot": 2000,
+        "n_cells": 18,
+        "n_model_families": 3,
+        "negative_cells": 5,
+        "positive_cells": 13,
+        "positive_model_families": 2,
+        "zero_cells": 0
+      }
+    }
+  },
+  "n_boot": 2000,
+  "not_a_reproduction_of": [
+    "D-CoCoA-L",
+    "D-CoCoA-G",
+    "DiSE"
+  ],
+  "observed_cells": 18,
+  "per_cell": {
+    "dream:arc_challenge": {
+      "adapter": "dream",
+      "dataset": "arc_challenge",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.19895244923990046,
+            "trajuq": 0.20803814218586808,
+            "trajuq_improvement": 0.009085692945967616
+          },
+          "aurc": {
+            "prior_signal": 0.1266173389830925,
+            "trajuq": 0.124966788783022,
+            "trajuq_improvement": 0.0016505502000704886
+          },
+          "auroc": {
+            "prior_signal": 0.547154527592982,
+            "trajuq": 0.5580986522353589,
+            "trajuq_improvement": 0.010944124642376929
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.21069198546918383,
+            "trajuq": 0.20803814218586808,
+            "trajuq_improvement": -0.002653843283315749
+          },
+          "aurc": {
+            "prior_signal": 0.1352120135431351,
+            "trajuq": 0.124966788783022,
+            "trajuq_improvement": 0.010245224760113109
+          },
+          "auroc": {
+            "prior_signal": 0.5380717658819067,
+            "trajuq": 0.5580986522353589,
+            "trajuq_improvement": 0.020026886353452178
+          }
+        }
+      }
+    },
+    "dream:gpqa_diamond": {
+      "adapter": "dream",
+      "dataset": "gpqa_diamond",
+      "n": 142,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.7727868717626845,
+            "trajuq": 0.779157657824113,
+            "trajuq_improvement": 0.006370786061428491
+          },
+          "aurc": {
+            "prior_signal": 0.678660200803068,
+            "trajuq": 0.6910148521882291,
+            "trajuq_improvement": -0.01235465138516112
+          },
+          "auroc": {
+            "prior_signal": 0.558944658944659,
+            "trajuq": 0.5603603603603603,
+            "trajuq_improvement": 0.0014157014157013537
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.7915330883135983,
+            "trajuq": 0.779157657824113,
+            "trajuq_improvement": -0.012375430489485306
+          },
+          "aurc": {
+            "prior_signal": 0.6812770387439505,
+            "trajuq": 0.6910148521882291,
+            "trajuq_improvement": -0.009737813444278598
+          },
+          "auroc": {
+            "prior_signal": 0.5796653796653797,
+            "trajuq": 0.5603603603603603,
+            "trajuq_improvement": -0.019305019305019377
+          }
+        }
+      }
+    },
+    "dream:gsm8k": {
+      "adapter": "dream",
+      "dataset": "gsm8k",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6100029914762521,
+            "trajuq": 0.7454807065911164,
+            "trajuq_improvement": 0.13547771511486428
+          },
+          "aurc": {
+            "prior_signal": 0.44191111044104764,
+            "trajuq": 0.2871056177579943,
+            "trajuq_improvement": 0.15480549268305333
+          },
+          "auroc": {
+            "prior_signal": 0.5802572841165459,
+            "trajuq": 0.7693883102129634,
+            "trajuq_improvement": 0.18913102609641752
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.6970622359608888,
+            "trajuq": 0.7454807065911164,
+            "trajuq_improvement": 0.04841847063022764
+          },
+          "aurc": {
+            "prior_signal": 0.3517095899310422,
+            "trajuq": 0.2871056177579943,
+            "trajuq_improvement": 0.06460397217304786
+          },
+          "auroc": {
+            "prior_signal": 0.6889230227683643,
+            "trajuq": 0.7693883102129634,
+            "trajuq_improvement": 0.08046528744459913
+          }
+        }
+      }
+    },
+    "dream:math500": {
+      "adapter": "dream",
+      "dataset": "math500",
+      "n": 347,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.8523503630492076,
+            "trajuq": 0.8533283022280977,
+            "trajuq_improvement": 0.0009779391788901082
+          },
+          "aurc": {
+            "prior_signal": 0.7374150385222652,
+            "trajuq": 0.6569294941002954,
+            "trajuq_improvement": 0.08048554442196976
+          },
+          "auroc": {
+            "prior_signal": 0.607936507936508,
+            "trajuq": 0.6773929773929774,
+            "trajuq_improvement": 0.06945646945646944
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.8310624641674574,
+            "trajuq": 0.8533283022280977,
+            "trajuq_improvement": 0.02226583806064031
+          },
+          "aurc": {
+            "prior_signal": 0.7457817782692817,
+            "trajuq": 0.6569294941002954,
+            "trajuq_improvement": 0.08885228416898627
+          },
+          "auroc": {
+            "prior_signal": 0.5886483886483886,
+            "trajuq": 0.6773929773929774,
+            "trajuq_improvement": 0.08874458874458879
+          }
+        }
+      }
+    },
+    "dream:mmlu_pro": {
+      "adapter": "dream",
+      "dataset": "mmlu_pro",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.5363319978913607,
+            "trajuq": 0.5576067285358008,
+            "trajuq_improvement": 0.021274730644440187
+          },
+          "aurc": {
+            "prior_signal": 0.5791115139631405,
+            "trajuq": 0.5680325317300862,
+            "trajuq_improvement": 0.011078982233054369
+          },
+          "auroc": {
+            "prior_signal": 0.4606509693040185,
+            "trajuq": 0.48083329270868874,
+            "trajuq_improvement": 0.020182323404670244
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.5366862546672171,
+            "trajuq": 0.5576067285358008,
+            "trajuq_improvement": 0.020920473868583755
+          },
+          "aurc": {
+            "prior_signal": 0.5925943281070044,
+            "trajuq": 0.5680325317300862,
+            "trajuq_improvement": 0.024561796376918243
+          },
+          "auroc": {
+            "prior_signal": 0.4603259721477436,
+            "trajuq": 0.48083329270868874,
+            "trajuq_improvement": 0.02050732056094512
+          }
+        }
+      }
+    },
+    "dream:truthfulqa": {
+      "adapter": "dream",
+      "dataset": "truthfulqa",
+      "n": 572,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6163282725189979,
+            "trajuq": 0.6797934026046593,
+            "trajuq_improvement": 0.06346513008566135
+          },
+          "aurc": {
+            "prior_signal": 0.4737378989772892,
+            "trajuq": 0.42859703266260846,
+            "trajuq_improvement": 0.04514086631468073
+          },
+          "auroc": {
+            "prior_signal": 0.5989454361779453,
+            "trajuq": 0.6629584457503297,
+            "trajuq_improvement": 0.06401300957238443
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.5704563324516345,
+            "trajuq": 0.6797934026046593,
+            "trajuq_improvement": 0.10933707015302474
+          },
+          "aurc": {
+            "prior_signal": 0.5009746726557432,
+            "trajuq": 0.42859703266260846,
+            "trajuq_improvement": 0.07237763999313479
+          },
+          "auroc": {
+            "prior_signal": 0.5472890564364121,
+            "trajuq": 0.6629584457503297,
+            "trajuq_improvement": 0.11566938931391757
+          }
+        }
+      }
+    },
+    "llada:arc_challenge": {
+      "adapter": "llada",
+      "dataset": "arc_challenge",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.18809307242779105,
+            "trajuq": 0.215960430201641,
+            "trajuq_improvement": 0.027867357773849938
+          },
+          "aurc": {
+            "prior_signal": 0.10511759745350645,
+            "trajuq": 0.10435569927559873,
+            "trajuq_improvement": 0.0007618981779077133
+          },
+          "auroc": {
+            "prior_signal": 0.5892565359477124,
+            "trajuq": 0.5920138888888888,
+            "trajuq_improvement": 0.0027573529411764053
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.15228023344100922,
+            "trajuq": 0.215960430201641,
+            "trajuq_improvement": 0.06368019676063177
+          },
+          "aurc": {
+            "prior_signal": 0.15435631597786972,
+            "trajuq": 0.10435569927559873,
+            "trajuq_improvement": 0.05000061670227099
+          },
+          "auroc": {
+            "prior_signal": 0.4669117647058824,
+            "trajuq": 0.5920138888888888,
+            "trajuq_improvement": 0.12510212418300642
+          }
+        }
+      }
+    },
+    "llada:gpqa_diamond": {
+      "adapter": "llada",
+      "dataset": "gpqa_diamond",
+      "n": 142,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.7321866690360341,
+            "trajuq": 0.6921141417466279,
+            "trajuq_improvement": -0.040072527289406246
+          },
+          "aurc": {
+            "prior_signal": 0.7165736941902128,
+            "trajuq": 0.7184254200716323,
+            "trajuq_improvement": -0.0018517258814195747
+          },
+          "auroc": {
+            "prior_signal": 0.5163004105288578,
+            "trajuq": 0.4597923206954842,
+            "trajuq_improvement": -0.056508089833373576
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.7161313207256843,
+            "trajuq": 0.6921141417466279,
+            "trajuq_improvement": -0.02401717897905642
+          },
+          "aurc": {
+            "prior_signal": 0.6998292693927867,
+            "trajuq": 0.7184254200716323,
+            "trajuq_improvement": -0.01859615067884568
+          },
+          "auroc": {
+            "prior_signal": 0.5102632214440956,
+            "trajuq": 0.4597923206954842,
+            "trajuq_improvement": -0.050470900748611436
+          }
+        }
+      }
+    },
+    "llada:gsm8k": {
+      "adapter": "llada",
+      "dataset": "gsm8k",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6093905736395994,
+            "trajuq": 0.7713602906723515,
+            "trajuq_improvement": 0.1619697170327521
+          },
+          "aurc": {
+            "prior_signal": 0.5432684183384853,
+            "trajuq": 0.34537742115370296,
+            "trajuq_improvement": 0.1978909971847823
+          },
+          "auroc": {
+            "prior_signal": 0.5214622033023736,
+            "trajuq": 0.7639157636738907,
+            "trajuq_improvement": 0.2424535603715171
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.7089427088502036,
+            "trajuq": 0.7713602906723515,
+            "trajuq_improvement": 0.06241758182214785
+          },
+          "aurc": {
+            "prior_signal": 0.4277416076466591,
+            "trajuq": 0.34537742115370296,
+            "trajuq_improvement": 0.08236418649295613
+          },
+          "auroc": {
+            "prior_signal": 0.678421697626419,
+            "trajuq": 0.7639157636738907,
+            "trajuq_improvement": 0.08549406604747167
+          }
+        }
+      }
+    },
+    "llada:math500": {
+      "adapter": "llada",
+      "dataset": "math500",
+      "n": 347,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.7827525833059336,
+            "trajuq": 0.8585813108914524,
+            "trajuq_improvement": 0.07582872758551884
+          },
+          "aurc": {
+            "prior_signal": 0.8065010141339295,
+            "trajuq": 0.6303298695947893,
+            "trajuq_improvement": 0.17617114453914018
+          },
+          "auroc": {
+            "prior_signal": 0.4709989514822229,
+            "trajuq": 0.6961681441235346,
+            "trajuq_improvement": 0.22516919264131163
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.8571786497503251,
+            "trajuq": 0.8585813108914524,
+            "trajuq_improvement": 0.0014026611411273038
+          },
+          "aurc": {
+            "prior_signal": 0.7298299369646587,
+            "trajuq": 0.6303298695947893,
+            "trajuq_improvement": 0.09950006736986938
+          },
+          "auroc": {
+            "prior_signal": 0.6327328186064244,
+            "trajuq": 0.6961681441235346,
+            "trajuq_improvement": 0.06343532551711017
+          }
+        }
+      }
+    },
+    "llada:mmlu_pro": {
+      "adapter": "llada",
+      "dataset": "mmlu_pro",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6601889417840106,
+            "trajuq": 0.6875767773075674,
+            "trajuq_improvement": 0.027387835523556836
+          },
+          "aurc": {
+            "prior_signal": 0.5880015547544183,
+            "trajuq": 0.5481035411913971,
+            "trajuq_improvement": 0.03989801356302114
+          },
+          "auroc": {
+            "prior_signal": 0.5595667253250414,
+            "trajuq": 0.5930532538313031,
+            "trajuq_improvement": 0.03348652850626177
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.6560613977090397,
+            "trajuq": 0.6875767773075674,
+            "trajuq_improvement": 0.03151537959852768
+          },
+          "aurc": {
+            "prior_signal": 0.6292845942055938,
+            "trajuq": 0.5481035411913971,
+            "trajuq_improvement": 0.08118105301419665
+          },
+          "auroc": {
+            "prior_signal": 0.5349643778510533,
+            "trajuq": 0.5930532538313031,
+            "trajuq_improvement": 0.05808887598024981
+          }
+        }
+      }
+    },
+    "llada:truthfulqa": {
+      "adapter": "llada",
+      "dataset": "truthfulqa",
+      "n": 572,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6007121884389524,
+            "trajuq": 0.639376649485768,
+            "trajuq_improvement": 0.038664461046815646
+          },
+          "aurc": {
+            "prior_signal": 0.4510947101594262,
+            "trajuq": 0.36161513957595526,
+            "trajuq_improvement": 0.08947957058347095
+          },
+          "auroc": {
+            "prior_signal": 0.5913692224833529,
+            "trajuq": 0.6737661574618097,
+            "trajuq_improvement": 0.08239693497845679
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.5260954336452641,
+            "trajuq": 0.639376649485768,
+            "trajuq_improvement": 0.11328121584050388
+          },
+          "aurc": {
+            "prior_signal": 0.5168134253146923,
+            "trajuq": 0.36161513957595526,
+            "trajuq_improvement": 0.15519828573873706
+          },
+          "auroc": {
+            "prior_signal": 0.5015178221699961,
+            "trajuq": 0.6737661574618097,
+            "trajuq_improvement": 0.1722483352918136
+          }
+        }
+      }
+    },
+    "sdar:arc_challenge": {
+      "adapter": "sdar",
+      "dataset": "arc_challenge",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6739626475333691,
+            "trajuq": 0.7329951267980487,
+            "trajuq_improvement": 0.05903247926467958
+          },
+          "aurc": {
+            "prior_signal": 0.6899224462032008,
+            "trajuq": 0.6234512473707339,
+            "trajuq_improvement": 0.06647119883246688
+          },
+          "auroc": {
+            "prior_signal": 0.5042564216448294,
+            "trajuq": 0.5876267673402917,
+            "trajuq_improvement": 0.08337034569546231
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.7067333857835996,
+            "trajuq": 0.7329951267980487,
+            "trajuq_improvement": 0.026261741014449114
+          },
+          "aurc": {
+            "prior_signal": 0.6788809194954281,
+            "trajuq": 0.6234512473707339,
+            "trajuq_improvement": 0.055429672124694185
+          },
+          "auroc": {
+            "prior_signal": 0.5335146939077652,
+            "trajuq": 0.5876267673402917,
+            "trajuq_improvement": 0.05411207343252655
+          }
+        }
+      }
+    },
+    "sdar:gpqa_diamond": {
+      "adapter": "sdar",
+      "dataset": "gpqa_diamond",
+      "n": 142,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.8365991313338053,
+            "trajuq": 0.837580728587159,
+            "trajuq_improvement": 0.0009815972533537831
+          },
+          "aurc": {
+            "prior_signal": 0.7908023817735487,
+            "trajuq": 0.8049088467578777,
+            "trajuq_improvement": -0.014106464984328992
+          },
+          "auroc": {
+            "prior_signal": 0.5363408521303258,
+            "trajuq": 0.5191102756892231,
+            "trajuq_improvement": -0.017230576441102707
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.8438914556538133,
+            "trajuq": 0.837580728587159,
+            "trajuq_improvement": -0.006310727066654254
+          },
+          "aurc": {
+            "prior_signal": 0.8113422256775757,
+            "trajuq": 0.8049088467578777,
+            "trajuq_improvement": 0.006433378919698085
+          },
+          "auroc": {
+            "prior_signal": 0.5219298245614035,
+            "trajuq": 0.5191102756892231,
+            "trajuq_improvement": -0.0028195488721803885
+          }
+        }
+      }
+    },
+    "sdar:gsm8k": {
+      "adapter": "sdar",
+      "dataset": "gsm8k",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.6380840353898665,
+            "trajuq": 0.7968133732090947,
+            "trajuq_improvement": 0.15872933781922827
+          },
+          "aurc": {
+            "prior_signal": 0.5951748801778415,
+            "trajuq": 0.4807151275099927,
+            "trajuq_improvement": 0.1144597526678488
+          },
+          "auroc": {
+            "prior_signal": 0.520763303511403,
+            "trajuq": 0.709348227060385,
+            "trajuq_improvement": 0.18858492354898204
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.7992899082495533,
+            "trajuq": 0.7968133732090947,
+            "trajuq_improvement": -0.0024765350404585273
+          },
+          "aurc": {
+            "prior_signal": 0.5156336376805051,
+            "trajuq": 0.4807151275099927,
+            "trajuq_improvement": 0.034918510170512396
+          },
+          "auroc": {
+            "prior_signal": 0.7049869852269397,
+            "trajuq": 0.709348227060385,
+            "trajuq_improvement": 0.0043612418334453285
+          }
+        }
+      }
+    },
+    "sdar:math500": {
+      "adapter": "sdar",
+      "dataset": "math500",
+      "n": 347,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.9558159387072169,
+            "trajuq": 0.9480060075709288,
+            "trajuq_improvement": -0.00780993113628814
+          },
+          "aurc": {
+            "prior_signal": 0.9402617651062594,
+            "trajuq": 0.9546586637644882,
+            "trajuq_improvement": -0.014396898658228796
+          },
+          "auroc": {
+            "prior_signal": 0.513903743315508,
+            "trajuq": 0.4672014260249555,
+            "trajuq_improvement": -0.04670231729055252
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.961530504467469,
+            "trajuq": 0.9480060075709288,
+            "trajuq_improvement": -0.013524496896540228
+          },
+          "aurc": {
+            "prior_signal": 0.939636891848947,
+            "trajuq": 0.9546586637644882,
+            "trajuq_improvement": -0.015021771915541104
+          },
+          "auroc": {
+            "prior_signal": 0.5807486631016042,
+            "trajuq": 0.4672014260249555,
+            "trajuq_improvement": -0.11354723707664871
+          }
+        }
+      }
+    },
+    "sdar:mmlu_pro": {
+      "adapter": "sdar",
+      "dataset": "mmlu_pro",
+      "n": 500,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.875550409803588,
+            "trajuq": 0.8871964354528048,
+            "trajuq_improvement": 0.011646025649216796
+          },
+          "aurc": {
+            "prior_signal": 0.8509858641012481,
+            "trajuq": 0.8570715479706933,
+            "trajuq_improvement": -0.006085683869445191
+          },
+          "auroc": {
+            "prior_signal": 0.5309453841743119,
+            "trajuq": 0.55859375,
+            "trajuq_improvement": 0.02764836582568808
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.8847108075113359,
+            "trajuq": 0.8871964354528048,
+            "trajuq_improvement": 0.002485627941468893
+          },
+          "aurc": {
+            "prior_signal": 0.8518473030331452,
+            "trajuq": 0.8570715479706933,
+            "trajuq_improvement": -0.005224244937548139
+          },
+          "auroc": {
+            "prior_signal": 0.5425387041284404,
+            "trajuq": 0.55859375,
+            "trajuq_improvement": 0.016055045871559592
+          }
+        }
+      }
+    },
+    "sdar:truthfulqa": {
+      "adapter": "sdar",
+      "dataset": "truthfulqa",
+      "n": 572,
+      "signals": {
+        "top1_revision_rate": {
+          "auprc": {
+            "prior_signal": 0.4696334503020593,
+            "trajuq": 0.43004763555927783,
+            "trajuq_improvement": -0.039585814742781444
+          },
+          "aurc": {
+            "prior_signal": 0.35632460985633363,
+            "trajuq": 0.3415007418773145,
+            "trajuq_improvement": 0.014823867979019134
+          },
+          "auroc": {
+            "prior_signal": 0.5821397513939333,
+            "trajuq": 0.5587242314184868,
+            "trajuq_improvement": -0.02341551997544644
+          }
+        },
+        "trajectory_entropy": {
+          "auprc": {
+            "prior_signal": 0.47314687086098745,
+            "trajuq": 0.43004763555927783,
+            "trajuq_improvement": -0.043099235301709615
+          },
+          "aurc": {
+            "prior_signal": 0.311181628992348,
+            "trajuq": 0.3415007418773145,
+            "trajuq_improvement": -0.03031911288496647
+          },
+          "auroc": {
+            "prior_signal": 0.5954780295667298,
+            "trajuq": 0.5587242314184868,
+            "trajuq_improvement": -0.03675379814824298
+          }
+        }
+      }
+    }
+  },
+  "plan": "results/primary_analysis_plan.json",
+  "protocol": "trajuq_prior_aligned_signal_macro_v1",
+  "provenance": {
+    "git_clean": true,
+    "git_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "protocol": "trajuq_analysis_source_binding_v1",
+    "sources": {
+      "prior_signal_prediction:dream:arc_challenge": {
+        "path": "results/primary_analysis/dream/arc_challenge/prior_signal_predictions.jsonl",
+        "sha256": "724931127b791f73449a632a2f3708bd4a25d30ea6aa9b452a9e128fa1fd65cf"
+      },
+      "prior_signal_prediction:dream:gpqa_diamond": {
+        "path": "results/primary_analysis/dream/gpqa_diamond/prior_signal_predictions.jsonl",
+        "sha256": "de1ed80a2522ff1a59893856773db1a59a522846e43f48f00170eb8f9548bb8b"
+      },
+      "prior_signal_prediction:dream:gsm8k": {
+        "path": "results/primary_analysis/dream/gsm8k/prior_signal_predictions.jsonl",
+        "sha256": "6e7c7688944e47fa6b37893a7005f989337dcac5b6bc68833618dcca77bf28f8"
+      },
+      "prior_signal_prediction:dream:math500": {
+        "path": "results/primary_analysis/dream/math500/prior_signal_predictions.jsonl",
+        "sha256": "90ac22a0291dfd732c8665572041499635dfcf8692801ccc8f047577fefb81a6"
+      },
+      "prior_signal_prediction:dream:mmlu_pro": {
+        "path": "results/primary_analysis/dream/mmlu_pro/prior_signal_predictions.jsonl",
+        "sha256": "6f09eb0cc38cca6af961a665465634146005b4484bca9a6dd5c3cf6bc907a52a"
+      },
+      "prior_signal_prediction:dream:truthfulqa": {
+        "path": "results/primary_analysis/dream/truthfulqa/prior_signal_predictions.jsonl",
+        "sha256": "333f6545317bdfdaff190556b0263d8742b49153c9b57ffd4773c01f14b92c6a"
+      },
+      "prior_signal_prediction:llada:arc_challenge": {
+        "path": "results/primary_analysis/llada/arc_challenge/prior_signal_predictions.jsonl",
+        "sha256": "a6be72be859c2bf54257e918bd6f4bdd020206375d8036f9ecb224f552566481"
+      },
+      "prior_signal_prediction:llada:gpqa_diamond": {
+        "path": "results/primary_analysis/llada/gpqa_diamond/prior_signal_predictions.jsonl",
+        "sha256": "8a6099ea9bb87da832d86c8b07d9b1fb6c949d94a3a39cd2dc0a31c6a3e0ce46"
+      },
+      "prior_signal_prediction:llada:gsm8k": {
+        "path": "results/primary_analysis/llada/gsm8k/prior_signal_predictions.jsonl",
+        "sha256": "5ba5cb114d0eb628719771ba2432cdf2196036e69388d40d828313e8b0a0559f"
+      },
+      "prior_signal_prediction:llada:math500": {
+        "path": "results/primary_analysis/llada/math500/prior_signal_predictions.jsonl",
+        "sha256": "2f47298bb888ecf9a035c720548738af55b9c3745878572eb5145654f726d6cc"
+      },
+      "prior_signal_prediction:llada:mmlu_pro": {
+        "path": "results/primary_analysis/llada/mmlu_pro/prior_signal_predictions.jsonl",
+        "sha256": "401cbc19781f6c2a986c120ecd0590cefeca5ff97bf34946c27bd60ddf93a0e4"
+      },
+      "prior_signal_prediction:llada:truthfulqa": {
+        "path": "results/primary_analysis/llada/truthfulqa/prior_signal_predictions.jsonl",
+        "sha256": "ef17c381fb16a5fd1f9518835cb17a7755ef4e1815d0ffc907a8e6c4ac4eeb9f"
+      },
+      "prior_signal_prediction:sdar:arc_challenge": {
+        "path": "results/primary_analysis/sdar/arc_challenge/prior_signal_predictions.jsonl",
+        "sha256": "092f1b6dbd270968b6dd6acd47b4277bbdce6e32253f4246ad8ccc2a3ed33c59"
+      },
+      "prior_signal_prediction:sdar:gpqa_diamond": {
+        "path": "results/primary_analysis/sdar/gpqa_diamond/prior_signal_predictions.jsonl",
+        "sha256": "415c5cc58a8b7fa5dd7b7b8277158a512c041ba66d54be7e99e35299a94cf380"
+      },
+      "prior_signal_prediction:sdar:gsm8k": {
+        "path": "results/primary_analysis/sdar/gsm8k/prior_signal_predictions.jsonl",
+        "sha256": "9658004a3a09648650b4d6aeffe56c0d137129dcd08ee280d6f7a8af9a7ac9e4"
+      },
+      "prior_signal_prediction:sdar:math500": {
+        "path": "results/primary_analysis/sdar/math500/prior_signal_predictions.jsonl",
+        "sha256": "bba2d575a09ac07047a330a28f9e5740e99a6f0f270e54a0ceb7b6266ce502cd"
+      },
+      "prior_signal_prediction:sdar:mmlu_pro": {
+        "path": "results/primary_analysis/sdar/mmlu_pro/prior_signal_predictions.jsonl",
+        "sha256": "50c7952c5f99640babb1612946ae5514031a8d0293f3a2341a00b724c61bab11"
+      },
+      "prior_signal_prediction:sdar:truthfulqa": {
+        "path": "results/primary_analysis/sdar/truthfulqa/prior_signal_predictions.jsonl",
+        "sha256": "712f23dacd23c7fb2a86ca80dbdf2336153cd3dda01f7a8871a44fd91714011e"
+      },
+      "trajuq_prediction:dream:arc_challenge": {
+        "path": "results/primary_analysis/dream/arc_challenge/predictions.jsonl",
+        "sha256": "409ec3beda44db3e9e57f0e3f3830ed739196beddf56a0160514bc1d2e201901"
+      },
+      "trajuq_prediction:dream:gpqa_diamond": {
+        "path": "results/primary_analysis/dream/gpqa_diamond/predictions.jsonl",
+        "sha256": "ad3c85e58e2d6afef9ebd76d00f50a70c8e3b863ac68670606aadcb3d81f8968"
+      },
+      "trajuq_prediction:dream:gsm8k": {
+        "path": "results/primary_analysis/dream/gsm8k/predictions.jsonl",
+        "sha256": "9a0ccab4dfe2c70718373ac2fb4787605c5af3791f9aa6cdb6ce7070c7625d80"
+      },
+      "trajuq_prediction:dream:math500": {
+        "path": "results/primary_analysis/dream/math500/predictions.jsonl",
+        "sha256": "3388023041fa3984cef4a4d6ccc80a9b64402d7a79041307f4c36f8d678fa72b"
+      },
+      "trajuq_prediction:dream:mmlu_pro": {
+        "path": "results/primary_analysis/dream/mmlu_pro/predictions.jsonl",
+        "sha256": "dae4f6e85c3c3f57e6273c5beb6a476d7813dae1259df2f8ec2646c04084ebf6"
+      },
+      "trajuq_prediction:dream:truthfulqa": {
+        "path": "results/primary_analysis/dream/truthfulqa/predictions.jsonl",
+        "sha256": "7321d542655f5c0fba2325e0f48073b6e42eb2af6c4532a15bfde680c391a295"
+      },
+      "trajuq_prediction:llada:arc_challenge": {
+        "path": "results/primary_analysis/llada/arc_challenge/predictions.jsonl",
+        "sha256": "d896cd4f6df521b71776f9298d6dbb36e0821171b1995608c1fab532ba6e49d9"
+      },
+      "trajuq_prediction:llada:gpqa_diamond": {
+        "path": "results/primary_analysis/llada/gpqa_diamond/predictions.jsonl",
+        "sha256": "dfe75b89162af976165df241728ad3ace5b166acc9338777ab35500b1f965fe1"
+      },
+      "trajuq_prediction:llada:gsm8k": {
+        "path": "results/primary_analysis/llada/gsm8k/predictions.jsonl",
+        "sha256": "129f2e34336fcc6dbf7f8585b0044002755dfff32dcb499f9ca5d4294e9e52cd"
+      },
+      "trajuq_prediction:llada:math500": {
+        "path": "results/primary_analysis/llada/math500/predictions.jsonl",
+        "sha256": "eb1eff7fe0651d459dbf5742a2c7ef354b1b6bb33f6f522d842e2627030cbd30"
+      },
+      "trajuq_prediction:llada:mmlu_pro": {
+        "path": "results/primary_analysis/llada/mmlu_pro/predictions.jsonl",
+        "sha256": "d71e8f9b3871650568d992bc84653ea74feb838fe59b1a87367501323b3efe6b"
+      },
+      "trajuq_prediction:llada:truthfulqa": {
+        "path": "results/primary_analysis/llada/truthfulqa/predictions.jsonl",
+        "sha256": "29df0d16ad86d767a40a3f19f8f08920ae7f3a81e60ce182614294be422b89b6"
+      },
+      "trajuq_prediction:sdar:arc_challenge": {
+        "path": "results/primary_analysis/sdar/arc_challenge/predictions.jsonl",
+        "sha256": "021b277664258bf806954f89786b39ccf2a223510fe79bd17385367889aed34b"
+      },
+      "trajuq_prediction:sdar:gpqa_diamond": {
+        "path": "results/primary_analysis/sdar/gpqa_diamond/predictions.jsonl",
+        "sha256": "4a72320d585ee4e59ec06abd4cf6cfbc95839f2080a58aa368dc8a76de09db65"
+      },
+      "trajuq_prediction:sdar:gsm8k": {
+        "path": "results/primary_analysis/sdar/gsm8k/predictions.jsonl",
+        "sha256": "96cedf4d86f68d4ae1675855c486f7c5ba9977d5b05912a78062523226959c7b"
+      },
+      "trajuq_prediction:sdar:math500": {
+        "path": "results/primary_analysis/sdar/math500/predictions.jsonl",
+        "sha256": "3c4d23eb63a99984faf918551ae27771821ed0d479e15b4cec109ae86cc2dcb8"
+      },
+      "trajuq_prediction:sdar:mmlu_pro": {
+        "path": "results/primary_analysis/sdar/mmlu_pro/predictions.jsonl",
+        "sha256": "cd2ccc79d727ef6f244fe0c2e8328cad978f7b50e9adc0ace8a24a38a2cff83e"
+      },
+      "trajuq_prediction:sdar:truthfulqa": {
+        "path": "results/primary_analysis/sdar/truthfulqa/predictions.jsonl",
+        "sha256": "552cbb4a4e5a8115c24572ef7903bfb0fa0771bbc206bfceefcb37d1735c7116"
+      }
+    }
+  },
+  "role": "secondary_prior_aligned_signal_class_diagnostic",
+  "seed": 2027,
+  "signal_order": [
+    "trajectory_entropy",
+    "top1_revision_rate"
+  ]
+}

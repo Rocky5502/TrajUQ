@@ -60,6 +60,15 @@ def build_adapter(
             mask_id=mask_id,
             revision=revision,
         )
+    if name == "llama_ar":
+        from trajuq.adapters.llama_ar import LlamaARAdapter
+
+        return LlamaARAdapter(
+            model,
+            device=device,
+            dtype=dtype,
+            revision=revision,
+        )
     if name == "flare":
         raise SystemExit(
             "flare remains an upstream integration boundary until the "
@@ -91,7 +100,15 @@ def generate_record(
         torch.cuda.synchronize()
 
     start = time.perf_counter()
-    if args.adapter == "dream":
+    if args.adapter == "llama_ar":
+        result = adapter.generate(
+            prompt,
+            seed=seed,
+            max_new_tokens=args.max_new_tokens,
+            do_sample=False,
+            top_k_telemetry=args.ar_top_k_telemetry,
+        )
+    elif args.adapter == "dream":
         result = adapter.generate(
             prompt,
             seed=seed,
@@ -175,7 +192,11 @@ def generate_record(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--adapter", choices=["dream", "llada", "sdar", "flare"], required=True)
+    parser.add_argument(
+        "--adapter",
+        choices=["dream", "llada", "sdar", "llama_ar", "flare"],
+        required=True,
+    )
     parser.add_argument("--model", required=True)
     parser.add_argument("--revision", default=None, help="Exact model/tokenizer revision; required for frozen primary runs")
     parser.add_argument("--input", required=True)
@@ -212,6 +233,7 @@ def main() -> None:
         default="low_confidence_dynamic",
     )
     parser.add_argument("--sdar-confidence-threshold", type=float, default=0.85)
+    parser.add_argument("--ar-top-k-telemetry", type=int, default=20)
     args = parser.parse_args()
 
     rows = list(read_jsonl(args.input))

@@ -1,0 +1,1116 @@
+{
+  "allow_partial": false,
+  "analysis_plan": "results/primary_analysis_plan.json",
+  "cell_set_complete": true,
+  "cell_weighting": "equal_weight_per_model_dataset_cell",
+  "delta_direction": "positive_means_trajuq_is_better",
+  "expected_cell_count": 18,
+  "macro": {
+    "auprc": {
+      "baseline_macro": 0.6639052264809355,
+      "candidate_macro": 0.6845007693029097,
+      "improvement_ci_high": 0.032108668361833945,
+      "improvement_ci_low": 0.009336323078959001,
+      "improvement_macro": 0.020595542821974268,
+      "model_family_macro_improvement": {
+        "dream": 0.03228373223729989,
+        "llada": 0.03359334647000269,
+        "sdar": -0.004090450241379782
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 8,
+      "positive_cells": 10,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "aurc": {
+      "baseline_macro": 0.561701021023815,
+      "candidate_macro": 0.5292866435186895,
+      "improvement_ci_high": 0.04422373602246018,
+      "improvement_ci_low": 0.02091827214547474,
+      "improvement_macro": 0.032414377505125526,
+      "model_family_macro_improvement": {
+        "dream": 0.019801832922762847,
+        "llada": 0.06687325100909343,
+        "sdar": 0.010568048583520303
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 6,
+      "positive_cells": 12,
+      "positive_model_families": 3,
+      "zero_cells": 0
+    },
+    "auroc": {
+      "baseline_macro": 0.5737916926936357,
+      "candidate_macro": 0.6049081247149406,
+      "improvement_ci_high": 0.05017979186903949,
+      "improvement_ci_low": 0.01031549159134439,
+      "improvement_macro": 0.031116432021304923,
+      "model_family_macro_improvement": {
+        "dream": 0.04521551320349946,
+        "llada": 0.060482165158184414,
+        "sdar": -0.012348382297769115
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 5,
+      "positive_cells": 13,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "brier": {
+      "baseline_macro": 0.1893811238661046,
+      "candidate_macro": 0.1879209347822976,
+      "improvement_ci_high": 0.003984480305207342,
+      "improvement_ci_low": -0.0010056116530638489,
+      "improvement_macro": 0.001460189083806984,
+      "model_family_macro_improvement": {
+        "dream": 0.0007233101586163054,
+        "llada": 0.0073364878670361955,
+        "sdar": -0.003679230774231549
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 8,
+      "positive_cells": 10,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "ece15": {
+      "baseline_macro": 0.06233812543860598,
+      "candidate_macro": 0.0782878378858561,
+      "improvement_ci_high": -0.011577352398316669,
+      "improvement_ci_low": -0.030134153609955257,
+      "improvement_macro": -0.01594971244725012,
+      "model_family_macro_improvement": {
+        "dream": -0.014406853646436965,
+        "llada": -0.01854818575059324,
+        "sdar": -0.014894097944720157
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 13,
+      "positive_cells": 5,
+      "positive_model_families": 0,
+      "zero_cells": 0
+    },
+    "nll": {
+      "baseline_macro": 0.5616055186694847,
+      "candidate_macro": 0.5675665040684111,
+      "improvement_ci_high": 0.0039355861055325,
+      "improvement_ci_low": -0.01764134859736625,
+      "improvement_macro": -0.0059609853989265014,
+      "model_family_macro_improvement": {
+        "dream": -0.012796267855009027,
+        "llada": 0.011952164906445137,
+        "sdar": -0.017038853248215618
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 8,
+      "positive_cells": 10,
+      "positive_model_families": 1,
+      "zero_cells": 0
+    },
+    "risk50": {
+      "baseline_macro": 0.5605099638368215,
+      "candidate_macro": 0.5393923036293118,
+      "improvement_ci_high": 0.03458359708842953,
+      "improvement_ci_low": 0.010242186387353948,
+      "improvement_macro": 0.02111766020750965,
+      "model_family_macro_improvement": {
+        "dream": 0.02066905917998682,
+        "llada": 0.04123309079889945,
+        "sdar": 0.0014508306436426903
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 7,
+      "positive_cells": 10,
+      "positive_model_families": 3,
+      "zero_cells": 1
+    },
+    "risk80": {
+      "baseline_macro": 0.5854741315351917,
+      "candidate_macro": 0.577657832440858,
+      "improvement_ci_high": 0.013495927922490025,
+      "improvement_ci_low": 0.0021316562891569857,
+      "improvement_macro": 0.007816299094333675,
+      "model_family_macro_improvement": {
+        "dream": 0.019322242964075077,
+        "llada": 0.00922307499897578,
+        "sdar": -0.005096420680049831
+      },
+      "n_boot": 2000,
+      "n_cells": 18,
+      "n_model_families": 3,
+      "negative_cells": 6,
+      "positive_cells": 10,
+      "positive_model_families": 2,
+      "zero_cells": 2
+    }
+  },
+  "observed_cell_count": 18,
+  "per_cell": {
+    "dream_arc_challenge": {
+      "dataset": "arc_challenge",
+      "error_rate": 0.134,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.21203846811402047,
+          "candidate": 0.20803814218586808,
+          "improvement": -0.004000325928152387
+        },
+        "aurc": {
+          "baseline": 0.12153462795109095,
+          "candidate": 0.124966788783022,
+          "improvement": -0.0034321608319310554
+        },
+        "auroc": {
+          "baseline": 0.556892213298404,
+          "candidate": 0.5580986522353589,
+          "improvement": 0.0012064389369549344
+        },
+        "brier": {
+          "baseline": 0.1148975392938612,
+          "candidate": 0.11528307903597221,
+          "improvement": -0.00038553974211100184
+        },
+        "ece15": {
+          "baseline": 0.03435659968632198,
+          "candidate": 0.042396373759415566,
+          "improvement": -0.008039774073093586
+        },
+        "nll": {
+          "baseline": 0.39226268395994623,
+          "candidate": 0.39795734271391925,
+          "improvement": -0.005694658753973014
+        },
+        "risk50": {
+          "baseline": 0.12,
+          "candidate": 0.12,
+          "improvement": 0.0
+        },
+        "risk80": {
+          "baseline": 0.12,
+          "candidate": 0.1075,
+          "improvement": 0.012499999999999997
+        }
+      },
+      "model_family": "dream",
+      "n": 500
+    },
+    "dream_gpqa_diamond": {
+      "dataset": "gpqa_diamond",
+      "error_rate": 0.7394366197183099,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.7808890064751475,
+          "candidate": 0.779157657824113,
+          "improvement": -0.0017313486510345255
+        },
+        "aurc": {
+          "baseline": 0.6761407034276277,
+          "candidate": 0.6910148521882291,
+          "improvement": -0.014874148760601447
+        },
+        "auroc": {
+          "baseline": 0.5742599742599742,
+          "candidate": 0.5603603603603603,
+          "improvement": -0.013899613899613916
+        },
+        "brier": {
+          "baseline": 0.19300790071319543,
+          "candidate": 0.21715242865221349,
+          "improvement": -0.024144527939018057
+        },
+        "ece15": {
+          "baseline": 0.07009343043906684,
+          "candidate": 0.15094177996557787,
+          "improvement": -0.08084834952651103
+        },
+        "nll": {
+          "baseline": 0.5885564615565072,
+          "candidate": 0.729260978030276,
+          "improvement": -0.1407045164737688
+        },
+        "risk50": {
+          "baseline": 0.6901408450704225,
+          "candidate": 0.7464788732394366,
+          "improvement": -0.05633802816901412
+        },
+        "risk80": {
+          "baseline": 0.7368421052631579,
+          "candidate": 0.7105263157894737,
+          "improvement": 0.02631578947368418
+        }
+      },
+      "model_family": "dream",
+      "n": 142
+    },
+    "dream_gsm8k": {
+      "dataset": "gsm8k",
+      "error_rate": 0.502,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.7235119486137789,
+          "candidate": 0.7454807065911164,
+          "improvement": 0.02196875797733755
+        },
+        "aurc": {
+          "baseline": 0.31043493763458146,
+          "candidate": 0.2871056177579943,
+          "improvement": 0.02332931987658715
+        },
+        "auroc": {
+          "baseline": 0.7386998191971073,
+          "candidate": 0.7693883102129634,
+          "improvement": 0.030688491015856134
+        },
+        "brier": {
+          "baseline": 0.20972721487040036,
+          "candidate": 0.19577800182147728,
+          "improvement": 0.013949213048923076
+        },
+        "ece15": {
+          "baseline": 0.0673874740868369,
+          "candidate": 0.044391436616151206,
+          "improvement": 0.022996037470685696
+        },
+        "nll": {
+          "baseline": 0.6082314635514999,
+          "candidate": 0.5737378449214586,
+          "improvement": 0.0344936186300413
+        },
+        "risk50": {
+          "baseline": 0.324,
+          "candidate": 0.312,
+          "improvement": 0.01200000000000001
+        },
+        "risk80": {
+          "baseline": 0.4375,
+          "candidate": 0.43,
+          "improvement": 0.007500000000000007
+        }
+      },
+      "model_family": "dream",
+      "n": 500
+    },
+    "dream_math500": {
+      "dataset": "math500",
+      "error_rate": 0.7780979827089337,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.8001398201367778,
+          "candidate": 0.8533283022280977,
+          "improvement": 0.05318848209131999
+        },
+        "aurc": {
+          "baseline": 0.6688874388000103,
+          "candidate": 0.6569294941002954,
+          "improvement": 0.011957944699714895
+        },
+        "auroc": {
+          "baseline": 0.5843674843674843,
+          "candidate": 0.6773929773929774,
+          "improvement": 0.09302549302549312
+        },
+        "brier": {
+          "baseline": 0.16971393955383043,
+          "candidate": 0.15954811002889752,
+          "improvement": 0.010165829524932918
+        },
+        "ece15": {
+          "baseline": 0.08495948615286214,
+          "candidate": 0.04839907769751321,
+          "improvement": 0.03656040845534893
+        },
+        "nll": {
+          "baseline": 0.5245251588185219,
+          "candidate": 0.49542192844468974,
+          "improvement": 0.029103230373832167
+        },
+        "risk50": {
+          "baseline": 0.7528735632183908,
+          "candidate": 0.6954022988505747,
+          "improvement": 0.05747126436781613
+        },
+        "risk80": {
+          "baseline": 0.7841726618705036,
+          "candidate": 0.762589928057554,
+          "improvement": 0.021582733812949617
+        }
+      },
+      "model_family": "dream",
+      "n": 347
+    },
+    "dream_mmlu_pro": {
+      "dataset": "mmlu_pro",
+      "error_rate": 0.562,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.5664774994192784,
+          "candidate": 0.5576067285358008,
+          "improvement": -0.008870770883477541
+        },
+        "aurc": {
+          "baseline": 0.5702947512702383,
+          "candidate": 0.5680325317300862,
+          "improvement": 0.002262219540152155
+        },
+        "auroc": {
+          "baseline": 0.485139505029331,
+          "candidate": 0.48083329270868874,
+          "improvement": -0.0043062123206422664
+        },
+        "brier": {
+          "baseline": 0.248586281836031,
+          "candidate": 0.2625556514060914,
+          "improvement": -0.013969369570060397
+        },
+        "ece15": {
+          "baseline": 0.048926872852512085,
+          "candidate": 0.11044653277553214,
+          "improvement": -0.061519659923020054
+        },
+        "nll": {
+          "baseline": 0.6903182799931622,
+          "candidate": 0.7199152326727399,
+          "improvement": -0.029596952679577737
+        },
+        "risk50": {
+          "baseline": 0.572,
+          "candidate": 0.58,
+          "improvement": -0.008000000000000007
+        },
+        "risk80": {
+          "baseline": 0.57,
+          "candidate": 0.57,
+          "improvement": 0.0
+        }
+      },
+      "model_family": "dream",
+      "n": 500
+    },
+    "dream_truthfulqa": {
+      "dataset": "truthfulqa",
+      "error_rate": 0.5437062937062938,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.546645803786853,
+          "candidate": 0.6797934026046593,
+          "improvement": 0.13314759881780625
+        },
+        "aurc": {
+          "baseline": 0.5281648556752638,
+          "candidate": 0.42859703266260846,
+          "improvement": 0.09956782301265538
+        },
+        "auroc": {
+          "baseline": 0.49837996328738093,
+          "candidate": 0.6629584457503297,
+          "improvement": 0.16457848246294876
+        },
+        "brier": {
+          "baseline": 0.25104626013058173,
+          "candidate": 0.23232200450155044,
+          "improvement": 0.018724255629031294
+        },
+        "ece15": {
+          "baseline": 0.0642383982954907,
+          "candidate": 0.05982818257752246,
+          "improvement": 0.0044102157179682425
+        },
+        "nll": {
+          "baseline": 0.6952399587237671,
+          "candidate": 0.6596182869503752,
+          "improvement": 0.03562167177339193
+        },
+        "risk50": {
+          "baseline": 0.541958041958042,
+          "candidate": 0.4230769230769231,
+          "improvement": 0.11888111888111891
+        },
+        "risk80": {
+          "baseline": 0.5414847161572053,
+          "candidate": 0.49344978165938863,
+          "improvement": 0.04803493449781665
+        }
+      },
+      "model_family": "dream",
+      "n": 572
+    },
+    "llada_arc_challenge": {
+      "dataset": "arc_challenge",
+      "error_rate": 0.136,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.1919343174424542,
+          "candidate": 0.215960430201641,
+          "improvement": 0.024026112759186785
+        },
+        "aurc": {
+          "baseline": 0.1360076664653429,
+          "candidate": 0.10435569927559873,
+          "improvement": 0.03165196718974417
+        },
+        "auroc": {
+          "baseline": 0.544083605664488,
+          "candidate": 0.5920138888888888,
+          "improvement": 0.04793028322440085
+        },
+        "brier": {
+          "baseline": 0.11717873457716944,
+          "candidate": 0.11626385383187103,
+          "improvement": 0.0009148807452984131
+        },
+        "ece15": {
+          "baseline": 0.00913480590480665,
+          "candidate": 0.042310248783724844,
+          "improvement": -0.033175442878918195
+        },
+        "nll": {
+          "baseline": 0.3971774690015573,
+          "candidate": 0.3968672271987548,
+          "improvement": 0.00031024180280253555
+        },
+        "risk50": {
+          "baseline": 0.124,
+          "candidate": 0.108,
+          "improvement": 0.016
+        },
+        "risk80": {
+          "baseline": 0.1275,
+          "candidate": 0.1175,
+          "improvement": 0.010000000000000009
+        }
+      },
+      "model_family": "llada",
+      "n": 500
+    },
+    "llada_gpqa_diamond": {
+      "dataset": "gpqa_diamond",
+      "error_rate": 0.7112676056338029,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.7226929805359271,
+          "candidate": 0.6921141417466279,
+          "improvement": -0.030578838789299234
+        },
+        "aurc": {
+          "baseline": 0.6905532568953084,
+          "candidate": 0.7184254200716323,
+          "improvement": -0.027872163176323905
+        },
+        "auroc": {
+          "baseline": 0.5233035498671819,
+          "candidate": 0.4597923206954842,
+          "improvement": -0.06351122917169766
+        },
+        "brier": {
+          "baseline": 0.20837515238347,
+          "candidate": 0.21682546843828815,
+          "improvement": -0.008450316054818136
+        },
+        "ece15": {
+          "baseline": 0.04974560099760307,
+          "candidate": 0.09545862160197655,
+          "improvement": -0.045713020604373475
+        },
+        "nll": {
+          "baseline": 0.6077583931334019,
+          "candidate": 0.6265296183277006,
+          "improvement": -0.018771225194298746
+        },
+        "risk50": {
+          "baseline": 0.6901408450704225,
+          "candidate": 0.7183098591549296,
+          "improvement": -0.028169014084507116
+        },
+        "risk80": {
+          "baseline": 0.7017543859649122,
+          "candidate": 0.7105263157894737,
+          "improvement": -0.00877192982456143
+        }
+      },
+      "model_family": "llada",
+      "n": 142
+    },
+    "llada_gsm8k": {
+      "dataset": "gsm8k",
+      "error_rate": 0.544,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.7534625733767382,
+          "candidate": 0.7713602906723515,
+          "improvement": 0.01789771729561329
+        },
+        "aurc": {
+          "baseline": 0.41641179340544865,
+          "candidate": 0.34537742115370296,
+          "improvement": 0.07103437225174569
+        },
+        "auroc": {
+          "baseline": 0.7300535345717234,
+          "candidate": 0.7639157636738907,
+          "improvement": 0.033862229102167296
+        },
+        "brier": {
+          "baseline": 0.2112440204146797,
+          "candidate": 0.19802077930627518,
+          "improvement": 0.013223241108404532
+        },
+        "ece15": {
+          "baseline": 0.07862633730549014,
+          "candidate": 0.05651455131074913,
+          "improvement": 0.022111785994741007
+        },
+        "nll": {
+          "baseline": 0.6217738639239099,
+          "candidate": 0.5959797807485169,
+          "improvement": 0.025794083175393
+        },
+        "risk50": {
+          "baseline": 0.372,
+          "candidate": 0.336,
+          "improvement": 0.035999999999999976
+        },
+        "risk80": {
+          "baseline": 0.4675,
+          "candidate": 0.4725,
+          "improvement": -0.004999999999999949
+        }
+      },
+      "model_family": "llada",
+      "n": 500
+    },
+    "llada_math500": {
+      "dataset": "math500",
+      "error_rate": 0.7752161383285303,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.8603187106272554,
+          "candidate": 0.8585813108914524,
+          "improvement": -0.0017373997358030024
+        },
+        "aurc": {
+          "baseline": 0.726940407589137,
+          "candidate": 0.6303298695947893,
+          "improvement": 0.09661053799434771
+        },
+        "auroc": {
+          "baseline": 0.6260604327518826,
+          "candidate": 0.6961681441235346,
+          "improvement": 0.07010771137165195
+        },
+        "brier": {
+          "baseline": 0.1710888971667169,
+          "candidate": 0.1612797183209913,
+          "improvement": 0.009809178845725602
+        },
+        "ece15": {
+          "baseline": 0.05379664354067029,
+          "candidate": 0.08047918949480473,
+          "improvement": -0.02668254595413444
+        },
+        "nll": {
+          "baseline": 0.5237583021598254,
+          "candidate": 0.5038949364161719,
+          "improvement": 0.01986336574365355
+        },
+        "risk50": {
+          "baseline": 0.6896551724137931,
+          "candidate": 0.6954022988505747,
+          "improvement": -0.005747126436781547
+        },
+        "risk80": {
+          "baseline": 0.7410071942446043,
+          "candidate": 0.7517985611510791,
+          "improvement": -0.010791366906474864
+        }
+      },
+      "model_family": "llada",
+      "n": 347
+    },
+    "llada_mmlu_pro": {
+      "dataset": "mmlu_pro",
+      "error_rate": 0.626,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.6409446222998594,
+          "candidate": 0.6875767773075674,
+          "improvement": 0.04663215500770801
+        },
+        "aurc": {
+          "baseline": 0.630029059686773,
+          "candidate": 0.5481035411913971,
+          "improvement": 0.08192551849537588
+        },
+        "auroc": {
+          "baseline": 0.5230390733115785,
+          "candidate": 0.5930532538313031,
+          "improvement": 0.07001418051972463
+        },
+        "brier": {
+          "baseline": 0.2601456370401262,
+          "candidate": 0.251990612162244,
+          "improvement": 0.008155024877882222
+        },
+        "ece15": {
+          "baseline": 0.1412010215901376,
+          "candidate": 0.14214175461875717,
+          "improvement": -0.0009407330286195781
+        },
+        "nll": {
+          "baseline": 0.7194857116268013,
+          "candidate": 0.7152840304196527,
+          "improvement": 0.004201681207148589
+        },
+        "risk50": {
+          "baseline": 0.612,
+          "candidate": 0.568,
+          "improvement": 0.04400000000000004
+        },
+        "risk80": {
+          "baseline": 0.6175,
+          "candidate": 0.6,
+          "improvement": 0.01750000000000007
+        }
+      },
+      "model_family": "llada",
+      "n": 500
+    },
+    "llada_truthfulqa": {
+      "dataset": "truthfulqa",
+      "error_rate": 0.4825174825174825,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.4940563172031577,
+          "candidate": 0.639376649485768,
+          "improvement": 0.14532033228261032
+        },
+        "aurc": {
+          "baseline": 0.5095044128756263,
+          "candidate": 0.36161513957595526,
+          "improvement": 0.14788927329967105
+        },
+        "auroc": {
+          "baseline": 0.46927634155895026,
+          "candidate": 0.6737661574618097,
+          "improvement": 0.20448981590285942
+        },
+        "brier": {
+          "baseline": 0.2498708692953131,
+          "candidate": 0.22950395161558856,
+          "improvement": 0.02036691767972454
+        },
+        "ece15": {
+          "baseline": 0.023626981816590266,
+          "candidate": 0.050516139848845,
+          "improvement": -0.026889158032254737
+        },
+        "nll": {
+          "baseline": 0.6928929442438236,
+          "candidate": 0.6525781015398517,
+          "improvement": 0.0403148427039719
+        },
+        "risk50": {
+          "baseline": 0.5314685314685315,
+          "candidate": 0.34615384615384615,
+          "improvement": 0.1853146853146853
+        },
+        "risk80": {
+          "baseline": 0.4847161572052402,
+          "candidate": 0.43231441048034935,
+          "improvement": 0.05240174672489084
+        }
+      },
+      "model_family": "llada",
+      "n": 572
+    },
+    "sdar_arc_challenge": {
+      "dataset": "arc_challenge",
+      "error_rate": 0.684,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.7050536799196657,
+          "candidate": 0.7329951267980487,
+          "improvement": 0.02794144687838296
+        },
+        "aurc": {
+          "baseline": 0.6773830540110999,
+          "candidate": 0.6234512473707339,
+          "improvement": 0.05393180664036601
+        },
+        "auroc": {
+          "baseline": 0.5350507069361167,
+          "candidate": 0.5876267673402917,
+          "improvement": 0.05257606040417506
+        },
+        "brier": {
+          "baseline": 0.21856266846647088,
+          "candidate": 0.21550176982470748,
+          "improvement": 0.0030608986417633988
+        },
+        "ece15": {
+          "baseline": 0.04149381775129024,
+          "candidate": 0.06107552181444334,
+          "improvement": -0.0195817040631531
+        },
+        "nll": {
+          "baseline": 0.6292983967144583,
+          "candidate": 0.6257648942108778,
+          "improvement": 0.0035335025035805323
+        },
+        "risk50": {
+          "baseline": 0.656,
+          "candidate": 0.628,
+          "improvement": 0.028000000000000025
+        },
+        "risk80": {
+          "baseline": 0.6725,
+          "candidate": 0.6675,
+          "improvement": 0.0050000000000000044
+        }
+      },
+      "model_family": "sdar",
+      "n": 500
+    },
+    "sdar_gpqa_diamond": {
+      "dataset": "gpqa_diamond",
+      "error_rate": 0.8028169014084507,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.8327989713863124,
+          "candidate": 0.837580728587159,
+          "improvement": 0.004781757200846615
+        },
+        "aurc": {
+          "baseline": 0.8201159720263266,
+          "candidate": 0.8049088467578777,
+          "improvement": 0.015207125268448918
+        },
+        "auroc": {
+          "baseline": 0.50031328320802,
+          "candidate": 0.5191102756892231,
+          "improvement": 0.018796992481203034
+        },
+        "brier": {
+          "baseline": 0.17409593066676451,
+          "candidate": 0.17852896158658774,
+          "improvement": -0.004433030919823222
+        },
+        "ece15": {
+          "baseline": 0.1351135786716606,
+          "candidate": 0.14203181195322906,
+          "improvement": -0.006918233281568459
+        },
+        "nll": {
+          "baseline": 0.5451343127072421,
+          "candidate": 0.5709563381650937,
+          "improvement": -0.025822025457851616
+        },
+        "risk50": {
+          "baseline": 0.8309859154929577,
+          "candidate": 0.8028169014084507,
+          "improvement": 0.028169014084507005
+        },
+        "risk80": {
+          "baseline": 0.7807017543859649,
+          "candidate": 0.7807017543859649,
+          "improvement": 0.0
+        }
+      },
+      "model_family": "sdar",
+      "n": 142
+    },
+    "sdar_gsm8k": {
+      "dataset": "gsm8k",
+      "error_rate": 0.634,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.797727392052038,
+          "candidate": 0.7968133732090947,
+          "improvement": -0.0009140188429432872
+        },
+        "aurc": {
+          "baseline": 0.5225340714685731,
+          "candidate": 0.4807151275099927,
+          "improvement": 0.041818943958580435
+        },
+        "auroc": {
+          "baseline": 0.6949888814190412,
+          "candidate": 0.709348227060385,
+          "improvement": 0.01435934564134378
+        },
+        "brier": {
+          "baseline": 0.21365468581438757,
+          "candidate": 0.20415440301242985,
+          "improvement": 0.009500282801957721
+        },
+        "ece15": {
+          "baseline": 0.10465793639744167,
+          "candidate": 0.06254480797712694,
+          "improvement": 0.04211312842031473
+        },
+        "nll": {
+          "baseline": 0.6161648701115034,
+          "candidate": 0.5950605224570436,
+          "improvement": 0.0211043476544599
+        },
+        "risk50": {
+          "baseline": 0.472,
+          "candidate": 0.476,
+          "improvement": -0.0040000000000000036
+        },
+        "risk80": {
+          "baseline": 0.5725,
+          "candidate": 0.5775,
+          "improvement": -0.0050000000000000044
+        }
+      },
+      "model_family": "sdar",
+      "n": 500
+    },
+    "sdar_math500": {
+      "dataset": "math500",
+      "error_rate": 0.9510086455331412,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.9644183663054229,
+          "candidate": 0.9480060075709288,
+          "improvement": -0.016412358734494092
+        },
+        "aurc": {
+          "baseline": 0.9330773517083424,
+          "candidate": 0.9546586637644882,
+          "improvement": -0.021581312056145774
+        },
+        "auroc": {
+          "baseline": 0.6122994652406418,
+          "candidate": 0.4672014260249555,
+          "improvement": -0.14509803921568631
+        },
+        "brier": {
+          "baseline": 0.04643710377800004,
+          "candidate": 0.050646774133727104,
+          "improvement": -0.0042096703557270646
+        },
+        "ece15": {
+          "baseline": 0.012441778133195467,
+          "candidate": 0.03706596728293293,
+          "improvement": -0.024624189149737463
+        },
+        "nll": {
+          "baseline": 0.19368643285207643,
+          "candidate": 0.2275096469000622,
+          "improvement": -0.03382321404798577
+        },
+        "risk50": {
+          "baseline": 0.9367816091954023,
+          "candidate": 0.9597701149425287,
+          "improvement": -0.02298850574712641
+        },
+        "risk80": {
+          "baseline": 0.9460431654676259,
+          "candidate": 0.9532374100719424,
+          "improvement": -0.007194244604316502
+        }
+      },
+      "model_family": "sdar",
+      "n": 347
+    },
+    "sdar_mmlu_pro": {
+      "dataset": "mmlu_pro",
+      "error_rate": 0.872,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.8840285174084644,
+          "candidate": 0.8871964354528048,
+          "improvement": 0.0031679180443403565
+        },
+        "aurc": {
+          "baseline": 0.8554875067735829,
+          "candidate": 0.8570715479706933,
+          "improvement": -0.0015840411971104196
+        },
+        "auroc": {
+          "baseline": 0.5371272935779816,
+          "candidate": 0.55859375,
+          "improvement": 0.021466456422018387
+        },
+        "brier": {
+          "baseline": 0.11833624847782269,
+          "candidate": 0.13410119910177454,
+          "improvement": -0.01576495062395185
+        },
+        "ece15": {
+          "baseline": 0.08437592600818225,
+          "candidate": 0.10046619825240853,
+          "improvement": -0.01609027224422628
+        },
+        "nll": {
+          "baseline": 0.40479451247369125,
+          "candidate": 0.449641463930383,
+          "improvement": -0.044846951456691764
+        },
+        "risk50": {
+          "baseline": 0.848,
+          "candidate": 0.844,
+          "improvement": 0.0040000000000000036
+        },
+        "risk80": {
+          "baseline": 0.87,
+          "candidate": 0.865,
+          "improvement": 0.0050000000000000044
+        }
+      },
+      "model_family": "sdar",
+      "n": 500
+    },
+    "sdar_truthfulqa": {
+      "dataset": "truthfulqa",
+      "error_rate": 0.3951048951048951,
+      "metrics": {
+        "auprc": {
+          "baseline": 0.47315508155368907,
+          "candidate": 0.43004763555927783,
+          "improvement": -0.04310744599441124
+        },
+        "aurc": {
+          "baseline": 0.31711651076429714,
+          "candidate": 0.3415007418773145,
+          "improvement": -0.02438423111301735
+        },
+        "auroc": {
+          "baseline": 0.5949153409381555,
+          "candidate": 0.5587242314184868,
+          "improvement": -0.03619110951966864
+        },
+        "brier": {
+          "baseline": 0.23289114511106124,
+          "candidate": 0.24312005930066952,
+          "improvement": -0.01022891418960828
+        },
+        "ece15": {
+          "baseline": 0.017909568264748817,
+          "candidate": 0.08217288561469918,
+          "improvement": -0.06426331734995036
+        },
+        "nll": {
+          "baseline": 0.6578401204990273,
+          "candidate": 0.6802188991838323,
+          "improvement": -0.02237877868480498
+        },
+        "risk50": {
+          "baseline": 0.32517482517482516,
+          "candidate": 0.34965034965034963,
+          "improvement": -0.02447552447552448
+        },
+        "risk80": {
+          "baseline": 0.36681222707423583,
+          "candidate": 0.3951965065502183,
+          "improvement": -0.028384279475982488
+        }
+      },
+      "model_family": "sdar",
+      "n": 572
+    }
+  },
+  "primary_config": "configs/experiments/primary.yaml",
+  "protocol": "hierarchical_within_cell_macro_bootstrap_v1",
+  "provenance": {
+    "git_clean": true,
+    "git_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "protocol": "trajuq_analysis_source_binding_v1",
+    "sources": {
+      "prediction:dream_arc_challenge": {
+        "path": "results/primary_analysis/dream/arc_challenge/predictions.jsonl",
+        "sha256": "409ec3beda44db3e9e57f0e3f3830ed739196beddf56a0160514bc1d2e201901"
+      },
+      "prediction:dream_gpqa_diamond": {
+        "path": "results/primary_analysis/dream/gpqa_diamond/predictions.jsonl",
+        "sha256": "ad3c85e58e2d6afef9ebd76d00f50a70c8e3b863ac68670606aadcb3d81f8968"
+      },
+      "prediction:dream_gsm8k": {
+        "path": "results/primary_analysis/dream/gsm8k/predictions.jsonl",
+        "sha256": "9a0ccab4dfe2c70718373ac2fb4787605c5af3791f9aa6cdb6ce7070c7625d80"
+      },
+      "prediction:dream_math500": {
+        "path": "results/primary_analysis/dream/math500/predictions.jsonl",
+        "sha256": "3388023041fa3984cef4a4d6ccc80a9b64402d7a79041307f4c36f8d678fa72b"
+      },
+      "prediction:dream_mmlu_pro": {
+        "path": "results/primary_analysis/dream/mmlu_pro/predictions.jsonl",
+        "sha256": "dae4f6e85c3c3f57e6273c5beb6a476d7813dae1259df2f8ec2646c04084ebf6"
+      },
+      "prediction:dream_truthfulqa": {
+        "path": "results/primary_analysis/dream/truthfulqa/predictions.jsonl",
+        "sha256": "7321d542655f5c0fba2325e0f48073b6e42eb2af6c4532a15bfde680c391a295"
+      },
+      "prediction:llada_arc_challenge": {
+        "path": "results/primary_analysis/llada/arc_challenge/predictions.jsonl",
+        "sha256": "d896cd4f6df521b71776f9298d6dbb36e0821171b1995608c1fab532ba6e49d9"
+      },
+      "prediction:llada_gpqa_diamond": {
+        "path": "results/primary_analysis/llada/gpqa_diamond/predictions.jsonl",
+        "sha256": "dfe75b89162af976165df241728ad3ace5b166acc9338777ab35500b1f965fe1"
+      },
+      "prediction:llada_gsm8k": {
+        "path": "results/primary_analysis/llada/gsm8k/predictions.jsonl",
+        "sha256": "129f2e34336fcc6dbf7f8585b0044002755dfff32dcb499f9ca5d4294e9e52cd"
+      },
+      "prediction:llada_math500": {
+        "path": "results/primary_analysis/llada/math500/predictions.jsonl",
+        "sha256": "eb1eff7fe0651d459dbf5742a2c7ef354b1b6bb33f6f522d842e2627030cbd30"
+      },
+      "prediction:llada_mmlu_pro": {
+        "path": "results/primary_analysis/llada/mmlu_pro/predictions.jsonl",
+        "sha256": "d71e8f9b3871650568d992bc84653ea74feb838fe59b1a87367501323b3efe6b"
+      },
+      "prediction:llada_truthfulqa": {
+        "path": "results/primary_analysis/llada/truthfulqa/predictions.jsonl",
+        "sha256": "29df0d16ad86d767a40a3f19f8f08920ae7f3a81e60ce182614294be422b89b6"
+      },
+      "prediction:sdar_arc_challenge": {
+        "path": "results/primary_analysis/sdar/arc_challenge/predictions.jsonl",
+        "sha256": "021b277664258bf806954f89786b39ccf2a223510fe79bd17385367889aed34b"
+      },
+      "prediction:sdar_gpqa_diamond": {
+        "path": "results/primary_analysis/sdar/gpqa_diamond/predictions.jsonl",
+        "sha256": "4a72320d585ee4e59ec06abd4cf6cfbc95839f2080a58aa368dc8a76de09db65"
+      },
+      "prediction:sdar_gsm8k": {
+        "path": "results/primary_analysis/sdar/gsm8k/predictions.jsonl",
+        "sha256": "96cedf4d86f68d4ae1675855c486f7c5ba9977d5b05912a78062523226959c7b"
+      },
+      "prediction:sdar_math500": {
+        "path": "results/primary_analysis/sdar/math500/predictions.jsonl",
+        "sha256": "3c4d23eb63a99984faf918551ae27771821ed0d479e15b4cec109ae86cc2dcb8"
+      },
+      "prediction:sdar_mmlu_pro": {
+        "path": "results/primary_analysis/sdar/mmlu_pro/predictions.jsonl",
+        "sha256": "cd2ccc79d727ef6f244fe0c2e8328cad978f7b50e9adc0ace8a24a38a2cff83e"
+      },
+      "prediction:sdar_truthfulqa": {
+        "path": "results/primary_analysis/sdar/truthfulqa/predictions.jsonl",
+        "sha256": "552cbb4a4e5a8115c24572ef7903bfb0fa0771bbc206bfceefcb37d1735c7116"
+      },
+      "primary_config": {
+        "path": "configs/experiments/primary.yaml",
+        "sha256": "d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788"
+      }
+    }
+  },
+  "resampling": "class_stratified_within_each_cell_paired",
+  "seed": 2027
+}

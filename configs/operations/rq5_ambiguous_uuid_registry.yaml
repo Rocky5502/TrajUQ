@@ -1,0 +1,16 @@
+schema: trajuq_rq5_ambiguous_uuid_registry_v1
+freeze_sha256: af0347a777d4a683c158407b9d0c53b7bff7236b8d35a63129077f6848886abc
+policy: preserve_as_missing_never_resubmit
+requests:
+  - request_uuid: 015b4177-9497-5a40-8552-51de50f64771
+    model: Pro/deepseek-ai/DeepSeek-V3.2
+    dataset: gsm8k
+    split: calibration
+  - request_uuid: 51346742-1645-525a-8f25-1763b0299c3a
+    model: Pro/zai-org/GLM-5.1
+    dataset: gsm8k
+    split: calibration
+  - request_uuid: bca3859a-aefe-5079-9ec4-d62f1be5a100
+    model: Pro/moonshotai/Kimi-K2.6
+    dataset: gsm8k
+    split: calibration

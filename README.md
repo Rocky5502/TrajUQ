@@ -10,8 +10,8 @@
 
 TrajUQ studies whether the *denoising trajectory itself* can predict when a diffusion language model is likely to be wrong, and whether that uncertainty can support calibrated selective generation and adaptive inference-time compute.
 
-> **Status (2026-09-27): pre-experiment research implementation.**  
-> The repository contains schema-v4 trajectory features, calibration and selective-generation metrics, leak-safe data/scoring, Dream/LLaDA/SDAR pilot adapters with parity gates, FLARE diagnostic bridging, run audits, paired bootstrap utilities, and a two-budget adaptive-compute evaluator. **No paper result is claimed yet.**
+> **Status (2026-10-24): evidence-gated TMLR manuscript preparation.**
+> RQ1 is complete and provenance-bound at the immutable experiment commit `28002055c828c6910840de6f2105aa6367514144`. RQ2, RQ4 integration, RQ5, and the cross-regime synthesis remain fail-closed until their registered completeness and statistical gates pass. Operational progress never authorizes a paper claim.
 
 ## Research questions
 
@@ -136,6 +136,15 @@ pip install -e ".[dev]"
 pytest -q
 python scripts/smoke_metrics.py
 ```
+
+For reviewer-facing CPU validation without model or dataset downloads:
+
+```bash
+pip install -r requirements-analysis.txt
+python reproduction/reproduce_core.py
+```
+
+See `docs/TMLR_2026_SUBMISSION_GATES.md`, `claim_evidence_matrix.tsv`, and `reproduction/README.md` for the manuscript evidence firewall and final-release workflow.
 
 ## Project status dashboard
 

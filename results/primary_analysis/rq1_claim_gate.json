@@ -1,0 +1,40 @@
+{
+  "claim_supported": true,
+  "conditions": {
+    "complete_frozen_cell_set": true,
+    "macro_auroc_ci_low_gt_zero": true,
+    "macro_auroc_improvement_positive": true,
+    "positive_model_families_at_least_minimum": true,
+    "three_primary_model_families_present": true
+  },
+  "decision": "SUPPORT_POSITIVE_RQ1_CLAIM",
+  "frozen_rules": {
+    "macro_auroc_ci_low_gt_zero": true,
+    "min_positive_model_families": 2
+  },
+  "interpretation": "This gate controls wording of the positive RQ1 claim only. A negative gate result is a valid scientific outcome and must not trigger post-hoc test-set redesign.",
+  "observed": {
+    "macro_auroc_ci_high": 0.05017979186903949,
+    "macro_auroc_ci_low": 0.01031549159134439,
+    "macro_auroc_improvement": 0.031116432021304923,
+    "n_model_families": 3,
+    "positive_model_families": 2
+  },
+  "primary_endpoint": "hierarchical_macro_auroc_improvement",
+  "protocol": "trajuq_rq1_claim_gate_v1",
+  "provenance": {
+    "git_clean": true,
+    "git_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "protocol": "trajuq_analysis_source_binding_v1",
+    "sources": {
+      "macro_primary": {
+        "path": "results/primary_analysis/macro_primary.json",
+        "sha256": "de0044ffd8ec59de9137f9fcd023b8b6f8fcebc96668c9e49a4e618833b95f20"
+      },
+      "primary_config": {
+        "path": "configs/experiments/primary.yaml",
+        "sha256": "d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788"
+      }
+    }
+  }
+}

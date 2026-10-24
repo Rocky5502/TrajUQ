@@ -62,6 +62,14 @@ EXCLUDED_EXACT = {
     # The builder itself contains the development-identity denylist and is not
     # needed by reviewers to run the submitted software.
     "scripts/build_anonymous_supplement.py",
+    # Repository/release safety tooling intentionally binds the development
+    # repository identity. It is operational infrastructure, not scientific
+    # reviewer code, and must never enter the anonymous supplement.
+    "scripts/package_release.py",
+    "scripts/repository_identity.py",
+    "scripts/safe_push.py",
+    "tests/test_package_release.py",
+    "tests/test_repository_identity.py",
 }
 
 PATH_PATTERN_LABELS = {

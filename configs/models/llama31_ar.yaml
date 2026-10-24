@@ -1,0 +1,36 @@
+name: llama31_8b_instruct_ar
+model_id: meta-llama/Llama-3.1-8B-Instruct
+revision: 0e9e39f249a16976918f6564b8830bc894c89659
+adapter: llama_ar
+architecture_role: autoregressive_external_validity_control
+dtype: bfloat16
+device: cuda
+generation:
+  seed: 2027
+  do_sample: false
+  temperature: null
+  top_p: null
+  max_new_tokens: 512
+prompt_contract:
+  source: exact_prompt_field_from_hash_bound_original_partition
+  messages:
+    - role: user
+      content: prompt
+  apply_chat_template:
+    tokenize: false
+    add_generation_prompt: true
+  tokenizer_revision: 0e9e39f249a16976918f6564b8830bc894c89659
+  tokenizer_files_sha256_ledger: results/rq4/freeze_manifest.json#tokenizer_files
+  rendered_chat_template_sha256: results/rq4/freeze_manifest.json#sentinel_rendered_chat_template_sha256
+telemetry:
+  schema: configs/schemas/rq4_ar_telemetry_v1.json
+  observation: pre_token_commit
+  store_full_logits: false
+  store_top_k: 20
+  record_token_entropy: true
+  record_token_margin: true
+  record_selected_token_logprob: true
+notes:
+  - This model is not a fourth diffusion-family primary model.
+  - Access was verified through the authenticated Hugging Face account before the TMLR extension freeze.
+  - The exact revision, chat template, tokenizer, prompt hashes, and generation settings must be bound before outcome inspection.

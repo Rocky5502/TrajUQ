@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trajuq_final_rq_evidence_v1",
+  "type": "object",
+  "required": [
+    "schema", "registry_version", "rq", "status", "experiment_commit",
+    "generated_at_utc", "analysis_script", "analysis_script_sha256",
+    "audit_status", "identifiers", "gates", "sources", "outputs"
+  ],
+  "properties": {
+    "schema": {"const": "trajuq_final_rq_evidence_v1"},
+    "registry_version": {"type": "string", "minLength": 1},
+    "rq": {"enum": ["RQ1", "RQ2", "RQ3", "RQ4", "RQ5"]},
+    "status": {"const": "FINAL"},
+    "experiment_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "generated_at_utc": {"type": "string", "minLength": 1},
+    "analysis_script": {"type": "string", "minLength": 1},
+    "analysis_script_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "audit_status": {"const": "PASS"},
+    "identifiers": {
+      "type": "object",
+      "required": ["models", "datasets", "seeds"],
+      "properties": {
+        "models": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+        "datasets": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+        "seeds": {"type": "array", "items": {"type": "integer"}, "minItems": 1, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "object",
+      "required": [
+        "generation_complete", "audits_pass", "uniqueness_pass",
+        "completeness_pass", "scoring_complete", "analysis_complete",
+        "claim_gate_decided", "registry_frozen"
+      ],
+      "properties": {
+        "generation_complete": {"const": true},
+        "audits_pass": {"const": true},
+        "uniqueness_pass": {"const": true},
+        "completeness_pass": {"const": true},
+        "scoring_complete": {"const": true},
+        "analysis_complete": {"const": true},
+        "claim_gate_decided": {"const": true},
+        "registry_frozen": {"const": true},
+        "seed_jobs_expected": {"type": "integer", "minimum": 1},
+        "seed_jobs_complete": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "sources": {"$ref": "#/$defs/artifacts"},
+    "outputs": {"$ref": "#/$defs/artifacts"}
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"},
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

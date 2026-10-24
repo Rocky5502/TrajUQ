@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trajuq_progress_status_v1",
+  "type": "object",
+  "required": [
+    "schema", "registry_version", "scope", "state", "observed_at_utc",
+    "completion", "source", "schema_binding", "output", "science_authorization"
+  ],
+  "properties": {
+    "schema": {"const": "trajuq_progress_status_v1"},
+    "registry_version": {"type": "string", "minLength": 1},
+    "scope": {"const": "RQ2_OPERATIONAL_PROGRESS_ONLY"},
+    "state": {"enum": ["PENDING", "RUNNING", "BLOCKED", "COMPLETE_AWAITING_FINAL_GATES"]},
+    "observed_at_utc": {"type": "string", "minLength": 1},
+    "completion": {
+      "type": "object",
+      "required": ["completed_jobs", "required_jobs", "remaining_jobs", "completion_percent"],
+      "properties": {
+        "completed_jobs": {"type": "integer", "minimum": 0},
+        "required_jobs": {"type": "integer", "minimum": 1},
+        "remaining_jobs": {"type": "integer", "minimum": 0},
+        "completion_percent": {"type": "number", "minimum": 0, "maximum": 100},
+        "completed_seeds": {"type": "array", "items": {"type": "integer"}, "uniqueItems": true},
+        "audit_pass_count": {"type": "integer", "minimum": 0},
+        "throughput_jobs_per_hour": {"type": ["number", "null"], "minimum": 0},
+        "eta_hours": {"type": ["number", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "schema_binding": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "required": ["tex_path", "tex_sha256"],
+      "properties": {
+        "tex_path": {"type": "string", "minLength": 1},
+        "tex_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "science_authorization": {"const": "NOT_AUTHORIZED_FOR_SCIENTIFIC_CLAIMS"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,402 @@
+{
+  "aggregation": "equal_weight_over_pre_registered_eligible_cells_only; all frozen ineligible cells remain explicit skips",
+  "cell_set_complete": true,
+  "delta_direction": "positive means isotonic improves a lower-is-better metric relative to the primary logistic calibrator",
+  "eligibility_policy": {
+    "base_estimator": "standardized_logistic",
+    "cv_folds": 5,
+    "ensemble": false,
+    "min_calibration_samples": 250,
+    "min_class_count": 25,
+    "role": "supplementary_calibration_sensitivity"
+  },
+  "eligible_cell_count": 6,
+  "eligible_cells": [
+    "llada:gsm8k",
+    "llada:arc_challenge",
+    "sdar:gsm8k",
+    "sdar:arc_challenge",
+    "dream:gsm8k",
+    "dream:arc_challenge"
+  ],
+  "expected_cells": 18,
+  "macro_over_eligible_cells": {
+    "decision_entropy": {
+      "aurc": {
+        "isotonic_minus_logistic_improvement": 0.008200649739261476,
+        "isotonic_sensitivity": 0.3558503754167614,
+        "primary_logistic": 0.3640510251560229
+      },
+      "brier": {
+        "isotonic_minus_logistic_improvement": 0.000280165907036882,
+        "isotonic_sensitivity": 0.18059731133245796,
+        "primary_logistic": 0.18087747723949488
+      },
+      "ece": {
+        "isotonic_minus_logistic_improvement": 0.006889025601928507,
+        "isotonic_sensitivity": 0.04905380292010275,
+        "primary_logistic": 0.05594282852203127
+      },
+      "ece_10": {
+        "isotonic_minus_logistic_improvement": 0.0030043132417801864,
+        "isotonic_sensitivity": 0.044298087548633604,
+        "primary_logistic": 0.04730240079041379
+      },
+      "ece_20": {
+        "isotonic_minus_logistic_improvement": 0.0012082119690131708,
+        "isotonic_sensitivity": 0.053269936791870615,
+        "primary_logistic": 0.054478148760883784
+      },
+      "nll": {
+        "isotonic_minus_logistic_improvement": -0.031618496178857446,
+        "isotonic_sensitivity": 0.5757699540560034,
+        "primary_logistic": 0.5441514578771458
+      },
+      "risk_at_50_coverage": {
+        "isotonic_minus_logistic_improvement": -0.004756430519645596,
+        "isotonic_sensitivity": 0.3494230971863123,
+        "primary_logistic": 0.3446666666666667
+      },
+      "risk_at_80_coverage": {
+        "isotonic_minus_logistic_improvement": -0.0013595336974122237,
+        "isotonic_sensitivity": 0.40094286703074555,
+        "primary_logistic": 0.39958333333333335
+      }
+    },
+    "trajectory_plus_decision": {
+      "aurc": {
+        "isotonic_minus_logistic_improvement": -0.004140206298593056,
+        "isotonic_sensitivity": 0.3318021899404338,
+        "primary_logistic": 0.32766198364184074
+      },
+      "brier": {
+        "isotonic_minus_logistic_improvement": -0.0007384018725637917,
+        "isotonic_sensitivity": 0.17490538301135264,
+        "primary_logistic": 0.17416698113878884
+      },
+      "ece": {
+        "isotonic_minus_logistic_improvement": 0.01144967944895249,
+        "isotonic_sensitivity": 0.04008914392798268,
+        "primary_logistic": 0.05153882337693517
+      },
+      "ece_10": {
+        "isotonic_minus_logistic_improvement": 0.011323181003534058,
+        "isotonic_sensitivity": 0.03581131362294435,
+        "primary_logistic": 0.04713449462647842
+      },
+      "ece_20": {
+        "isotonic_minus_logistic_improvement": 0.017916861756725393,
+        "isotonic_sensitivity": 0.043509521349622576,
+        "primary_logistic": 0.06142638310634796
+      },
+      "nll": {
+        "isotonic_minus_logistic_improvement": -0.008674093297878974,
+        "isotonic_sensitivity": 0.5395686953396407,
+        "primary_logistic": 0.5308946020417618
+      },
+      "risk_at_50_coverage": {
+        "isotonic_minus_logistic_improvement": -0.0004330783583252941,
+        "isotonic_sensitivity": 0.3304330783583253,
+        "primary_logistic": 0.33
+      },
+      "risk_at_80_coverage": {
+        "isotonic_minus_logistic_improvement": -0.003228181463957045,
+        "isotonic_sensitivity": 0.39864484813062373,
+        "primary_logistic": 0.3954166666666667
+      }
+    }
+  },
+  "metrics": [
+    "brier",
+    "nll",
+    "ece",
+    "ece_10",
+    "ece_20",
+    "aurc",
+    "risk_at_50_coverage",
+    "risk_at_80_coverage"
+  ],
+  "observed_cells": 18,
+  "per_cell": {
+    "dream:arc_challenge": {
+      "eligible": true,
+      "n_calibration": 299,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 264,
+        "1": 35
+      },
+      "status": "PASS"
+    },
+    "dream:gpqa_diamond": {
+      "eligible": false,
+      "n_calibration": 56,
+      "n_test": 142,
+      "observed_class_counts": {
+        "0": 14,
+        "1": 42
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "dream:gsm8k": {
+      "eligible": true,
+      "n_calibration": 500,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 245,
+        "1": 255
+      },
+      "status": "PASS"
+    },
+    "dream:math500": {
+      "eligible": false,
+      "n_calibration": 153,
+      "n_test": 347,
+      "observed_class_counts": {
+        "0": 31,
+        "1": 122
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "dream:mmlu_pro": {
+      "eligible": false,
+      "n_calibration": 70,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 34,
+        "1": 36
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "dream:truthfulqa": {
+      "eligible": false,
+      "n_calibration": 245,
+      "n_test": 572,
+      "observed_class_counts": {
+        "0": 125,
+        "1": 120
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "llada:arc_challenge": {
+      "eligible": true,
+      "n_calibration": 299,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 260,
+        "1": 39
+      },
+      "status": "PASS"
+    },
+    "llada:gpqa_diamond": {
+      "eligible": false,
+      "n_calibration": 56,
+      "n_test": 142,
+      "observed_class_counts": {
+        "0": 19,
+        "1": 37
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "llada:gsm8k": {
+      "eligible": true,
+      "n_calibration": 500,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 229,
+        "1": 271
+      },
+      "status": "PASS"
+    },
+    "llada:math500": {
+      "eligible": false,
+      "n_calibration": 153,
+      "n_test": 347,
+      "observed_class_counts": {
+        "0": 42,
+        "1": 111
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "llada:mmlu_pro": {
+      "eligible": false,
+      "n_calibration": 70,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 32,
+        "1": 38
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "llada:truthfulqa": {
+      "eligible": false,
+      "n_calibration": 245,
+      "n_test": 572,
+      "observed_class_counts": {
+        "0": 129,
+        "1": 116
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "sdar:arc_challenge": {
+      "eligible": true,
+      "n_calibration": 299,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 91,
+        "1": 208
+      },
+      "status": "PASS"
+    },
+    "sdar:gpqa_diamond": {
+      "eligible": false,
+      "n_calibration": 56,
+      "n_test": 142,
+      "observed_class_counts": {
+        "0": 8,
+        "1": 48
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "sdar:gsm8k": {
+      "eligible": true,
+      "n_calibration": 500,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 201,
+        "1": 299
+      },
+      "status": "PASS"
+    },
+    "sdar:math500": {
+      "eligible": false,
+      "n_calibration": 153,
+      "n_test": 347,
+      "observed_class_counts": {
+        "0": 6,
+        "1": 147
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "sdar:mmlu_pro": {
+      "eligible": false,
+      "n_calibration": 70,
+      "n_test": 500,
+      "observed_class_counts": {
+        "0": 15,
+        "1": 55
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    },
+    "sdar:truthfulqa": {
+      "eligible": false,
+      "n_calibration": 245,
+      "n_test": 572,
+      "observed_class_counts": {
+        "0": 146,
+        "1": 99
+      },
+      "status": "SKIP_INSUFFICIENT_CALIBRATION"
+    }
+  },
+  "protocol": "trajuq_isotonic_calibration_sensitivity_macro_v1",
+  "provenance": {
+    "git_clean": true,
+    "git_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "protocol": "trajuq_analysis_source_binding_v1",
+    "sources": {
+      "cell:dream:arc_challenge": {
+        "path": "results/primary_analysis/dream/arc_challenge/calibration_sensitivity.json",
+        "sha256": "34eae634b2c48133a92427883de4328e13e6094c3e8c8477498ec05cd8584f6e"
+      },
+      "cell:dream:gpqa_diamond": {
+        "path": "results/primary_analysis/dream/gpqa_diamond/calibration_sensitivity.json",
+        "sha256": "932e1eaad110d4416b15e45189091b46ac9df6e37a392115c77c2652bbb9c495"
+      },
+      "cell:dream:gsm8k": {
+        "path": "results/primary_analysis/dream/gsm8k/calibration_sensitivity.json",
+        "sha256": "31289356fb6b0348377f079c7f4fbdec2c2bd7626449a9a48f6bc554cca47900"
+      },
+      "cell:dream:math500": {
+        "path": "results/primary_analysis/dream/math500/calibration_sensitivity.json",
+        "sha256": "eaf21a6c3bf5a73fba9711da3d87c6b7a670659fae6586dbb047865bf2b6dc8e"
+      },
+      "cell:dream:mmlu_pro": {
+        "path": "results/primary_analysis/dream/mmlu_pro/calibration_sensitivity.json",
+        "sha256": "10d0102c659202bbc5704368423880a99fbd6819f6f1028db095740f6ce08b25"
+      },
+      "cell:dream:truthfulqa": {
+        "path": "results/primary_analysis/dream/truthfulqa/calibration_sensitivity.json",
+        "sha256": "888c3e16f89dab87c8dd6fc1b7519db15d3ab93466532c3d0b415915767035b8"
+      },
+      "cell:llada:arc_challenge": {
+        "path": "results/primary_analysis/llada/arc_challenge/calibration_sensitivity.json",
+        "sha256": "d18942ee32f74d4306ffbfeec70fba84cc51da0ac2dacf86b902469a94030a46"
+      },
+      "cell:llada:gpqa_diamond": {
+        "path": "results/primary_analysis/llada/gpqa_diamond/calibration_sensitivity.json",
+        "sha256": "49701734ecb511f2bede9574fb8ba08e4535308df071cb1736bde96ab3ae1343"
+      },
+      "cell:llada:gsm8k": {
+        "path": "results/primary_analysis/llada/gsm8k/calibration_sensitivity.json",
+        "sha256": "03dd6f46d504333651810d12a025cd53f8ea05d14afab416776c298e9663e60f"
+      },
+      "cell:llada:math500": {
+        "path": "results/primary_analysis/llada/math500/calibration_sensitivity.json",
+        "sha256": "c6372a3afe40335bcfb7e81590f2c790bbe02a2c09fcd596a1659177aef1c722"
+      },
+      "cell:llada:mmlu_pro": {
+        "path": "results/primary_analysis/llada/mmlu_pro/calibration_sensitivity.json",
+        "sha256": "8a6fa9496c7a933529b5a3e54098359601205acaeb04e29ae601cf7a82a045bb"
+      },
+      "cell:llada:truthfulqa": {
+        "path": "results/primary_analysis/llada/truthfulqa/calibration_sensitivity.json",
+        "sha256": "6eaba12c5cf170c9e5421a8aaa29e1c35966f14e11e2e449cdf0c2b4df40f9bc"
+      },
+      "cell:sdar:arc_challenge": {
+        "path": "results/primary_analysis/sdar/arc_challenge/calibration_sensitivity.json",
+        "sha256": "cd7e6f25021679ad1a77a239bda1c34252ca8b04a3f80e317d134aac4e8d19e7"
+      },
+      "cell:sdar:gpqa_diamond": {
+        "path": "results/primary_analysis/sdar/gpqa_diamond/calibration_sensitivity.json",
+        "sha256": "d83b94ea21db7e8d26684d50c45e077cdd169349cdccfd5ed36377776b29c4ea"
+      },
+      "cell:sdar:gsm8k": {
+        "path": "results/primary_analysis/sdar/gsm8k/calibration_sensitivity.json",
+        "sha256": "610bc54cc9ebd5203fd69035875fc2886430fc1ecae9fc0936fbe7866850705f"
+      },
+      "cell:sdar:math500": {
+        "path": "results/primary_analysis/sdar/math500/calibration_sensitivity.json",
+        "sha256": "0ece49dd3c2b23ec50bbcabed331963b83cfcfb90e105f86317611181dbe9a5a"
+      },
+      "cell:sdar:mmlu_pro": {
+        "path": "results/primary_analysis/sdar/mmlu_pro/calibration_sensitivity.json",
+        "sha256": "69b602683cadf9ef1f129314ece9e68a742dfcc60b9c659aa1067f64d2d5aae1"
+      },
+      "cell:sdar:truthfulqa": {
+        "path": "results/primary_analysis/sdar/truthfulqa/calibration_sensitivity.json",
+        "sha256": "6e00527cd4bc774cc92f41eb014858de2389311f09a08caaa6d0fc613d2b5ec5"
+      },
+      "primary_config": {
+        "path": "configs/experiments/primary.yaml",
+        "sha256": "d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788"
+      }
+    }
+  },
+  "role": "supplementary_calibration_sensitivity",
+  "skipped_cell_count": 12,
+  "skipped_cells": [
+    "llada:math500",
+    "llada:gpqa_diamond",
+    "llada:mmlu_pro",
+    "llada:truthfulqa",
+    "sdar:math500",
+    "sdar:gpqa_diamond",
+    "sdar:mmlu_pro",
+    "sdar:truthfulqa",
+    "dream:math500",
+    "dream:gpqa_diamond",
+    "dream:mmlu_pro",
+    "dream:truthfulqa"
+  ]
+}

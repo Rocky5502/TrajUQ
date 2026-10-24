@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.build_overleaf_package import ACL_STYLE_COMMIT, build_package
+from scripts.build_overleaf_package import TMLR_STYLE_COMMIT, build_package
 
 
 def make_root(tmp_path: Path) -> tuple[Path, Path]:
@@ -32,12 +32,16 @@ def make_root(tmp_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     (figures / "result.pdf").write_bytes(b"%PDF-1.4\nsynthetic\n")
-    (style / "acl.sty").write_text(
-        "% https://github.com/acl-org/acl-style-files/\n",
+    (style / "tmlr.sty").write_text(
+        "% official TMLR style\n",
         encoding="utf-8",
     )
-    (style / "acl_natbib.bst").write_text(
+    (style / "tmlr.bst").write_text(
         "% pinned bst\n",
+        encoding="utf-8",
+    )
+    (style / "fancyhdr.sty").write_text(
+        "% pinned dependency\n",
         encoding="utf-8",
     )
     (root / "dist").mkdir()
@@ -63,7 +67,7 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
     )
 
     assert first_payload["status"] == "PASS"
-    assert first_payload["acl_style_commit"] == ACL_STYLE_COMMIT
+    assert first_payload["tmlr_style_commit"] == TMLR_STYLE_COMMIT
     assert first.read_bytes() == second.read_bytes()
     assert ("a" * 40).encode("utf-8") not in first.read_bytes()
 
@@ -74,8 +78,9 @@ def test_overleaf_package_is_deterministic_and_complete(tmp_path):
             "appendix.tex",
             "references.bib",
             "generated_results.tex",
-            "acl.sty",
-            "acl_natbib.bst",
+            "tmlr.sty",
+            "tmlr.bst",
+            "fancyhdr.sty",
             "PAPER_STATUS.md",
             "MANIFEST.json",
             "figures/generated/result.pdf",

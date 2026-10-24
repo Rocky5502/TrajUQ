@@ -1,0 +1,140 @@
+% AUTO-GENERATED from provenance-bound synthesis artifacts; do not edit.
+
+% SYNTHESIS STATE: PROVISIONAL
+
+\newcommand{\CrossModelSynthesisState}{PROVISIONAL}
+
+\newcommand{\CrossModelSynthesisTable}{%
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lllrrr}
+\toprule
+System & Observability regime & Principal signal & AUROC $\uparrow$ & $\Delta$ AUROC$^\dagger$ $\uparrow$ & AURC $\downarrow$ \\
+\midrule
+Dream-v0-Instruct-7B & Diffusion trajectory & native trajectory & 0.618 & 0.045 & 0.459 \\
+LLaDA-MoE-7B-A1B-Instruct & Diffusion trajectory & native trajectory & 0.630 & 0.060 & 0.451 \\
+SDAR-1.7B-Chat & Diffusion trajectory & native trajectory & 0.567 & -0.012 & 0.677 \\
+\addlinespace[2pt]
+Llama-3.1-8B-Instruct & Autoregressive trace & AR trace & \textit{pending} & \textit{pending} & \textit{pending} \\
+\addlinespace[2pt]
+DeepSeek-V3.2 & Black-box behavior & behavioral repeats & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM-5.1 & Black-box behavior & behavioral repeats & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi-K2.6 & Black-box behavior & behavioral repeats & \textit{pending} & \textit{pending} & \textit{pending} \\
+\bottomrule
+\end{tabular}
+\caption{What uncertainty information is observable and useful under each access regime. Values are equal-dataset-weight summaries within their registered regime; $\Delta$ AUROC compares only with the pre-registered baseline from the same regime. This is a provisional synthesis: pending entries are not estimates and support no final cross-regime claim. The table is descriptive across regimes and must not be read as a raw cross-protocol model ranking.}
+\label{tab:cross-model-synthesis}
+\end{table*}}
+
+\newcommand{\CrossModelAppendixTable}{%
+\begin{table*}[p]
+\centering
+\small
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{llrrrrrrr}
+\toprule
+System & Dataset & $n$ & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$ & ECE$_{15}$ $\downarrow$ & Risk@50 $\downarrow$ & $\Delta$ AUROC$^\dagger$ $\uparrow$ \\
+\midrule
+Dream & gsm8k & 500 & 0.769 & 0.745 & 0.287 & 0.044 & 0.312 & 0.031 \\
+Dream & math500 & 347 & 0.677 & 0.853 & 0.657 & 0.048 & 0.695 & 0.093 \\
+Dream & gpqa\_diamond & 142 & 0.560 & 0.779 & 0.691 & 0.151 & 0.746 & -0.014 \\
+Dream & arc\_challenge & 500 & 0.558 & 0.208 & 0.125 & 0.042 & 0.120 & 0.001 \\
+Dream & mmlu\_pro & 500 & 0.481 & 0.558 & 0.568 & 0.110 & 0.580 & -0.004 \\
+Dream & truthfulqa & 572 & 0.663 & 0.680 & 0.429 & 0.060 & 0.423 & 0.165 \\
+\addlinespace[2pt]
+LLaDA & gsm8k & 500 & 0.764 & 0.771 & 0.345 & 0.057 & 0.336 & 0.034 \\
+LLaDA & math500 & 347 & 0.696 & 0.859 & 0.630 & 0.080 & 0.695 & 0.070 \\
+LLaDA & gpqa\_diamond & 142 & 0.460 & 0.692 & 0.718 & 0.095 & 0.718 & -0.064 \\
+LLaDA & arc\_challenge & 500 & 0.592 & 0.216 & 0.104 & 0.042 & 0.108 & 0.048 \\
+LLaDA & mmlu\_pro & 500 & 0.593 & 0.688 & 0.548 & 0.142 & 0.568 & 0.070 \\
+LLaDA & truthfulqa & 572 & 0.674 & 0.639 & 0.362 & 0.051 & 0.346 & 0.204 \\
+\addlinespace[2pt]
+SDAR & gsm8k & 500 & 0.709 & 0.797 & 0.481 & 0.063 & 0.476 & 0.014 \\
+SDAR & math500 & 347 & 0.467 & 0.948 & 0.955 & 0.037 & 0.960 & -0.145 \\
+SDAR & gpqa\_diamond & 142 & 0.519 & 0.838 & 0.805 & 0.142 & 0.803 & 0.019 \\
+SDAR & arc\_challenge & 500 & 0.588 & 0.733 & 0.623 & 0.061 & 0.628 & 0.053 \\
+SDAR & mmlu\_pro & 500 & 0.559 & 0.887 & 0.857 & 0.100 & 0.844 & 0.021 \\
+SDAR & truthfulqa & 572 & 0.559 & 0.430 & 0.342 & 0.082 & 0.350 & -0.036 \\
+\bottomrule
+\end{tabular}
+\caption{Diffusion-trajectory observability: complete model--dataset synthesis registry. \textit{pending} denotes a registered cell whose authoritative aggregate is not yet available; \textemdash{} denotes a genuinely unavailable or scientifically inapplicable quantity, never a measured zero. $\Delta$ values use only the appropriate within-regime baseline.}
+\label{tab:cross-model-synthesis-diffusion-trajectory}
+\end{table*}
+
+\begin{table*}[p]
+\centering
+\small
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{llrrrrrrr}
+\toprule
+System & Dataset & $n$ & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$ & ECE$_{15}$ $\downarrow$ & Risk@50 $\downarrow$ & $\Delta$ AUROC$^\dagger$ $\uparrow$ \\
+\midrule
+Llama 3.1 & gsm8k & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Llama 3.1 & math500 & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Llama 3.1 & gpqa\_diamond & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Llama 3.1 & arc\_challenge & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Llama 3.1 & mmlu\_pro & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Llama 3.1 & truthfulqa & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+\bottomrule
+\end{tabular}
+\caption{Autoregressive-trace observability: complete model--dataset synthesis registry. \textit{pending} denotes a registered cell whose authoritative aggregate is not yet available; \textemdash{} denotes a genuinely unavailable or scientifically inapplicable quantity, never a measured zero. $\Delta$ values use only the appropriate within-regime baseline.}
+\label{tab:cross-model-synthesis-autoregressive-trace}
+\end{table*}
+
+\begin{table*}[p]
+\centering
+\small
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{llrrrrrrr}
+\toprule
+System & Dataset & $n$ & AUROC $\uparrow$ & AUPRC $\uparrow$ & AURC $\downarrow$ & ECE$_{15}$ $\downarrow$ & Risk@50 $\downarrow$ & $\Delta$ AUROC$^\dagger$ $\uparrow$ \\
+\midrule
+DeepSeek & gsm8k & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+DeepSeek & math500 & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+DeepSeek & gpqa\_diamond & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+DeepSeek & arc\_challenge & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+DeepSeek & mmlu\_pro & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+DeepSeek & truthfulqa & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+\addlinespace[2pt]
+GLM & gsm8k & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM & math500 & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM & gpqa\_diamond & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM & arc\_challenge & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM & mmlu\_pro & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+GLM & truthfulqa & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+\addlinespace[2pt]
+Kimi & gsm8k & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi & math500 & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi & gpqa\_diamond & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi & arc\_challenge & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi & mmlu\_pro & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+Kimi & truthfulqa & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+\bottomrule
+\end{tabular}
+\caption{Black-box behavioral observability: complete model--dataset synthesis registry. \textit{pending} denotes a registered cell whose authoritative aggregate is not yet available; \textemdash{} denotes a genuinely unavailable or scientifically inapplicable quantity, never a measured zero. $\Delta$ values use only the appropriate within-regime baseline.}
+\label{tab:cross-model-synthesis-black-box-behavior}
+\end{table*}}
+
+\newcommand{\CrossModelSignalTable}{%
+\begin{table*}[p]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{p{2.5cm}p{4.6cm}rrrrr}
+\toprule
+System & Architecture/access & Parameters & Cost$^\ddagger$ & Revision & Persistence & Commitment \\
+\midrule
+Dream-v0-Instruct-7B & masked diffusion language model & 7.62B & \textit{pending} & yes & yes & yes \\
+LLaDA-MoE-7B-A1B-Instruct & masked diffusion mixture-of-experts language model & 7.36B & \textit{pending} & yes & yes & yes \\
+SDAR-1.7B-Chat & blockwise diffusion language model & 2.03B & \textit{pending} & yes & yes & yes \\
+Llama-3.1-8B-Instruct & autoregressive decoder-only transformer & 8.03B & \textit{pending} & \textemdash{} & \textemdash{} & \textemdash{} \\
+DeepSeek-V3.2 & black-box hosted language model & \textemdash{} & \textit{pending} & \textemdash{} & \textemdash{} & \textemdash{} \\
+GLM-5.1 & black-box hosted language model & \textemdash{} & \textit{pending} & \textemdash{} & \textemdash{} & \textemdash{} \\
+Kimi-K2.6 & black-box hosted language model & \textemdash{} & \textit{pending} & \textemdash{} & \textemdash{} & \textemdash{} \\
+\bottomrule
+\end{tabular}
+\caption{Structural availability of uncertainty signals. $^\ddagger$Compute/API cost is populated only from a model-bound authoritative ledger; it is never inferred from nominal rental prices. An em dash marks a signal or parameter count that is structurally inapplicable or not exposed by the access interface. It is distinct from \textit{pending}, which means that an authorized empirical aggregate has not yet passed its final registry gate.}
+\label{tab:cross-model-signal-availability}
+\end{table*}}

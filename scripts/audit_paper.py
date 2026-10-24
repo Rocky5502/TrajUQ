@@ -9,7 +9,7 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Static anonymity/format guard for the TrajUQ ARR manuscript."
+        description="Static anonymity/format guard for the TrajUQ review manuscript."
     )
     parser.add_argument("--paper-dir", default="paper")
     parser.add_argument(
@@ -41,9 +41,14 @@ def main() -> None:
     generated = generated_path.read_text(encoding="utf-8")
     all_text = "\n".join([main, appendix, bib, generated])
 
-    if r"\usepackage[review]{acl}" not in main:
-        failures.append("main.tex must use the official ACL style in review mode")
-    if r"\author{Anonymous ACL Submission}" not in main:
+    if r"\usepackage{tmlr}" not in main:
+        failures.append("main.tex must use the official TMLR review style")
+    if r"\bibliographystyle{tmlr}" not in main:
+        failures.append("main.tex must use the official TMLR bibliography style")
+    anonymous_authors = {
+        r"\author{\name Anonymous Authors}",
+    }
+    if not any(author in main for author in anonymous_authors):
         failures.append("anonymous review author line is missing or changed")
 
     required_sections = [
@@ -75,7 +80,8 @@ def main() -> None:
         if re.search(pattern, all_text, flags=re.IGNORECASE):
             failures.append(f"anonymous manuscript contains {label}")
 
-    if re.search(r"\\author\{(?!Anonymous ACL Submission\})", main):
+    author_match = re.search(r"\\author\{([^}]*)\}", main)
+    if author_match and author_match.group(0) not in anonymous_authors:
         failures.append("non-anonymous author declaration detected")
 
     citation_keys: set[str] = set()

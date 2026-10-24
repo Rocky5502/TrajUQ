@@ -1,0 +1,107 @@
+{
+  "authoritative_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "figure_fallbacks": {
+    "family_macro_auroc": {
+      ".png": {
+        "bytes": 34133,
+        "path": "paper/figures/generated/family_macro_auroc_improvement.png",
+        "sha256": "cd910b99955b456f2866e1ec23742a09b8cba28725fd90c8ea79befecfef327e"
+      },
+      ".svg": {
+        "bytes": 24765,
+        "path": "paper/figures/generated/family_macro_auroc_improvement.svg",
+        "sha256": "dc8e84c379be8b189ce47ac5458870e001360aec237ee19ce37a686b1b8c4d2f"
+      }
+    },
+    "feature_ablation": {
+      ".png": {
+        "bytes": 47680,
+        "path": "paper/figures/generated/rq1_feature_ablation.png",
+        "sha256": "07ee10dcdc70a1eaf4ef2779d4134e333e19b4c263b125f4ff8e1dd7543b916f"
+      },
+      ".svg": {
+        "bytes": 37878,
+        "path": "paper/figures/generated/rq1_feature_ablation.svg",
+        "sha256": "7897dd59516a45acdbb68213f1d26286385f69e060f434b695752b93efea7668"
+      }
+    },
+    "primary_auroc_matrix": {
+      ".png": {
+        "bytes": 111108,
+        "path": "paper/figures/generated/primary_auroc_improvement_matrix.png",
+        "sha256": "e6324c439c3ba1425a17a8075f856be0ea5156d58a75c2d6554c2ec50499f309"
+      },
+      ".svg": {
+        "bytes": 50773,
+        "path": "paper/figures/generated/primary_auroc_improvement_matrix.svg",
+        "sha256": "d75f14c0aea5317f169aad8b5e5495a689f5734d784c65ff423d72b782c5fc5f"
+      }
+    }
+  },
+  "figures": {
+    "family_macro_auroc": {
+      "bytes": 11058,
+      "path": "paper/figures/generated/family_macro_auroc_improvement.pdf",
+      "sha256": "949966683aa6498039536e0b12384c3afa69aa69dc391c8906addad13141e8cd"
+    },
+    "feature_ablation": {
+      "bytes": 12867,
+      "path": "paper/figures/generated/rq1_feature_ablation.pdf",
+      "sha256": "12a3e69e08193f8b0013cb52e9e671148c3485e5fdea299f7ace88400d74c62e"
+    },
+    "primary_auroc_matrix": {
+      "bytes": 16725,
+      "path": "paper/figures/generated/primary_auroc_improvement_matrix.pdf",
+      "sha256": "32cb88e31a0d886dfcae564782ae70963337c27eb8c927e86f851d43bc954c38"
+    }
+  },
+  "generated_tex": {
+    "bytes": 15685,
+    "path": "paper/generated_rq1.tex",
+    "sha256": "de305d023b7b341f05435012787dfbb9b750d6f707ceed4ade36d140b3abd36e"
+  },
+  "protocol": "trajuq_rq1_paper_package_v1",
+  "sources": {
+    "ablation": {
+      "path": "results/primary_analysis/macro_feature_ablation.json",
+      "sha256": "041c29b707a191f1ce05267d2a55d2dfe10cfc8e7df3d81b6b428bf1afacf99a"
+    },
+    "calibration_sensitivity": {
+      "path": "results/primary_analysis/macro_calibration_sensitivity.json",
+      "sha256": "319d69238621a2b4e62ddcbb6475e5fece264b5ef04fef3b4c4469b6fb204100"
+    },
+    "claim_gate": {
+      "path": "results/primary_analysis/rq1_claim_gate.json",
+      "sha256": "d1f5abc4c1a9451ebd44faec80d107747878f7acd8b4074ac1c21d5695a5e381"
+    },
+    "primary": {
+      "path": "results/primary_analysis/macro_primary.json",
+      "sha256": "de0044ffd8ec59de9137f9fcd023b8b6f8fcebc96668c9e49a4e618833b95f20"
+    },
+    "primary_config": {
+      "path": "configs/experiments/primary.yaml",
+      "sha256": "d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788"
+    },
+    "prior_signals": {
+      "path": "results/primary_analysis/macro_prior_signal_diagnostics.json",
+      "sha256": "b63a404e22e34d4c0f2bb6b2a4cf96ee6696583a8ab3c82cc0198a92e95aec02"
+    }
+  },
+  "status": "PASS",
+  "visual_spec": {
+    "background": "#FFFFFF",
+    "caution": "#C8892E",
+    "comparison": "#3B6EA8",
+    "focal": "#1F6F5F",
+    "font_points": 8.5,
+    "ink": "#202124",
+    "negative": "#B64A4A",
+    "qa": [
+      "final-size",
+      "grayscale",
+      "caption-standalone",
+      "source-hash"
+    ],
+    "vector": true
+  }
+}

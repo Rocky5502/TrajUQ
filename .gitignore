@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.pytest-*/
+.pytest*/
 .mypy_cache/
 .ruff_cache/
 .venv/
@@ -22,6 +24,12 @@ third_party/
 runs/*
 !runs/.gitkeep
 results/*
+!results/rq1/
+results/rq1/*
+!results/rq1/paper/
+results/rq1/paper/*
+!results/rq1/paper/rq1_paper_manifest.json
+paper/build-*/
 !results/.gitkeep
 wandb/
 mlruns/
@@ -51,3 +59,12 @@ GPU_RENTAL_INFO.private.*
 *.synctex.gz
 
 dist/
+tmp/
+output/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.toc
+*.xdv
+*.synctex

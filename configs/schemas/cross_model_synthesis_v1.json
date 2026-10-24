@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trajuq_cross_model_synthesis_v1",
+  "title": "TrajUQ cross-model and cross-observability synthesis registry",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "final",
+    "models",
+    "appendix_rows",
+    "compatibility",
+    "source_bindings"
+  ],
+  "properties": {
+    "schema": {"const": "trajuq_cross_model_synthesis_v1"},
+    "status": {"enum": ["PROVISIONAL", "FINAL"]},
+    "final": {"type": "boolean"},
+    "models": {"type": "array", "minItems": 7, "maxItems": 7},
+    "appendix_rows": {"type": "array"},
+    "compatibility": {"type": "array"},
+    "source_bindings": {"type": "object"}
+  }
+}

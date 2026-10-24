@@ -1,0 +1,283 @@
+% GENERATED FILE -- DO NOT TYPE RESULT VALUES BY HAND.
+% Complete provenance-bound RQ1 package; downstream RQs remain pending.
+% source primary: results/primary_analysis/macro_primary.json sha256=de0044ffd8ec59de9137f9fcd023b8b6f8fcebc96668c9e49a4e618833b95f20
+% source claim_gate: results/primary_analysis/rq1_claim_gate.json sha256=d1f5abc4c1a9451ebd44faec80d107747878f7acd8b4074ac1c21d5695a5e381
+% source ablation: results/primary_analysis/macro_feature_ablation.json sha256=041c29b707a191f1ce05267d2a55d2dfe10cfc8e7df3d81b6b428bf1afacf99a
+% source prior_signals: results/primary_analysis/macro_prior_signal_diagnostics.json sha256=b63a404e22e34d4c0f2bb6b2a4cf96ee6696583a8ab3c82cc0198a92e95aec02
+% source calibration_sensitivity: results/primary_analysis/macro_calibration_sensitivity.json sha256=319d69238621a2b4e62ddcbb6475e5fece264b5ef04fef3b4c4469b6fb204100
+% source primary_config: configs/experiments/primary.yaml sha256=d859e4da6b9c2c195f049559b8368d691c33e51ad0d411d12caa6ecaaa205788
+\providecommand{\PrimaryDecisionAUROC}{}
+\renewcommand{\PrimaryDecisionAUROC}{0.574}
+\providecommand{\PrimaryTrajAUROC}{}
+\renewcommand{\PrimaryTrajAUROC}{0.605}
+\providecommand{\PrimaryDeltaAUROC}{}
+\renewcommand{\PrimaryDeltaAUROC}{+0.031}
+\providecommand{\PrimaryDeltaAUROCLow}{}
+\renewcommand{\PrimaryDeltaAUROCLow}{+0.010}
+\providecommand{\PrimaryDeltaAUROCHigh}{}
+\renewcommand{\PrimaryDeltaAUROCHigh}{+0.050}
+\providecommand{\PrimaryDecisionAUPRC}{}
+\renewcommand{\PrimaryDecisionAUPRC}{0.664}
+\providecommand{\PrimaryTrajAUPRC}{}
+\renewcommand{\PrimaryTrajAUPRC}{0.685}
+\providecommand{\PrimaryDeltaAUPRC}{}
+\renewcommand{\PrimaryDeltaAUPRC}{+0.021}
+\providecommand{\PrimaryDeltaAUPRCLow}{}
+\renewcommand{\PrimaryDeltaAUPRCLow}{+0.009}
+\providecommand{\PrimaryDeltaAUPRCHigh}{}
+\renewcommand{\PrimaryDeltaAUPRCHigh}{+0.032}
+\providecommand{\PrimaryDecisionBrier}{}
+\renewcommand{\PrimaryDecisionBrier}{0.189}
+\providecommand{\PrimaryTrajBrier}{}
+\renewcommand{\PrimaryTrajBrier}{0.188}
+\providecommand{\PrimaryDeltaBrier}{}
+\renewcommand{\PrimaryDeltaBrier}{+0.001}
+\providecommand{\PrimaryDeltaBrierLow}{}
+\renewcommand{\PrimaryDeltaBrierLow}{-0.001}
+\providecommand{\PrimaryDeltaBrierHigh}{}
+\renewcommand{\PrimaryDeltaBrierHigh}{+0.004}
+\providecommand{\PrimaryDecisionNLL}{}
+\renewcommand{\PrimaryDecisionNLL}{0.562}
+\providecommand{\PrimaryTrajNLL}{}
+\renewcommand{\PrimaryTrajNLL}{0.568}
+\providecommand{\PrimaryDeltaNLL}{}
+\renewcommand{\PrimaryDeltaNLL}{-0.006}
+\providecommand{\PrimaryDeltaNLLLow}{}
+\renewcommand{\PrimaryDeltaNLLLow}{-0.018}
+\providecommand{\PrimaryDeltaNLLHigh}{}
+\renewcommand{\PrimaryDeltaNLLHigh}{+0.004}
+\providecommand{\PrimaryDecisionECE}{}
+\renewcommand{\PrimaryDecisionECE}{0.062}
+\providecommand{\PrimaryTrajECE}{}
+\renewcommand{\PrimaryTrajECE}{0.078}
+\providecommand{\PrimaryDeltaECE}{}
+\renewcommand{\PrimaryDeltaECE}{-0.016}
+\providecommand{\PrimaryDeltaECELow}{}
+\renewcommand{\PrimaryDeltaECELow}{-0.030}
+\providecommand{\PrimaryDeltaECEHigh}{}
+\renewcommand{\PrimaryDeltaECEHigh}{-0.012}
+\providecommand{\PrimaryDecisionAURC}{}
+\renewcommand{\PrimaryDecisionAURC}{0.562}
+\providecommand{\PrimaryTrajAURC}{}
+\renewcommand{\PrimaryTrajAURC}{0.529}
+\providecommand{\PrimaryDeltaAURC}{}
+\renewcommand{\PrimaryDeltaAURC}{+0.032}
+\providecommand{\PrimaryDeltaAURCLow}{}
+\renewcommand{\PrimaryDeltaAURCLow}{+0.021}
+\providecommand{\PrimaryDeltaAURCHigh}{}
+\renewcommand{\PrimaryDeltaAURCHigh}{+0.044}
+\providecommand{\AblationDistributionAUROCDelta}{}
+\renewcommand{\AblationDistributionAUROCDelta}{+0.022}
+\providecommand{\AblationDistributionAUROCLow}{}
+\renewcommand{\AblationDistributionAUROCLow}{+0.007}
+\providecommand{\AblationDistributionAUROCHigh}{}
+\renewcommand{\AblationDistributionAUROCHigh}{+0.036}
+\providecommand{\AblationDistributionAUPRCDelta}{}
+\renewcommand{\AblationDistributionAUPRCDelta}{+0.019}
+\providecommand{\AblationDistributionAURCDelta}{}
+\renewcommand{\AblationDistributionAURCDelta}{+0.019}
+\providecommand{\AblationStabilityAUROCDelta}{}
+\renewcommand{\AblationStabilityAUROCDelta}{+0.018}
+\providecommand{\AblationStabilityAUROCLow}{}
+\renewcommand{\AblationStabilityAUROCLow}{-0.003}
+\providecommand{\AblationStabilityAUROCHigh}{}
+\renewcommand{\AblationStabilityAUROCHigh}{+0.037}
+\providecommand{\AblationStabilityAUPRCDelta}{}
+\renewcommand{\AblationStabilityAUPRCDelta}{+0.011}
+\providecommand{\AblationStabilityAURCDelta}{}
+\renewcommand{\AblationStabilityAURCDelta}{+0.021}
+\providecommand{\AblationPersistenceAUROCDelta}{}
+\renewcommand{\AblationPersistenceAUROCDelta}{+0.002}
+\providecommand{\AblationPersistenceAUROCLow}{}
+\renewcommand{\AblationPersistenceAUROCLow}{-0.006}
+\providecommand{\AblationPersistenceAUROCHigh}{}
+\renewcommand{\AblationPersistenceAUROCHigh}{+0.009}
+\providecommand{\AblationPersistenceAUPRCDelta}{}
+\renewcommand{\AblationPersistenceAUPRCDelta}{-0.001}
+\providecommand{\AblationPersistenceAURCDelta}{}
+\renewcommand{\AblationPersistenceAURCDelta}{+0.002}
+\providecommand{\AblationFullAUROCDelta}{}
+\renewcommand{\AblationFullAUROCDelta}{+0.031}
+\providecommand{\AblationFullAUROCLow}{}
+\renewcommand{\AblationFullAUROCLow}{+0.010}
+\providecommand{\AblationFullAUROCHigh}{}
+\renewcommand{\AblationFullAUROCHigh}{+0.050}
+\providecommand{\AblationFullAUPRCDelta}{}
+\renewcommand{\AblationFullAUPRCDelta}{+0.021}
+\providecommand{\AblationFullAURCDelta}{}
+\renewcommand{\AblationFullAURCDelta}{+0.032}
+\providecommand{\AblationNoJSAUROCDelta}{}
+\renewcommand{\AblationNoJSAUROCDelta}{+0.026}
+\providecommand{\AblationNoJSAUROCLow}{}
+\renewcommand{\AblationNoJSAUROCLow}{+0.009}
+\providecommand{\AblationNoJSAUROCHigh}{}
+\renewcommand{\AblationNoJSAUROCHigh}{+0.042}
+\providecommand{\AblationNoJSAUPRCDelta}{}
+\renewcommand{\AblationNoJSAUPRCDelta}{+0.019}
+\providecommand{\AblationNoJSAURCDelta}{}
+\renewcommand{\AblationNoJSAURCDelta}{+0.024}
+\providecommand{\AblationNoRevisionsAUROCDelta}{}
+\renewcommand{\AblationNoRevisionsAUROCDelta}{+0.028}
+\providecommand{\AblationNoRevisionsAUROCLow}{}
+\renewcommand{\AblationNoRevisionsAUROCLow}{+0.008}
+\providecommand{\AblationNoRevisionsAUROCHigh}{}
+\renewcommand{\AblationNoRevisionsAUROCHigh}{+0.047}
+\providecommand{\AblationNoRevisionsAUPRCDelta}{}
+\renewcommand{\AblationNoRevisionsAUPRCDelta}{+0.019}
+\providecommand{\AblationNoRevisionsAURCDelta}{}
+\renewcommand{\AblationNoRevisionsAURCDelta}{+0.030}
+\providecommand{\AblationNoPersistenceAUROCDelta}{}
+\renewcommand{\AblationNoPersistenceAUROCDelta}{+0.032}
+\providecommand{\AblationNoPersistenceAUROCLow}{}
+\renewcommand{\AblationNoPersistenceAUROCLow}{+0.012}
+\providecommand{\AblationNoPersistenceAUROCHigh}{}
+\renewcommand{\AblationNoPersistenceAUROCHigh}{+0.050}
+\providecommand{\AblationNoPersistenceAUPRCDelta}{}
+\renewcommand{\AblationNoPersistenceAUPRCDelta}{+0.023}
+\providecommand{\AblationNoPersistenceAURCDelta}{}
+\renewcommand{\AblationNoPersistenceAURCDelta}{+0.034}
+\providecommand{\PriorEntropyAUROC}{}
+\renewcommand{\PriorEntropyAUROC}{0.567}
+\providecommand{\PriorEntropyTrajAUROC}{}
+\renewcommand{\PriorEntropyTrajAUROC}{0.605}
+\providecommand{\PriorEntropyAUROCDelta}{}
+\renewcommand{\PriorEntropyAUROCDelta}{+0.038}
+\providecommand{\PriorEntropyAUROCLow}{}
+\renewcommand{\PriorEntropyAUROCLow}{+0.018}
+\providecommand{\PriorEntropyAUROCHigh}{}
+\renewcommand{\PriorEntropyAUROCHigh}{+0.056}
+\providecommand{\PriorEntropyAUPRCDelta}{}
+\renewcommand{\PriorEntropyAUPRCDelta}{+0.022}
+\providecommand{\PriorEntropyAURCDelta}{}
+\renewcommand{\PriorEntropyAURCDelta}{+0.041}
+\providecommand{\PriorFlipRateAUROC}{}
+\renewcommand{\PriorFlipRateAUROC}{0.544}
+\providecommand{\PriorFlipRateTrajAUROC}{}
+\renewcommand{\PriorFlipRateTrajAUROC}{0.605}
+\providecommand{\PriorFlipRateAUROCDelta}{}
+\renewcommand{\PriorFlipRateAUROCDelta}{+0.061}
+\providecommand{\PriorFlipRateAUROCLow}{}
+\renewcommand{\PriorFlipRateAUROCLow}{+0.042}
+\providecommand{\PriorFlipRateAUROCHigh}{}
+\renewcommand{\PriorFlipRateAUROCHigh}{+0.081}
+\providecommand{\PriorFlipRateAUPRCDelta}{}
+\renewcommand{\PriorFlipRateAUPRCDelta}{+0.040}
+\providecommand{\PriorFlipRateAURCDelta}{}
+\renewcommand{\PriorFlipRateAURCDelta}{+0.052}
+\providecommand{\CalibrationEligibleCells}{}
+\renewcommand{\CalibrationEligibleCells}{6}
+\providecommand{\CalibrationSkippedCells}{}
+\renewcommand{\CalibrationSkippedCells}{12}
+\providecommand{\CalibrationDecisionBrierLogistic}{}
+\renewcommand{\CalibrationDecisionBrierLogistic}{0.181}
+\providecommand{\CalibrationDecisionBrierIsotonic}{}
+\renewcommand{\CalibrationDecisionBrierIsotonic}{0.181}
+\providecommand{\CalibrationDecisionBrierDelta}{}
+\renewcommand{\CalibrationDecisionBrierDelta}{+0.000}
+\providecommand{\CalibrationDecisionNLLLogistic}{}
+\renewcommand{\CalibrationDecisionNLLLogistic}{0.544}
+\providecommand{\CalibrationDecisionNLLIsotonic}{}
+\renewcommand{\CalibrationDecisionNLLIsotonic}{0.576}
+\providecommand{\CalibrationDecisionNLLDelta}{}
+\renewcommand{\CalibrationDecisionNLLDelta}{-0.032}
+\providecommand{\CalibrationDecisionECELogistic}{}
+\renewcommand{\CalibrationDecisionECELogistic}{0.056}
+\providecommand{\CalibrationDecisionECEIsotonic}{}
+\renewcommand{\CalibrationDecisionECEIsotonic}{0.049}
+\providecommand{\CalibrationDecisionECEDelta}{}
+\renewcommand{\CalibrationDecisionECEDelta}{+0.007}
+\providecommand{\CalibrationDecisionAURCLogistic}{}
+\renewcommand{\CalibrationDecisionAURCLogistic}{0.364}
+\providecommand{\CalibrationDecisionAURCIsotonic}{}
+\renewcommand{\CalibrationDecisionAURCIsotonic}{0.356}
+\providecommand{\CalibrationDecisionAURCDelta}{}
+\renewcommand{\CalibrationDecisionAURCDelta}{+0.008}
+\providecommand{\CalibrationTrajBrierLogistic}{}
+\renewcommand{\CalibrationTrajBrierLogistic}{0.174}
+\providecommand{\CalibrationTrajBrierIsotonic}{}
+\renewcommand{\CalibrationTrajBrierIsotonic}{0.175}
+\providecommand{\CalibrationTrajBrierDelta}{}
+\renewcommand{\CalibrationTrajBrierDelta}{-0.001}
+\providecommand{\CalibrationTrajNLLLogistic}{}
+\renewcommand{\CalibrationTrajNLLLogistic}{0.531}
+\providecommand{\CalibrationTrajNLLIsotonic}{}
+\renewcommand{\CalibrationTrajNLLIsotonic}{0.540}
+\providecommand{\CalibrationTrajNLLDelta}{}
+\renewcommand{\CalibrationTrajNLLDelta}{-0.009}
+\providecommand{\CalibrationTrajECELogistic}{}
+\renewcommand{\CalibrationTrajECELogistic}{0.052}
+\providecommand{\CalibrationTrajECEIsotonic}{}
+\renewcommand{\CalibrationTrajECEIsotonic}{0.040}
+\providecommand{\CalibrationTrajECEDelta}{}
+\renewcommand{\CalibrationTrajECEDelta}{+0.011}
+\providecommand{\CalibrationTrajAURCLogistic}{}
+\renewcommand{\CalibrationTrajAURCLogistic}{0.328}
+\providecommand{\CalibrationTrajAURCIsotonic}{}
+\renewcommand{\CalibrationTrajAURCIsotonic}{0.332}
+\providecommand{\CalibrationTrajAURCDelta}{}
+\renewcommand{\CalibrationTrajAURCDelta}{-0.004}
+\providecommand{\AbstractResultSentence}{}
+\renewcommand{\AbstractResultSentence}{Across the frozen 18-cell matrix, trajectory features improve macro AUROC over decision-time entropy by +0.031 (95\% CI [+0.010, +0.050]), with positive point improvement in 2/3 model families.}
+\providecommand{\ResultsResultSentence}{}
+\renewcommand{\ResultsResultSentence}{The pre-registered RQ1 positive-claim gate is met: equal-cell macro AUROC improves by +0.031 (95\% CI [+0.010, +0.050]) and 2/3 model families improve. The gain is heterogeneous: LLaDA and Dream improve while SDAR does not, and ECE worsens despite gains in discrimination and selective risk.}
+\providecommand{\ConclusionResultSentence}{}
+\renewcommand{\ConclusionResultSentence}{The frozen primary analysis yields a macro AUROC improvement of +0.031 over decision-time entropy and satisfies the pre-registered RQ1 gate, with model-family and calibration heterogeneity retained as first-class findings.}
+\providecommand{\PaperStateLimitationsSentence}{}
+\renewcommand{\PaperStateLimitationsSentence}{RQ1 is complete and provenance-bound; RQ2--RQ5 claims remain provisional until their respective frozen registries pass final validation.}
+\providecommand{\DetailedPrimaryTable}{}
+\renewcommand{\DetailedPrimaryTable}{\section{Per-Cell Held-Out Results}
+\label{sec:per-cell-results}
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.8pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrrr@{}}
+\toprule
+Model & Dataset & $n$ & Err. & \multicolumn{3}{c}{AUROC $\uparrow$} & \multicolumn{3}{c}{AURC $\downarrow$}\\
+\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+ & & & (\%) & Decision & \method & $\Delta$ & Decision & \method & $\Delta$\\
+\midrule
+LLaDA & GSM8K & 500 & 54.4\% & 0.730 & 0.764 & +0.034 & 0.416 & 0.345 & +0.071\\
+LLaDA & MATH-500 & 347 & 77.5\% & 0.626 & 0.696 & +0.070 & 0.727 & 0.630 & +0.097\\
+LLaDA & GPQA-Diamond & 142 & 71.1\% & 0.523 & 0.460 & -0.064 & 0.691 & 0.718 & -0.028\\
+LLaDA & ARC-Challenge & 500 & 13.6\% & 0.544 & 0.592 & +0.048 & 0.136 & 0.104 & +0.032\\
+LLaDA & MMLU-Pro & 500 & 62.6\% & 0.523 & 0.593 & +0.070 & 0.630 & 0.548 & +0.082\\
+LLaDA & TruthfulQA & 572 & 48.3\% & 0.469 & 0.674 & +0.204 & 0.510 & 0.362 & +0.148\\
+\addlinespace[1pt]
+SDAR & GSM8K & 500 & 63.4\% & 0.695 & 0.709 & +0.014 & 0.523 & 0.481 & +0.042\\
+SDAR & MATH-500 & 347 & 95.1\% & 0.612 & 0.467 & -0.145 & 0.933 & 0.955 & -0.022\\
+SDAR & GPQA-Diamond & 142 & 80.3\% & 0.500 & 0.519 & +0.019 & 0.820 & 0.805 & +0.015\\
+SDAR & ARC-Challenge & 500 & 68.4\% & 0.535 & 0.588 & +0.053 & 0.677 & 0.623 & +0.054\\
+SDAR & MMLU-Pro & 500 & 87.2\% & 0.537 & 0.559 & +0.021 & 0.855 & 0.857 & -0.002\\
+SDAR & TruthfulQA & 572 & 39.5\% & 0.595 & 0.559 & -0.036 & 0.317 & 0.342 & -0.024\\
+\addlinespace[1pt]
+Dream & GSM8K & 500 & 50.2\% & 0.739 & 0.769 & +0.031 & 0.310 & 0.287 & +0.023\\
+Dream & MATH-500 & 347 & 77.8\% & 0.584 & 0.677 & +0.093 & 0.669 & 0.657 & +0.012\\
+Dream & GPQA-Diamond & 142 & 73.9\% & 0.574 & 0.560 & -0.014 & 0.676 & 0.691 & -0.015\\
+Dream & ARC-Challenge & 500 & 13.4\% & 0.557 & 0.558 & +0.001 & 0.122 & 0.125 & -0.003\\
+Dream & MMLU-Pro & 500 & 56.2\% & 0.485 & 0.481 & -0.004 & 0.570 & 0.568 & +0.002\\
+Dream & TruthfulQA & 572 & 54.4\% & 0.498 & 0.663 & +0.165 & 0.528 & 0.429 & +0.100\\
+\bottomrule
+\end{tabular*}
+\caption{Per-cell held-out discrimination and selective-risk results for the complete frozen $3\times6$ matrix. $\Delta$ is oriented so positive values favor \method: candidate minus baseline for AUROC and baseline minus candidate for lower-is-better AURC. The table is generated directly from the same provenance-bound primary aggregate used by the macro analysis.}
+\label{tab:per-cell-primary}
+\end{table*}}
+\newcommand{\RQOneSummaryTable}{\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Metric & Decision entropy & \method & Oriented $\Delta$ (95\% CI)\\
+\midrule
+AUROC $\uparrow$ & 0.574 & 0.605 & +0.031 [+0.010, +0.050]\\
+AUPRC $\uparrow$ & 0.664 & 0.685 & +0.021 [+0.009, +0.032]\\
+Brier $\downarrow$ & 0.189 & 0.188 & +0.001 [-0.001, +0.004]\\
+NLL $\downarrow$ & 0.562 & 0.568 & -0.006 [-0.018, +0.004]\\
+ECE$_{15}$ $\downarrow$ & 0.062 & 0.078 & -0.016 [-0.030, -0.012]\\
+AURC $\downarrow$ & 0.562 & 0.529 & +0.032 [+0.021, +0.044]\\
+\bottomrule
+\end{tabular}
+\caption{Complete frozen RQ1 equal-cell macro results over 18 model--dataset cells. Improvements are oriented so positive values favor \method; lower-is-better metrics therefore use baseline minus candidate. Confidence intervals are paired, class-stratified within cell and macro-averaged across cells.}
+\label{tab:rq1-complete}
+\end{table*}}

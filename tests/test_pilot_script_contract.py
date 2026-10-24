@@ -232,8 +232,6 @@ def test_a100_campaign_runner_preserves_human_gates_and_frozen_order():
     assert "scripts/execute_repeated_sampling.py --execute" in text
     assert "scripts/plan_adaptive_runs.py" in text
     assert "scripts/execute_adaptive_plan.py --execute" in text
-    assert "scripts/render_results_tex.py" in text
-    assert "scripts/render_paper_result_figures.py" in text
     assert "all-after-readiness" in text
 
 

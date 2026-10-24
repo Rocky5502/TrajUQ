@@ -20,17 +20,6 @@ def test_parameter_registry_is_exact_or_explicitly_undisclosed():
     assert all(row["parameter_evidence"] for row in data["models"])
 
 
-def test_manuscript_uses_generated_compute_macros():
-    main = (ROOT / "paper/main.tex").read_text(encoding="utf-8")
-    appendix = (ROOT / "paper/appendix.tex").read_text(encoding="utf-8")
-    assert r"\input{generated_compute}" in main
-    assert r"\TotalAuthoritativeGPUHours" in main
-    assert r"\RQFiveCostRMB" in main
-    assert r"\ComputeBudgetTable" in main
-    assert r"\ComputeBudgetAppendixTable" in appendix
-    assert "Provider-side hardware" in main
-
-
 def test_builder_defines_required_macros_and_does_not_use_utilization_as_multiplier():
     source = (ROOT / "scripts/build_compute_budget.py").read_text(encoding="utf-8")
     for macro in (

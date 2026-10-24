@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 from pathlib import Path
 import statistics
 from datetime import datetime, timezone
@@ -154,7 +153,8 @@ def main() -> None:
     if rq5_registry.exists():
         with rq5_registry.open(encoding="utf-8") as f:
             for line in f:
-                if line.strip(): rq5_rows.append(json.loads(line))
+                if line.strip():
+                    rq5_rows.append(json.loads(line))
     input_tokens = sum(int(r.get("prompt_tokens") or 0) for r in rq5_rows)
     output_tokens = sum(int(r.get("completion_tokens") or 0) for r in rq5_rows)
     reasoning_tokens = sum(int(r.get("reasoning_tokens") or 0) for r in rq5_rows)
@@ -259,9 +259,9 @@ def main() -> None:
         "\\begin{table*}[t]\\centering\\small\\setlength{\\tabcolsep}{4pt}",
         "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.20\\textwidth}>{\\raggedright\\arraybackslash}p{0.19\\textwidth}>{\\raggedright\\arraybackslash}p{0.16\\textwidth}>{\\raggedright\\arraybackslash}p{0.15\\textwidth}>{\\raggedright\\arraybackslash}p{0.22\\textwidth}@{}}\\toprule",
         "Model/stage & Parameters & Hardware/access & Precision & Measured usage \\\\ \\midrule",
-        row("dream", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
-        row("llada", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
-        row("sdar", "primary", "A100 80GB", f"\\TotalPrimaryGPUHours{{}} shared primary"),
+        row("dream", "primary", "A100 80GB", "\\TotalPrimaryGPUHours{} shared primary"),
+        row("llada", "primary", "A100 80GB", "\\TotalPrimaryGPUHours{} shared primary"),
+        row("sdar", "primary", "A100 80GB", "\\TotalPrimaryGPUHours{} shared primary"),
         row("llama31", "RQ4", "A100 80GB", "\\TotalRQFourGPUHours{}"),
         row("deepseek_v32", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared API requests"),
         row("glm51", "RQ5", "SiliconFlow API", "\\RQFiveRequests{} shared API requests"),

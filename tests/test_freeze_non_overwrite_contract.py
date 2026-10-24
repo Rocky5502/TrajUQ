@@ -27,7 +27,7 @@ def test_freeze_producers_refuse_overwrite_by_default():
     assert "Refusing to overwrite dataset-contract evidence" in contracts
     assert '--overwrite' in math_audit
     assert "Refusing to overwrite MATH-500 scorer audit evidence" in math_audit
-    assert 'math500_audit_argv.append("--overwrite")' in cpu_verifier
+    assert 'math500_audit.append("--overwrite")' in cpu_verifier
 
 
 def test_official_freeze_wrappers_never_request_overwrite():

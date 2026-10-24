@@ -21,8 +21,8 @@
   ],
   "required_final_sources": {
     "rq1": "results/primary_analysis/rq1_claim_gate.json",
-    "rq2": "results/repeated_sampling/macro_repeated.json",
-    "rq3": "results/adaptive/macro_cap_50.json",
+    "rq2": "results/repeated_sampling/macro_trajuq_vs_repeated.json",
+    "rq3": "results/adaptive/macro_cap_050.json",
     "rq4": "results/rq4/analysis/cross_model_macro.json",
     "rq5": "results/rq5/analysis/cross_model_macro.json"
   },

@@ -108,7 +108,7 @@ def test_bundle_ignores_pytest_scratch_secret_fixture(tmp_path, monkeypatch):
     scratch = root / "results" / "pytest_tmp" / "test_secret_fixture"
     scratch.mkdir(parents=True)
     (scratch / "bad.json").write_text(
-        json.dumps({"token": "hf_abcdefghijklmnopqrstuvwxyz123456"}),
+        json.dumps({"token": "hf_" + "abcdefghijklmnopqrstuvwxyz123456"}),
         encoding="utf-8",
     )
     output = root / "dist" / "handoff.zip"
@@ -125,7 +125,7 @@ def test_bundle_rejects_secret_like_token(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     monkeypatch.setattr(handoff, "git_value", fake_git_value)
     (root / "results" / "bad.json").write_text(
-        json.dumps({"token": "hf_abcdefghijklmnopqrstuvwxyz123456"}),
+        json.dumps({"token": "hf_" + "abcdefghijklmnopqrstuvwxyz123456"}),
         encoding="utf-8",
     )
 

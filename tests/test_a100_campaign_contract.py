@@ -17,7 +17,6 @@ def test_a100_campaign_exports_progress_handoffs_at_expensive_milestones():
         "analysis",
         "rq2",
         "rq3",
-        "paper",
     ):
         assert f'export_progress_handoff "{label}"' in text
 

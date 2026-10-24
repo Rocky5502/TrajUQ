@@ -4,6 +4,21 @@ The experiment configuration files are the authoritative machine-readable contra
 
 > Some frozen configuration files retain historical status fields from the point at which the protocol was frozen. Those fields are provenance, not a live campaign dashboard.
 
+## Model inventory
+
+| Model | Paradigm | Access | Role | Frozen identity |
+|---|---|---|---|---|
+| LLaDA-MoE-7B-A1B-Instruct | masked diffusion MoE | open-weight | RQ1–RQ3 primary | `783d3467f108d28ac0a78d3e41af16ab05cabd8d` |
+| SDAR-1.7B-Chat | blockwise diffusion | open-weight | RQ1–RQ3 primary | `14fcc4b796f05b9a11aa565b2353199af757d079` |
+| Dream-v0-Instruct-7B | masked diffusion | open-weight | RQ1–RQ3 primary | `05334cb9faaf763692dcf9d8737c642be2b2a6ae` |
+| Llama-3.1-8B-Instruct | autoregressive | open-weight | RQ4 control | `0e9e39f249a16976918f6564b8830bc894c89659` |
+| DeepSeek-V3.2 | hosted LLM | black-box API | RQ5 | `Pro/deepseek-ai/DeepSeek-V3.2` |
+| GLM-5.1 | hosted LLM | black-box API | RQ5 | `Pro/zai-org/GLM-5.1` |
+| Kimi-K2.6 | hosted LLM | black-box API | RQ5 | `Pro/moonshotai/Kimi-K2.6` |
+| HybridDiffusion-2B / FLARE | hybrid AR/diffusion | open-weight diagnostic | diagnostic only | upstream runtime pinned separately |
+
+The three RQ5 rows use **provider-visible identifiers as the reproducibility boundary**. Provider-side weight revisions, routing, precision, parameterization, and hardware are not assumed observable.
+
 ## Primary diffusion models
 
 ### LLaDA-MoE-7B-A1B-Instruct

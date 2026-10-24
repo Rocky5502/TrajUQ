@@ -389,14 +389,6 @@ run_rq3() {
   export_progress_handoff "rq3"
 }
 
-run_paper_render() {
-  "$PYTHON" scripts/render_results_tex.py
-  "$PYTHON" scripts/render_paper_result_figures.py
-  "$PYTHON" scripts/audit_paper.py
-  export_progress_handoff "paper"
-  printf '%s\n'     "[TrajUQ] Result rendering complete."     "[TrajUQ] Commit the paper-side changes before submission_readiness.py."
-}
-
 case "$STAGE" in
   status)
     "$PYTHON" scripts/project_status.py
@@ -452,9 +444,6 @@ case "$STAGE" in
     run_rq3
     ;;
 
-  paper)
-    run_paper_render
-    ;;
 
   all-after-readiness)
     require_primary_readiness
@@ -462,7 +451,7 @@ case "$STAGE" in
     run_analysis
     run_rq2
     run_rq3
-    run_paper_render
+    export_progress_handoff "complete"
     ;;
 
   autopilot-72h)
@@ -471,6 +460,6 @@ case "$STAGE" in
     ;;
 
   *)
-    fail "Unknown stage '$STAGE'. Use status|rental-start|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|paper|all-after-readiness|autopilot-72h."
+    fail "Unknown stage '$STAGE'. Use status|rental-start|pilot|parity-math|readiness|estimate|primary|analysis|rq2|rq3|all-after-readiness|autopilot-72h."
     ;;
 esac

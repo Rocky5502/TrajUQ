@@ -10,6 +10,5 @@
     {"path": "results/compute_budget/environment_manifest.json", "sha256": "d5471ac9e9e679b6834605bb7ea5d2516c4ead67497d8473db6efff69e2eadad", "status": "AUTHORIZED_SNAPSHOT", "purpose": "runtime and host provenance"}
   ],
   "pending_science": ["RQ2 final aggregate", "RQ4 integrated analysis", "RQ5 final aggregate", "cross-regime synthesis"],
-  "policy": "Only AUTHORIZED artifacts may populate empirical manuscript claims. Pending entries are never estimates."
+  "policy": "Only AUTHORIZED artifacts may support released empirical scientific claims. Pending entries are never replaced by estimates or progress summaries."
 }
-

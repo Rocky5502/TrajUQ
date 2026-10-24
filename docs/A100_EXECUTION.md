@@ -134,7 +134,7 @@ BUDGET_HOURS=72 MONITOR_SECONDS=2700 \
 
 The estimate stage is checked against the rental time still remaining with a
 frozen 6-hour operational reserve for model download/load overhead, CPU
-analysis/rendering, evidence export, and limited retry margin. Mean+reserve
+analysis/evidence validation, evidence export, and limited retry margin. Mean+reserve
 must fit before scale; a P90+reserve-only overrun is reported as a planning
 warning rather than used to weaken the frozen science.
 
@@ -335,7 +335,6 @@ bash scripts/a100_campaign_linux.sh primary
 bash scripts/a100_campaign_linux.sh analysis
 bash scripts/a100_campaign_linux.sh rq2
 bash scripts/a100_campaign_linux.sh rq3
-bash scripts/a100_campaign_linux.sh paper
 ```
 
 Or run the same sequence in one guarded invocation:
@@ -344,11 +343,7 @@ Or run the same sequence in one guarded invocation:
 bash scripts/a100_campaign_linux.sh all-after-readiness
 ```
 
-The runner re-checks the clean frozen checkout and readiness before GPU stages,
-preserves already-complete audited artifacts, and aborts on any planner/executor
-failure. It does not run the optional FLARE/RQ4 diagnostic. After the final
-paper-render stage, commit the artifact-derived paper changes as a later clean
-submission commit before running `scripts/submission_readiness.py`.
+The runner re-checks the clean frozen checkout and readiness before GPU stages, preserves already-complete audited artifacts, and aborts on any planner/executor failure. It does not run the optional FLARE/RQ4 diagnostic. The repository-side campaign ends with audited scientific artifacts and a privacy-scanned research handoff; manuscript rendering is intentionally handled outside this code repository.
 
 ## 7. Prepare only missing primary dataset pairs
 
@@ -459,36 +454,28 @@ The primary selection cap is 50%; 25% and 75% are frozen sensitivities. The
 policy is selective second-pass rerun, not continuation from the base
 trajectory.
 
-## 11. Paper rendering and submission checks
+## 11. Evidence validation and research handoff
 
-Empirical values must enter the manuscript only through artifact-derived
-rendering. The text renderer v2 requires eight SHA-bound sources: the complete
-primary aggregate, RQ1 gate, repeated-sampling aggregate, feature-ablation
-aggregate, prior-aligned signal aggregate, supplementary isotonic calibration-
-sensitivity aggregate, primary 50% adaptive aggregate, and frozen primary
-config. The isotonic source populates an appendix-only sensitivity table and
-does not alter the frozen RQ1 claim gate. The figure renderer independently binds the primary
-aggregate/config plus all three adaptive-cap artifacts before replacing any TBD
-result surface:
+After the registered experimental stages complete, keep the repository boundary focused on scientific artifacts rather than manuscript authoring.
+
+Refresh the local status and export a compact privacy-scanned handoff:
 
 ```bash
-python scripts/render_results_tex.py
-python scripts/render_paper_result_figures.py
-python scripts/audit_paper.py --submission-ready
+python scripts/project_status.py
+python scripts/export_research_handoff.py \
+  --output dist/trajuq_final_handoff.zip \
+  --skip-status-refresh
 ```
 
-After committing the artifact-derived final paper-side changes so the
-submission checkout is clean:
+For a deterministic code/reproducibility archive:
 
 ```bash
-python scripts/submission_readiness.py
+python scripts/package_release.py
 ```
 
-Do not stash those final rendered changes away before the gate; the readiness
-check must see the exact rendered manuscript and figure manifests that will be
-packaged.
+The handoff/release packages intentionally exclude raw generation JSONL, processed benchmark rows, model weights, credentials, and manuscript source. Scientific values should be consumed downstream from authorized artifacts such as the RQ aggregates and claim gates, never from operational progress logs.
 
-Do not type result numbers manually into `paper/main.tex`.
+See `docs/EVIDENCE_MAP.md` for the repository-side evidence contract.
 
 ## Stop conditions
 

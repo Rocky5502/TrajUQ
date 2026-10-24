@@ -11,7 +11,8 @@ def test_72h_autopilot_requires_readiness_and_prioritizes_core_stages():
     assert "nvidia-smi" in text
     assert "monitor_45m.log" in text
     assert "a100_72h_autopilot_state.json" in text
-    assert "for stage in estimate primary analysis rq3 rq2 paper" in text
+    assert "for stage in estimate primary analysis rq3 rq2; do" in text
+    assert "rq2 paper" not in text
 
 
 def test_72h_autopilot_never_runs_human_gate_recorders():

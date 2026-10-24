@@ -277,9 +277,9 @@ write_state "STARTING" "initializing" 0
 monitor_loop &
 MONITOR_PID="$!"
 
-# Priority order preserves the core paper under a fixed rental envelope:
-# full primary -> full analysis -> RQ3 -> expensive RQ2 -> paper rendering.
-for stage in estimate primary analysis rq3 rq2 paper; do
+# Priority order preserves the registered science under a fixed rental envelope:
+# full primary -> full analysis -> RQ3 -> expensive RQ2.
+for stage in estimate primary analysis rq3 rq2; do
   set +e
   run_stage "$stage"
   rc=$?

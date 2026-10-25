@@ -23,7 +23,9 @@
     "claim_gate_decided": true,
     "registry_frozen": true,
     "seed_jobs_expected": 120,
-    "seed_jobs_complete": 120
+    "seed_jobs_complete": 120,
+    "partitions_expected": 24,
+    "partitions_complete": 24
   },
   "sources": [
     {"path": "results/REPLACE_SOURCE", "sha256": "REPLACE_WITH_64_HEX_SHA256"}

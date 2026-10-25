@@ -16,6 +16,7 @@
     "generated_at_utc": {"type": "string", "minLength": 1},
     "analysis_script": {"type": "string", "minLength": 1},
     "analysis_script_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence_builder_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "audit_status": {"const": "PASS"},
     "identifiers": {
       "type": "object",
@@ -44,7 +45,9 @@
         "claim_gate_decided": {"const": true},
         "registry_frozen": {"const": true},
         "seed_jobs_expected": {"type": "integer", "minimum": 1},
-        "seed_jobs_complete": {"type": "integer", "minimum": 0}
+        "seed_jobs_complete": {"type": "integer", "minimum": 0},
+        "partitions_expected": {"type": "integer", "minimum": 1},
+        "partitions_complete": {"type": "integer", "minimum": 0}
       },
       "additionalProperties": false
     },

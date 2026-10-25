@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from scripts.build_compute_budget import audited_final_run, classify_stage
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,3 +38,32 @@ def test_secret_material_is_not_persisted_by_capture_script():
     remote_payload = source.split("def parse_credentials", 1)[0]
     assert '"password"' not in remote_payload
     assert "host_id_sha256" in source
+
+
+def test_repeated_sampling_artifacts_are_classified_as_rq2():
+    assert classify_stage("repeated") == "rq2"
+    assert classify_stage("repeated_sampling") == "rq2"
+
+
+def test_compute_accounting_requires_a_clean_commit_bound_pass_audit():
+    commit = "28002055c828c6910840de6f2105aa6367514144"
+    run = {
+        "audit_present": True,
+        "audit_status": "PASS",
+        "audit_git_clean": True,
+        "audit_git_commit": commit,
+        "audit_stage": "raw",
+        "audit_binds_output": True,
+    }
+    assert audited_final_run(run, commit)
+    for key in (
+        "audit_present",
+        "audit_status",
+        "audit_git_clean",
+        "audit_git_commit",
+        "audit_stage",
+        "audit_binds_output",
+    ):
+        invalid = dict(run)
+        invalid[key] = None
+        assert not audited_final_run(invalid, commit)

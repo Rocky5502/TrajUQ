@@ -55,6 +55,60 @@ def atomic_json(path: Path, payload: dict[str, Any]) -> None:
             candidate.unlink()
 
 
+def validate_finalization_counts(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, int]:
+    """Recount every frozen partition and seed gate from the execution snapshot."""
+    state_cells = {str(cell.get("cell")): cell for cell in state.get("cells", [])}
+    if len(state_cells) != 12:
+        raise ValueError("RQ2 execution snapshot does not contain 12 unique cells")
+
+    seed_jobs_expected = 0
+    seed_jobs_complete = 0
+    partitions_expected = 0
+    partitions_complete = 0
+    for cell in plan["cells"]:
+        label = str(cell["cell"])
+        observed = state_cells.get(label)
+        if observed is None:
+            raise ValueError(f"RQ2 execution snapshot is missing cell {label}")
+        expected_seeds = {str(int(seed)) for seed in cell["seeds"]}
+        for key in ("calibration_generation", "test_generation"):
+            partitions_expected += 1
+            generation = observed.get(key)
+            if not isinstance(generation, dict):
+                raise ValueError(f"RQ2 execution snapshot is missing {label}:{key}")
+            seeds = generation.get("seeds")
+            if not isinstance(seeds, dict) or set(seeds) != expected_seeds:
+                raise ValueError(f"RQ2 seed ownership differs from the frozen plan for {label}:{key}")
+            seed_jobs_expected += len(expected_seeds)
+            complete = sum(
+                bool(seed.get("complete") and seed.get("ids_complete") and seed.get("audit_pass"))
+                for seed in seeds.values()
+                if isinstance(seed, dict)
+            )
+            seed_jobs_complete += complete
+            partition_complete = bool(
+                generation.get("complete")
+                and generation.get("manifest_valid")
+                and complete == len(expected_seeds)
+            )
+            partitions_complete += int(partition_complete)
+
+    if seed_jobs_expected != 120 or seed_jobs_complete != seed_jobs_expected:
+        raise ValueError(
+            f"RQ2 seed audits are incomplete: {seed_jobs_complete}/{seed_jobs_expected}"
+        )
+    if partitions_expected != 24 or partitions_complete != partitions_expected:
+        raise ValueError(
+            f"RQ2 partition audits are incomplete: {partitions_complete}/{partitions_expected}"
+        )
+    return {
+        "seed_jobs_expected": seed_jobs_expected,
+        "seed_jobs_complete": seed_jobs_complete,
+        "partitions_expected": partitions_expected,
+        "partitions_complete": partitions_complete,
+    }
+
+
 def build(root: Path, plan_path: Path, state_path: Path, output: Path) -> dict[str, Any]:
     plan = load_json(root / plan_path)
     state = load_json(root / state_path)
@@ -68,6 +122,8 @@ def build(root: Path, plan_path: Path, state_path: Path, output: Path) -> dict[s
         raise ValueError("RQ2 execution state is not complete")
     if int(state.get("complete_cells", -1)) != 12:
         raise ValueError("RQ2 does not contain 12 complete cells")
+
+    gate_counts = validate_finalization_counts(plan, state)
 
     models = sorted({str(cell["adapter"]) for cell in plan["cells"]})
     datasets = sorted({str(cell["dataset"]) for cell in plan["cells"]})
@@ -96,6 +152,7 @@ def build(root: Path, plan_path: Path, state_path: Path, output: Path) -> dict[s
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "analysis_script": script_path.as_posix(),
         "analysis_script_sha256": sha256_file(root / script_path),
+        "evidence_builder_sha256": sha256_file(Path(__file__)),
         "audit_status": "PASS",
         "identifiers": {"models": models, "datasets": datasets, "seeds": seeds},
         "gates": {
@@ -107,8 +164,7 @@ def build(root: Path, plan_path: Path, state_path: Path, output: Path) -> dict[s
             "analysis_complete": True,
             "claim_gate_decided": True,
             "registry_frozen": True,
-            "seed_jobs_expected": 120,
-            "seed_jobs_complete": 120,
+            **gate_counts,
         },
         "sources": sources,
         "outputs": outputs,

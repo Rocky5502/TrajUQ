@@ -59,6 +59,30 @@ def iso_from_epoch(epoch: float) -> str:
     return datetime.fromtimestamp(epoch, timezone.utc).isoformat()
 
 
+def classify_stage(value: object) -> str:
+    stage = str(value or "unknown").lower()
+    if stage == "primary":
+        return "primary"
+    if stage in {"rq2", "repeated", "repeated_sampling"}:
+        return "rq2"
+    if stage in {"rq3", "adaptive", "adaptive_compute"}:
+        return "rq3"
+    if stage in {"rq4", "llama31"}:
+        return "rq4"
+    return stage
+
+
+def audited_final_run(run: dict, expected_commit: str | None) -> bool:
+    return bool(
+        run.get("audit_present")
+        and run.get("audit_status") == "PASS"
+        and run.get("audit_git_clean") is True
+        and run.get("audit_git_commit") == expected_commit
+        and run.get("audit_stage") == "raw"
+        and run.get("audit_binds_output") is True
+    )
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     registry = load(ROOT / "configs" / "operations" / "model_parameter_registry.json")
@@ -76,18 +100,8 @@ def main() -> None:
         seconds = float(run.get("generation_seconds") or 0.0)
         end = datetime.fromisoformat(run["file_end_utc"])
         start = end.timestamp() - seconds
-        stage_raw = str(run.get("stage") or "unknown").lower()
-        if stage_raw == "primary":
-            stage = "primary"
-        elif stage_raw in {"rq2", "repeated_sampling"}:
-            stage = "rq2"
-        elif stage_raw in {"rq3", "adaptive_compute"}:
-            stage = "rq3"
-        elif stage_raw in {"rq4", "llama31"}:
-            stage = "rq4"
-        else:
-            stage = stage_raw
-        finalized = bool(run.get("audit_present"))
+        stage = classify_stage(run.get("stage"))
+        finalized = audited_final_run(run, (env.get("git") or {}).get("commit"))
         authoritative = stage in {"primary", "rq2", "rq3", "rq4"}
         ledger.append({
             "record_type": "authoritative_experimental_compute" if authoritative else "development_diagnostic_recovery_compute",

@@ -54,16 +54,27 @@ for path in sorted(glob.glob('/data/TrajUQ/runs/**/*.raw.jsonl', recursive=True)
         raw.append({'path':os.path.relpath(path,'/data/TrajUQ'),'read_error':str(exc)})
         continue
     audit=path+'.audit.json'
+    output_sha=sha(path)
+    audit_payload={}
+    if os.path.exists(audit):
+        try:
+            with open(audit,encoding='utf-8') as f: audit_payload=json.load(f)
+        except Exception: audit_payload={}
     rel=os.path.relpath(path,'/data/TrajUQ')
     parts=rel.replace('\\','/').split('/')
     raw.append({
       'path':rel,'stage':parts[1] if len(parts)>1 else 'unknown',
       'model':model or (parts[2] if len(parts)>2 else None),
       'dataset':dataset or (parts[3] if len(parts)>3 else None),
-      'split':os.path.basename(path).split('.')[0], 'rows':rows,
+      'split':parts[4] if len(parts)>4 else os.path.basename(path).split('.')[0], 'rows':rows,
       'generation_seconds':seconds, 'file_end_utc':iso(os.path.getmtime(path)),
-      'output_sha256':sha(path), 'audit_present':os.path.exists(audit),
+      'output_sha256':output_sha, 'audit_present':os.path.exists(audit),
       'audit_sha256':sha(audit) if os.path.exists(audit) else None,
+      'audit_status':audit_payload.get('status'),
+      'audit_git_clean':audit_payload.get('git_clean'),
+      'audit_git_commit':audit_payload.get('git_commit'),
+      'audit_stage':audit_payload.get('stage'),
+      'audit_binds_output':audit_payload.get('sha256') == output_sha,
       'peak_gpu_memory_bytes':max(peak) if peak else None,
     })
 

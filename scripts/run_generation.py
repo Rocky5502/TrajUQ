@@ -101,11 +101,15 @@ def generate_record(
 
     start = time.perf_counter()
     if args.adapter == "llama_ar":
+        do_sample = bool(getattr(args, "do_sample", False))
         result = adapter.generate(
             prompt,
             seed=seed,
             max_new_tokens=args.max_new_tokens,
-            do_sample=False,
+            do_sample=do_sample,
+            temperature=args.temperature if do_sample else None,
+            top_p=args.top_p if do_sample else None,
+            top_k=getattr(args, "top_k", 0) if do_sample else None,
             top_k_telemetry=args.ar_top_k_telemetry,
         )
     elif args.adapter == "dream":
@@ -211,6 +215,8 @@ def main() -> None:
     parser.add_argument("--mask-id", type=int, default=None)
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
+    parser.add_argument("--top-k", type=int, default=0)
+    parser.add_argument("--do-sample", action="store_true")
     parser.add_argument("--llada-cfg-scale", type=float, default=0.0)
     parser.add_argument(
         "--llada-remasking",

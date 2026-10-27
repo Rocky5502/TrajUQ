@@ -32,10 +32,17 @@ def test_ar_summary_features_are_deterministic_and_prospectively_named():
     assert result["entropy_volatility"] > 0.0
 
 
-def test_llama_ar_generation_contract_is_greedy_and_precommit():
+def test_llama_ar_generation_contract_preserves_greedy_and_supports_frozen_sampling():
     text = Path("src/trajuq/adapters/llama_ar.py").read_text(encoding="utf-8")
-    assert "do_sample=False" in text
-    assert "output_scores=True" in text
+    runner = Path("scripts/run_generation.py").read_text(encoding="utf-8")
+    assert '"do_sample": bool(do_sample)' in text
+    assert '"temperature": float(temperature)' in text
+    assert '"top_p": float(top_p)' in text
+    assert '"top_k": int(top_k)' in text
+    assert '"output_scores": True' in text
+    assert "def native_generate_token_ids(" in text
     assert "processed_prediction_scores_before_token_commit" in text
+    assert 'parser.add_argument("--do-sample", action="store_true")' in runner
+    assert 'do_sample = bool(getattr(args, "do_sample", False))' in runner
     assert '"correct"' not in text
     assert '"reference"' not in text

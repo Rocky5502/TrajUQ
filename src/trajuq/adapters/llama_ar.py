@@ -58,7 +58,7 @@ def summarize_ar_trace(
 
 
 class LlamaARAdapter(BaseAdapter):
-    """Greedy Llama 3.1 adapter with pre-token-commit uncertainty telemetry."""
+    """Llama 3.1 adapter with pre-token-commit uncertainty telemetry."""
 
     name = "llama_ar"
 
@@ -89,43 +89,118 @@ class LlamaARAdapter(BaseAdapter):
             torch_dtype=dtype_obj,
         ).to(device).eval()
 
-    def generate(
-        self,
-        prompt: str,
-        seed: int = 2027,
-        max_new_tokens: int = 512,
-        do_sample: bool = False,
-        top_k_telemetry: int = 20,
-        **_: object,
-    ) -> GenerationResult:
-        if do_sample:
-            raise ValueError("RQ4 primary telemetry is frozen to deterministic greedy decoding.")
-        if top_k_telemetry < 2:
-            raise ValueError("top_k_telemetry must be at least 2.")
+    def _seed(self, seed: int) -> None:
+        self.torch.manual_seed(seed)
+        if self.torch.cuda.is_available():
+            self.torch.cuda.manual_seed_all(seed)
 
-        torch = self.torch
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-
+    def _inputs(self, prompt: str):
         rendered = self.tokenizer.apply_chat_template(
             [{"role": "user", "content": prompt}],
             tokenize=False,
             add_generation_prompt=True,
         )
         inputs = self.tokenizer(rendered, return_tensors="pt", add_special_tokens=False)
-        input_ids = inputs.input_ids.to(self.device)
-        attention_mask = inputs.attention_mask.to(self.device)
+        return inputs.input_ids.to(self.device), inputs.attention_mask.to(self.device)
+
+    @staticmethod
+    def _generation_kwargs(
+        *,
+        max_new_tokens: int,
+        do_sample: bool,
+        temperature: float | None,
+        top_p: float | None,
+        top_k: int | None,
+    ) -> dict[str, object]:
+        kwargs: dict[str, object] = {
+            "do_sample": bool(do_sample),
+            "max_new_tokens": int(max_new_tokens),
+            "use_cache": True,
+        }
+        if do_sample:
+            kwargs.update(
+                {
+                    "temperature": float(temperature),
+                    "top_p": float(top_p),
+                    "top_k": int(top_k),
+                }
+            )
+        return kwargs
+
+    def native_generate_token_ids(
+        self,
+        prompt: str,
+        *,
+        seed: int,
+        max_new_tokens: int,
+        do_sample: bool,
+        temperature: float | None,
+        top_p: float | None,
+        top_k: int | None,
+    ) -> list[int]:
+        """Run the native generation path without telemetry for parity checks."""
+
+        self._seed(seed)
+        input_ids, attention_mask = self._inputs(prompt)
+        kwargs = self._generation_kwargs(
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+        )
+        with self.torch.inference_mode():
+            sequences = self.model.generate(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                **kwargs,
+            )
+        return [int(token) for token in sequences[0, input_ids.shape[1] :].tolist()]
+
+    def generate(
+        self,
+        prompt: str,
+        seed: int = 2027,
+        max_new_tokens: int = 512,
+        do_sample: bool = False,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        top_k_telemetry: int = 20,
+        **_: object,
+    ) -> GenerationResult:
+        if top_k_telemetry < 2:
+            raise ValueError("top_k_telemetry must be at least 2.")
+        if do_sample:
+            if temperature is None or float(temperature) <= 0.0:
+                raise ValueError("Sampled AR generation requires temperature > 0.")
+            if top_p is None or not 0.0 < float(top_p) <= 1.0:
+                raise ValueError("Sampled AR generation requires 0 < top_p <= 1.")
+            if top_k is None or int(top_k) < 0:
+                raise ValueError("Sampled AR generation requires top_k >= 0.")
+
+        torch = self.torch
+        self._seed(seed)
+        input_ids, attention_mask = self._inputs(prompt)
+        generation_kwargs = self._generation_kwargs(
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+        )
+        generation_kwargs.update(
+            {
+                "return_dict_in_generate": True,
+                "output_scores": True,
+            }
+        )
 
         with torch.inference_mode():
             output = self.model.generate(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                do_sample=False,
-                max_new_tokens=max_new_tokens,
-                return_dict_in_generate=True,
-                output_scores=True,
-                use_cache=True,
+                **generation_kwargs,
             )
 
         generated_ids = output.sequences[0, input_ids.shape[1] :]
@@ -141,14 +216,23 @@ class LlamaARAdapter(BaseAdapter):
 
         for step, (scores, chosen) in enumerate(zip(output.scores, generated_ids)):
             logp = torch.log_softmax(scores[0].float(), dim=-1)
+            finite = torch.isfinite(logp)
             probabilities = logp.exp()
             normalized_entropy = float(
-                (-(probabilities * logp).sum() / max(math.log(scores.shape[-1]), 1.0)).item()
+                (
+                    -(probabilities[finite] * logp[finite]).sum()
+                    / max(math.log(scores.shape[-1]), 1.0)
+                ).item()
             )
-            top_values, top_ids = torch.topk(logp, k=min(top_k_telemetry, scores.shape[-1]))
+            finite_count = max(1, int(finite.sum().item()))
+            top_values, top_ids = torch.topk(
+                logp,
+                k=min(top_k_telemetry, finite_count),
+            )
             top_probabilities = top_values.exp()
             token_confidence = float(top_probabilities[0].item())
-            token_margin = float((top_probabilities[0] - top_probabilities[1]).item())
+            runner_up = top_probabilities[1] if len(top_probabilities) > 1 else 0.0
+            token_margin = float((top_probabilities[0] - runner_up).item())
             token_nll = float((-logp[int(chosen)]).item())
 
             entropy.append(normalized_entropy)
@@ -192,7 +276,10 @@ class LlamaARAdapter(BaseAdapter):
                 "model_id": self.model_id,
                 "model_revision": self.revision,
                 "max_new_tokens": int(max_new_tokens),
-                "do_sample": False,
+                "do_sample": bool(do_sample),
+                "temperature": float(temperature) if do_sample else None,
+                "top_p": float(top_p) if do_sample else None,
+                "top_k": int(top_k) if do_sample else None,
                 "prompt_rendering": "apply_chat_template_single_user_add_generation_prompt",
                 "telemetry_observation": "processed_prediction_scores_before_token_commit",
                 "telemetry_schema_version": TELEMETRY_SCHEMA_VERSION,

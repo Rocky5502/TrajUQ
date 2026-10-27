@@ -1,0 +1,1024 @@
+{
+  "auxiliary_compute": {
+    "aggregation": "equal_cell_weight_macro",
+    "complete": true,
+    "definition": "extra five-sample repeated-generation wall time; target generation excluded",
+    "expected_cells": 12,
+    "mean_test_auxiliary_wall_time_seconds_per_example": 135.98009066262316,
+    "mean_test_p90_auxiliary_wall_time_seconds_per_example": 138.93037042360325,
+    "observed_cells_with_complete_test_wall_time": 12,
+    "sample_count": 5
+  },
+  "cell_set_complete": true,
+  "comparison": "single_trajectory_trajuq_vs_five_sample_baseline",
+  "delta_direction": "positive_means_trajuq_is_better",
+  "eligible_datasets": [
+    "gsm8k",
+    "math500",
+    "gpqa_diamond",
+    "mmlu_pro"
+  ],
+  "excluded_datasets": {
+    "arc_challenge": "Secondary compute-bounded comparator excludes ARC-Challenge because broad multiple-choice coverage is already represented by MMLU-Pro; ARC-Challenge remains in the full 18-cell primary and RQ3 analyses.\n",
+    "truthfulqa": "Secondary compute-bounded comparator excludes TruthfulQA to preserve the 72-hour single-A100 envelope; TruthfulQA remains in the full 18-cell primary and RQ3 analyses.\n"
+  },
+  "expected_cells": 12,
+  "macro": {
+    "auprc": {
+      "baseline_macro": 0.7691727289505708,
+      "candidate_macro": 0.7845668717180928,
+      "improvement_ci_high": 0.0331862845672958,
+      "improvement_ci_low": 0.0008541754590551457,
+      "improvement_macro": 0.015394142767522092,
+      "model_family_macro_improvement": {
+        "dream": -0.004640119165841061,
+        "llada": 0.031094248909500244,
+        "sdar": 0.019728298558907092
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 5,
+      "positive_cells": 7,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "aurc": {
+      "baseline_macro": 0.6484277752101933,
+      "candidate_macro": 0.6285560778159316,
+      "improvement_ci_high": 0.037018695583975324,
+      "improvement_ci_low": 0.0032365021585747463,
+      "improvement_macro": 0.019871697394261898,
+      "model_family_macro_improvement": {
+        "dream": -0.023401070345937372,
+        "llada": 0.06237672759064983,
+        "sdar": 0.020639434938073242
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 4,
+      "positive_cells": 8,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "auroc": {
+      "baseline_macro": 0.5945298265844483,
+      "candidate_macro": 0.6045965084811472,
+      "improvement_ci_high": 0.041965129957964566,
+      "improvement_ci_low": -0.018601858460737496,
+      "improvement_macro": 0.010066681896698898,
+      "model_family_macro_improvement": {
+        "dream": -0.04472790605628639,
+        "llada": 0.04172345766464351,
+        "sdar": 0.033204494081739575
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 4,
+      "positive_cells": 8,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "brier": {
+      "baseline_macro": 0.18179307078721083,
+      "candidate_macro": 0.18588184233091645,
+      "improvement_ci_high": 0.0012030649782296314,
+      "improvement_ci_low": -0.009152387953733937,
+      "improvement_macro": -0.004088771543705659,
+      "model_family_macro_improvement": {
+        "dream": -0.010416497602150333,
+        "llada": 0.0047137248851873495,
+        "sdar": -0.006563541914153993
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 9,
+      "positive_cells": 3,
+      "positive_model_families": 1,
+      "zero_cells": 0
+    },
+    "ece15": {
+      "baseline_macro": 0.055398414706720016,
+      "candidate_macro": 0.08924014412889662,
+      "improvement_ci_high": -0.026166316857255036,
+      "improvement_ci_low": -0.05323903505629696,
+      "improvement_macro": -0.03384172942217662,
+      "model_family_macro_improvement": {
+        "dream": -0.03465349675117307,
+        "llada": -0.03341853627610505,
+        "sdar": -0.03345315523925174
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 10,
+      "positive_cells": 2,
+      "positive_model_families": 0,
+      "zero_cells": 0
+    },
+    "nll": {
+      "baseline_macro": 0.5449158397169628,
+      "candidate_macro": 0.5669326934528157,
+      "improvement_ci_high": -0.002626628166538455,
+      "improvement_ci_low": -0.04204933979947542,
+      "improvement_macro": -0.0220168537358529,
+      "model_family_macro_improvement": {
+        "dream": -0.04816517316325317,
+        "llada": 0.007160113250115618,
+        "sdar": -0.025045501294421145
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 9,
+      "positive_cells": 3,
+      "positive_model_families": 1,
+      "zero_cells": 0
+    },
+    "risk50": {
+      "baseline_macro": 0.6429375827949843,
+      "candidate_macro": 0.6445150288705414,
+      "improvement_ci_high": 0.018635462668645207,
+      "improvement_ci_low": -0.016524124592551544,
+      "improvement_macro": -0.001577446075556983,
+      "model_family_macro_improvement": {
+        "dream": -0.04875613165082757,
+        "llada": 0.037263355520532324,
+        "sdar": 0.0067604379036242945
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 6,
+      "positive_cells": 6,
+      "positive_model_families": 2,
+      "zero_cells": 0
+    },
+    "risk80": {
+      "baseline_macro": 0.6809040551087789,
+      "candidate_macro": 0.6820316904371239,
+      "improvement_ci_high": 0.006461402246482769,
+      "improvement_ci_low": -0.010520927117585692,
+      "improvement_macro": -0.0011276353283451261,
+      "model_family_macro_improvement": {
+        "dream": -0.0030632190221849126,
+        "llada": -0.00454897456335239,
+        "sdar": 0.004229287600501924
+      },
+      "n_boot": 2000,
+      "n_cells": 12,
+      "n_model_families": 3,
+      "negative_cells": 6,
+      "positive_cells": 6,
+      "positive_model_families": 1,
+      "zero_cells": 0
+    }
+  },
+  "observed_cells": 12,
+  "per_cell": {
+    "dream:gpqa_diamond": {
+      "adapter": "dream",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 31.03652989119947,
+        "p90_auxiliary_wall_time_seconds_per_example": 31.33147216412472,
+        "sample_count": 5
+      },
+      "dataset": "gpqa_diamond",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.7865145417962319,
+          "trajuq": 0.779157657824113,
+          "trajuq_improvement": -0.007356883972118977
+        },
+        "aurc": {
+          "repeated_sampling": 0.6747283237410672,
+          "trajuq": 0.6910148521882291,
+          "trajuq_improvement": -0.01628652844716194
+        },
+        "auroc": {
+          "repeated_sampling": 0.6075933075933077,
+          "trajuq": 0.5603603603603603,
+          "trajuq_improvement": -0.04723294723294735
+        },
+        "brier": {
+          "repeated_sampling": 0.18721915041722823,
+          "trajuq": 0.21715242865221346,
+          "trajuq_improvement": -0.029933278234985233
+        },
+        "ece15": {
+          "repeated_sampling": 0.05123847366576003,
+          "trajuq": 0.15094177996557798,
+          "trajuq_improvement": -0.09970330629981794
+        },
+        "nll": {
+          "repeated_sampling": 0.5599478332270355,
+          "trajuq": 0.7292609780302758,
+          "trajuq_improvement": -0.16931314480324033
+        },
+        "risk50": {
+          "repeated_sampling": 0.6704225352112676,
+          "trajuq": 0.7464788732394366,
+          "trajuq_improvement": -0.07605633802816902
+        },
+        "risk80": {
+          "repeated_sampling": 0.7293233082706767,
+          "trajuq": 0.7105263157894737,
+          "trajuq_improvement": 0.018796992481203034
+        }
+      },
+      "n": 142
+    },
+    "dream:gsm8k": {
+      "adapter": "dream",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 32.345826878866646,
+        "p90_auxiliary_wall_time_seconds_per_example": 32.65567433603574,
+        "sample_count": 5
+      },
+      "dataset": "gsm8k",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.642486939341917,
+          "trajuq": 0.7454807065911164,
+          "trajuq_improvement": 0.1029937672491994
+        },
+        "aurc": {
+          "repeated_sampling": 0.3348428305078041,
+          "trajuq": 0.2871056177579943,
+          "trajuq_improvement": 0.0477372127498098
+        },
+        "auroc": {
+          "repeated_sampling": 0.6982911726587626,
+          "trajuq": 0.7693883102129634,
+          "trajuq_improvement": 0.07109713755420077
+        },
+        "brier": {
+          "repeated_sampling": 0.21913337052586615,
+          "trajuq": 0.19577800182147725,
+          "trajuq_improvement": 0.023355368704388896
+        },
+        "ece15": {
+          "repeated_sampling": 0.04950752767578925,
+          "trajuq": 0.04439143661615122,
+          "trajuq_improvement": 0.005116091059638027
+        },
+        "nll": {
+          "repeated_sampling": 0.6282549897834678,
+          "trajuq": 0.5737378449214586,
+          "trajuq_improvement": 0.054517144862009204
+        },
+        "risk50": {
+          "repeated_sampling": 0.3539,
+          "trajuq": 0.312,
+          "trajuq_improvement": 0.04189999999999999
+        },
+        "risk80": {
+          "repeated_sampling": 0.45653225806451614,
+          "trajuq": 0.43,
+          "trajuq_improvement": 0.026532258064516145
+        }
+      },
+      "n": 500
+    },
+    "dream:math500": {
+      "adapter": "dream",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 29.190468153643547,
+        "p90_auxiliary_wall_time_seconds_per_example": 29.701272920728663,
+        "sample_count": 5
+      },
+      "dataset": "math500",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.86621670913957,
+          "trajuq": 0.8533283022280977,
+          "trajuq_improvement": -0.012888406911472305
+        },
+        "aurc": {
+          "repeated_sampling": 0.6405216177188661,
+          "trajuq": 0.6569294941002954,
+          "trajuq_improvement": -0.016407876381429376
+        },
+        "auroc": {
+          "repeated_sampling": 0.7121452621452621,
+          "trajuq": 0.6773929773929774,
+          "trajuq_improvement": -0.034752284752284646
+        },
+        "brier": {
+          "repeated_sampling": 0.15648204199935853,
+          "trajuq": 0.15954811002889752,
+          "trajuq_improvement": -0.0030660680295389875
+        },
+        "ece15": {
+          "repeated_sampling": 0.07298404864604595,
+          "trajuq": 0.048399077697513226,
+          "trajuq_improvement": 0.024584970948532722
+        },
+        "nll": {
+          "repeated_sampling": 0.4841104418622533,
+          "trajuq": 0.49542192844468974,
+          "trajuq_improvement": -0.011311486582436414
+        },
+        "risk50": {
+          "repeated_sampling": 0.675194660734149,
+          "trajuq": 0.6954022988505747,
+          "trajuq_improvement": -0.020207638116425675
+        },
+        "risk80": {
+          "repeated_sampling": 0.7538203014230951,
+          "trajuq": 0.762589928057554,
+          "trajuq_improvement": -0.008769626634458905
+        }
+      },
+      "n": 347
+    },
+    "dream:mmlu_pro": {
+      "adapter": "dream",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 30.49748841783544,
+        "p90_auxiliary_wall_time_seconds_per_example": 35.59784396473551,
+        "sample_count": 5
+      },
+      "dataset": "mmlu_pro",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.6589156815647732,
+          "trajuq": 0.5576067285358008,
+          "trajuq_improvement": -0.10130895302897236
+        },
+        "aurc": {
+          "repeated_sampling": 0.4593854424251182,
+          "trajuq": 0.5680325317300862,
+          "trajuq_improvement": -0.10864708930496797
+        },
+        "auroc": {
+          "repeated_sampling": 0.6488568225028031,
+          "trajuq": 0.48083329270868874,
+          "trajuq_improvement": -0.16802352979411433
+        },
+        "brier": {
+          "repeated_sampling": 0.23053363855762538,
+          "trajuq": 0.2625556514060914,
+          "trajuq_improvement": -0.03202201284846601
+        },
+        "ece15": {
+          "repeated_sampling": 0.041834790062487075,
+          "trajuq": 0.11044653277553214,
+          "trajuq_improvement": -0.06861174271304507
+        },
+        "nll": {
+          "repeated_sampling": 0.6533620265433948,
+          "trajuq": 0.7199152326727399,
+          "trajuq_improvement": -0.06655320612934512
+        },
+        "risk50": {
+          "repeated_sampling": 0.4393394495412844,
+          "trajuq": 0.58,
+          "trajuq_improvement": -0.14066055045871556
+        },
+        "risk80": {
+          "repeated_sampling": 0.5211875,
+          "trajuq": 0.57,
+          "trajuq_improvement": -0.048812499999999925
+        }
+      },
+      "n": 500
+    },
+    "llada:gpqa_diamond": {
+      "adapter": "llada",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 346.81778182766175,
+        "p90_auxiliary_wall_time_seconds_per_example": 350.1340326995589,
+        "sample_count": 5
+      },
+      "dataset": "gpqa_diamond",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.7364574485617577,
+          "trajuq": 0.6921141417466279,
+          "trajuq_improvement": -0.04434330681512977
+        },
+        "aurc": {
+          "repeated_sampling": 0.6891056062668786,
+          "trajuq": 0.7184254200716323,
+          "trajuq_improvement": -0.02931981380475379
+        },
+        "auroc": {
+          "repeated_sampling": 0.5439507365370684,
+          "trajuq": 0.4597923206954842,
+          "trajuq_improvement": -0.08415841584158418
+        },
+        "brier": {
+          "repeated_sampling": 0.20748048115374434,
+          "trajuq": 0.21682546843828812,
+          "trajuq_improvement": -0.009344987284543776
+        },
+        "ece15": {
+          "repeated_sampling": 0.05529100136649316,
+          "trajuq": 0.09545862160197657,
+          "trajuq_improvement": -0.04016762023548341
+        },
+        "nll": {
+          "repeated_sampling": 0.6055656027789931,
+          "trajuq": 0.6265296183277006,
+          "trajuq_improvement": -0.020964015548707526
+        },
+        "risk50": {
+          "repeated_sampling": 0.6836734693877551,
+          "trajuq": 0.7183098591549296,
+          "trajuq_improvement": -0.034636389767174536
+        },
+        "risk80": {
+          "repeated_sampling": 0.6961722488038277,
+          "trajuq": 0.7105263157894737,
+          "trajuq_improvement": -0.014354066985646008
+        }
+      },
+      "n": 142
+    },
+    "llada:gsm8k": {
+      "adapter": "llada",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 345.52066986314065,
+        "p90_auxiliary_wall_time_seconds_per_example": 348.52561092635153,
+        "sample_count": 5
+      },
+      "dataset": "gsm8k",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.6109702881152461,
+          "trajuq": 0.7713602906723515,
+          "trajuq_improvement": 0.16039000255710534
+        },
+        "aurc": {
+          "repeated_sampling": 0.5053961405072819,
+          "trajuq": 0.34537742115370296,
+          "trajuq_improvement": 0.16001871935357892
+        },
+        "auroc": {
+          "repeated_sampling": 0.574077657378741,
+          "trajuq": 0.7639157636738907,
+          "trajuq_improvement": 0.18983810629514974
+        },
+        "brier": {
+          "repeated_sampling": 0.23376738127049657,
+          "trajuq": 0.19802077930627518,
+          "trajuq_improvement": 0.035746601964221386
+        },
+        "ece15": {
+          "repeated_sampling": 0.011807877420415273,
+          "trajuq": 0.056514551310749096,
+          "trajuq_improvement": -0.04470667389033382
+        },
+        "nll": {
+          "repeated_sampling": 0.6562151344444537,
+          "trajuq": 0.5959797807485168,
+          "trajuq_improvement": 0.06023535369593691
+        },
+        "risk50": {
+          "repeated_sampling": 0.5033259423503326,
+          "trajuq": 0.336,
+          "trajuq_improvement": 0.16732594235033255
+        },
+        "risk80": {
+          "repeated_sampling": 0.5033259423503326,
+          "trajuq": 0.4725,
+          "trajuq_improvement": 0.03082594235033259
+        }
+      },
+      "n": 500
+    },
+    "llada:math500": {
+      "adapter": "llada",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 344.20204162867657,
+        "p90_auxiliary_wall_time_seconds_per_example": 347.4326560296584,
+        "sample_count": 5
+      },
+      "dataset": "math500",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.8443253661495668,
+          "trajuq": 0.8585813108914524,
+          "trajuq_improvement": 0.014255944741885629
+        },
+        "aurc": {
+          "repeated_sampling": 0.7192540971521059,
+          "trajuq": 0.6303298695947893,
+          "trajuq_improvement": 0.08892422755731655
+        },
+        "auroc": {
+          "repeated_sampling": 0.6363549709274615,
+          "trajuq": 0.6961681441235346,
+          "trajuq_improvement": 0.059813173196073044
+        },
+        "brier": {
+          "repeated_sampling": 0.16889873592849583,
+          "trajuq": 0.16127971832099128,
+          "trajuq_improvement": 0.007619017607504552
+        },
+        "ece15": {
+          "repeated_sampling": 0.06501184580227407,
+          "trajuq": 0.08047918949480475,
+          "trajuq_improvement": -0.01546734369253068
+        },
+        "nll": {
+          "repeated_sampling": 0.5055787672052959,
+          "trajuq": 0.5038949364161719,
+          "trajuq_improvement": 0.0016838307891240412
+        },
+        "risk50": {
+          "repeated_sampling": 0.7079646017699115,
+          "trajuq": 0.6954022988505747,
+          "trajuq_improvement": 0.012562302919336799
+        },
+        "risk80": {
+          "repeated_sampling": 0.7367898784420739,
+          "trajuq": 0.7517985611510791,
+          "trajuq_improvement": -0.015008682709005239
+        }
+      },
+      "n": 347
+    },
+    "llada:mmlu_pro": {
+      "adapter": "llada",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 347.45838049010234,
+        "p90_auxiliary_wall_time_seconds_per_example": 351.32745660841465,
+        "sample_count": 5
+      },
+      "dataset": "mmlu_pro",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.6935024221534276,
+          "trajuq": 0.6875767773075674,
+          "trajuq_improvement": -0.005925644845860223
+        },
+        "aurc": {
+          "repeated_sampling": 0.5779873184478548,
+          "trajuq": 0.5481035411913971,
+          "trajuq_improvement": 0.029883777256457633
+        },
+        "auroc": {
+          "repeated_sampling": 0.5916522868223677,
+          "trajuq": 0.5930532538313031,
+          "trajuq_improvement": 0.0014009670089354387
+        },
+        "brier": {
+          "repeated_sampling": 0.23682487941581123,
+          "trajuq": 0.251990612162244,
+          "trajuq_improvement": -0.015165732746432764
+        },
+        "ece15": {
+          "repeated_sampling": 0.10880924733268481,
+          "trajuq": 0.14214175461875708,
+          "trajuq_improvement": -0.033332507286072274
+        },
+        "nll": {
+          "repeated_sampling": 0.7029693144837617,
+          "trajuq": 0.7152840304196526,
+          "trajuq_improvement": -0.012314715935890952
+        },
+        "risk50": {
+          "repeated_sampling": 0.5718015665796344,
+          "trajuq": 0.568,
+          "trajuq_improvement": 0.0038015665796344855
+        },
+        "risk80": {
+          "repeated_sampling": 0.5803409090909091,
+          "trajuq": 0.6,
+          "trajuq_improvement": -0.019659090909090904
+        }
+      },
+      "n": 500
+    },
+    "sdar:gpqa_diamond": {
+      "adapter": "sdar",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 39.05726985243218,
+        "p90_auxiliary_wall_time_seconds_per_example": 42.5519516655826,
+        "sample_count": 5
+      },
+      "dataset": "gpqa_diamond",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.8159884108742548,
+          "trajuq": 0.837580728587159,
+          "trajuq_improvement": 0.021592317712904263
+        },
+        "aurc": {
+          "repeated_sampling": 0.8313894854562218,
+          "trajuq": 0.8049088467578777,
+          "trajuq_improvement": 0.02648063869834416
+        },
+        "auroc": {
+          "repeated_sampling": 0.49780701754385964,
+          "trajuq": 0.5191102756892231,
+          "trajuq_improvement": 0.021303258145363435
+        },
+        "brier": {
+          "repeated_sampling": 0.1629916943344561,
+          "trajuq": 0.17852896158658776,
+          "trajuq_improvement": -0.01553726725213167
+        },
+        "ece15": {
+          "repeated_sampling": 0.054370701195752213,
+          "trajuq": 0.14203181195322906,
+          "trajuq_improvement": -0.08766111075747685
+        },
+        "nll": {
+          "repeated_sampling": 0.5144802916401494,
+          "trajuq": 0.5709563381650937,
+          "trajuq_improvement": -0.05647604652494431
+        },
+        "risk50": {
+          "repeated_sampling": 0.7887323943661971,
+          "trajuq": 0.8028169014084507,
+          "trajuq_improvement": -0.014084507042253613
+        },
+        "risk80": {
+          "repeated_sampling": 0.7860780984719864,
+          "trajuq": 0.7807017543859649,
+          "trajuq_improvement": 0.005376344086021501
+        }
+      },
+      "n": 142
+    },
+    "sdar:gsm8k": {
+      "adapter": "sdar",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 29.439210246048635,
+        "p90_auxiliary_wall_time_seconds_per_example": 34.197559357539284,
+        "sample_count": 5
+      },
+      "dataset": "gsm8k",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.7677013005139669,
+          "trajuq": 0.7968133732090947,
+          "trajuq_improvement": 0.029112072695127833
+        },
+        "aurc": {
+          "repeated_sampling": 0.5046986107302255,
+          "trajuq": 0.4807151275099927,
+          "trajuq_improvement": 0.023983483220232804
+        },
+        "auroc": {
+          "repeated_sampling": 0.703168364620503,
+          "trajuq": 0.709348227060385,
+          "trajuq_improvement": 0.006179862439882
+        },
+        "brier": {
+          "repeated_sampling": 0.2039249070772957,
+          "trajuq": 0.20415440301242982,
+          "trajuq_improvement": -0.00022949593513413302
+        },
+        "ece15": {
+          "repeated_sampling": 0.03687071663876969,
+          "trajuq": 0.06254480797712694,
+          "trajuq_improvement": -0.025674091338357255
+        },
+        "nll": {
+          "repeated_sampling": 0.5941869854204697,
+          "trajuq": 0.5950605224570437,
+          "trajuq_improvement": -0.0008735370365740014
+        },
+        "risk50": {
+          "repeated_sampling": 0.47977528089887644,
+          "trajuq": 0.476,
+          "trajuq_improvement": 0.0037752808988764652
+        },
+        "risk80": {
+          "repeated_sampling": 0.57875,
+          "trajuq": 0.5775,
+          "trajuq_improvement": 0.0012499999999999734
+        }
+      },
+      "n": 500
+    },
+    "sdar:math500": {
+      "adapter": "sdar",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 33.637643873102775,
+        "p90_auxiliary_wall_time_seconds_per_example": 37.578518506814724,
+        "sample_count": 5
+      },
+      "dataset": "math500",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.9477592168238849,
+          "trajuq": 0.9480060075709288,
+          "trajuq_improvement": 0.00024679074704392345
+        },
+        "aurc": {
+          "repeated_sampling": 0.9583316443595902,
+          "trajuq": 0.9546586637644882,
+          "trajuq_improvement": 0.0036729805951020156
+        },
+        "auroc": {
+          "repeated_sampling": 0.4587344028520499,
+          "trajuq": 0.4672014260249555,
+          "trajuq_improvement": 0.008467023172905597
+        },
+        "brier": {
+          "repeated_sampling": 0.047450633537809005,
+          "trajuq": 0.050646774133727104,
+          "trajuq_improvement": -0.0031961405959180997
+        },
+        "ece15": {
+          "repeated_sampling": 0.016811370437174483,
+          "trajuq": 0.03706596728293293,
+          "trajuq_improvement": -0.02025459684575845
+        },
+        "nll": {
+          "repeated_sampling": 0.206538102848411,
+          "trajuq": 0.22750964690006223,
+          "trajuq_improvement": -0.02097154405165122
+        },
+        "risk50": {
+          "repeated_sampling": 0.9584639498432602,
+          "trajuq": 0.9597701149425287,
+          "trajuq_improvement": -0.001306165099268508
+        },
+        "risk80": {
+          "repeated_sampling": 0.9517425021022143,
+          "trajuq": 0.9532374100719424,
+          "trajuq_improvement": -0.0014949079697280654
+        }
+      },
+      "n": 347
+    },
+    "sdar:mmlu_pro": {
+      "adapter": "sdar",
+      "auxiliary_compute": {
+        "definition": "extra repeated-generation wall time for the frozen auxiliary samples; target generation excluded",
+        "mean_auxiliary_wall_time_seconds_per_example": 22.557776828768198,
+        "p90_auxiliary_wall_time_seconds_per_example": 26.130395903694446,
+        "sample_count": 5
+      },
+      "dataset": "mmlu_pro",
+      "metrics": {
+        "auprc": {
+          "repeated_sampling": 0.8592344223722524,
+          "trajuq": 0.8871964354528048,
+          "trajuq_improvement": 0.02796201308055235
+        },
+        "aurc": {
+          "repeated_sampling": 0.8854921852093073,
+          "trajuq": 0.8570715479706933,
+          "trajuq_improvement": 0.02842063723861399
+        },
+        "auroc": {
+          "repeated_sampling": 0.46172591743119273,
+          "trajuq": 0.55859375,
+          "trajuq_improvement": 0.09686783256880727
+        },
+        "brier": {
+          "repeated_sampling": 0.12680993522834247,
+          "trajuq": 0.13410119910177454,
+          "trajuq_improvement": -0.007291263873432069
+        },
+        "ece15": {
+          "repeated_sampling": 0.10024337623699416,
+          "trajuq": 0.10046619825240856,
+          "trajuq_improvement": -0.00022282201541440338
+        },
+        "nll": {
+          "repeated_sampling": 0.42778058636586797,
+          "trajuq": 0.449641463930383,
+          "trajuq_improvement": -0.021860877564515047
+        },
+        "risk50": {
+          "repeated_sampling": 0.8826571428571428,
+          "trajuq": 0.844,
+          "trajuq_improvement": 0.038657142857142834
+        },
+        "risk80": {
+          "repeated_sampling": 0.8767857142857143,
+          "trajuq": 0.865,
+          "trajuq_improvement": 0.011785714285714288
+        }
+      },
+      "n": 500
+    }
+  },
+  "plan": "results/repeated_sampling_plan.json",
+  "protocol": "trajuq_vs_repeated_macro_v2",
+  "provenance": {
+    "git_clean": true,
+    "git_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "protocol": "trajuq_analysis_source_binding_v1",
+    "sources": {
+      "plan": {
+        "path": "results/repeated_sampling_plan.json",
+        "sha256": "09fe7b6061dd19a5e12f431ebf72fe838af0517982e8a98425b2192cd9ccd00e"
+      },
+      "repeated_metrics:dream:gpqa_diamond": {
+        "path": "results/repeated_sampling/dream/gpqa_diamond/metrics.json",
+        "sha256": "e93fdb366ba93fd0576ad37d12f43f9fb04e79d3cc75a525e72ac89b3c74c4d1"
+      },
+      "repeated_metrics:dream:gsm8k": {
+        "path": "results/repeated_sampling/dream/gsm8k/metrics.json",
+        "sha256": "7ecc0dc503472e8b31ab1d8cb2e0d2b9510dac1519db00528ac4b8e9696318d2"
+      },
+      "repeated_metrics:dream:math500": {
+        "path": "results/repeated_sampling/dream/math500/metrics.json",
+        "sha256": "94b5426a5b2dd507be6f53b8733ae8ca0ad30f6d23b173a0f9cc0266785e4b06"
+      },
+      "repeated_metrics:dream:mmlu_pro": {
+        "path": "results/repeated_sampling/dream/mmlu_pro/metrics.json",
+        "sha256": "86f301ce62bd63fdbbd8a4ca8e5139109a4c18f0b3fd4e932602bd7f1a78d60a"
+      },
+      "repeated_metrics:llada:gpqa_diamond": {
+        "path": "results/repeated_sampling/llada/gpqa_diamond/metrics.json",
+        "sha256": "f9f518b7b1bebf7029ab0db543d9ad76118dd892415440e18eae5b33fcc5d51f"
+      },
+      "repeated_metrics:llada:gsm8k": {
+        "path": "results/repeated_sampling/llada/gsm8k/metrics.json",
+        "sha256": "47a786d1b9845f32f7c93c4ab7897d7ea4b132f819941c5c69bd7b32170c0ed3"
+      },
+      "repeated_metrics:llada:math500": {
+        "path": "results/repeated_sampling/llada/math500/metrics.json",
+        "sha256": "093e1020f374afe606c70944c08de08a006abcf32408fd362aa1467cda6bbb4f"
+      },
+      "repeated_metrics:llada:mmlu_pro": {
+        "path": "results/repeated_sampling/llada/mmlu_pro/metrics.json",
+        "sha256": "7287a72c87f1a0c781f0c30243cb5abfa58f5ae83afafbac8003f1c36a329d00"
+      },
+      "repeated_metrics:sdar:gpqa_diamond": {
+        "path": "results/repeated_sampling/sdar/gpqa_diamond/metrics.json",
+        "sha256": "3b7819e9c844fb641dd8b8873e7abd8a05180d2ed93b39f7545e266ea422d730"
+      },
+      "repeated_metrics:sdar:gsm8k": {
+        "path": "results/repeated_sampling/sdar/gsm8k/metrics.json",
+        "sha256": "7fb8c25aea824b1856a3ddec037d8731e30beb123fdf25f0eaa050f1d12323a4"
+      },
+      "repeated_metrics:sdar:math500": {
+        "path": "results/repeated_sampling/sdar/math500/metrics.json",
+        "sha256": "faffc79cdcb19ff1597216448b97544fe936738ab01b66f3b23994b7b85321ae"
+      },
+      "repeated_metrics:sdar:mmlu_pro": {
+        "path": "results/repeated_sampling/sdar/mmlu_pro/metrics.json",
+        "sha256": "676dc3c8ac7293029c732403abc3cea5d59b5bcc4c5631a92e79c203d0bede16"
+      },
+      "repeated_predictions:dream:gpqa_diamond": {
+        "path": "results/repeated_sampling/dream/gpqa_diamond/predictions.jsonl",
+        "sha256": "2cc59bd8e1961eead293f94adaaa38de5ed7d1c7c4b43b19e8f2d982582b2d68"
+      },
+      "repeated_predictions:dream:gsm8k": {
+        "path": "results/repeated_sampling/dream/gsm8k/predictions.jsonl",
+        "sha256": "c5b447c897cf6cab5ec3afdba8da362fe048bcb9dd8a1cd1d40936ef77c79cf6"
+      },
+      "repeated_predictions:dream:math500": {
+        "path": "results/repeated_sampling/dream/math500/predictions.jsonl",
+        "sha256": "b7551330870c2d06a3a12710106ee0755b176ef65196cba2bdd7f898fd5b292f"
+      },
+      "repeated_predictions:dream:mmlu_pro": {
+        "path": "results/repeated_sampling/dream/mmlu_pro/predictions.jsonl",
+        "sha256": "1676ecdd2cb9710082b8d17745281c0fe34871f9867b05fc5fef1d794363c442"
+      },
+      "repeated_predictions:llada:gpqa_diamond": {
+        "path": "results/repeated_sampling/llada/gpqa_diamond/predictions.jsonl",
+        "sha256": "1f426edefac47e04abdeb5cff35fc072316e8c432bd4657fcc2069da3bdfd301"
+      },
+      "repeated_predictions:llada:gsm8k": {
+        "path": "results/repeated_sampling/llada/gsm8k/predictions.jsonl",
+        "sha256": "7fcea57aba12f8b9c5294206b3666f328f87f8a3feb72af922960dcbc28f268f"
+      },
+      "repeated_predictions:llada:math500": {
+        "path": "results/repeated_sampling/llada/math500/predictions.jsonl",
+        "sha256": "46f604faf35cc180d7c4395cb168e4ef8c4f0fdf387298b286382f98e47ad339"
+      },
+      "repeated_predictions:llada:mmlu_pro": {
+        "path": "results/repeated_sampling/llada/mmlu_pro/predictions.jsonl",
+        "sha256": "5eb45b0b9128c83e9615cb782b6ef0e56e21303dd6682752f2b01b41f764b55f"
+      },
+      "repeated_predictions:sdar:gpqa_diamond": {
+        "path": "results/repeated_sampling/sdar/gpqa_diamond/predictions.jsonl",
+        "sha256": "899e690937beeefdd73d45a7c57f48c76cdb54b381fd34cc8b1d9ea385593107"
+      },
+      "repeated_predictions:sdar:gsm8k": {
+        "path": "results/repeated_sampling/sdar/gsm8k/predictions.jsonl",
+        "sha256": "29d080fb3432c64aa1ddd3c78641166b576bf7d5a86157793bf01c98a530a3c2"
+      },
+      "repeated_predictions:sdar:math500": {
+        "path": "results/repeated_sampling/sdar/math500/predictions.jsonl",
+        "sha256": "579176c747a53b1dfa951116d5a0093b23a632ad0826f3200274fef79eb2d1ba"
+      },
+      "repeated_predictions:sdar:mmlu_pro": {
+        "path": "results/repeated_sampling/sdar/mmlu_pro/predictions.jsonl",
+        "sha256": "d7bc459030d0cb267ae3ac198dd506ecfa2ee3e8d03d034d73bff3beeee46fa5"
+      },
+      "scored_target:dream:gpqa_diamond": {
+        "path": "runs/primary/dream/gpqa_diamond/test.scored.jsonl",
+        "sha256": "495e52b02a4040f368cac1df69e966345b9aa3cc1311b22422da126e99477e38"
+      },
+      "scored_target:dream:gsm8k": {
+        "path": "runs/primary/dream/gsm8k/test.scored.jsonl",
+        "sha256": "a6873c7d2c68e4961a2fd2076c36afd20f6e16d455c03a2ca8547d9bf21a0c5c"
+      },
+      "scored_target:dream:math500": {
+        "path": "runs/primary/dream/math500/test.scored.jsonl",
+        "sha256": "3e8d39d3b4e8c3ce6a89b3c5a26ce4b15f46530a47d86feaf60ba53346516ad0"
+      },
+      "scored_target:dream:mmlu_pro": {
+        "path": "runs/primary/dream/mmlu_pro/test.scored.jsonl",
+        "sha256": "449a9eb01cb83a78e9ead91c6f513ff9fe8de521c0de09ebf8ee1320ba037fe8"
+      },
+      "scored_target:llada:gpqa_diamond": {
+        "path": "runs/primary/llada/gpqa_diamond/test.scored.jsonl",
+        "sha256": "6f66fbf2d42d8ec23605b580433eb57445c449982d3d37b54902e244d4d6c289"
+      },
+      "scored_target:llada:gsm8k": {
+        "path": "runs/primary/llada/gsm8k/test.scored.jsonl",
+        "sha256": "751b7923dc715eb5b1741babe8c9cd94acd3bdcec5a5c9582efb362d521a3d7a"
+      },
+      "scored_target:llada:math500": {
+        "path": "runs/primary/llada/math500/test.scored.jsonl",
+        "sha256": "27ed595169b6add7f31ea3ef3540103ee7d28cfce84b3f987ea8c5c0532f372a"
+      },
+      "scored_target:llada:mmlu_pro": {
+        "path": "runs/primary/llada/mmlu_pro/test.scored.jsonl",
+        "sha256": "86fb16e64eab07878396980c8a1c33ae5b636a537bf4f5cb6298544fd719dbca"
+      },
+      "scored_target:sdar:gpqa_diamond": {
+        "path": "runs/primary/sdar/gpqa_diamond/test.scored.jsonl",
+        "sha256": "41292c80e99ec09c0b6d00e2f36b8a5f6a73d217d45780aea9adc139a8188010"
+      },
+      "scored_target:sdar:gsm8k": {
+        "path": "runs/primary/sdar/gsm8k/test.scored.jsonl",
+        "sha256": "bf99927ba4a24bb8909cb8c57f84d6b4255280d82bce4ecaadc2c15bc842a3e6"
+      },
+      "scored_target:sdar:math500": {
+        "path": "runs/primary/sdar/math500/test.scored.jsonl",
+        "sha256": "893caf6db2d59a0ff5de66dcbd26fdb3651a77fd075b21df33a03be11679dc4c"
+      },
+      "scored_target:sdar:mmlu_pro": {
+        "path": "runs/primary/sdar/mmlu_pro/test.scored.jsonl",
+        "sha256": "7aa0c00b9a1569556bcce9d67404fd607c171e3d000469d96aa636c76efa8c2a"
+      },
+      "trajuq_predictions:dream:gpqa_diamond": {
+        "path": "results/primary_analysis/dream/gpqa_diamond/predictions.jsonl",
+        "sha256": "ad3c85e58e2d6afef9ebd76d00f50a70c8e3b863ac68670606aadcb3d81f8968"
+      },
+      "trajuq_predictions:dream:gsm8k": {
+        "path": "results/primary_analysis/dream/gsm8k/predictions.jsonl",
+        "sha256": "9a0ccab4dfe2c70718373ac2fb4787605c5af3791f9aa6cdb6ce7070c7625d80"
+      },
+      "trajuq_predictions:dream:math500": {
+        "path": "results/primary_analysis/dream/math500/predictions.jsonl",
+        "sha256": "3388023041fa3984cef4a4d6ccc80a9b64402d7a79041307f4c36f8d678fa72b"
+      },
+      "trajuq_predictions:dream:mmlu_pro": {
+        "path": "results/primary_analysis/dream/mmlu_pro/predictions.jsonl",
+        "sha256": "dae4f6e85c3c3f57e6273c5beb6a476d7813dae1259df2f8ec2646c04084ebf6"
+      },
+      "trajuq_predictions:llada:gpqa_diamond": {
+        "path": "results/primary_analysis/llada/gpqa_diamond/predictions.jsonl",
+        "sha256": "dfe75b89162af976165df241728ad3ace5b166acc9338777ab35500b1f965fe1"
+      },
+      "trajuq_predictions:llada:gsm8k": {
+        "path": "results/primary_analysis/llada/gsm8k/predictions.jsonl",
+        "sha256": "129f2e34336fcc6dbf7f8585b0044002755dfff32dcb499f9ca5d4294e9e52cd"
+      },
+      "trajuq_predictions:llada:math500": {
+        "path": "results/primary_analysis/llada/math500/predictions.jsonl",
+        "sha256": "eb1eff7fe0651d459dbf5742a2c7ef354b1b6bb33f6f522d842e2627030cbd30"
+      },
+      "trajuq_predictions:llada:mmlu_pro": {
+        "path": "results/primary_analysis/llada/mmlu_pro/predictions.jsonl",
+        "sha256": "d71e8f9b3871650568d992bc84653ea74feb838fe59b1a87367501323b3efe6b"
+      },
+      "trajuq_predictions:sdar:gpqa_diamond": {
+        "path": "results/primary_analysis/sdar/gpqa_diamond/predictions.jsonl",
+        "sha256": "4a72320d585ee4e59ec06abd4cf6cfbc95839f2080a58aa368dc8a76de09db65"
+      },
+      "trajuq_predictions:sdar:gsm8k": {
+        "path": "results/primary_analysis/sdar/gsm8k/predictions.jsonl",
+        "sha256": "96cedf4d86f68d4ae1675855c486f7c5ba9977d5b05912a78062523226959c7b"
+      },
+      "trajuq_predictions:sdar:math500": {
+        "path": "results/primary_analysis/sdar/math500/predictions.jsonl",
+        "sha256": "3c4d23eb63a99984faf918551ae27771821ed0d479e15b4cec109ae86cc2dcb8"
+      },
+      "trajuq_predictions:sdar:mmlu_pro": {
+        "path": "results/primary_analysis/sdar/mmlu_pro/predictions.jsonl",
+        "sha256": "cd2ccc79d727ef6f244fe0c2e8328cad978f7b50e9adc0ace8a24a38a2cff83e"
+      }
+    }
+  }
+}

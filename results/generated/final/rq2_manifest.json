@@ -1,0 +1,62 @@
+{
+  "analysis_script": "scripts/execute_repeated_sampling.py",
+  "analysis_script_sha256": "4a2343c06ed71889942f62ba96679592c5955e06b6832142fb7fa687b5088cab",
+  "audit_status": "PASS",
+  "evidence_builder_sha256": "2c4473f3960d2ae53f9929b1ef09961e1a4b2936ca6f3a16a00c7abc69eae41a",
+  "experiment_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "gates": {
+    "analysis_complete": true,
+    "audits_pass": true,
+    "claim_gate_decided": true,
+    "completeness_pass": true,
+    "generation_complete": true,
+    "partitions_complete": 24,
+    "partitions_expected": 24,
+    "registry_frozen": true,
+    "scoring_complete": true,
+    "seed_jobs_complete": 120,
+    "seed_jobs_expected": 120,
+    "uniqueness_pass": true
+  },
+  "generated_at_utc": "2026-10-26T23:53:54.877172Z",
+  "identifiers": {
+    "datasets": [
+      "gpqa_diamond",
+      "gsm8k",
+      "math500",
+      "mmlu_pro"
+    ],
+    "models": [
+      "dream",
+      "llada",
+      "sdar"
+    ],
+    "seeds": [
+      2027,
+      2028,
+      2029,
+      2030,
+      2031
+    ]
+  },
+  "outputs": [
+    {
+      "path": "results/repeated_sampling/macro_trajuq_vs_repeated.json",
+      "sha256": "eb12c0f5b6d7227bb13553aa3f7c5b262adf45c012002bc3b0a4ce10cf9b7268"
+    }
+  ],
+  "registry_version": "paper-evidence-v1",
+  "rq": "RQ2",
+  "schema": "trajuq_final_rq_evidence_v1",
+  "sources": [
+    {
+      "path": "results/repeated_sampling_plan.json",
+      "sha256": "09fe7b6061dd19a5e12f431ebf72fe838af0517982e8a98425b2192cd9ccd00e"
+    },
+    {
+      "path": "results/repeated_sampling_execution_state.json",
+      "sha256": "194a84b14e9d1915e2d18a315b73be31ebee058753eeab258fc91798f04d655b"
+    }
+  ],
+  "status": "FINAL"
+}

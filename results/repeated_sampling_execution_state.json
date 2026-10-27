@@ -1,0 +1,1044 @@
+{
+  "cells": [
+    {
+      "adapter": "llada",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/llada/gsm8k/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/gsm8k/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "llada:gsm8k",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/llada/gsm8k/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/gsm8k/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gsm8k/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 153,
+        "manifest": "runs/repeated/llada/math500/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/math500/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "llada:math500",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "math500",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 347,
+        "manifest": "runs/repeated/llada/math500/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/math500/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/math500/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 56,
+        "manifest": "runs/repeated/llada/gpqa_diamond/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/gpqa_diamond/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "llada:gpqa_diamond",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 142,
+        "manifest": "runs/repeated/llada/gpqa_diamond/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/gpqa_diamond/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/gpqa_diamond/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 70,
+        "manifest": "runs/repeated/llada/mmlu_pro/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/mmlu_pro/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "llada:mmlu_pro",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/llada/mmlu_pro/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/llada/mmlu_pro/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/llada/mmlu_pro/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/sdar/gsm8k/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/gsm8k/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "sdar:gsm8k",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/sdar/gsm8k/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/gsm8k/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gsm8k/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 153,
+        "manifest": "runs/repeated/sdar/math500/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/math500/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "sdar:math500",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "math500",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 347,
+        "manifest": "runs/repeated/sdar/math500/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/math500/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/math500/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 56,
+        "manifest": "runs/repeated/sdar/gpqa_diamond/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/gpqa_diamond/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "sdar:gpqa_diamond",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 142,
+        "manifest": "runs/repeated/sdar/gpqa_diamond/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/gpqa_diamond/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/gpqa_diamond/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 70,
+        "manifest": "runs/repeated/sdar/mmlu_pro/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/mmlu_pro/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "sdar:mmlu_pro",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/sdar/mmlu_pro/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/sdar/mmlu_pro/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/sdar/mmlu_pro/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/dream/gsm8k/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/gsm8k/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "dream:gsm8k",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/dream/gsm8k/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/gsm8k/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gsm8k/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 153,
+        "manifest": "runs/repeated/dream/math500/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/math500/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "dream:math500",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "math500",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 347,
+        "manifest": "runs/repeated/dream/math500/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/math500/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/math500/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 56,
+        "manifest": "runs/repeated/dream/gpqa_diamond/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/gpqa_diamond/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "dream:gpqa_diamond",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 142,
+        "manifest": "runs/repeated/dream/gpqa_diamond/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/gpqa_diamond/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/gpqa_diamond/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_generation": {
+        "complete": true,
+        "expected_records": 70,
+        "manifest": "runs/repeated/dream/mmlu_pro/calibration/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/mmlu_pro/calibration",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/calibration/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/calibration/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/calibration/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/calibration/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/calibration/seed-2031.raw.jsonl"
+          }
+        }
+      },
+      "cell": "dream:mmlu_pro",
+      "comparison": "COMPLETE",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluation": "COMPLETE",
+      "test_generation": {
+        "complete": true,
+        "expected_records": 500,
+        "manifest": "runs/repeated/dream/mmlu_pro/test/manifest.json",
+        "manifest_valid": true,
+        "output_dir": "runs/repeated/dream/mmlu_pro/test",
+        "seeds": {
+          "2027": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/test/seed-2027.raw.jsonl"
+          },
+          "2028": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/test/seed-2028.raw.jsonl"
+          },
+          "2029": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/test/seed-2029.raw.jsonl"
+          },
+          "2030": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/test/seed-2030.raw.jsonl"
+          },
+          "2031": {
+            "audit_pass": true,
+            "complete": true,
+            "ids_complete": true,
+            "path": "runs/repeated/dream/mmlu_pro/test/seed-2031.raw.jsonl"
+          }
+        }
+      }
+    }
+  ],
+  "complete_cells": 12,
+  "expected_cells": 12,
+  "experiment_git_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "macro": "COMPLETE",
+  "observed_cells": 12,
+  "plan_protocol": "trajuq_repeated_sampling_plan_v2",
+  "protocol": "trajuq_repeated_execution_state_v2",
+  "status": "COMPLETE"
+}

@@ -76,7 +76,15 @@ Registered final aggregate:
 
 The frozen repeated-sampling comparator covers three primary diffusion models × GSM8K, MATH-500, GPQA-Diamond, and MMLU-Pro with five seeds (2027–2031). ARC-Challenge and TruthfulQA are not part of this compute-bounded comparator.
 
-RQ2 is not authorized in a release until the registered complete aggregate and its provenance gates pass.
+RQ2 is released from the exact frozen plan, complete execution state, registered
+macro aggregate, and fail-closed final evidence manifest. The final state binds
+12/12 cells, 120/120 seed audits, and 24/24 generation partitions. Exact bytes
+and SHA-256 digests are recorded in `ARTIFACT_MANIFEST.json`.
+
+The mechanical finalizer's `claim_authorized: false` response is an evidence
+firewall: it prevents that command from editing the public claim registry. It is
+not a negative scientific result. Public RQ2 authorization is the separate,
+hash-bound registry action recorded here.
 
 ## RQ3
 

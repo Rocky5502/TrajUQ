@@ -50,3 +50,37 @@ def test_released_rq3_evidence_is_complete() -> None:
         assert aggregate["cell_set_complete"] is True
         assert aggregate["n_cells"] == aggregate["observed_cells"] == aggregate["expected_cells"] == 18
 
+
+def test_released_rq2_evidence_is_complete() -> None:
+    manifest = json.loads((ROOT / "ARTIFACT_MANIFEST.json").read_text(encoding="utf-8"))
+    assert "RQ2 final aggregate" not in manifest["pending_science"]
+
+    plan = json.loads((ROOT / "results/repeated_sampling_plan.json").read_text(encoding="utf-8"))
+    assert plan["status"] == "PASS"
+    assert plan["cell_count"] == plan["expected_cells"] == 12
+    assert plan["seeds"] == [2027, 2028, 2029, 2030, 2031]
+
+    state = json.loads(
+        (ROOT / "results/repeated_sampling_execution_state.json").read_text(encoding="utf-8")
+    )
+    assert state["status"] == state["macro"] == "COMPLETE"
+    assert state["complete_cells"] == 12
+
+    aggregate = json.loads(
+        (ROOT / "results/repeated_sampling/macro_trajuq_vs_repeated.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert aggregate["protocol"] == "trajuq_vs_repeated_macro_v2"
+    assert aggregate["cell_set_complete"] is True
+    assert aggregate["observed_cells"] == aggregate["expected_cells"] == 12
+
+    final = json.loads(
+        (ROOT / "results/generated/final/rq2_manifest.json").read_text(encoding="utf-8")
+    )
+    assert final["rq"] == "RQ2"
+    assert final["status"] == "FINAL"
+    assert final["audit_status"] == "PASS"
+    assert final["gates"]["seed_jobs_complete"] == final["gates"]["seed_jobs_expected"] == 120
+    assert final["gates"]["partitions_complete"] == final["gates"]["partitions_expected"] == 24
+

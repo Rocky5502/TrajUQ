@@ -7,8 +7,13 @@
     {"path": "results/primary_analysis/macro_feature_ablation.json", "sha256": "041c29b707a191f1ce05267d2a55d2dfe10cfc8e7df3d81b6b428bf1afacf99a", "status": "AUTHORIZED", "purpose": "RQ1 feature ablations"},
     {"path": "results/primary_analysis/macro_prior_signal_diagnostics.json", "sha256": "b63a404e22e34d4c0f2bb6b2a4cf96ee6696583a8ab3c82cc0198a92e95aec02", "status": "AUTHORIZED", "purpose": "RQ1 prior-signal diagnostics"},
     {"path": "results/primary_analysis/macro_calibration_sensitivity.json", "sha256": "319d69238621a2b4e62ddcbb6475e5fece264b5ef04fef3b4c4469b6fb204100", "status": "AUTHORIZED", "purpose": "RQ1 calibration sensitivity"},
+    {"path": "results/adaptive_execution_state.json", "sha256": "1222bfc4f812237a258c312fb1ce4393927baa7d0677241f381f549d3d4d0242", "status": "AUTHORIZED", "purpose": "RQ3 complete 18-cell execution state"},
+    {"path": "results/adaptive_matrix_plan.json", "sha256": "513723fe3bb0036c17d03b9d62e23f0132c390eaf64b553e1e1349d252e3fc96", "status": "AUTHORIZED", "purpose": "RQ3 frozen adaptive-compute plan"},
+    {"path": "results/adaptive/macro_cap_025.json", "sha256": "829b769319f0bdd7e6e5aff10b2829b94c857f695ee2b36fa7409ed7eb45bdbb", "status": "AUTHORIZED", "purpose": "RQ3 complete 25 percent cap sensitivity aggregate"},
+    {"path": "results/adaptive/macro_cap_050.json", "sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4", "status": "AUTHORIZED", "purpose": "RQ3 complete primary 50 percent cap aggregate"},
+    {"path": "results/adaptive/macro_cap_075.json", "sha256": "68faa1ef48ec45ee343aa225efa1e799e47739b698bb09c2827a543f72ac9761", "status": "AUTHORIZED", "purpose": "RQ3 complete 75 percent cap sensitivity aggregate"},
     {"path": "results/compute_budget/environment_manifest.json", "sha256": "d5471ac9e9e679b6834605bb7ea5d2516c4ead67497d8473db6efff69e2eadad", "status": "AUTHORIZED_SNAPSHOT", "purpose": "runtime and host provenance"}
   ],
-  "pending_science": ["RQ2 final aggregate", "RQ3 adaptive aggregate", "RQ4 integrated analysis", "RQ5 final aggregate", "cross-regime synthesis"],
+  "pending_science": ["RQ2 final aggregate", "RQ4 integrated analysis", "RQ5 final aggregate", "cross-regime synthesis"],
   "policy": "Only AUTHORIZED artifacts may support released empirical scientific claims. Pending entries are never replaced by estimates or progress summaries."
 }

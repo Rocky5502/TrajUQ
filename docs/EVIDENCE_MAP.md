@@ -30,6 +30,11 @@ The machine-readable authority is \`ARTIFACT_MANIFEST.json\`.
 | \`results/primary_analysis/macro_feature_ablation.json\` | complete feature-ablation aggregate |
 | \`results/primary_analysis/macro_prior_signal_diagnostics.json\` | registered prior-aligned signal diagnostics |
 | \`results/primary_analysis/macro_calibration_sensitivity.json\` | supplementary calibration sensitivity |
+| \`results/adaptive_execution_state.json\` | complete 18/18-cell RQ3 execution state |
+| \`results/adaptive_matrix_plan.json\` | frozen RQ3 adaptive-compute plan |
+| \`results/adaptive/macro_cap_025.json\` | complete 25% cap sensitivity aggregate |
+| \`results/adaptive/macro_cap_050.json\` | complete primary 50% cap aggregate |
+| \`results/adaptive/macro_cap_075.json\` | complete 75% cap sensitivity aggregate |
 | \`results/compute_budget/environment_manifest.json\` | authoritative runtime/host snapshot |
 
 Each released item is SHA-256-bound by the manifest.
@@ -82,6 +87,10 @@ Registered adaptive-compute aggregates:
 - \`results/adaptive/macro_cap_075.json\`
 
 The registered semantics are selective second-pass reruns with calibration-only policy selection.
+
+The released RQ3 state is complete: all 18 registered cells are present and all
+three frozen macro aggregates are complete. Their exact bytes and SHA-256
+digests are recorded in \`ARTIFACT_MANIFEST.json\`.
 
 ## RQ4
 

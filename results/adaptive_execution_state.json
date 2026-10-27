@@ -1,0 +1,615 @@
+{
+  "cells": [
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/gsm8k/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/gsm8k/calibration.scored.jsonl"
+      },
+      "cell": "llada:gsm8k",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/gsm8k/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/gsm8k/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/math500/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/math500/calibration.scored.jsonl"
+      },
+      "cell": "llada:math500",
+      "complete": true,
+      "dataset": "math500",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/math500/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/math500/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/gpqa_diamond/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/gpqa_diamond/calibration.scored.jsonl"
+      },
+      "cell": "llada:gpqa_diamond",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/gpqa_diamond/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/gpqa_diamond/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/arc_challenge/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/arc_challenge/calibration.scored.jsonl"
+      },
+      "cell": "llada:arc_challenge",
+      "complete": true,
+      "dataset": "arc_challenge",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/arc_challenge/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/arc_challenge/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/mmlu_pro/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/mmlu_pro/calibration.scored.jsonl"
+      },
+      "cell": "llada:mmlu_pro",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/mmlu_pro/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/mmlu_pro/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "llada",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/truthfulqa/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/truthfulqa/calibration.scored.jsonl"
+      },
+      "cell": "llada:truthfulqa",
+      "complete": true,
+      "dataset": "truthfulqa",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/llada/truthfulqa/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/llada/truthfulqa/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/gsm8k/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/gsm8k/calibration.scored.jsonl"
+      },
+      "cell": "sdar:gsm8k",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/gsm8k/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/gsm8k/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/math500/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/math500/calibration.scored.jsonl"
+      },
+      "cell": "sdar:math500",
+      "complete": true,
+      "dataset": "math500",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/math500/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/math500/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/gpqa_diamond/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/gpqa_diamond/calibration.scored.jsonl"
+      },
+      "cell": "sdar:gpqa_diamond",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/gpqa_diamond/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/gpqa_diamond/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/arc_challenge/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/arc_challenge/calibration.scored.jsonl"
+      },
+      "cell": "sdar:arc_challenge",
+      "complete": true,
+      "dataset": "arc_challenge",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/arc_challenge/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/arc_challenge/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/mmlu_pro/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/mmlu_pro/calibration.scored.jsonl"
+      },
+      "cell": "sdar:mmlu_pro",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/mmlu_pro/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/mmlu_pro/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "sdar",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/truthfulqa/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/truthfulqa/calibration.scored.jsonl"
+      },
+      "cell": "sdar:truthfulqa",
+      "complete": true,
+      "dataset": "truthfulqa",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/sdar/truthfulqa/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/sdar/truthfulqa/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/gsm8k/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/gsm8k/calibration.scored.jsonl"
+      },
+      "cell": "dream:gsm8k",
+      "complete": true,
+      "dataset": "gsm8k",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/gsm8k/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/gsm8k/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/math500/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/math500/calibration.scored.jsonl"
+      },
+      "cell": "dream:math500",
+      "complete": true,
+      "dataset": "math500",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/math500/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/math500/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/gpqa_diamond/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/gpqa_diamond/calibration.scored.jsonl"
+      },
+      "cell": "dream:gpqa_diamond",
+      "complete": true,
+      "dataset": "gpqa_diamond",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/gpqa_diamond/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/gpqa_diamond/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/arc_challenge/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/arc_challenge/calibration.scored.jsonl"
+      },
+      "cell": "dream:arc_challenge",
+      "complete": true,
+      "dataset": "arc_challenge",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/arc_challenge/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/arc_challenge/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/mmlu_pro/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/mmlu_pro/calibration.scored.jsonl"
+      },
+      "cell": "dream:mmlu_pro",
+      "complete": true,
+      "dataset": "mmlu_pro",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/mmlu_pro/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/mmlu_pro/test.scored.jsonl"
+      }
+    },
+    {
+      "adapter": "dream",
+      "calibration_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/truthfulqa/calibration.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/truthfulqa/calibration.scored.jsonl"
+      },
+      "cell": "dream:truthfulqa",
+      "complete": true,
+      "dataset": "truthfulqa",
+      "evaluations": {
+        "cap_025": "COMPLETE",
+        "cap_050": "COMPLETE",
+        "cap_075": "COMPLETE"
+      },
+      "test_base": {
+        "complete": true,
+        "raw_audit_pass": true,
+        "raw_exists": true,
+        "raw_id_state": "COMPLETE",
+        "raw_output": "runs/adaptive_base/dream/truthfulqa/test.raw.jsonl",
+        "scored_audit_pass": true,
+        "scored_exists": true,
+        "scored_id_state": "COMPLETE",
+        "scored_output": "runs/adaptive_base/dream/truthfulqa/test.scored.jsonl"
+      }
+    }
+  ],
+  "complete_cells": 18,
+  "expected_cells": 18,
+  "experiment_git_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "fraction_keys": [
+    "cap_050",
+    "cap_025",
+    "cap_075"
+  ],
+  "macros": {
+    "cap_025": "COMPLETE",
+    "cap_050": "COMPLETE",
+    "cap_075": "COMPLETE"
+  },
+  "observed_cells": 18,
+  "plan_protocol": "trajuq_adaptive_matrix_plan_v3",
+  "protocol": "trajuq_adaptive_execution_state_v2",
+  "status": "COMPLETE"
+}

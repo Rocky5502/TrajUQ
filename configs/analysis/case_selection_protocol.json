@@ -1,0 +1,27 @@
+{
+  "protocol": "trajuq_deterministic_illustrative_case_selection_v1",
+  "status": "FROZEN_BEFORE_RQ4_RQ5_FINAL_INSPECTION",
+  "role": "illustrative_not_confirmatory",
+  "selection_seed": 2027,
+  "rank_rule": "ascending_sha256(namespace|model|dataset|example_id|selection_seed)",
+  "maximum_examples_per_case_type": 2,
+  "eligibility": {
+    "requires_final_authorized_evidence": true,
+    "requires_heldout_test_partition": true,
+    "requires_all_compared_methods_on_same_example": true,
+    "forbids_partial_rq4_or_rq5_outcomes": true
+  },
+  "case_types": [
+    "trajectory_succeeds_endpoint_fails",
+    "repeated_sampling_succeeds_trajectory_fails",
+    "adaptive_compute_prioritizes_difficult_item",
+    "model_family_reversal",
+    "ar_diffusion_disagreement",
+    "blackbox_uncertainty_failure"
+  ],
+  "reporting": {
+    "retain_all_eligible_counts": true,
+    "retain_selection_hashes": true,
+    "interpretation": "illustrative_only_no_effect_estimation"
+  }
+}

@@ -11,7 +11,7 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from trajuq.cross_model_synthesis import AVAILABLE, build_registry, sha256_file
+from trajuq.cross_model_synthesis import AVAILABLE, build_registry, load_json, sha256_file
 
 
 def tex_escape(value: str) -> str:
@@ -369,6 +369,9 @@ def main() -> int:
         "schema": "trajuq_metric_compatibility_report_v1",
         "status": "PASS",
         "direct_comparison_groups": registry["compatibility"],
+        "matched_cross_regime_policy": load_json(contract_path)[
+            "matched_cross_regime_policy"
+        ],
         "cross_regime_policy": "descriptive_only",
         "forbidden": [
             "raw cross-protocol AUROC ranking",

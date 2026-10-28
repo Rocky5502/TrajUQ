@@ -1,0 +1,57 @@
+{
+  "protocol": "trajuq_rq2_sample_efficiency_exploratory_v1",
+  "status": "PREDECLARED_SECONDARY_EXPLORATORY_ANALYSIS",
+  "purpose": "Quantify repeated-sampling cost/evidence trade-offs without generating new model outputs.",
+  "confirmatory": false,
+  "timing": {
+    "declared_after_source_generation": true,
+    "declared_before_sample_count_subset_calculation": true,
+    "outcome_based_subset_selection": false
+  },
+  "source_experiment_commit": "28002055c828c6910840de6f2105aa6367514144",
+  "source_bindings": {
+    "final_manifest": {
+      "path": "results/generated/final/rq2_manifest.json",
+      "sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0"
+    },
+    "plan": {
+      "path": "results/repeated_sampling_plan.json",
+      "sha256": "09fe7b6061dd19a5e12f431ebf72fe838af0517982e8a98425b2192cd9ccd00e"
+    },
+    "execution_state": {
+      "path": "results/repeated_sampling_execution_state.json",
+      "sha256": "194a84b14e9d1915e2d18a315b73be31ebee058753eeab258fc91798f04d655b"
+    },
+    "authorized_k5_macro": {
+      "path": "results/repeated_sampling/macro_trajuq_vs_repeated.json",
+      "sha256": "eb12c0f5b6d7227bb13553aa3f7c5b262adf45c012002bc3b0a4ce10cf9b7268"
+    }
+  },
+  "sample_counts": {
+    "2": [2027, 2028],
+    "3": [2027, 2028, 2029],
+    "5": [2027, 2028, 2029, 2030, 2031]
+  },
+  "subset_rule": "fixed_nested_seed_prefixes_declared_before_subset_calculation",
+  "cells": "exact_frozen_12_cell_rq2_matrix",
+  "calibration": "refit_registered_logistic_calibrator_on_frozen_calibration_split_for_each_k",
+  "evaluation": "frozen_held_out_test_split",
+  "aggregation": "equal_cell_weight_macro",
+  "metrics": [
+    "auroc",
+    "auprc",
+    "aurc",
+    "brier",
+    "nll",
+    "ece15",
+    "risk_at_50_coverage",
+    "risk_at_80_coverage"
+  ],
+  "interpretation": "secondary_cost_evidence_sensitivity_only",
+  "forbidden": [
+    "new_generation",
+    "seed_subset_selection_after_outcomes",
+    "confirmatory_claim",
+    "replacement_of_authorized_k5_rq2_result"
+  ]
+}

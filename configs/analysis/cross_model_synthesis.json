@@ -132,6 +132,25 @@
       "definition": "candidate_auroc_minus_pre_registered_within_regime_baseline_auroc"
     }
   },
+  "matched_cross_regime_policy": {
+    "status": "FROZEN_READINESS_ONLY_UNTIL_RQ4_AND_RQ5_FINAL",
+    "required_exact_matches": [
+      "dataset_identity",
+      "externally_scored_answer_error_outcome",
+      "calibration_split_identity_and_hash",
+      "test_split_identity_and_hash",
+      "metric_definition_and_direction",
+      "cell_aggregation_rule"
+    ],
+    "allowed_output": "descriptive_matched_cell_synthesis",
+    "unmatched_cells": "omit_with_explicit_reason",
+    "forbidden": [
+      "causal_effect_of_observability_level",
+      "raw_cross_protocol_model_ranking",
+      "pooled_cross_regime_significance_test",
+      "imputation_of_pending_or_unmatched_cells"
+    ]
+  },
   "finalization_rule": {
     "all_required_sources_complete": true,
     "regenerate_from_scratch": true,

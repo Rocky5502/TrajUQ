@@ -24,3 +24,15 @@ def test_sampling_qualification_is_exact_outcome_blind_parity() -> None:
     assert '"reference": None' in text
     assert '"go_no_go": "GO" if status == "PASS" else "NO_GO"' in text
     ast.parse(text)
+
+
+def test_sampling_provenance_distinguishes_registration_from_executor_support() -> None:
+    text = Path("docs/RQ4_SAMPLING_PROVENANCE.md").read_text(encoding="utf-8")
+    assert "scientific settings were prospectively registered" in text
+    assert "original executor did not support" in text
+    assert "Greedy RQ4 evidence existed before" in text
+    assert "No sampled RQ4 outcome existed or was inspected before the addendum" in text
+    assert "not represented as part of the original executable" in text
+    assert "changed no seed, temperature, top-p, top-k, token limit" in text
+    assert "12/12 rows" in text
+    assert "exact native-versus-instrumented token-ID" in text

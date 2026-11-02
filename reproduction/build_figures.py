@@ -10,12 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> int:
     required = [
-        "paper/figures/generated/primary_auroc_improvement_matrix.pdf",
-        "paper/figures/generated/family_macro_auroc_improvement.pdf",
-        "paper/figures/generated/rq2_cost_utility.pdf",
-        "paper/figures/generated/rq2_selective_vs_repeated.pdf",
-        "paper/figures/generated/rq3_accuracy_compute_tradeoff.pdf",
-        "paper/figures/generated/cross_observability_synthesis.pdf",
+        "results/generated/secondary/rq2_sample_efficiency/rq2_cost_utility.pdf",
+        "results/generated/secondary/rq5_heterogeneity/rq5_cell_forest.pdf",
+        "results/generated/secondary/rq5_heterogeneity/rq5_coverage_risk.pdf",
     ]
     failures: list[str] = []
     for relative in required:

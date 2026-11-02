@@ -1,0 +1,13 @@
+{
+  "accessibility": "colorblind-safe palette plus distinct markers and line styles",
+  "figure": "rq2_cost_utility",
+  "minimum_text_pt": 8,
+  "panels": [
+    "selective risk",
+    "error ranking",
+    "calibration trade-off"
+  ],
+  "schema": "trajuq_visual_spec_v1",
+  "source_sha256": "bff7b1d84d8d22ecb8449cda3c58cce2adde76d20c6b9a75f7fe703a9b020247",
+  "target_width_mm": 178
+}

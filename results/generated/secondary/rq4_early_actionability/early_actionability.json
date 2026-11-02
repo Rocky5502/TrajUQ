@@ -1,0 +1,185 @@
+{
+  "classification": "SECONDARY_EXPLORATORY",
+  "datasets": [
+    "arc_challenge",
+    "gpqa_diamond",
+    "gsm8k",
+    "math500",
+    "mmlu_pro",
+    "truthfulqa"
+  ],
+  "fractions": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "interpretation_boundary": "fraction-wise descriptive analysis; no post-hoc earliest-useful threshold",
+  "macro": [
+    {
+      "auprc": 0.5379618345620966,
+      "aurc": 0.35373333188493294,
+      "auroc": 0.6406208475503679,
+      "fraction": 0.25,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.3479669412217345,
+      "risk_at_80_coverage": 0.40046540691587773,
+      "signal": "trajectory"
+    },
+    {
+      "auprc": 0.45097281735290107,
+      "aurc": 0.4197827344299458,
+      "auroc": 0.5209316024282146,
+      "fraction": 0.25,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.4231403669818601,
+      "risk_at_80_coverage": 0.42493507724374857,
+      "signal": "endpoint"
+    },
+    {
+      "auprc": 0.5750314761696907,
+      "aurc": 0.3489406531255587,
+      "auroc": 0.6560686608150444,
+      "fraction": 0.5,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.34362601690298195,
+      "risk_at_80_coverage": 0.39380094813522176,
+      "signal": "trajectory"
+    },
+    {
+      "auprc": 0.45405776135809844,
+      "aurc": 0.42540142519710905,
+      "auroc": 0.5196425105528378,
+      "fraction": 0.5,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.4237493912325432,
+      "risk_at_80_coverage": 0.4261476983682144,
+      "signal": "endpoint"
+    },
+    {
+      "auprc": 0.5920814957881091,
+      "aurc": 0.33974860606609597,
+      "auroc": 0.6685353771288596,
+      "fraction": 0.75,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.33778433022376686,
+      "risk_at_80_coverage": 0.39273667760781655,
+      "signal": "trajectory"
+    },
+    {
+      "auprc": 0.4537241288008615,
+      "aurc": 0.42261453984311664,
+      "auroc": 0.5233865834515533,
+      "fraction": 0.75,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.42121877064641794,
+      "risk_at_80_coverage": 0.4248104221504458,
+      "signal": "endpoint"
+    },
+    {
+      "auprc": 0.6167784847034089,
+      "aurc": 0.324871137629008,
+      "auroc": 0.6908659394601311,
+      "fraction": 1.0,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.32838164618964255,
+      "risk_at_80_coverage": 0.3846393898851889,
+      "signal": "trajectory"
+    },
+    {
+      "auprc": 0.4776791550849729,
+      "aurc": 0.41295845076014137,
+      "auroc": 0.5453817028536968,
+      "fraction": 1.0,
+      "n_cells": 6,
+      "n_estimable_auprc": 6,
+      "n_estimable_aurc": 6,
+      "n_estimable_auroc": 6,
+      "n_estimable_risk_at_50_coverage": 6,
+      "n_estimable_risk_at_80_coverage": 6,
+      "risk_at_50_coverage": 0.4135360268908849,
+      "risk_at_80_coverage": 0.414687851023764,
+      "signal": "endpoint"
+    }
+  ],
+  "production_rows": 19420,
+  "production_shards": 60,
+  "schema": "trajuq_rq4_early_actionability_secondary_v1",
+  "scientific_claim_authority": false,
+  "single_class_policy": {
+    "aurc_and_fixed_coverage_risks": "estimate_for_all_nonempty_cells",
+    "auroc_and_auprc": "null_and_mark_not_estimable_when_test_cell_has_one_class",
+    "bootstrap": "resample_each_observed_class_within_cell; do_not_synthesize_missing_classes",
+    "macro": "equal_weight_over_estimable_dataset_cells_separately_for_each_metric"
+  },
+  "status": "PASS",
+  "trajectory_vs_endpoint": [
+    {
+      "bootstrap_replicates": 10000,
+      "ci_high": 0.07522724389204956,
+      "ci_low": 0.05688366176606843,
+      "estimand": "AURC(endpoint_prefix)-AURC(trajectory_prefix)",
+      "estimate": 0.06604940254501283,
+      "fraction": 0.25
+    },
+    {
+      "bootstrap_replicates": 10000,
+      "ci_high": 0.08491864111796202,
+      "ci_low": 0.06790496432223225,
+      "estimand": "AURC(endpoint_prefix)-AURC(trajectory_prefix)",
+      "estimate": 0.07646077207155029,
+      "fraction": 0.5
+    },
+    {
+      "bootstrap_replicates": 10000,
+      "ci_high": 0.09230070998712406,
+      "ci_low": 0.07332655614530392,
+      "estimand": "AURC(endpoint_prefix)-AURC(trajectory_prefix)",
+      "estimate": 0.08286593377702063,
+      "fraction": 0.75
+    },
+    {
+      "bootstrap_replicates": 10000,
+      "ci_high": 0.09580060571404078,
+      "ci_low": 0.0802137313966575,
+      "estimand": "AURC(endpoint_prefix)-AURC(trajectory_prefix)",
+      "estimate": 0.08808731313113338,
+      "fraction": 1.0
+    }
+  ]
+}

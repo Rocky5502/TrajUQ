@@ -1,0 +1,107 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2411,
+      "path": "calibration_ranking_summary.json",
+      "sha256": "ba4aafd7468b3ce6ee2c1c44a5f1a4832dec0723d4e4d4a53e890a409beb7860"
+    },
+    {
+      "bytes": 3487,
+      "path": "cell_effects.csv",
+      "sha256": "a236b925e3ea5f3e0198b4ade022ae714f56fd48d286d2cf7f5f701fed5aa05a"
+    },
+    {
+      "bytes": 1174,
+      "path": "cell_effects_display.csv",
+      "sha256": "f7ee2e90796e63ffde1390267e8a4f84adde84ff0210e930bf2af6d18c505be6"
+    },
+    {
+      "bytes": 168,
+      "path": "component_availability.csv",
+      "sha256": "68135bea2f812f26b9d330f9300cd556ea01f7fd53b71ae29259f8364859420d"
+    },
+    {
+      "bytes": 8087,
+      "path": "component_calibration_metrics_display.csv",
+      "sha256": "8d4aecd752438a8aec4deda1f87e71094bf9d4bf3f9469d6e755c34214da4a03"
+    },
+    {
+      "bytes": 32689,
+      "path": "component_comparison.csv",
+      "sha256": "a128520675f4eec2208a1294893167f386a17c68f655d9bb135f706ecbda2c7b"
+    },
+    {
+      "bytes": 84754,
+      "path": "component_comparison.json",
+      "sha256": "3c8404a532f1e129a7faa498a141d99cb0ad5e411ec6469b5fa24d4d2c1b2488"
+    },
+    {
+      "bytes": 8716,
+      "path": "component_ranking_metrics_display.csv",
+      "sha256": "cd9377bec6672a27d4ae313c79691460b9586922b884010983b79feccd48a740"
+    },
+    {
+      "bytes": 1027,
+      "path": "component_sample_accounting_display.csv",
+      "sha256": "c04b1d37464e16a009bcc17e0e1a2f0e4069a9059cd5c2e64f818ae4fe389e19"
+    },
+    {
+      "bytes": 3481,
+      "path": "coverage_risk_curves.csv",
+      "sha256": "f802f39b1aed71ce21dc0fd1d3b507c531f8cfaaeb207fd7066a3a9af514b457"
+    },
+    {
+      "bytes": 456,
+      "path": "heterogeneity_summary.json",
+      "sha256": "424bb9c616f87e8e9510dfb709c16ba971b3e8dac15dcd1683d7c5d9b149e268"
+    },
+    {
+      "bytes": 26696,
+      "path": "rq5_cell_forest.pdf",
+      "sha256": "66fc9486bc9d934bba71753f537bfdb0e2fb374fed16004f413407b31d263bda"
+    },
+    {
+      "bytes": 144996,
+      "path": "rq5_cell_forest.png",
+      "sha256": "9984ce4920f0a8a1664ca0c628784659da26b3c19c5964f0101c4ca32f0e7967"
+    },
+    {
+      "bytes": 25767,
+      "path": "rq5_cell_forest.svg",
+      "sha256": "772dae0b278639a7b7b6786ad9129e4262ccf52ab8ef724f766269809c186640"
+    },
+    {
+      "bytes": 22946,
+      "path": "rq5_coverage_risk.pdf",
+      "sha256": "a066b00c0ffd7a1981941e3cce0e082fa7fe921a9afe48b889cb0e7539dd3d58"
+    },
+    {
+      "bytes": 133954,
+      "path": "rq5_coverage_risk.png",
+      "sha256": "746031cca28ce0cf6c90b8323add62f4eeae3cc3dc982e08d578c53db87681dc"
+    },
+    {
+      "bytes": 12381,
+      "path": "rq5_coverage_risk.svg",
+      "sha256": "03faa14b1f5a1f2158cc923bc3d9fdddb76ee17cfda334233e4808b32a3b6947"
+    },
+    {
+      "bytes": 546,
+      "path": "visual_spec.json",
+      "sha256": "17d996278e8711fd412c5e171f0660fe790f953771b31563d59a1ed231a91897"
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY",
+  "primary_rq5_immutable": {
+    "ci_95": [
+      -0.015057308574727653,
+      0.010202548928115571
+    ],
+    "decision": "NOT_SUPPORTED",
+    "estimate": -0.002990487543719062,
+    "holm_adjusted_p": 0.6877312268773123
+  },
+  "schema": "trajuq_rq5_secondary_heterogeneity_manifest_v1",
+  "scientific_claim_authority": false,
+  "status": "PASS"
+}

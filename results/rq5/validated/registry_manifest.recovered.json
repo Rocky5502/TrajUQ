@@ -1,0 +1,26 @@
+{
+  "ambiguous_locked_no_replay": 126,
+  "analysis_authorized": false,
+  "chronology": "POST_DATA_PRE_OUTCOME_ANALYSIS",
+  "claim_authorized": false,
+  "freeze_sha256": "af0347a777d4a683c158407b9d0c53b7bff7236b8d35a63129077f6848886abc",
+  "malformed_responses": 11452,
+  "note": "Separate recovery artifact; it does not overwrite or reinterpret the original manifest.",
+  "original_manifest": {
+    "all_bytes_nul": true,
+    "path": "results/rq5/validated/registry_manifest.json",
+    "preserved_unchanged": true,
+    "sha256": "5f7bcd85900e62abb00ce739eaad53d80170a4a6152d951b6825110d2fc17965",
+    "size_bytes": 411
+  },
+  "partial": false,
+  "planned_requests": 58260,
+  "provider_failure": 1,
+  "recovery_reason": "canonical registry_manifest.json contains only NUL bytes",
+  "registry_sha256": "874176f4b96fca85f1fb843728fdaf94d256d7f62c0ce39dd9e48f8a4a8220ba",
+  "schema": "trajuq_rq5_registry_manifest_recovery_v1",
+  "schema_valid_responses": 46681,
+  "status": "PASS_WITH_PRESERVED_SOURCE_CORRUPTION",
+  "terminal_ledger_sha256": "ce64737d5f189b073b2c6744003aa2f6849e04b3bd3dceb3a1f11c2fca5bf17f",
+  "validated_responses": 58133
+}

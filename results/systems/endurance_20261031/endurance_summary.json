@@ -1,0 +1,83 @@
+{
+  "cells": [
+    {
+      "batch_size": 16,
+      "deterministic_outputs": true,
+      "max_temperature_c": 60.0,
+      "mean_power_w": 297.188157989418,
+      "mean_tokens_per_second": 423.37884740034866,
+      "median_latency_seconds": 9.671475701034069,
+      "median_tokens_per_second": 423.51344578801536,
+      "p95_latency_seconds": 9.695765473879874,
+      "prompt_tokens": 512,
+      "successful_runs": 75,
+      "throughput_cv": 0.0011217002152331243,
+      "throughput_drift_first_to_last_quartile_pct": 0.019667292027010425,
+      "unique_output_hashes": 1
+    },
+    {
+      "batch_size": 8,
+      "deterministic_outputs": true,
+      "max_temperature_c": 61.0,
+      "mean_power_w": 312.86995102040817,
+      "mean_tokens_per_second": 153.45050463705272,
+      "median_latency_seconds": 13.344682097900659,
+      "median_tokens_per_second": 153.46937341596055,
+      "p95_latency_seconds": 13.361070564948022,
+      "prompt_tokens": 2048,
+      "successful_runs": 75,
+      "throughput_cv": 0.0007441773177110541,
+      "throughput_drift_first_to_last_quartile_pct": 0.04451256352277945,
+      "unique_output_hashes": 1
+    },
+    {
+      "batch_size": 4,
+      "deterministic_outputs": true,
+      "max_temperature_c": 61.0,
+      "mean_power_w": 303.6060983574879,
+      "mean_tokens_per_second": 82.0040818434155,
+      "median_latency_seconds": 12.486769470851868,
+      "median_tokens_per_second": 82.00679946805657,
+      "p95_latency_seconds": 12.503709553042427,
+      "prompt_tokens": 4096,
+      "successful_runs": 75,
+      "throughput_cv": 0.0007626539674644279,
+      "throughput_drift_first_to_last_quartile_pct": 0.03188650314688549,
+      "unique_output_hashes": 1
+    },
+    {
+      "batch_size": 2,
+      "deterministic_outputs": true,
+      "max_temperature_c": 61.0,
+      "mean_power_w": 305.1939563285024,
+      "mean_tokens_per_second": 41.448677486750505,
+      "median_latency_seconds": 12.349895570194349,
+      "median_tokens_per_second": 41.457840440017804,
+      "p95_latency_seconds": 12.38342217891477,
+      "prompt_tokens": 8192,
+      "successful_runs": 75,
+      "throughput_cv": 0.0011058766692267938,
+      "throughput_drift_first_to_last_quartile_pct": 0.01832225079995757,
+      "unique_output_hashes": 1
+    },
+    {
+      "batch_size": 1,
+      "deterministic_outputs": true,
+      "max_temperature_c": 61.0,
+      "mean_power_w": 311.61203851851855,
+      "mean_tokens_per_second": 20.85012560562406,
+      "median_latency_seconds": 12.275836960878223,
+      "median_tokens_per_second": 20.853975237358117,
+      "p95_latency_seconds": 12.291865077102557,
+      "prompt_tokens": 16384,
+      "successful_runs": 75,
+      "throughput_cv": 0.0010037912968083522,
+      "throughput_drift_first_to_last_quartile_pct": 0.024214944516272707,
+      "unique_output_hashes": 1
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY_SYSTEMS_DIAGNOSTIC",
+  "completed_runs": 375,
+  "expected_runs": 375,
+  "scientific_claim_authority": false
+}

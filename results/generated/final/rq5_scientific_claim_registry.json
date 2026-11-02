@@ -1,0 +1,76 @@
+{
+  "authorized_interpretation": "Limited to gate decisions; unmatched cross-observability effects remain non-identifiable.",
+  "bindings": [
+    {
+      "path": "results/rq5/analysis/validation_summary.json",
+      "sha256": "fa7b3783174ccde438db02ffa04b9e48e741b60cc4c8bff725da07a37a6baf52"
+    },
+    {
+      "path": "results/rq5/analysis/feature_summary.json",
+      "sha256": "48f5b7207a05f2449c2871f9b3ae7a4d1fed78fb0faf54560f1d680809ce1c5d"
+    },
+    {
+      "path": "results/rq5/analysis/calibration_models.json",
+      "sha256": "10cb09a989b8cc7f2234985026641a2cc80df0a2e9e218f99e334367a631dc30"
+    },
+    {
+      "path": "results/rq5/analysis/heldout_metrics.json",
+      "sha256": "ba5b2b8a77b94da103d54d9c9a17d272b1413b400a8937a0608f7a9943cd7460"
+    },
+    {
+      "path": "results/rq5/analysis/macro_aggregate.json",
+      "sha256": "a35c5df909e21596d1f4e85a0123228845b6453b9fefc26782dd40949fc27fc2"
+    },
+    {
+      "path": "results/rq5/analysis/paired_bootstrap.json",
+      "sha256": "afe9a5beee12f1edff8f39763af16fdc8bd024fb5f1507f3285f787d8a9ad790"
+    },
+    {
+      "path": "results/rq5/analysis/multiplicity.json",
+      "sha256": "92e1dc34f2b4b21502e92120911f0a2538c0a88ca9b033d7f2a51f77ba44ee31"
+    },
+    {
+      "path": "results/rq5/analysis/hypothesis_gate.json",
+      "sha256": "419df126a1e2f3930ebc741975077a7798279a6db88087891fd0cd8e05d5fc8d"
+    },
+    {
+      "path": "results/rq5/analysis/missingness_sensitivity.json",
+      "sha256": "aeb6ea57a954d7563f54ec911bc5d1456e4b1c8ea9803de6b8f5467af42c7dbe"
+    }
+  ],
+  "chronology": "POST_DATA_PRE_OUTCOME_ANALYSIS",
+  "claim_authorized": true,
+  "decisions": {
+    "rq5_behavioral_selective_prediction": {
+      "ci_95": [
+        -0.015057308574727653,
+        0.010202548928115571
+      ],
+      "decision": "NOT_SUPPORTED",
+      "estimate": -0.002990487543719062,
+      "holm_adjusted_p": 0.6877312268773123
+    },
+    "rq5_cross_model_heterogeneity": {
+      "ci_high": 0.06068036306610902,
+      "ci_low": 0.008515294898800997,
+      "decision": "DESCRIPTIVE_ONLY",
+      "estimand": "range_of_model_macro_AURC_improvements",
+      "estimate": 0.031083253067261226,
+      "inference": "DESCRIPTIVE_BOOTSTRAP_ONLY_NO_VALID_ZERO_NULL_CALIBRATION",
+      "model_estimates": {
+        "Pro/deepseek-ai/DeepSeek-V3.2": -0.002802929760962342,
+        "Pro/moonshotai/Kimi-K2.6": -0.018625892968728037,
+        "Pro/zai-org/GLM-5.1": 0.01245736009853319
+      },
+      "p_value_two_sided": null
+    },
+    "rq5_observability_gap": {
+      "decision": "NOT_IDENTIFIABLE",
+      "reason": "models are unmatched across observability regimes"
+    }
+  },
+  "plan_sha256": "56ccc6e3c454fd3f6c2a50851c5e82ab870cc02bc9791ad207523d6c6ce7d383",
+  "schema": "trajuq_rq5_scientific_claim_registry_v1",
+  "status": "PASS",
+  "terminal_ledger_sha256": "ce64737d5f189b073b2c6744003aa2f6849e04b3bd3dceb3a1f11c2fca5bf17f"
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "trajuq_rq4_early_actionability_implementation_addendum_v1",
+  "classification": "SECONDARY_EXPLORATORY",
+  "scientific_claim_authority": false,
+  "declared_on": "2026-11-01",
+  "chronology": "POST_RQ4_FINALIZATION_PRE_SECONDARY_OUTCOME_COMPUTATION",
+  "parent_contract": "configs/analysis/rq4_early_actionability_secondary.json",
+  "parent_contract_sha256": "814965b4af71b9e042098d161e5691b0722eccb07c831668932c0d87c00b7194",
+  "population": "all preserved RQ4 llama_ar production rows in the registered calibration and test shards",
+  "fractions": [0.25, 0.5, 0.75, 1.0],
+  "prefix_length": "max(1, ceil(fraction * token_trace_length))",
+  "trajectory_feature_vector": {
+    "fields": ["selected_token_logprob", "entropy", "margin"],
+    "aggregates_per_field": ["first", "last", "unweighted_mean", "minimum", "maximum", "linear_slope", "population_std"],
+    "dimension": 21
+  },
+  "endpoint_baseline_feature_vector": {
+    "definition": "last observed prefix-token value",
+    "fields": ["selected_token_logprob", "entropy", "margin"],
+    "dimension": 3
+  },
+  "calibration": {
+    "fit_partition": "calibration_only",
+    "model": "standardized_l2_logistic_regression",
+    "regularization_c": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 2000,
+    "random_state": 2027,
+    "cell": "dataset_x_fraction_x_signal"
+  },
+  "evaluation": {
+    "partition": "test_only",
+    "metrics": ["aurc", "auroc", "auprc", "risk_at_50_coverage", "risk_at_80_coverage"],
+    "cell_weighting": "equal_dataset_cell_weight",
+    "paired_class_stratified_bootstrap_replicates": 10000,
+    "bootstrap_seed": 2027,
+    "trajectory_advantage_estimand": "AURC(endpoint_prefix)-AURC(trajectory_prefix)"
+  },
+  "interpretation": {
+    "earliest_fraction_threshold": null,
+    "allowed": "descriptive fraction-wise actionability and trajectory-versus-endpoint comparison",
+    "forbidden": ["confirmatory promotion", "fraction selection after outcomes", "test refitting", "new generation", "causal timing claim"]
+  }
+}

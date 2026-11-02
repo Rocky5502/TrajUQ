@@ -1,0 +1,22 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2096,
+      "path": "leave_one_out_summary.json",
+      "sha256": "99062dd6b3bc02b7d2058116e956cd86e18098b2aab932b6d8e86f0a2ba77028"
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY",
+  "primary_rq5_immutable": {
+    "ci_95": [
+      -0.015057308574727653,
+      0.010202548928115571
+    ],
+    "decision": "NOT_SUPPORTED",
+    "estimate": -0.002990487543719062,
+    "holm_adjusted_p": 0.6877312268773123
+  },
+  "schema": "trajuq_rq5_secondary_leave_one_out_manifest_v1",
+  "scientific_claim_authority": false,
+  "status": "PASS"
+}

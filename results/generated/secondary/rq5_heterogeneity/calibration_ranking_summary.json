@@ -1,0 +1,66 @@
+{
+  "alias_disclosure": {
+    "answer_self_consistency": "same preserved sample_disagreement values as repeated_sampling_disagreement",
+    "answer_stability": "one-minus-stability; algebraically identical to sample_disagreement in preserved artifacts"
+  },
+  "cell_weighting": "equal_model_dataset_cell_weight",
+  "classification": "SECONDARY_EXPLORATORY",
+  "macro": {
+    "answer_self_consistency": {
+      "auprc": 0.3433446530564963,
+      "aurc": 0.07859652841746582,
+      "auroc": 0.70906781392851,
+      "brier": 0.0918358935762839,
+      "ece_15": 0.0858466395489235,
+      "nll": 0.9965303290640208,
+      "risk_at_50_coverage": 0.07350656786386384,
+      "risk_at_80_coverage": 0.0811283399927186
+    },
+    "answer_stability": {
+      "auprc": 0.3433446530564963,
+      "aurc": 0.07859652841746582,
+      "auroc": 0.70906781392851,
+      "brier": 0.0918358935762839,
+      "ece_15": 0.0858466395489235,
+      "nll": 0.9965303290640208,
+      "risk_at_50_coverage": 0.07350656786386384,
+      "risk_at_80_coverage": 0.0811283399927186
+    },
+    "registered_combined_behavioral": {
+      "auprc": 0.39287720093068557,
+      "aurc": 0.0645973347789235,
+      "auroc": 0.7755797323922512,
+      "brier": 0.08922780815433885,
+      "ece_15": 0.06946276013033524,
+      "nll": 0.3232188416220484,
+      "risk_at_50_coverage": 0.053714947271253095,
+      "risk_at_80_coverage": 0.08105813060918975
+    },
+    "repeated_sampling_disagreement": {
+      "auprc": 0.3433446530564963,
+      "aurc": 0.07859652841746582,
+      "auroc": 0.70906781392851,
+      "brier": 0.0918358935762839,
+      "ece_15": 0.0858466395489235,
+      "nll": 0.9965303290640208,
+      "risk_at_50_coverage": 0.07350656786386384,
+      "risk_at_80_coverage": 0.0811283399927186
+    },
+    "verbalized_confidence": {
+      "auprc": 0.3061727910278194,
+      "aurc": 0.061606847235204425,
+      "auroc": 0.7298299770983419,
+      "brier": 0.09933412801472617,
+      "ece_15": 0.08257400315380364,
+      "nll": 0.4582480699836719,
+      "risk_at_50_coverage": 0.057906078754207134,
+      "risk_at_80_coverage": 0.09103823223867781
+    }
+  },
+  "schema": "trajuq_rq5_secondary_calibration_ranking_v1",
+  "scientific_claim_authority": false,
+  "unavailable": {
+    "abstention_refusal": "NOT_IDENTIFIABLE_IN_SCHEMA_VALID_GROUP_ARTIFACTS",
+    "semantic_response_consistency": "NOT_FEASIBLE_WITHOUT_NEW_UNREGISTERED_SEMANTIC_MODEL"
+  }
+}

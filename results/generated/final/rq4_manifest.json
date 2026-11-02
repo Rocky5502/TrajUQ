@@ -1,0 +1,117 @@
+{
+  "audit_status": "PASS",
+  "claim_authorization_note": "Mechanical finalization is not a scientific claim decision; use the registered hypothesis-gate artifact.",
+  "claim_authorized": false,
+  "gates": {
+    "claim_gate_decided": true,
+    "generation_audits_pass": true,
+    "generation_rows_complete": 19420,
+    "generation_rows_expected": 19420,
+    "generation_shards_complete": 60,
+    "generation_shards_expected": 60,
+    "provenance_hashes_pass": true,
+    "registered_stage_order_complete": true
+  },
+  "generated_at_utc": "2026-10-30T09:01:33.637892Z",
+  "generation_commit": "5a3993c559128ed40bd9de1c504def687a8f861e",
+  "registry_version": "paper-evidence-v1",
+  "rq": "RQ4",
+  "schema": "trajuq_final_rq_evidence_v1",
+  "sources": [
+    {
+      "path": "/data/trajuq_worker_state/a100-01/rq4_full_5a3993c/final_manifest.json",
+      "sha256": "52e016ec6c17ea4268b2eaa2e9dcd2c7eb53a79c6d42453d6befbe6f4983338f"
+    },
+    {
+      "path": "/data/TrajUQ_RQ4_analysis_ad755df_v2/results/rq4/rq4_downstream_plan.json",
+      "sha256": "33359931a999ed2678868d97b46c94590b00bc6ab6857859ec9743488a68d829"
+    }
+  ],
+  "stage_outputs": [
+    {
+      "name": "scoring",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/scored_samples.jsonl",
+          "sha256": "1bb125b17b5fab5bd4ccc9c069044ab7f921f79180e28ea238e27146fd0d30b7"
+        },
+        {
+          "path": "results/rq4/analysis/scoring_summary.json",
+          "sha256": "203d169adfcb4585421c8bad962ff77724d09457a23ac020ae6a10b5f2674852"
+        }
+      ]
+    },
+    {
+      "name": "feature_extraction",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/features.jsonl",
+          "sha256": "fd985479782ce17d8d8f607291deff4f673f43492c2c0d7c1b51dbec81a220e7"
+        },
+        {
+          "path": "results/rq4/analysis/feature_summary.json",
+          "sha256": "5ffdab4514d7ade166b7a7584a441d59cb5f8f33b027547088407ac7b6a82ef1"
+        }
+      ]
+    },
+    {
+      "name": "calibration_fit",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/calibration_models.json",
+          "sha256": "1166fc8aff3b90d85d4bfb8b07cb15d5eb68c69ee4a9c804d958fc93c320bf51"
+        }
+      ]
+    },
+    {
+      "name": "heldout_evaluation",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/heldout_predictions.jsonl",
+          "sha256": "3cb59ff0bee023c8d28709888a8be7263ab81b68e3031f8331d1e97a5ac2a7ac"
+        },
+        {
+          "path": "results/rq4/analysis/heldout_metrics.json",
+          "sha256": "a3a740b130c950b9a5d22b7474cec077350abd506306d054e6420a597f4645af"
+        }
+      ]
+    },
+    {
+      "name": "paired_bootstrap",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/paired_bootstrap.json",
+          "sha256": "f9f92b1fd6834a47e9df0e00c4c355b15fe874b5b58b1f9674271303f8822088"
+        }
+      ]
+    },
+    {
+      "name": "multiplicity_correction",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/multiplicity.json",
+          "sha256": "f08599d8ada37d1837b359dcc2cfa8d54944b14ecb09e225d5285aeb7805045d"
+        }
+      ]
+    },
+    {
+      "name": "hypothesis_gate",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/hypothesis_gate.json",
+          "sha256": "0c53c6b2183b716891a8917e4b4eddc6700584fac376f67f0447659bcb220875"
+        }
+      ]
+    },
+    {
+      "name": "macro_aggregate",
+      "outputs": [
+        {
+          "path": "results/rq4/analysis/macro_aggregate.json",
+          "sha256": "8bee7117fc166b3ba16cf5f19467ffec194e4b60b998888b95c2ac80c6708b81"
+        }
+      ]
+    }
+  ],
+  "status": "FINAL"
+}

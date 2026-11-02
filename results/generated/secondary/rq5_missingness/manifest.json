@@ -1,0 +1,22 @@
+{
+  "artifacts": [
+    {
+      "bytes": 15334,
+      "path": "missingness_summary.json",
+      "sha256": "dd30773d34e149964ed8e3fac2cb55399c977c60b408692cab444c14fd5c9ed3"
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY",
+  "primary_rq5_immutable": {
+    "ci_95": [
+      -0.015057308574727653,
+      0.010202548928115571
+    ],
+    "decision": "NOT_SUPPORTED",
+    "estimate": -0.002990487543719062,
+    "holm_adjusted_p": 0.6877312268773123
+  },
+  "schema": "trajuq_rq5_secondary_missingness_manifest_v1",
+  "scientific_claim_authority": false,
+  "status": "PASS"
+}

@@ -15,6 +15,20 @@ python reproduction/reproduce_core.py
 
 This checks repository secret hygiene and the released authorized artifact manifest and hashes.
 
+For the completed scientific closure, the repository also exposes CPU-only
+checks for the registered statistics and released result interfaces:
+
+~~~bash
+python reproduce_statistics.py
+python build_tables.py
+python build_figures.py
+~~~
+
+These checks preserve the exact registered RQ5 null result, verify that the
+RQ4 fixed-prefix analysis remains secondary exploratory, and validate the
+hash-bound tables and figures. They never rerun generation or substitute
+missing values.
+
 ## Full CPU verification
 
 ~~~bash

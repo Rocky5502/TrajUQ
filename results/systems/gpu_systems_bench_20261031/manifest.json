@@ -1,0 +1,32 @@
+{
+  "batch_sizes": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "classification": "SECONDARY_EXPLORATORY_SYSTEMS_DIAGNOSTIC",
+  "device": "NVIDIA A100-SXM4-80GB",
+  "dtype": "bfloat16",
+  "measured_repeats": 5,
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "new_tokens": 128,
+  "not_part_of_confirmatory_rq1_rq5": true,
+  "prompt_lengths": [
+    128,
+    512,
+    1024,
+    2048,
+    4096
+  ],
+  "purpose": "Inference-cost and reproducibility characterization only.",
+  "python": "3.12.3",
+  "schema": "trajuq_secondary_systems_diagnostic_v1",
+  "scientific_claim_authority": false,
+  "torch": "2.6.0+cu124",
+  "transformers": "4.52.4",
+  "uses_benchmark_outcomes": false,
+  "warmup_repeats": 1
+}

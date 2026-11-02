@@ -1,0 +1,26 @@
+{
+  "schema": "trajuq_main_figure_spec_v1",
+  "source_hashes": {
+    "results/repeated_sampling/macro_trajuq_vs_repeated.json": "eb12c0f5b6d7227bb13553aa3f7c5b262adf45c012002bc3b0a4ce10cf9b7268",
+    "results/adaptive/macro_cap_025.json": "829b769319f0bdd7e6e5aff10b2829b94c857f695ee2b36fa7409ed7eb45bdbb",
+    "results/adaptive/macro_cap_050.json": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
+    "results/adaptive/macro_cap_075.json": "68faa1ef48ec45ee343aa225efa1e799e47739b698bb09c2827a543f72ac9761"
+  },
+  "rq2": {
+    "claim": "Trajectory risk improves selective ranking on average, with heterogeneous family effects and weaker calibration.",
+    "visual_form": "paired macro values plus family-level deviation dots",
+    "metrics": ["aurc", "auprc", "auroc", "ece15", "nll"],
+    "interval": "registered hierarchical 95% bootstrap confidence interval on improvement",
+    "target_mm": [178, 86],
+    "outputs": ["pdf", "svg", "png"]
+  },
+  "rq3": {
+    "claim": "Risk-guided refinement reaches near-full-refinement accuracy at lower nominal compute; equivalence is not claimed.",
+    "visual_form": "accuracy-versus-nominal-compute operating-point plot",
+    "primary_operating_point": "cap_050",
+    "sensitivities": ["cap_025", "cap_075"],
+    "interval": "registered hierarchical 95% bootstrap confidence intervals",
+    "target_mm": [85, 62],
+    "outputs": ["pdf", "svg", "png"]
+  }
+}

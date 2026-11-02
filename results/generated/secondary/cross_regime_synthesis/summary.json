@@ -1,0 +1,51 @@
+{
+  "classification": "DESCRIPTIVE_SYNTHESIS",
+  "config_sha256": "a83fb9f419cbd88fd051ad3e55db7b8ed05238d407f642e0879386ddf2f45939",
+  "interpretation": {
+    "prohibited": "No causal observability law, raw cross-protocol model ranking, or pooled cross-regime effect.",
+    "supported": "Uncertainty utility depends on what is observable and on the inference cost used to obtain it."
+  },
+  "optional_rq4_early_actionability_included": true,
+  "optional_rq4_early_actionability_manifest_sha256": "f55fd76daef5ec68e50804ad7824468851c6f144df764e2754c624641a9db3b4",
+  "rows": [
+    {
+      "actionability": "Selective refinement at cap 0.50: Delta accuracy vs random 0.0075 [0.0032, 0.0115]",
+      "boundary": "Within registered diffusion cells only",
+      "cost": "2.147x base compute",
+      "observed_information": "Native denoising trajectory",
+      "principal_result": "Delta AUROC 0.0311 [0.0103, 0.0502]; Delta AURC 0.0324 [0.0209, 0.0442]",
+      "regime": "Native diffusion trajectory",
+      "registered_comparison": "TrajUQ vs terminal-entropy baseline"
+    },
+    {
+      "actionability": "Secondary prefix Delta AURC is positive at all fixed fractions: 0.0660 at 25% and 0.0881 at 100%",
+      "boundary": "One pinned open-weight model; no diffusion-to-AR transfer claim",
+      "cost": "One generation for trace; five for semantic disagreement comparator",
+      "observed_information": "Token-level uncertainty trace",
+      "principal_result": "Delta AURC 0.0343 [0.0189, 0.0501]",
+      "regime": "Open autoregressive trace",
+      "registered_comparison": "Trajectory calibrator vs mean token entropy"
+    },
+    {
+      "actionability": "K=2/3/5 improves ranking and selective risk; ECE15 worsens",
+      "boundary": "Three-point sensitivity; no post-hoc optimal K",
+      "cost": "K=2/3/5: 54.2/81.5/136.0 auxiliary seconds/example",
+      "observed_information": "Cross-generation semantic disagreement",
+      "principal_result": "Delta AURC 0.0199 [0.0032, 0.0370]",
+      "regime": "Repeated sampling",
+      "registered_comparison": "Single-trajectory TrajUQ vs five samples"
+    },
+    {
+      "actionability": "Descriptive heterogeneity: 14/18 cells favor combined",
+      "boundary": "Unmatched models; cross-observability gap not identifiable",
+      "cost": "Five provider responses per item",
+      "observed_information": "Verbalized confidence plus repeated behavior",
+      "principal_result": "Delta AURC -0.0030 [-0.0151, 0.0102]; NOT SUPPORTED",
+      "regime": "Hosted black-box behavior",
+      "registered_comparison": "Combined behavioral vs verbalized confidence"
+    }
+  ],
+  "schema": "trajuq_cross_regime_descriptive_synthesis_v2",
+  "scientific_claim_authority": false,
+  "status": "PASS"
+}

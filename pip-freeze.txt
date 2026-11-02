@@ -1,0 +1,12 @@
+joblib==1.6.0
+matplotlib==3.11.2
+numpy==2.4.6
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.1.1
+PyYAML==6.0.3
+ruff==0.15.22
+scikit-learn==1.9.1
+scipy==1.17.1
+threadpoolctl==3.7.0

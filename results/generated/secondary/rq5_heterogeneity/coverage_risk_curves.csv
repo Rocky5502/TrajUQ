@@ -1,0 +1,58 @@
+signal,coverage,macro_risk,n_cells
+registered combined behavioral,0.1,0.05920123810486719,18
+registered combined behavioral,0.15000000000000002,0.045349942015352036,18
+registered combined behavioral,0.2,0.04306886851738278,18
+registered combined behavioral,0.25,0.04806283697877352,18
+registered combined behavioral,0.30000000000000004,0.04705960032623126,18
+registered combined behavioral,0.35,0.04253984484566575,18
+registered combined behavioral,0.4,0.04563685139922278,18
+registered combined behavioral,0.45000000000000007,0.05213711353328128,18
+registered combined behavioral,0.5,0.053714947271253095,18
+registered combined behavioral,0.55,0.055467988885131284,18
+registered combined behavioral,0.6,0.06004826290736184,18
+registered combined behavioral,0.65,0.06137194450568522,18
+registered combined behavioral,0.7000000000000001,0.07018457859603133,18
+registered combined behavioral,0.75,0.07703381548601712,18
+registered combined behavioral,0.8,0.08105813060918975,18
+registered combined behavioral,0.85,0.09002817194361684,18
+registered combined behavioral,0.9,0.09782116333929038,18
+registered combined behavioral,0.9500000000000001,0.10763727525078769,18
+registered combined behavioral,1.0,0.12050112917525052,18
+repeated-sampling disagreement,0.1,0.07350656786386384,18
+repeated-sampling disagreement,0.15000000000000002,0.07350656786386384,18
+repeated-sampling disagreement,0.2,0.07350656786386384,18
+repeated-sampling disagreement,0.25,0.07350656786386384,18
+repeated-sampling disagreement,0.30000000000000004,0.07350656786386384,18
+repeated-sampling disagreement,0.35,0.07350656786386384,18
+repeated-sampling disagreement,0.4,0.07350656786386384,18
+repeated-sampling disagreement,0.45000000000000007,0.07350656786386384,18
+repeated-sampling disagreement,0.5,0.07350656786386384,18
+repeated-sampling disagreement,0.55,0.07350656786386384,18
+repeated-sampling disagreement,0.6,0.07350656786386384,18
+repeated-sampling disagreement,0.65,0.07350656786386384,18
+repeated-sampling disagreement,0.7000000000000001,0.07407334384475184,18
+repeated-sampling disagreement,0.75,0.07683956079026592,18
+repeated-sampling disagreement,0.8,0.0811283399927186,18
+repeated-sampling disagreement,0.85,0.0874113503959115,18
+repeated-sampling disagreement,0.9,0.09549247255265277,18
+repeated-sampling disagreement,0.9500000000000001,0.10611281166745995,18
+repeated-sampling disagreement,1.0,0.12050112917525052,18
+verbalized confidence,0.1,0.021659397342861604,18
+verbalized confidence,0.15000000000000002,0.02760319252649028,18
+verbalized confidence,0.2,0.03184481605418745,18
+verbalized confidence,0.25,0.03352246534057101,18
+verbalized confidence,0.30000000000000004,0.0421705890968989,18
+verbalized confidence,0.35,0.04689449360979329,18
+verbalized confidence,0.4,0.051147812352933114,18
+verbalized confidence,0.45000000000000007,0.05431878370804043,18
+verbalized confidence,0.5,0.057906078754207134,18
+verbalized confidence,0.55,0.06495051508578646,18
+verbalized confidence,0.6,0.06777817928241253,18
+verbalized confidence,0.65,0.07402479066868271,18
+verbalized confidence,0.7000000000000001,0.08021791620693429,18
+verbalized confidence,0.75,0.08492850873967087,18
+verbalized confidence,0.8,0.09103823223867781,18
+verbalized confidence,0.85,0.09640122800271894,18
+verbalized confidence,0.9,0.102990193171929,18
+verbalized confidence,0.9500000000000001,0.10859618109140122,18
+verbalized confidence,1.0,0.12050112917525052,18

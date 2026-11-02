@@ -1,0 +1,73 @@
+{
+  "classification": "SECONDARY_EXPLORATORY",
+  "estimand": "equal-cell macro AURC(verbalized confidence)-AURC(combined behavioral)",
+  "leave_one_dataset_out": [
+    {
+      "ci_high": 0.012206238637368621,
+      "ci_low": -0.017416137939851122,
+      "estimate": -0.0036969906678741274,
+      "omitted_dataset": "arc_challenge",
+      "retained_cells": 15
+    },
+    {
+      "ci_high": 0.01502413418584484,
+      "ci_low": 0.006437792732950904,
+      "estimate": 0.010883739344602343,
+      "omitted_dataset": "gpqa_diamond",
+      "retained_cells": 15
+    },
+    {
+      "ci_high": 0.01177413897648536,
+      "ci_low": -0.0180482556193177,
+      "estimate": -0.004317674305686402,
+      "omitted_dataset": "gsm8k",
+      "retained_cells": 15
+    },
+    {
+      "ci_high": 0.009773809983042439,
+      "ci_low": -0.019603122528837755,
+      "estimate": -0.00603219183064379,
+      "omitted_dataset": "math500",
+      "retained_cells": 15
+    },
+    {
+      "ci_high": 0.006834757905081899,
+      "ci_low": -0.02240598727192432,
+      "estimate": -0.00873940337023463,
+      "omitted_dataset": "mmlu_pro",
+      "retained_cells": 15
+    },
+    {
+      "ci_high": 0.009783696461871372,
+      "ci_low": -0.01989387223683456,
+      "estimate": -0.0060404044324777716,
+      "omitted_dataset": "truthfulqa",
+      "retained_cells": 15
+    }
+  ],
+  "leave_one_model_out": [
+    {
+      "ci_high": 0.013373187055516352,
+      "ci_low": -0.017277617992428704,
+      "estimate": -0.0030842664350974242,
+      "omitted_model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "retained_cells": 12
+    },
+    {
+      "ci_high": 0.016870509079281944,
+      "ci_low": -0.006813393395644128,
+      "estimate": 0.004827215168785424,
+      "omitted_model": "Pro/moonshotai/Kimi-K2.6",
+      "retained_cells": 12
+    },
+    {
+      "ci_high": 0.008377927084994656,
+      "ci_low": -0.02785569943471898,
+      "estimate": -0.010714411364845189,
+      "omitted_model": "Pro/zai-org/GLM-5.1",
+      "retained_cells": 12
+    }
+  ],
+  "schema": "trajuq_rq5_secondary_leave_one_out_v1",
+  "scientific_claim_authority": false
+}

@@ -1,0 +1,579 @@
+{
+  "classification": "SECONDARY_EXPLORATORY",
+  "complete_five_response_groups": {
+    "cells": [
+      {
+        "aurc_improvement": 0.0007485761903800155,
+        "dataset": "arc_challenge",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 403,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.015609668109668073,
+        "dataset": "gpqa_diamond",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 15,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.00027592392550413077,
+        "dataset": "gsm8k",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 376,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.029185038898940384,
+        "dataset": "math500",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 157,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.005291044500030234,
+        "dataset": "mmlu_pro",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 250,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.017896267447899045,
+        "dataset": "truthfulqa",
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+        "n_groups": 439,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.002584429038904802,
+        "dataset": "arc_challenge",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 388,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.0,
+        "dataset": "gpqa_diamond",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 4,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": -0.00042480155434557534,
+        "dataset": "gsm8k",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 422,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.0,
+        "dataset": "math500",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 128,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.04393865522594355,
+        "dataset": "mmlu_pro",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 154,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.009783259122514112,
+        "dataset": "truthfulqa",
+        "model": "Pro/moonshotai/Kimi-K2.6",
+        "n_groups": 402,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": -0.004398845969291099,
+        "dataset": "arc_challenge",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 353,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": null,
+        "dataset": "gpqa_diamond",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 0,
+        "status": "NOT_ESTIMABLE_NO_COMPLETE_FIVE_GROUPS"
+      },
+      {
+        "aurc_improvement": -0.00010634042813519387,
+        "dataset": "gsm8k",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 351,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.029492691328414453,
+        "dataset": "math500",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 64,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": 0.010304446105704655,
+        "dataset": "mmlu_pro",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 123,
+        "status": "ESTIMATED"
+      },
+      {
+        "aurc_improvement": -0.006936246527666438,
+        "dataset": "truthfulqa",
+        "model": "Pro/zai-org/GLM-5.1",
+        "n_groups": 393,
+        "status": "ESTIMATED"
+      }
+    ],
+    "groups": 4422,
+    "macro_aurc_improvement": 0.009014339142027362
+  },
+  "conservative_malformed_response_sensitivity": {
+    "reason": "malformed responses have neither a registered behavioral score nor a verbalized-confidence score; assigning either would introduce an unregistered imputation rule",
+    "status": "NOT_MATHEMATICALLY_IDENTIFIABLE"
+  },
+  "per_cell_missingness": [
+    {
+      "ambiguous_locked": 0,
+      "dataset": "arc_challenge",
+      "excluded": 115,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 115,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2385,
+      "locked_ambiguous": 0,
+      "malformed": 115,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2385,
+      "split": "test",
+      "successful": 2500,
+      "valid": 2385
+    },
+    {
+      "ambiguous_locked": 6,
+      "dataset": "gpqa_diamond",
+      "excluded": 424,
+      "excluded_by_reason": {
+        "locked_ambiguous": 6,
+        "malformed": 418,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 286,
+      "locked_ambiguous": 6,
+      "malformed": 418,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 710,
+      "provider_failure": 0,
+      "schema_valid": 286,
+      "split": "test",
+      "successful": 704,
+      "valid": 286
+    },
+    {
+      "ambiguous_locked": 17,
+      "dataset": "gsm8k",
+      "excluded": 171,
+      "excluded_by_reason": {
+        "locked_ambiguous": 17,
+        "malformed": 154,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2329,
+      "locked_ambiguous": 17,
+      "malformed": 154,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2329,
+      "split": "test",
+      "successful": 2483,
+      "valid": 2329
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "math500",
+      "excluded": 557,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 557,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 1178,
+      "locked_ambiguous": 0,
+      "malformed": 557,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 1735,
+      "provider_failure": 0,
+      "schema_valid": 1178,
+      "split": "test",
+      "successful": 1735,
+      "valid": 1178
+    },
+    {
+      "ambiguous_locked": 3,
+      "dataset": "mmlu_pro",
+      "excluded": 597,
+      "excluded_by_reason": {
+        "locked_ambiguous": 3,
+        "malformed": 594,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 1903,
+      "locked_ambiguous": 3,
+      "malformed": 594,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 1903,
+      "split": "test",
+      "successful": 2497,
+      "valid": 1903
+    },
+    {
+      "ambiguous_locked": 1,
+      "dataset": "truthfulqa",
+      "excluded": 150,
+      "excluded_by_reason": {
+        "locked_ambiguous": 1,
+        "malformed": 149,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2710,
+      "locked_ambiguous": 1,
+      "malformed": 149,
+      "missing_unreconciled": 0,
+      "model": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "other_terminal": 0,
+      "planned": 2860,
+      "provider_failure": 0,
+      "schema_valid": 2710,
+      "split": "test",
+      "successful": 2859,
+      "valid": 2710
+    },
+    {
+      "ambiguous_locked": 5,
+      "dataset": "arc_challenge",
+      "excluded": 150,
+      "excluded_by_reason": {
+        "locked_ambiguous": 5,
+        "malformed": 145,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2350,
+      "locked_ambiguous": 5,
+      "malformed": 145,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2350,
+      "split": "test",
+      "successful": 2495,
+      "valid": 2350
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "gpqa_diamond",
+      "excluded": 568,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 568,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 142,
+      "locked_ambiguous": 0,
+      "malformed": 568,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 710,
+      "provider_failure": 0,
+      "schema_valid": 142,
+      "split": "test",
+      "successful": 710,
+      "valid": 142
+    },
+    {
+      "ambiguous_locked": 4,
+      "dataset": "gsm8k",
+      "excluded": 114,
+      "excluded_by_reason": {
+        "locked_ambiguous": 4,
+        "malformed": 110,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2386,
+      "locked_ambiguous": 4,
+      "malformed": 110,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2386,
+      "split": "test",
+      "successful": 2496,
+      "valid": 2386
+    },
+    {
+      "ambiguous_locked": 32,
+      "dataset": "math500",
+      "excluded": 822,
+      "excluded_by_reason": {
+        "locked_ambiguous": 32,
+        "malformed": 789,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 1
+      },
+      "included": 913,
+      "locked_ambiguous": 32,
+      "malformed": 789,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 1735,
+      "provider_failure": 1,
+      "schema_valid": 913,
+      "split": "test",
+      "successful": 1702,
+      "valid": 913
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "mmlu_pro",
+      "excluded": 1018,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 1018,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 1482,
+      "locked_ambiguous": 0,
+      "malformed": 1018,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 1482,
+      "split": "test",
+      "successful": 2500,
+      "valid": 1482
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "truthfulqa",
+      "excluded": 204,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 204,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2656,
+      "locked_ambiguous": 0,
+      "malformed": 204,
+      "missing_unreconciled": 0,
+      "model": "Pro/moonshotai/Kimi-K2.6",
+      "other_terminal": 0,
+      "planned": 2860,
+      "provider_failure": 0,
+      "schema_valid": 2656,
+      "split": "test",
+      "successful": 2860,
+      "valid": 2656
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "arc_challenge",
+      "excluded": 245,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 245,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2255,
+      "locked_ambiguous": 0,
+      "malformed": 245,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2255,
+      "split": "test",
+      "successful": 2500,
+      "valid": 2255
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "gpqa_diamond",
+      "excluded": 594,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 594,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 116,
+      "locked_ambiguous": 0,
+      "malformed": 594,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 710,
+      "provider_failure": 0,
+      "schema_valid": 116,
+      "split": "test",
+      "successful": 710,
+      "valid": 116
+    },
+    {
+      "ambiguous_locked": 6,
+      "dataset": "gsm8k",
+      "excluded": 273,
+      "excluded_by_reason": {
+        "locked_ambiguous": 6,
+        "malformed": 267,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2227,
+      "locked_ambiguous": 6,
+      "malformed": 267,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 2227,
+      "split": "test",
+      "successful": 2494,
+      "valid": 2227
+    },
+    {
+      "ambiguous_locked": 17,
+      "dataset": "math500",
+      "excluded": 958,
+      "excluded_by_reason": {
+        "locked_ambiguous": 17,
+        "malformed": 941,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 777,
+      "locked_ambiguous": 17,
+      "malformed": 941,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 1735,
+      "provider_failure": 0,
+      "schema_valid": 777,
+      "split": "test",
+      "successful": 1718,
+      "valid": 777
+    },
+    {
+      "ambiguous_locked": 0,
+      "dataset": "mmlu_pro",
+      "excluded": 1193,
+      "excluded_by_reason": {
+        "locked_ambiguous": 0,
+        "malformed": 1193,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 1307,
+      "locked_ambiguous": 0,
+      "malformed": 1193,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 2500,
+      "provider_failure": 0,
+      "schema_valid": 1307,
+      "split": "test",
+      "successful": 2500,
+      "valid": 1307
+    },
+    {
+      "ambiguous_locked": 3,
+      "dataset": "truthfulqa",
+      "excluded": 299,
+      "excluded_by_reason": {
+        "locked_ambiguous": 3,
+        "malformed": 296,
+        "missing_unreconciled": 0,
+        "other_terminal": 0,
+        "provider_failure": 0
+      },
+      "included": 2561,
+      "locked_ambiguous": 3,
+      "malformed": 296,
+      "missing_unreconciled": 0,
+      "model": "Pro/zai-org/GLM-5.1",
+      "other_terminal": 0,
+      "planned": 2860,
+      "provider_failure": 0,
+      "schema_valid": 2561,
+      "split": "test",
+      "successful": 2857,
+      "valid": 2561
+    }
+  ],
+  "registered_valid_response_population": {
+    "groups": 6569,
+    "macro_aurc_improvement": -0.002990487543719063
+  },
+  "schema": "trajuq_rq5_secondary_missingness_expanded_v1",
+  "scientific_claim_authority": false
+}

@@ -21,6 +21,15 @@ TrajUQ is a research framework for measuring, calibrating, and using uncertainty
 
 > **Repository boundary:** this repository contains research code, frozen scientific configurations, manifests, tests, and reproducibility material. Manuscript/venue authoring files are intentionally maintained outside the repository.
 
+> **Final scientific closure:** RQ1--RQ5 are complete and evidence-bound. The
+> RQ5 primary comparison is retained as `NOT_SUPPORTED`; cross-model
+> heterogeneity is `DESCRIPTIVE_ONLY`, and unmatched cross-observability
+> comparisons remain `NOT_IDENTIFIABLE`. See
+> [TRAJUQ_NOVELTY_DEFENSE.md](TRAJUQ_NOVELTY_DEFENSE.md),
+> [CLOSEST_WORK_MATRIX.tsv](CLOSEST_WORK_MATRIX.tsv), and
+> [EARLY_ACTIONABILITY_READINESS.md](EARLY_ACTIONABILITY_READINESS.md) for the
+> claim boundary and secondary-prefix analysis contract.
+
 ## Contents
 
 - [Reviewer quick path](#reviewer-quick-path)

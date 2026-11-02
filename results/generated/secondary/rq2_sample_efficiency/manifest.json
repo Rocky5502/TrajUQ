@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    {
+      "bytes": 730,
+      "path": "incremental_cost_utility.csv",
+      "sha256": "6ff16f93baa270f7a327d92a4539b4239111cdef576a70c0730e4a27e54d4f75"
+    },
+    {
+      "bytes": 562,
+      "path": "macro_metrics.csv",
+      "sha256": "51509a55e79ca958af4ed10f115feb024c9e55dacfce6d4e6ba999b3f23155d9"
+    },
+    {
+      "bytes": 3257,
+      "path": "rq2_cost_utility.json",
+      "sha256": "e7827e6f59a94f9ab679abf05766d9c54bf17ef6c9d7f693bce38a24f69266df"
+    },
+    {
+      "bytes": 24988,
+      "path": "rq2_cost_utility.pdf",
+      "sha256": "3d3c1580a078de1fbfaf17ac722cee2fe82ca4e22698e368d39acdc6f1a7f7ab"
+    },
+    {
+      "bytes": 153563,
+      "path": "rq2_cost_utility.png",
+      "sha256": "216d932fe0f59af8d205d1361b25bc076c79a1c62d5e033e82b81fe3a390db8d"
+    },
+    {
+      "bytes": 29700,
+      "path": "rq2_cost_utility.svg",
+      "sha256": "cd846294be7b2d1bebe82215716ddf07e011986c16d094e8a6762c4a9097731f"
+    },
+    {
+      "bytes": 383,
+      "path": "rq2_cost_utility.visual_spec.json",
+      "sha256": "087ba6ce3bc0c75d2141213caa31e3caa286d81cf66aa07695982724750bdb83"
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY",
+  "figure_artifacts": [
+    {
+      "bytes": 24988,
+      "path": "rq2_cost_utility.pdf",
+      "sha256": "3d3c1580a078de1fbfaf17ac722cee2fe82ca4e22698e368d39acdc6f1a7f7ab"
+    },
+    {
+      "bytes": 29700,
+      "path": "rq2_cost_utility.svg",
+      "sha256": "cd846294be7b2d1bebe82215716ddf07e011986c16d094e8a6762c4a9097731f"
+    },
+    {
+      "bytes": 153563,
+      "path": "rq2_cost_utility.png",
+      "sha256": "216d932fe0f59af8d205d1361b25bc076c79a1c62d5e033e82b81fe3a390db8d"
+    }
+  ],
+  "schema": "trajuq_rq2_cost_utility_manifest_v1",
+  "scientific_claim_authority": false,
+  "source_path": "G:\\NAACL Project2\\rq2_sample_efficiency_validation_20261027_v2.json",
+  "source_sha256": "bff7b1d84d8d22ecb8449cda3c58cce2adde76d20c6b9a75f7fe703a9b020247",
+  "status": "PASS"
+}

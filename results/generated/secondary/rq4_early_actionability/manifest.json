@@ -1,0 +1,33 @@
+{
+  "artifacts": [
+    {
+      "bytes": 61632,
+      "path": "calibration_models.json",
+      "sha256": "9991b709d2fc741d072dd89caa64aa09102b4714acc44b7b9158e8216f350dc7"
+    },
+    {
+      "bytes": 17386,
+      "path": "cell_metrics.json",
+      "sha256": "87f9e23b5662898c5ff95fd4213374f40db6e55d05e40e37667b9e652f707abb"
+    },
+    {
+      "bytes": 5661,
+      "path": "early_actionability.json",
+      "sha256": "c2a05eabfa011a14d47c0e3d418188a14b794209dd584e5f2d163b34a5b5ada6"
+    },
+    {
+      "bytes": 1192,
+      "path": "macro_metrics.csv",
+      "sha256": "6c923cfc0aa33de9e937b9399bef2b2d798cab894fb94e97140b2d7d561b287c"
+    }
+  ],
+  "classification": "SECONDARY_EXPLORATORY",
+  "implementation_addendum_sha256": "b8ebc06ab5109524eda8da2ecb084a83f8d00ad757a84bc510baaa27b6c8b8d3",
+  "label_join": "exact_bijection_on_dataset_split_seed_example_id",
+  "parent_contract_sha256": "814965b4af71b9e042098d161e5691b0722eccb07c831668932c0d87c00b7194",
+  "raw_root": "/data/trajuq_worker_state/a100-01/rq4_full_5a3993c/raw",
+  "schema": "trajuq_rq4_early_actionability_manifest_v1",
+  "scientific_claim_authority": false,
+  "scored_samples_sha256": "1bb125b17b5fab5bd4ccc9c069044ab7f921f79180e28ea238e27146fd0d30b7",
+  "status": "PASS"
+}

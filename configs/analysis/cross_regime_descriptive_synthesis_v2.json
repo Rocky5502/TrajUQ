@@ -1,0 +1,80 @@
+{
+  "schema": "trajuq_cross_regime_descriptive_synthesis_v2",
+  "classification": "DESCRIPTIVE_SYNTHESIS",
+  "scientific_claim_authority": false,
+  "declared_on": "2026-11-01",
+  "purpose": "Organize already-authorized evidence by observability, actionability, and inference cost without cross-regime causal inference.",
+  "dimensions": ["observability", "actionability", "inference_cost"],
+  "regime_order": [
+    "native_diffusion_trajectory",
+    "open_autoregressive_trace",
+    "repeated_sampling",
+    "hosted_black_box_behavior"
+  ],
+  "source_bindings": [
+    {
+      "path": "results/primary_analysis/macro_primary.json",
+      "sha256": "de0044ffd8ec59de9137f9fcd023b8b6f8fcebc96668c9e49a4e618833b95f20",
+      "role": "diffusion_trajectory_predictive_signal"
+    },
+    {
+      "path": "results/adaptive/macro_cap_050.json",
+      "sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
+      "role": "diffusion_adaptive_compute"
+    },
+    {
+      "path": "results/repeated_sampling/macro_trajuq_vs_repeated.json",
+      "sha256": "eb12c0f5b6d7227bb13553aa3f7c5b262adf45c012002bc3b0a4ce10cf9b7268",
+      "role": "diffusion_vs_repeated_sampling"
+    },
+    {
+      "path": "results/generated/secondary/rq2_sample_efficiency/manifest.json",
+      "sha256": "a026df486fd8d7cfa907915cf23045e923507b8c176fddb3f6d9f2fce070e989",
+      "role": "repeated_sampling_cost_utility"
+    },
+    {
+      "path": "results/generated/final/rq4_scientific_claim_registry.json",
+      "sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
+      "role": "open_ar_scientific_gate"
+    },
+    {
+      "path": "results/rq4/analysis/macro_aggregate.json",
+      "sha256": "8bee7117fc166b3ba16cf5f19467ffec194e4b60b998888b95c2ac80c6708b81",
+      "role": "open_ar_signal_metrics"
+    },
+    {
+      "path": "results/generated/final/rq5_scientific_claim_registry.json",
+      "sha256": "433bf51266d7a88df1aa0eb69a92a200738427f82a3134cdbae16080a5e8598e",
+      "role": "black_box_scientific_gate"
+    },
+    {
+      "path": "results/rq5/analysis/heldout_metrics.json",
+      "sha256": "ba5b2b8a77b94da103d54d9c9a17d272b1413b400a8937a0608f7a9943cd7460",
+      "role": "black_box_cell_metrics"
+    }
+  ],
+  "optional_secondary_source": {
+    "path": "results/generated/secondary/rq4_early_actionability/manifest.json",
+    "inclusion_rule": "include_only_after_PASS_manifest_and_hash_verification",
+    "role": "open_ar_prefix_actionability"
+  },
+  "compatibility_firewall": {
+    "within_regime_metrics": "retain each registered baseline, partition, and aggregation rule",
+    "cross_regime_pooling": "forbidden",
+    "cross_regime_significance_test": "forbidden",
+    "causal_observability_claim": "forbidden",
+    "raw_model_ranking_across_regimes": "forbidden",
+    "rq5_cross_observability_gap": "NOT_IDENTIFIABLE_UNMATCHED_MODELS"
+  },
+  "cost_policy": {
+    "directly_comparable_only_within_common_ledger": true,
+    "allowed_units": ["auxiliary_seconds_per_example", "relative_generation_count", "cost_ratio_to_base", "provider_request_count"],
+    "forbidden": "convert unlike cost ledgers into one pooled efficiency score"
+  },
+  "negative_evidence_policy": {
+    "retain_rq5_null": true,
+    "retain_calibration_tradeoffs": true,
+    "retain_model_and_cell_heterogeneity": true,
+    "do_not_select_post_hoc_winner": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "trajuq_reviewer_system_manifest_v1",
+  "purpose": "CPU-only final-closure and fresh-clone validation",
+  "os": "Windows 11 Pro 64-bit (10.0.26200)",
+  "python": "3.11.9",
+  "git": "2.55.0.windows.3",
+  "gpu_required": false,
+  "network_required_after_install": false,
+  "experiment_runtime": {
+    "torch": "2.6.0+cu124",
+    "transformers": "4.52.4",
+    "cuda_runtime": "12.4",
+    "gpu": "NVIDIA A100-SXM4-80GB"
+  },
+  "bound_files": [
+    "environment-lock.txt",
+    "pip-freeze.txt",
+    "requirements-analysis.txt"
+  ]
+}

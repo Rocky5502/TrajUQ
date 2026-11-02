@@ -1,0 +1,40 @@
+{
+  "schema": "trajuq_rq4_early_actionability_implementation_addendum_v3",
+  "classification": "SECONDARY_EXPLORATORY",
+  "scientific_claim_authority": false,
+  "declared_on": "2026-11-01",
+  "chronology": "POST_INVALID_LABEL_JOIN_PRE_VALID_SECONDARY_OUTCOME_COMPUTATION",
+  "parent_contract": "configs/analysis/rq4_early_actionability_secondary.json",
+  "parent_contract_sha256": "814965b4af71b9e042098d161e5691b0722eccb07c831668932c0d87c00b7194",
+  "supersedes_implementation_addendum": "configs/analysis/rq4_early_actionability_implementation_addendum_v2.json",
+  "superseded_addendum_sha256": "c688bb26fb1bc8ce47bb0e83f4fa51a581f928e707a597ad0c877299f9915344",
+  "trigger": {
+    "observed_condition": "production raw rows preserve correct=null while the final claim-bound scored_samples artifact contains the authorized outcome labels",
+    "invalid_output_manifest_sha256": "a20d40825cd7bc4d6be9efee74cf9b5aad1c69fc88ba8bd8c8002a8ae42597e8",
+    "invalid_output_disposition": "REJECTED_NO_SCIENTIFIC_INTERPRETATION",
+    "valid_scientific_effect_estimates_computed": false
+  },
+  "label_source": {
+    "path": "/data/TrajUQ_RQ4_analysis_ad755df_v2/results/rq4/analysis/scored_samples.jsonl",
+    "sha256": "1bb125b17b5fab5bd4ccc9c069044ab7f921f79180e28ea238e27146fd0d30b7",
+    "rows": 19420,
+    "binding": "results/generated/final/rq4_manifest.json",
+    "join_key": ["dataset", "split", "seed", "example_id"]
+  },
+  "join_policy": {
+    "required_exact_bijection": true,
+    "raw_correct_field": "must_be_null_and_is_not_an_outcome_source",
+    "scored_correct_field": "required_boolean",
+    "duplicate_keys": "fail_closed",
+    "missing_or_extra_keys": "fail_closed"
+  },
+  "evaluation": {
+    "single_class_policy": {
+      "aurc_and_fixed_coverage_risks": "estimate_for_all_nonempty_cells",
+      "auroc_and_auprc": "null_and_mark_not_estimable_when_test_cell_has_one_class",
+      "macro": "equal_weight_over_estimable_dataset_cells_separately_for_each_metric",
+      "bootstrap": "resample_each_observed_class_within_cell; do_not_synthesize_missing_classes"
+    }
+  },
+  "analysis_policy": "All fractions, features, models, endpoints, bootstraps, and interpretation boundaries remain exactly as frozen in v2; only the outcome-label source is corrected."
+}

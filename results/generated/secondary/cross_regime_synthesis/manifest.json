@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "path": "results/generated/secondary/cross_regime_synthesis/summary.json",
+      "sha256": "94e72c03ddcdb24c8f70110769321d11665e401c372896bd252c313e925bb0d3"
+    },
+    {
+      "path": "results/generated/secondary/cross_regime_synthesis/regime_summary.csv",
+      "sha256": "dc38c8bd0ff1613e5a2c494c52ac750bbb901832225f23752008679ce1c5a158"
+    },
+    {
+      "path": "paper/generated_synthesis.tex",
+      "sha256": "28073718a06c4c3e57e7cc4893c65884ecad43e51547f1e345acc4d95ff0f267"
+    }
+  ],
+  "config": {
+    "path": "configs/analysis/cross_regime_descriptive_synthesis_v2.json",
+    "sha256": "a83fb9f419cbd88fd051ad3e55db7b8ed05238d407f642e0879386ddf2f45939"
+  },
+  "schema": "trajuq_cross_regime_descriptive_synthesis_manifest_v2",
+  "scientific_claim_authority": false,
+  "status": "PASS"
+}

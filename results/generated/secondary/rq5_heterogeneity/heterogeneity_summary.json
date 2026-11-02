@@ -1,0 +1,13 @@
+{
+  "cells_favoring_combined": 14,
+  "cells_favoring_verbalized_confidence": 3,
+  "cells_tied": 1,
+  "classification": "SECONDARY_EXPLORATORY",
+  "effect_max": 0.030843876837967986,
+  "effect_min": -0.16522478464389867,
+  "effect_standard_deviation": 0.044271501732779286,
+  "interpretation": "HETEROGENEITY_DESCRIPTIVE_NOT_A_CONFIRMATORY_GATE",
+  "n_cells": 18,
+  "schema": "trajuq_rq5_secondary_heterogeneity_v1",
+  "scientific_claim_authority": false
+}

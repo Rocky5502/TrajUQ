@@ -1,0 +1,102 @@
+{
+  "aggregation": "equal_cell_weight_macro",
+  "classification": "SECONDARY_EXPLORATORY",
+  "incremental_cost_utility": [
+    {
+      "auprc_gain": 0.011433337666797883,
+      "auprc_gain_per_extra_generation": 0.011433337666797883,
+      "auprc_gain_per_extra_second": 0.00042014955140135695,
+      "aurc_reduction": 0.012100986783603163,
+      "aurc_reduction_per_extra_generation": 0.012100986783603163,
+      "aurc_reduction_per_extra_second": 0.0004446841610747729,
+      "auroc_gain": 0.013737642956082818,
+      "auroc_gain_per_extra_generation": 0.013737642956082818,
+      "auroc_gain_per_extra_second": 0.0005048276097076667,
+      "extra_generations": 1,
+      "extra_seconds_per_example": 27.212542840194395,
+      "transition": "K=2 to K=3"
+    },
+    {
+      "auprc_gain": 0.01685020338097354,
+      "auprc_gain_per_extra_generation": 0.00842510169048677,
+      "auprc_gain_per_extra_second": 0.0003090518947945057,
+      "aurc_reduction": 0.010689193102789596,
+      "aurc_reduction_per_extra_generation": 0.005344596551394798,
+      "aurc_reduction_per_extra_second": 0.00019605195899128798,
+      "auroc_gain": 0.01937233813220507,
+      "auroc_gain_per_extra_generation": 0.009686169066102535,
+      "auroc_gain_per_extra_second": 0.00035531071471327984,
+      "extra_generations": 2,
+      "extra_seconds_per_example": 54.52224582598838,
+      "transition": "K=3 to K=5"
+    }
+  ],
+  "interpretation": {
+    "boundary": "descriptive three-point sensitivity; not a continuously optimized stopping policy",
+    "calibration": "ECE15 worsens monotonically over the same K values",
+    "ranking_and_selective_risk": "improve monotonically from K=2 to K=5 at increasing auxiliary cost"
+  },
+  "macro": [
+    {
+      "auprc": 0.7408891879027993,
+      "aurc": 0.6712179550965862,
+      "auroc": 0.5614198454961604,
+      "cost_fraction_of_k5": 0.3989209135845267,
+      "ece15": 0.04031981154359699,
+      "k": 2,
+      "n_cells": 12,
+      "risk_at_50_coverage": 0.6688544540610488,
+      "risk_at_80_coverage": 0.6892447104971104,
+      "seconds": 54.24530199644041
+    },
+    {
+      "auprc": 0.7523225255695972,
+      "aurc": 0.659116968312983,
+      "auroc": 0.5751574884522432,
+      "cost_fraction_of_k5": 0.5990424365779976,
+      "ece15": 0.046974270711286924,
+      "k": 3,
+      "n_cells": 12,
+      "risk_at_50_coverage": 0.6556413886611726,
+      "risk_at_80_coverage": 0.6862203995013147,
+      "seconds": 81.4578448366348
+    },
+    {
+      "auprc": 0.7691727289505708,
+      "aurc": 0.6484277752101935,
+      "auroc": 0.5945298265844483,
+      "cost_fraction_of_k5": 1.0,
+      "ece15": 0.055398414706720016,
+      "k": 5,
+      "n_cells": 12,
+      "risk_at_50_coverage": 0.6429375827949843,
+      "risk_at_80_coverage": 0.6809040551087788,
+      "seconds": 135.98009066262318
+    }
+  ],
+  "new_model_generations": 0,
+  "nondominated_k_by_metric": {
+    "auprc": [
+      2,
+      3,
+      5
+    ],
+    "aurc": [
+      2,
+      3,
+      5
+    ],
+    "auroc": [
+      2,
+      3,
+      5
+    ],
+    "ece15": [
+      2
+    ]
+  },
+  "schema": "trajuq_rq2_cost_utility_secondary_v1",
+  "scientific_claim_authority": false,
+  "source_sha256": "bff7b1d84d8d22ecb8449cda3c58cce2adde76d20c6b9a75f7fe703a9b020247",
+  "status": "PASS"
+}

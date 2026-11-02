@@ -1,0 +1,17 @@
+{
+  "claim": "RQ5 cell effects are heterogeneous and the confirmatory macro effect remains null",
+  "classification": "SECONDARY_EXPLORATORY",
+  "direction": "positive delta favors combined; lower selective risk is better",
+  "metric": "AURC difference and selective risk",
+  "output_formats": [
+    "pdf",
+    "svg",
+    "png"
+  ],
+  "target_width_mm": 178,
+  "uncertainty": "within-cell class-stratified percentile bootstrap, 2000 replicates",
+  "visual_forms": [
+    "dot-and-interval forest plot",
+    "ordered coverage-risk line plot"
+  ]
+}

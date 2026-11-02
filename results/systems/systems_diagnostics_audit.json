@@ -1,0 +1,106 @@
+{
+  "allowed_use": [
+    "supplementary inference-cost characterization",
+    "throughput, latency, VRAM, power, thermal, and reproducibility discussion"
+  ],
+  "classification": "SECONDARY_EXPLORATORY_SYSTEMS_DIAGNOSTIC",
+  "confirmatory_rq1_rq5": false,
+  "endurance": {
+    "all_cells_deterministic": true,
+    "completed_runs": 375,
+    "expected_runs": 375,
+    "max_absolute_first_last_quartile_drift_pct": 0.04451256352277945,
+    "max_temperature_c": 61.0
+  },
+  "forbidden_use": [
+    "RQ1-RQ5 hypothesis authorization",
+    "benchmark accuracy conclusions",
+    "causal observability claims"
+  ],
+  "hash_checks": [
+    {
+      "actual_sha256": "872cf5bd69675db3298101f9781fd07b0a276eb2aad475f99b597907b6b28b7e",
+      "declared_sha256": "872cf5bd69675db3298101f9781fd07b0a276eb2aad475f99b597907b6b28b7e",
+      "match": true,
+      "path": "gpu_systems_bench_20261031/manifest.json"
+    },
+    {
+      "actual_sha256": "8a75edbbd5ff90ba55764142947d3860daf0dd12e7cd7f216a79b379441c0c28",
+      "declared_sha256": "8a75edbbd5ff90ba55764142947d3860daf0dd12e7cd7f216a79b379441c0c28",
+      "match": true,
+      "path": "gpu_systems_bench_20261031/systems_benchmark.jsonl"
+    },
+    {
+      "actual_sha256": "f30536075bc49730f25c61726d2785d250aaf4fb969a8abfb3c671e410e39c8d",
+      "declared_sha256": "f30536075bc49730f25c61726d2785d250aaf4fb969a8abfb3c671e410e39c8d",
+      "match": true,
+      "path": "gpu_systems_bench_20261031/systems_benchmark_summary.csv"
+    },
+    {
+      "actual_sha256": "70d428aec812810e2c17eda13a1f842a8026922df1de68db198d71fc1e000f09",
+      "declared_sha256": "70d428aec812810e2c17eda13a1f842a8026922df1de68db198d71fc1e000f09",
+      "match": true,
+      "path": "context_decode_scaling_20261031/context_decode_scaling.jsonl"
+    },
+    {
+      "actual_sha256": "8d6c10c3ea7b1fa07d767f81dbf4863fd485bd64de8ad0e1809b4948fa25913c",
+      "declared_sha256": "8d6c10c3ea7b1fa07d767f81dbf4863fd485bd64de8ad0e1809b4948fa25913c",
+      "match": true,
+      "path": "context_decode_scaling_20261031/context_decode_scaling_summary.csv"
+    },
+    {
+      "actual_sha256": "0a10d288ae9cc8886fab0a6528b0ca83c25ea39555a485789c998effc64cbf00",
+      "declared_sha256": "0a10d288ae9cc8886fab0a6528b0ca83c25ea39555a485789c998effc64cbf00",
+      "match": true,
+      "path": "context_decode_scaling_20261031/manifest.json"
+    },
+    {
+      "actual_sha256": "e613a6a73b30526e7bfb84a2e53ecc5b6b3bac1621543776df8223f761f07a61",
+      "declared_sha256": "e613a6a73b30526e7bfb84a2e53ecc5b6b3bac1621543776df8223f761f07a61",
+      "match": true,
+      "path": "endurance_20261031/endurance_runs.jsonl"
+    },
+    {
+      "actual_sha256": "acb8d8da825b6b2f3ca5a4d6397abae9f3bf647645165f53930e57f4b0b707a3",
+      "declared_sha256": "acb8d8da825b6b2f3ca5a4d6397abae9f3bf647645165f53930e57f4b0b707a3",
+      "match": true,
+      "path": "endurance_20261031/endurance_summary.json"
+    },
+    {
+      "actual_sha256": "f5f510ac62fc272bb625a1b5d63952aab7ccd595064d538b152102680188d92b",
+      "declared_sha256": "f5f510ac62fc272bb625a1b5d63952aab7ccd595064d538b152102680188d92b",
+      "match": true,
+      "path": "endurance_20261031/manifest.json"
+    },
+    {
+      "actual_sha256": "ebb85148ca5a606df92ea487df9cca1707e00c859ac04793c4ed5c4769264445",
+      "declared_sha256": "27432f144eae88f5eee9b40f2f5251baca4f31f794378b46a65fad25652b321e",
+      "match": false,
+      "path": "endurance_20261031/progress.json"
+    }
+  ],
+  "oom_or_error_cells": 0,
+  "preservation": {
+    "archive_sha256": "1d8655630f167915da5395649946fbfaa08838c3dce81d35b6ac5c58403d0c30",
+    "diagnostic_hash_ledger_sha256": "cb4418ffe0b5c6e4d9c9aadd70bdcf054789255a75d5de75e9ca49d5e062fa41",
+    "watcher_success_marker": true
+  },
+  "preserved_discrepancy": {
+    "explanation": "The internal SHA256SUMS.json captured a pre-final progress file. The final COMPLETE progress file is bound correctly by the later preservation ledger and archive.",
+    "final_actual_and_preservation_sha256": "ebb85148ca5a606df92ea487df9cca1707e00c859ac04793c4ed5c4769264445",
+    "internal_declared_sha256": "27432f144eae88f5eee9b40f2f5251baca4f31f794378b46a65fad25652b321e",
+    "path": "endurance_20261031/progress.json",
+    "raw_artifacts_modified": false
+  },
+  "run_counts": {
+    "context_decode_measured": 135,
+    "context_decode_total_including_warmup": 180,
+    "endurance_measured_pass": 375,
+    "systems_benchmark_measured": 125,
+    "systems_benchmark_total_including_warmup": 150
+  },
+  "schema": "trajuq_systems_diagnostics_audit_v1",
+  "scientific_claim_authority": false,
+  "status": "PASS_WITH_PRESERVED_STALE_INTERNAL_PROGRESS_HASH",
+  "uses_benchmark_prompts_labels_or_outcomes": false
+}

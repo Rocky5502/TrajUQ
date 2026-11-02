@@ -1,0 +1,102 @@
+{
+  "analysis_commit": "4b45dbb9c50284f108ea56aa8b90e2aebbd9babf",
+  "authorized_interpretation": [
+    "Trajectory-aware uncertainty improves selective-risk ranking over mean token entropy.",
+    "Five-sample semantic disagreement is stronger in the reported macro comparison but requires multiple generations."
+  ],
+  "bindings": [
+    {
+      "path": "results/rq4/analysis/hypothesis_gate.json",
+      "role": "hypothesis_gate",
+      "sha256": "0c53c6b2183b716891a8917e4b4eddc6700584fac376f67f0447659bcb220875"
+    },
+    {
+      "path": "results/rq4/analysis/macro_aggregate.json",
+      "role": "macro_aggregate",
+      "sha256": "8bee7117fc166b3ba16cf5f19467ffec194e4b60b998888b95c2ac80c6708b81"
+    },
+    {
+      "path": "results/rq4/analysis/paired_bootstrap.json",
+      "role": "paired_bootstrap",
+      "sha256": "f9f92b1fd6834a47e9df0e00c4c355b15fe874b5b58b1f9674271303f8822088"
+    },
+    {
+      "path": "results/rq4/analysis/multiplicity.json",
+      "role": "multiplicity",
+      "sha256": "f08599d8ada37d1837b359dcc2cfa8d54944b14ecb09e225d5285aeb7805045d"
+    },
+    {
+      "path": "results/rq4/analysis/finalization_state.json",
+      "role": "finalization_state",
+      "sha256": "76bb3db96389258002391e21984f3064be397bbba04d1518a925b2a5eab23706"
+    },
+    {
+      "path": "results/generated/final/rq4_manifest.json",
+      "role": "mechanical_manifest",
+      "sha256": "3a1beb570661e70bac628b2c56b00983d98edc055da6a837c9d3dd8b978f0d71"
+    },
+    {
+      "path": "results/rq4/rq4_downstream_plan.json",
+      "role": "downstream_plan",
+      "sha256": "33359931a999ed2678868d97b46c94590b00bc6ab6857859ec9743488a68d829"
+    }
+  ],
+  "chronology": "confirmatory protocol pre-generation; orchestration plan post-generation/pre-outcome-scoring",
+  "claim_authorized": true,
+  "confirmatory_claims": {
+    "h4a": {
+      "ci_95": [
+        0.01893251661225149,
+        0.05013296939329152
+      ],
+      "decision": "SUPPORTED",
+      "estimate": 0.03429837401233043,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "raw_p_two_sided": 0.00019998000199980003
+    },
+    "h4b": {
+      "ci_95": [
+        0.0058287338781096805,
+        0.02039826613495945
+      ],
+      "decision": "SUPPORTED",
+      "estimate": 0.013173496853112658,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "raw_p_two_sided": 0.00039996000399960006
+    },
+    "h4c": {
+      "ci_95": [
+        0.02422319479860987,
+        0.040080901754313634
+      ],
+      "decision": "SUPPORTED",
+      "estimate": 0.032246168346013265,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "raw_p_two_sided": 0.00019998000199980003
+    }
+  },
+  "downstream_plan_sha256": "33359931a999ed2678868d97b46c94590b00bc6ab6857859ec9743488a68d829",
+  "generation_manifest_sha256": "52e016ec6c17ea4268b2eaa2e9dcd2c7eb53a79c6d42453d6befbe6f4983338f",
+  "macro_reference": {
+    "five_sample_semantic_disagreement": {
+      "aurc": 0.27865694250116096,
+      "auroc": 0.7817423284731276
+    },
+    "mean_token_entropy": {
+      "aurc": 0.35777769090533124,
+      "auroc": 0.6432650894561796
+    },
+    "trajectory": {
+      "aurc": 0.3234793168930008,
+      "auroc": 0.6889404866346673
+    }
+  },
+  "mechanical_manifest_claim_authorized": false,
+  "prohibited_interpretation": [
+    "Do not treat the mechanical rq4_manifest.json as a scientific claim gate.",
+    "Do not claim that trajectory uncertainty itself is novel.",
+    "Do not generalize beyond the registered datasets, model revision, and observability regime."
+  ],
+  "schema": "trajuq_rq4_scientific_claim_registry_v1",
+  "status": "PASS"
+}

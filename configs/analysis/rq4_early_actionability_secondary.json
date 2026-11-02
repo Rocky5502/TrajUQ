@@ -1,0 +1,104 @@
+{
+  "protocol": "trajuq_rq4_early_actionability_secondary_v1",
+  "classification": "SECONDARY_EXPLORATORY",
+  "declared_on": "2026-10-29",
+  "timing_disclosure": "Declared after partial RQ4 generation existed and before computing this analysis; no partial RQ4 scientific outcomes were inspected for design.",
+  "confirmatory_status": "outside_h4a_h4b_h4c_and_cannot_modify_rq4_claim_gate",
+  "execution_status": "LOCKED_UNTIL_RQ4_FINAL_EVIDENCE_AUTHORIZED",
+  "source_bindings": {
+    "authoritative_diffusion_experiment_commit": "28002055c828c6910840de6f2105aa6367514144",
+    "rq4_sampling_source_commit": "5a3993c559128ed40bd9de1c504def687a8f861e",
+    "ar_telemetry_schema_sha256": "06753074d03af29ab37943ab9f9be6d8979d9865e011e92c33e49d6762ee8224"
+  },
+  "required_generation_manifest": "/data/trajuq_worker_state/a100-01/rq4_full_5a3993c/final_manifest.json",
+  "required_complete_rows": 19420,
+  "required_pass_shards": 60,
+  "fractions": [0.25, 0.5, 0.75, 1.0],
+  "prefix_rule": "max(1, ceil(fraction * stored_trace_length))",
+  "regimes": {
+    "diffusion": {
+      "prefix_unit": "ordered_generation_steps_summary",
+      "source": "generation.steps",
+      "allowed_step_fields": [
+        "entropy_mean",
+        "entropy_p90",
+        "confidence_mean",
+        "margin_mean",
+        "mask_fraction",
+        "revision_fraction",
+        "js_mean",
+        "active_fraction",
+        "active_count"
+      ],
+      "allowed_prefix_aggregates": [
+        "first",
+        "last",
+        "unweighted_mean",
+        "minimum",
+        "maximum",
+        "linear_slope",
+        "population_std"
+      ],
+      "forbidden_reconstruction": [
+        "per_position_vocab_distributions",
+        "exact_prefix_commitment_times",
+        "unstored_mergeable_accumulator_arrays",
+        "future_step_information"
+      ]
+    },
+    "autoregressive": {
+      "prefix_unit": "ordered_generated_token",
+      "source": "generation.metadata.token_trace",
+      "allowed_token_fields": [
+        "selected_token_logprob",
+        "entropy",
+        "margin"
+      ],
+      "allowed_prefix_aggregates": [
+        "first",
+        "last",
+        "unweighted_mean",
+        "minimum",
+        "maximum",
+        "linear_slope",
+        "population_std"
+      ],
+      "forbidden_information": [
+        "future_token_trace",
+        "reference_answer",
+        "test_outcome_during_feature_construction"
+      ]
+    }
+  },
+  "model": {
+    "type": "standardized_logistic",
+    "fit_on": "calibration_only",
+    "standardization": "calibration_mean_and_population_std",
+    "penalty": "l2",
+    "regularization_c": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 2000,
+    "random_state": 2027
+  },
+  "evaluation": {
+    "partition": "held_out_frozen_test_only",
+    "metrics": ["auroc", "auprc", "aurc", "risk_at_50_coverage", "risk_at_80_coverage"],
+    "aggregation": "cell_metrics_then_equal_cell_macro_where_contracts_match",
+    "paired_class_stratified_bootstrap": true,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 2027,
+    "confidence_level": 0.95,
+    "output_form": "fraction_metric_curves_with_confidence_intervals",
+    "earliest_fraction_threshold": null
+  },
+  "forbidden": [
+    "new_generation",
+    "api_replay",
+    "partial_rq4_outcome_inspection",
+    "fraction_selection_after_outcomes",
+    "feature_selection_after_test_results",
+    "test_set_refitting",
+    "retroactive_confirmatory_language",
+    "modification_of_registered_rq4_claim_gate"
+  ]
+}

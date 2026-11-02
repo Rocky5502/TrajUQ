@@ -1,0 +1,191 @@
+{
+  "chronology": "POST_DATA_PRE_OUTCOME_ANALYSIS",
+  "claim_authorized": false,
+  "eligibility": {
+    "complete_five_groups": "SECONDARY_EXPLORATORY sensitivity only",
+    "group_error_label": "frozen scorer correctness of deterministic modal-answer representative",
+    "group_prediction": "task-canonical answer; parser-unrecognized schema-valid answers use deterministic casefolded whitespace-normalized raw-answer labels; ties use lowest repeat index",
+    "malformed_provider_failure_locked": "retained in accounting; never replayed; excluded where no valid response value exists",
+    "primary": "terminal category valid; group has at least two valid registered repeats",
+    "unit": "model x dataset x split x example_id repeated-sample group"
+  },
+  "features": {
+    "combined": "standardized logistic regression fitted independently per model-dataset calibration cell",
+    "primary_behavioral": [
+      "sample_disagreement",
+      "sample_vote_entropy",
+      "sample_unique_fraction",
+      "verbalized_risk",
+      "confidence_std"
+    ],
+    "provider_reasoning_metadata": "diagnostic only; not hidden-state or mechanistic evidence",
+    "semantic_response_consistency": "NOT_FEASIBLE_WITHOUT_NEW_UNREGISTERED_SEMANTIC_MODEL",
+    "single_class_calibration_rule": "retain cell with constant empirical error probability; do not pool, drop, retune, or inspect test labels"
+  },
+  "firewall": [
+    "No API calls or request replay.",
+    "No test labels used in calibration fitting.",
+    "No heterogeneous row pooling across cells.",
+    "All positive, negative, null, heterogeneous, malformed, and missingness results are retained.",
+    "The corrupted original registry manifest remains unchanged and separately hash-bound."
+  ],
+  "hypothesis_operationalization": {
+    "rq5_behavioral_selective_prediction": "positive AURC improvement of combined behavioral signal over verbalized-confidence risk",
+    "rq5_cross_model_heterogeneity": "model-level range in the primary AURC improvement; descriptive bootstrap only because no valid zero-null calibration was prospectively specified",
+    "rq5_observability_gap": "NOT_IDENTIFIABLE if model identity is unmatched across observability regimes; descriptive synthesis cannot authorize a causal observability claim"
+  },
+  "implementation_addendum": {
+    "path": "results/rq5/rq5_downstream_implementation_addendum_v1.json",
+    "sha256": "dd9220d53d4167b95e422184099136362245f8b624a30b20f4e41d6619088a13"
+  },
+  "implementation_addendum_v2": {
+    "path": "results/rq5/rq5_downstream_implementation_addendum_v2.json",
+    "sha256": "dc885dc68944469a2f782a66d99daa0714b6907e928cf1616897cfdfd769f53f"
+  },
+  "input_bindings": [
+    {
+      "path": "results/rq5/TMLR_RQ5_BLACKBOX_FREEZE.json",
+      "sha256": "af0347a777d4a683c158407b9d0c53b7bff7236b8d35a63129077f6848886abc"
+    },
+    {
+      "path": "results/rq5/validated/response_registry.jsonl",
+      "sha256": "874176f4b96fca85f1fb843728fdaf94d256d7f62c0ce39dd9e48f8a4a8220ba"
+    },
+    {
+      "path": "results/rq5/validated/registry_manifest.json",
+      "sha256": "5f7bcd85900e62abb00ce739eaad53d80170a4a6152d951b6825110d2fc17965"
+    },
+    {
+      "path": "results/rq5/validated/registry_manifest.recovered.json",
+      "sha256": "927cf50b8e5b63d58da528a2f307c1960431186bee87c5506f3aa34bf8a8356a"
+    },
+    {
+      "path": "results/rq5/reconciliation/rq5_terminal_reconciliation.json",
+      "sha256": "799dd985e8374d81b615b16bec808528436f2bd94617d2c6657e8157c170c20f"
+    },
+    {
+      "path": "results/rq5/reconciliation/rq5_terminal_ledger.jsonl",
+      "sha256": "ce64737d5f189b073b2c6744003aa2f6849e04b3bd3dceb3a1f11c2fca5bf17f"
+    },
+    {
+      "path": "results/rq5/census/rq5_evidence_census.json",
+      "sha256": "635891f695baaf936918dff5f9653f8e35d64f9bbd2035b3a9ff942f356327b1"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_plan.json",
+      "sha256": "4d4bf6a2c45354aea8fc9f4cbe38d5ef1a880a4082bb6873ba68e11e8b36ee4e"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_implementation_addendum_v1.json",
+      "sha256": "dd9220d53d4167b95e422184099136362245f8b624a30b20f4e41d6619088a13"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_plan_v2.json",
+      "sha256": "1f8f391b7acbddbacec0ac7b6575290f69cf38f7514ede2ee3a380d761b38cd0"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_implementation_addendum_v2.json",
+      "sha256": "dc885dc68944469a2f782a66d99daa0714b6907e928cf1616897cfdfd769f53f"
+    }
+  ],
+  "inputs": {
+    "response_registry": "results/rq5/validated/response_registry.jsonl",
+    "terminal_ledger": "results/rq5/reconciliation/rq5_terminal_ledger.jsonl",
+    "terminal_reconciliation": "results/rq5/reconciliation/rq5_terminal_reconciliation.json"
+  },
+  "network_calls_allowed": false,
+  "registered_science": {
+    "alpha": 0.05,
+    "bootstrap": "paired_class_stratified_within_cell_equal_cell_macro",
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 2027,
+    "calibration_fit": "calibration_partition_only",
+    "confidence_level": 0.95,
+    "confirmatory_family": [
+      "rq5_behavioral_selective_prediction",
+      "rq5_cross_model_heterogeneity",
+      "rq5_observability_gap"
+    ],
+    "equal_cell_weight": true,
+    "metrics": [
+      "aurc",
+      "auroc",
+      "auprc",
+      "brier",
+      "nll",
+      "ece_15",
+      "risk_at_50_coverage",
+      "risk_at_80_coverage"
+    ],
+    "multiplicity": "Holm-Bonferroni over estimable confirmatory p-values; non-estimable hypotheses retained explicitly",
+    "no_pooling_across_cells": true,
+    "primary_endpoint": "equal-cell macro AURC improvement of behavioral_combined over verbalized_confidence",
+    "test_evaluation": "heldout_test_only"
+  },
+  "response_registry_sha256": "874176f4b96fca85f1fb843728fdaf94d256d7f62c0ce39dd9e48f8a4a8220ba",
+  "schema": "trajuq_rq5_downstream_plan_v3",
+  "secondary": [
+    "complete-five-sample groups",
+    "leave-one-model-out",
+    "leave-one-dataset-out",
+    "per-cell missingness characterization"
+  ],
+  "source_bindings": [
+    {
+      "path": "configs/experiments/tmlr_rq5_blackbox.yaml",
+      "sha256": "e8ce6124d8ac5428e5258ba784b8369605e94922cd39953f5311acc428480c8b"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_implementation_addendum_v1.json",
+      "sha256": "dd9220d53d4167b95e422184099136362245f8b624a30b20f4e41d6619088a13"
+    },
+    {
+      "path": "results/rq5/rq5_downstream_implementation_addendum_v2.json",
+      "sha256": "dc885dc68944469a2f782a66d99daa0714b6907e928cf1616897cfdfd769f53f"
+    },
+    {
+      "path": "scripts/freeze_rq5_downstream_plan_v3.py",
+      "sha256": "18364afded28abaa3c9b94a6d83bb90a154c41c09481ad9033fb079d300e3f3e"
+    },
+    {
+      "path": "scripts/rq5_downstream_stage.py",
+      "sha256": "fe1b8955218dd21092e65251c902f6dea230ee2329430c61899948118c3ba275"
+    },
+    {
+      "path": "src/trajuq/calibration.py",
+      "sha256": "a09b049c25eef25b9cddcccc87c89c7714e027020b63ebfbfcb7ca362fcbf03f"
+    },
+    {
+      "path": "src/trajuq/evaluation.py",
+      "sha256": "f46869d75904807430d2178c6503daa4e19f95d4e1d1ad666d2c6202c2138f09"
+    },
+    {
+      "path": "src/trajuq/repeated_sampling.py",
+      "sha256": "2899172c653503537ca258a495bfc23718f7f12d9c3c4139f9d2df2d9ec1968e"
+    },
+    {
+      "path": "src/trajuq/scoring.py",
+      "sha256": "c0eece8d11705f4257d845a6aec8ccb1717afe8fcf3ca39288c4e6b762fdccb9"
+    },
+    {
+      "path": "src/trajuq/statistics.py",
+      "sha256": "f23ae7d1aa48ab77e18b6599f7231f1a8754cb60701a2e36b38cfed2e327486b"
+    }
+  ],
+  "stages": [
+    "validation",
+    "feature_extraction",
+    "calibration_fit",
+    "heldout_evaluation",
+    "macro_aggregate",
+    "paired_bootstrap",
+    "multiplicity_correction",
+    "hypothesis_gate",
+    "missingness_sensitivity",
+    "finalize"
+  ],
+  "status": "PASS",
+  "supersedes_plan_sha256": "1f8f391b7acbddbacec0ac7b6575290f69cf38f7514ede2ee3a380d761b38cd0",
+  "terminal_ledger_sha256": "ce64737d5f189b073b2c6744003aa2f6849e04b3bd3dceb3a1f11c2fca5bf17f",
+  "timing_note": "Plan v3 preserves v2 science and binds a conservative calibration-degeneracy rule after one single-class calibration cell was encountered, before any held-out evaluation or aggregate result."
+}

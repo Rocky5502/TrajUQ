@@ -12,12 +12,27 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_authorized_release_artifact_hashes_match() -> None:
     payload = json.loads((ROOT / "ARTIFACT_MANIFEST.json").read_text(encoding="utf-8"))
     assert payload["experiment_commit"] == "28002055c828c6910840de6f2105aa6367514144"
-    assert payload["pending_science"]
+    assert payload["closure_classification"] == "FINAL_CLOSURE"
+    assert payload["pending_science"] == []
+    allowed_statuses = {
+        "AUTHORIZED",
+        "AUTHORIZED_FINAL",
+        "AUTHORIZED_PRIMARY",
+        "AUTHORIZED_SENSITIVITY",
+        "AUTHORIZED_SNAPSHOT",
+        "DESCRIPTIVE_ONLY",
+        "DESCRIPTIVE_SYNTHESIS",
+        "FROZEN",
+        "PRESERVED",
+        "RECOVERED_SEPARATE",
+        "SECONDARY_EXPLORATORY",
+        "SECONDARY_EXPLORATORY_SYSTEMS_DIAGNOSTIC",
+    }
     for item in payload["artifacts"]:
         path = ROOT / item["path"]
         assert path.is_file(), item["path"]
         assert sha256(path) == item["sha256"], item["path"]
-        assert item["status"].startswith("AUTHORIZED")
+        assert item["status"] in allowed_statuses
 
 
 def test_released_rq3_evidence_is_complete() -> None:

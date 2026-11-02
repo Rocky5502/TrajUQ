@@ -10,6 +10,7 @@ def test_rq5_renderer_is_claim_gated_and_artifact_driven():
     assert "did not improve" in text
 
 
-def test_manuscript_invokes_authorized_rq5_interface():
-    text = Path("paper/main.tex").read_text(encoding="utf-8")
-    assert "\\RQFiveGeneratedResults" in text
+def test_public_repository_preserves_manuscript_boundary():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    assert "Manuscript/venue authoring files are intentionally maintained outside" in readme
+    assert not Path("paper/main.tex").exists()

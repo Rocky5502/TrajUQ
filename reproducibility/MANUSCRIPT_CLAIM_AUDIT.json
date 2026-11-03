@@ -2,7 +2,7 @@
   "schema": "trajuq_manuscript_claim_audit_v1",
   "status": "PASS",
   "paper_dir": ".",
-  "quantitative_statement_count": 418,
+  "quantitative_statement_count": 425,
   "unauthorized_value_count": 0,
   "stale_language_count": 0,
   "duplicate_result_block_count": 0,
@@ -25,7 +25,15 @@
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:44"
+      "manuscript_location": "main.tex:46"
+    },
+    {
+      "claim_text": "In the open autoregressive regime, temporal trace summaries retain selective utility and useful ranking evidence is already present in early prefixes. In the hosted black-box regime, however, combining behavioral signals with verbalized confidence does not improve the primary AURC endpoint ($\\Delta$AURC $-0.0030$, 95\\% CI [$-0.0151$, $0.0102$]).",
+      "source_artifact": "results/generated/secondary/rq4_early_actionability/manifest.json",
+      "source_field": "fixed-prefix early-actionability evidence",
+      "authorization_status": "SECONDARY_EXPLORATORY",
+      "source_sha256": "f55fd76daef5ec68e50804ad7824468851c6f144df764e2754c624641a9db3b4",
+      "manuscript_location": "main.tex:47"
     },
     {
       "claim_text": "Autoregressive language models expose a natural sequence of conditional next-token distributions, and prior work studies whether confidence, entropy, self-consistency, or semantic disagreement can predict when a generated answer is wrong \\citep{jiang2021know,kuhn2023semantic,farquhar2024semantic,kapoor2024taught}.",
@@ -33,7 +41,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:50"
+      "manuscript_location": "main.tex:52"
     },
     {
       "claim_text": "Recent systems such as LLaDA \\citep{nie2025llada}, Dream \\citep{ye2025dream}, SDAR \\citep{cheng2026sdar}, and FLARE \\citep{zhu2026flare} make parallel or blockwise generation increasingly practical.",
@@ -41,7 +49,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:52"
+      "manuscript_location": "main.tex:54"
     },
     {
       "claim_text": "Uncertainty quantification for dLLMs is also emerging: DiSE uses sequence regeneration for self-evaluation \\citep{zhong2026dise}, while diffusion-specific UQ work exploits trajectory likelihoods, remasking, prediction flips, denoising complexity, and semantic trajectory instability \\citep{vazhentsev2026dllmuq}. Recent robustness analysis further shows that surface confidence can remain poorly ranked even when useful correctness information is present internally \\citep{yadav2026unsure}.",
@@ -49,7 +57,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:53"
+      "manuscript_location": "main.tex:55"
     },
     {
       "claim_text": "\\begin{description}[leftmargin=0.8cm,labelwidth=0.65cm]",
@@ -57,7 +65,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:67"
+      "manuscript_location": "main.tex:69"
     },
     {
       "claim_text": "(1) an observability-stratified study design spanning native diffusion trajectories, autoregressive token traces, and output-only behavioral signals, without claiming that any constituent uncertainty family is itself new;",
@@ -65,7 +73,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:76"
+      "manuscript_location": "main.tex:87"
     },
     {
       "claim_text": "(2) a parity-validated incremental-information test that asks whether frozen trajectory telemetry improves held-out prediction and selective decisions beyond matched decision-time entropy;",
@@ -73,66 +81,10 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:77"
-    },
-    {
-      "claim_text": "(3) matched within-regime protocols connecting uncertainty to abstention, risk--coverage behavior, adaptive compute allocation, cross-paradigm description, and the inference cost required to obtain each signal; and",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:78"
-    },
-    {
-      "claim_text": "(4) an evidence pipeline that binds frozen partitions, paired inference, confidence intervals, multiplicity control, equal-cell aggregation, compute accounting, provenance, tables, figures, and retained negative results to immutable artifacts.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:79"
-    },
-    {
-      "claim_text": "Discrete denoising diffusion models connected absorbing-state corruption to masked and autoregressive generation \\citep{austin2021d3pm}, while modern masked diffusion objectives substantially narrowed the language-modeling gap to autoregressive systems \\citep{sahoo2024mdlm}.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:84"
-    },
-    {
-      "claim_text": "LLaDA then established masked diffusion as a scalable large-language-model alternative to autoregressive factorization \\citep{nie2025llada}.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:85"
-    },
-    {
-      "claim_text": "Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \\citep{ye2025dream}.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:86"
-    },
-    {
-      "claim_text": "SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \\citep{cheng2026sdar}.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:87"
-    },
-    {
-      "claim_text": "FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \\citep{zhu2026flare}.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
       "manuscript_location": "main.tex:88"
     },
     {
-      "claim_text": "Recent decoding work also shows that confidence trajectories are operationally useful in dLLMs. One-shot dynamic thresholding adapts parallel-decoding cutoffs from observed confidence trajectories \\citep{shen2025osdt}, while CD4LM uses confidence-adaptive decoding to allocate inference effort \\citep{liang2026cd4lm}. STDec exploits spatial and temporal token-prediction stability to accelerate commitment \\citep{chen2026stdec}, and PACE-dLLM fits per-step confidence cliffs to choose an elastic look-ahead horizon \\citep{lu2026pacedllm}. These methods use trajectory structure to improve decoding efficiency; our objective is different: we test whether frozen pre-outcome dynamics add held-out information about answer-level error beyond matched decision-time entropy. DiffuGuard further reports that intra-step and inter-step denoising dynamics can matter for safety failures \\citep{li2025diffuguard}.",
+      "claim_text": "(3) within-regime protocols connecting uncertainty to abstention, risk--coverage behavior, adaptive compute allocation, and the inference cost required to obtain each signal; and",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -140,15 +92,15 @@
       "manuscript_location": "main.tex:89"
     },
     {
-      "claim_text": "DiSE estimates sequence-level confidence by asking the dLLM to regenerate tokens in its completed output and also uses self-evaluation to control generation length \\citep{zhong2026dise}. Vazhentsev et al. provide a systematic dLLM-UQ study over LLaDA and Dream, including trajectory entropy and likelihood, commitment confidence, remasking and token-flip statistics, denoising complexity, and trajectory-semantic dissimilarity; they evaluate selective rejection and efficiency against broad UQ baselines \\citep{vazhentsev2026dllmuq}. Yadav et al. identify a representation--confidence gap under noisy inputs, showing that visible confidence can lose ranking quality even when hidden representations retain useful error information \\citep{yadav2026unsure}. These works establish that dLLM-specific confidence and trajectory signals are meaningful. \\method therefore does not claim that trajectory-based dLLM uncertainty, confidence evolution, or trajectory-triggered intervention is new. Instead, it isolates complementary questions: whether a fixed telemetry vector from one native generation supplies \\emph{incremental} held-out error information beyond matched decision-time entropy, whether that information improves selective decisions, and whether it allocates additional inference compute more effectively than matched random allocation at an explicitly reported cost.",
+      "claim_text": "(4) a cross-paradigm empirical account in which temporal evidence survives in an open autoregressive trace, while the hosted black-box combination yields a retained null result and unmatched systems remain descriptively, not causally, comparable.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:92"
+      "manuscript_location": "main.tex:90"
     },
     {
-      "claim_text": "Calibration asks whether predicted confidence reflects empirical correctness \\citep{guo2017calibration,jiang2021know}.",
+      "claim_text": "Discrete denoising diffusion models connected absorbing-state corruption to masked and autoregressive generation \\citep{austin2021d3pm}, while modern masked diffusion objectives substantially narrowed the language-modeling gap to autoregressive systems \\citep{sahoo2024mdlm}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -156,7 +108,7 @@
       "manuscript_location": "main.tex:95"
     },
     {
-      "claim_text": "Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \\citep{kuhn2023semantic,farquhar2024semantic}; kernel language entropy and semantic density refine this sampling-based view in continuous semantic spaces \\citep{nikitin2024kernel,qiu2024density}. MARS reweights token-level sequence likelihood by semantic contribution \\citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \\citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.",
+      "claim_text": "LLaDA then established masked diffusion as a scalable large-language-model alternative to autoregressive factorization \\citep{nie2025llada}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -164,7 +116,31 @@
       "manuscript_location": "main.tex:96"
     },
     {
-      "claim_text": "generations \\citep{kadavath2022language,manakul2023selfcheckgpt}. These signals",
+      "claim_text": "Dream 7B demonstrated competitive open diffusion generation with flexible iterative inference \\citep{ye2025dream}.",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:97"
+    },
+    {
+      "claim_text": "SDAR studies blockwise diffusion built from autoregressive backbones and emphasizes the quality--latency trade-off of intra-block parallelism \\citep{cheng2026sdar}.",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:98"
+    },
+    {
+      "claim_text": "FLARE converts hybrid-attention autoregressive checkpoints into a model supporting both verified AR-style decoding and diffusion-style parallel denoising \\citep{zhu2026flare}.",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:99"
+    },
+    {
+      "claim_text": "Recent decoding work also shows that confidence trajectories are operationally useful in dLLMs. One-shot dynamic thresholding adapts parallel-decoding cutoffs from observed confidence trajectories \\citep{shen2025osdt}, while CD4LM uses confidence-adaptive decoding to allocate inference effort \\citep{liang2026cd4lm}. STDec exploits spatial and temporal token-prediction stability to accelerate commitment \\citep{chen2026stdec}, and PACE-dLLM fits per-step confidence cliffs to choose an elastic look-ahead horizon \\citep{lu2026pacedllm}. These methods use trajectory structure to improve decoding efficiency; our objective is different: we test whether frozen pre-outcome dynamics add held-out information about answer-level error beyond matched decision-time entropy. DiffuGuard further reports that intra-step and inter-step denoising dynamics can matter for safety failures \\citep{li2025diffuguard}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -172,7 +148,7 @@
       "manuscript_location": "main.tex:100"
     },
     {
-      "claim_text": "stable probability-of-correctness surrogate \\citep{cao2025entropy}. Our RQ4",
+      "claim_text": "DiSE estimates sequence-level confidence by asking the dLLM to regenerate tokens in its completed output and also uses self-evaluation to control generation length \\citep{zhong2026dise}. Vazhentsev et al. provide a systematic dLLM-UQ study over LLaDA and Dream, including trajectory entropy and likelihood, commitment confidence, remasking and token-flip statistics, denoising complexity, and trajectory-semantic dissimilarity; they evaluate selective rejection and efficiency against broad UQ baselines \\citep{vazhentsev2026dllmuq}. Yadav et al. identify a representation--confidence gap under noisy inputs, showing that visible confidence can lose ranking quality even when hidden representations retain useful error information \\citep{yadav2026unsure}. These works establish that dLLM-specific confidence and trajectory signals are meaningful. \\method therefore does not claim that trajectory-based dLLM uncertainty, confidence evolution, or trajectory-triggered intervention is new. Instead, it isolates complementary questions: whether a fixed telemetry vector from one native generation supplies \\emph{incremental} held-out error information beyond matched decision-time entropy, whether that information improves selective decisions, and whether it allocates additional inference compute more effectively than matched random allocation at an explicitly reported cost.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -180,23 +156,31 @@
       "manuscript_location": "main.tex:103"
     },
     {
-      "claim_text": "therefore uses Llama 3.1 8B \\citep{dubey2024llama3} as a matched open-weight AR",
+      "claim_text": "Calibration asks whether predicted confidence reflects empirical correctness \\citep{guo2017calibration,jiang2021know}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:104"
+      "manuscript_location": "main.tex:106"
     },
     {
-      "claim_text": "\\citep{yu2026step}, and trajectory-triggered sparse collaborative decoding,",
+      "claim_text": "Semantic uncertainty aggregates meaning-equivalent generations and can outperform lexical uncertainty for open-ended QA \\citep{kuhn2023semantic,farquhar2024semantic}; kernel language entropy and semantic density refine this sampling-based view in continuous semantic spaces \\citep{nikitin2024kernel,qiu2024density}. MARS reweights token-level sequence likelihood by semantic contribution \\citep{bakman2024mars}, while ConU combines sampling-based uncertainty with conformal calibration for open-ended generation \\citep{wang2024conu}. These methods motivate our calibrated and repeated-sampling baselines. Our primary comparison is deliberately nested and single-run: decision-time entropy and the trajectory-augmented model are calibrated identically and scored on exactly the same held-out examples.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:112"
+      "manuscript_location": "main.tex:107"
     },
     {
-      "claim_text": "intervene \\citep{trivedi2026trajectory}. These works establish direct prior art",
+      "claim_text": "generations \\citep{kadavath2022language,manakul2023selfcheckgpt}. These signals",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:111"
+    },
+    {
+      "claim_text": "stable probability-of-correctness surrogate \\citep{cao2025entropy}. Our RQ4",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -204,15 +188,23 @@
       "manuscript_location": "main.tex:114"
     },
     {
-      "claim_text": "changes the model or an auxiliary predictor \\citep{kapoor2024taught}; our",
+      "claim_text": "therefore uses Llama 3.1 8B \\citep{dubey2024llama3} as a matched open-weight AR",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:121"
+      "manuscript_location": "main.tex:115"
     },
     {
-      "claim_text": "\\citep{steyvers2025confidence}.",
+      "claim_text": "\\citep{yu2026step}, and trajectory-triggered sparse collaborative decoding,",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:123"
+    },
+    {
+      "claim_text": "intervene \\citep{trivedi2026trajectory}. These works establish direct prior art",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
@@ -220,12 +212,28 @@
       "manuscript_location": "main.tex:125"
     },
     {
+      "claim_text": "changes the model or an auxiliary predictor \\citep{kapoor2024taught}; our",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:132"
+    },
+    {
+      "claim_text": "\\citep{steyvers2025confidence}.",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "main.tex:136"
+    },
+    {
       "claim_text": "\\citep{manakul2023selfcheckgpt}. RQ5 studies this restricted regime using three",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:129"
+      "manuscript_location": "main.tex:140"
     },
     {
       "claim_text": "for abstention \\citep{bhattacharya2026bigsure}. We do not claim to introduce",
@@ -233,7 +241,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:135"
+      "manuscript_location": "main.tex:146"
     },
     {
       "claim_text": "This reject-option framing is formalized by selective classification \\citep{geifman2017selective}; recent selective-generation work extends risk control to free-form outputs using textual entailment \\citep{lee2024selectivegeneration}.",
@@ -241,7 +249,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:142"
+      "manuscript_location": "main.tex:153"
     },
     {
       "claim_text": "$X^{(0)},\\ldots,X^{(T)}$.",
@@ -249,7 +257,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:152"
+      "manuscript_location": "main.tex:163"
     },
     {
       "claim_text": "Let $A_{t,j}\\in\\{0,1\\}$ indicate that position $j$ belongs to the currently active generation block and",
@@ -257,7 +265,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:155"
+      "manuscript_location": "main.tex:166"
     },
     {
       "claim_text": "$M_{t,j}\\in\\{0,1\\}$ indicate that it is unresolved (masked).",
@@ -265,7 +273,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:156"
+      "manuscript_location": "main.tex:167"
     },
     {
       "claim_text": "\\mathcal{U}_t = \\{j: A_{t,j}=1 \\land M_{t,j}=1\\}.",
@@ -273,7 +281,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:159"
+      "manuscript_location": "main.tex:170"
     },
     {
       "claim_text": "$y\\in\\{0,1\\}$, where $y=1$ denotes a correct answer.",
@@ -281,7 +289,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:163"
+      "manuscript_location": "main.tex:174"
     },
     {
       "claim_text": "$P(y=0\\mid z)$ from a feature vector $z$ computed only from the pre-outcome trajectory.",
@@ -289,7 +297,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:166"
+      "manuscript_location": "main.tex:177"
     },
     {
       "claim_text": "-\\frac{1}{\\log |\\mathcal{V}|}",
@@ -297,7 +305,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:175"
+      "manuscript_location": "main.tex:186"
     },
     {
       "claim_text": "We also record top-1 confidence and top-2 margin,",
@@ -305,7 +313,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:178"
+      "manuscript_location": "main.tex:189"
     },
     {
       "claim_text": "m_{t,j}=p^{(1)}_{t,j}-p^{(2)}_{t,j}.",
@@ -313,7 +321,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:180"
+      "manuscript_location": "main.tex:191"
     },
     {
       "claim_text": "To measure distributional instability, for positions unresolved at both $t-1$ and $t$, we compute normalized Jensen--Shannon drift",
@@ -321,7 +329,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:183"
+      "manuscript_location": "main.tex:194"
     },
     {
       "claim_text": "\\frac{1}{2}D_{\\mathrm{KL}}(p_{t,j}\\Vert q_{t,j})+",
@@ -329,7 +337,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:187"
+      "manuscript_location": "main.tex:198"
     },
     {
       "claim_text": "\\frac{1}{2}D_{\\mathrm{KL}}(p_{t-1,j}\\Vert q_{t,j})",
@@ -337,7 +345,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:188"
+      "manuscript_location": "main.tex:199"
     },
     {
       "claim_text": "}{\\log 2},",
@@ -345,7 +353,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:189"
+      "manuscript_location": "main.tex:200"
     },
     {
       "claim_text": "where $q_{t,j}=(p_{t,j}+p_{t-1,j})/2$.",
@@ -353,7 +361,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:191"
+      "manuscript_location": "main.tex:202"
     },
     {
       "claim_text": "This keeps $J_{t,j}\\in[0,1]$.",
@@ -361,7 +369,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:192"
+      "manuscript_location": "main.tex:203"
     },
     {
       "claim_text": "Let $\\hat{v}_{t,j}$ be the top-1 proposal.",
@@ -369,7 +377,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:194"
+      "manuscript_location": "main.tex:205"
     },
     {
       "claim_text": "R_{t,j}=\\mathbb{1}[\\hat{v}_{t,j}\\neq\\hat{v}_{t-1,j}],",
@@ -377,7 +385,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:197"
+      "manuscript_location": "main.tex:208"
     },
     {
       "claim_text": "If $c_j\\in[0,1]$ is the normalized decision index immediately before commitment, then large $c_j$ denotes late commitment.",
@@ -385,7 +393,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:204"
+      "manuscript_location": "main.tex:215"
     },
     {
       "claim_text": "decision-time entropy; mean, 90th-percentile, and temporal slope of trajectory entropy; mean and minimum margin; mean, 90th-percentile, slope, and late mean of JS drift; overall and late revision rates; mask persistence; late mask fraction; and mean commitment time.",
@@ -393,7 +401,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:222"
+      "manuscript_location": "main.tex:233"
     },
     {
       "claim_text": "For RQ3, each model has a complete base-generation budget $B_0$ and a separate refined-generation budget $B_1>B_0$.",
@@ -401,7 +409,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:244"
+      "manuscript_location": "main.tex:255"
     },
     {
       "claim_text": "\\textsc{Refine}, & \\calp(z_{B_0})>\\tau,\\\\",
@@ -409,7 +417,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:251"
+      "manuscript_location": "main.tex:262"
     },
     {
       "claim_text": "Every example first incurs $B_0$; selected examples then launch a second $B_1$ run from scratch, giving mean nominal cost $B_0+fB_1$ at selected fraction $f$. This conservative accounting matches the artifacts we actually execute and does not assume resumable denoising. We compare to fixed $B_0$, fixed $B_1$, and random second-pass refinement at the same selected fraction.",
@@ -417,7 +425,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:255"
+      "manuscript_location": "main.tex:266"
     },
     {
       "claim_text": "LLaDA-MoE-7B-A1B-Instruct, SDAR-1.7B-Chat, and Dream-v0-Instruct-7B.",
@@ -425,7 +433,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:271"
+      "manuscript_location": "main.tex:282"
     },
     {
       "claim_text": "FLARE/HybridDiffusion-2B is a diagnostic extension because one checkpoint supports both AR and diffusion inference \\citep{zhu2026flare}.",
@@ -433,7 +441,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:272"
+      "manuscript_location": "main.tex:283"
     },
     {
       "claim_text": "RQ4 adds the pinned open-weight Llama-3.1-8B-Instruct control after the original",
@@ -441,7 +449,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:275"
+      "manuscript_location": "main.tex:286"
     },
     {
       "claim_text": "frozen SiliconFlow identifiers \\texttt{Pro/deepseek-ai/DeepSeek-V3.2},",
@@ -449,7 +457,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:277"
+      "manuscript_location": "main.tex:288"
     },
     {
       "claim_text": "\\texttt{Pro/zai-org/GLM-5.1}, and",
@@ -457,7 +465,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:278"
+      "manuscript_location": "main.tex:289"
     },
     {
       "claim_text": "\\texttt{Pro/moonshotai/Kimi-K2.6}. These API systems do not enter the original",
@@ -465,7 +473,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:279"
+      "manuscript_location": "main.tex:290"
     },
     {
       "claim_text": "GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.",
@@ -473,7 +481,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:285"
+      "manuscript_location": "main.tex:296"
     },
     {
       "claim_text": "To keep the complete $3\\times6$ study inside a predeclared three-day single-A100",
@@ -481,7 +489,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:288"
+      "manuscript_location": "main.tex:299"
     },
     {
       "claim_text": "call} using SHA-256 ranking of namespaced example IDs with seed 2027.",
@@ -489,7 +497,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:290"
+      "manuscript_location": "main.tex:301"
     },
     {
       "claim_text": "The cap is 500 examples per role where specified: GSM8K train/test are capped",
@@ -497,7 +505,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:291"
+      "manuscript_location": "main.tex:302"
     },
     {
       "claim_text": "at 500 each, while ARC-Challenge and MMLU-Pro retain their smaller official",
@@ -505,7 +513,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:292"
+      "manuscript_location": "main.tex:303"
     },
     {
       "claim_text": "calibration splits and cap only the larger test split at 500; the three",
@@ -513,7 +521,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:293"
+      "manuscript_location": "main.tex:304"
     },
     {
       "claim_text": "MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.",
@@ -521,7 +529,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:296"
+      "manuscript_location": "main.tex:307"
     },
     {
       "claim_text": "primary ledger contains \\TotalPrimaryGPUHours{} measured A100 GPU-hours;",
@@ -529,15 +537,15 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:317"
+      "manuscript_location": "main.tex:328"
     },
     {
-      "claim_text": "The current attested environment uses one NVIDIA A100-SXM4-80GB with",
+      "claim_text": "The preserved attested open-weight environment used one NVIDIA A100-SXM4-80GB with",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:324"
+      "manuscript_location": "main.tex:335"
     },
     {
       "claim_text": "bfloat16 open-weight inference. Exact driver, CUDA, PyTorch, Transformers,",
@@ -545,7 +553,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:325"
+      "manuscript_location": "main.tex:336"
     },
     {
       "claim_text": "For MATH-500, sampled answers are clustered pairwise with the pinned symbolic equivalence scorer rather than string matching.",
@@ -553,7 +561,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:344"
+      "manuscript_location": "main.tex:358"
     },
     {
       "claim_text": "decoding uses temperature $0.6$, top-$p$ $0.95$, a 256-token answer budget,",
@@ -561,7 +569,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:351"
+      "manuscript_location": "main.tex:365"
     },
     {
       "claim_text": "provider reasoning mode with a 512-token thinking budget, and no provider seed",
@@ -569,7 +577,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:352"
+      "manuscript_location": "main.tex:366"
     },
     {
       "claim_text": "ECE is reported with 15 bins plus 10- and 20-bin sensitivity.",
@@ -577,23 +585,15 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:369"
+      "manuscript_location": "main.tex:383"
     },
     {
-      "claim_text": "We then analyze calibration and risk--coverage behavior, feature-family ablations, budget sensitivity, and failure cases. The frozen ablations are aggregated over all 18 cells with the same paired class-stratified within-cell bootstrap and equal-cell macro-averaging, and are reported in Appendix~\\ref{tab:feature-ablation}.",
+      "claim_text": "\\texttt{SECONDARY\\_EXPLORATORY} before it was computed. It uses fixed 25\\%, 50\\%, 75\\%, and 100\\% prefixes",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:379"
-    },
-    {
-      "claim_text": "this analysis was computed. It uses fixed 25\\%, 50\\%, 75\\%, and 100\\% prefixes",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:386"
+      "manuscript_location": "main.tex:399"
     },
     {
       "claim_text": "\\includegraphics[width=0.96\\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}",
@@ -601,31 +601,23 @@
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:409"
+      "manuscript_location": "main.tex:420"
     },
     {
-      "claim_text": "\\caption{Held-out AUROC improvement of \\method over the matched decision-time entropy baseline for every frozen model--dataset cell. Positive values favor trajectory-aware uncertainty; the figure is rendered only from the complete provenance-bound 18-cell aggregate.}",
+      "claim_text": "\\includegraphics[width=0.55\\textwidth]{figures/generated/rq1_feature_ablation.pdf}",
       "source_artifact": "results/generated/final/rq1_manifest.json",
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:410"
+      "manuscript_location": "main.tex:431"
     },
     {
-      "claim_text": "\\includegraphics[width=0.96\\columnwidth]{figures/generated/rq1_feature_ablation.pdf}",
+      "claim_text": "\\caption{Feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\\% confidence intervals.}",
       "source_artifact": "results/generated/final/rq1_manifest.json",
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:418"
-    },
-    {
-      "claim_text": "\\caption{Frozen feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\\% confidence intervals.}",
-      "source_artifact": "results/generated/final/rq1_manifest.json",
-      "source_field": "authorized RQ1 evidence bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:419"
+      "manuscript_location": "main.tex:432"
     },
     {
       "claim_text": "\\paragraph{Evidence.} On the complete registered 12-cell subset, \\method improves AURC by \\RepeatedDeltaAURC\\ (95\\% CI [\\RepeatedDeltaAURCLow, \\RepeatedDeltaAURCHigh]) and AUPRC by \\RepeatedDeltaAUPRC\\ (95\\% CI [\\RepeatedDeltaAUPRCLow, \\RepeatedDeltaAUPRCHigh]). The AUROC difference is \\RepeatedDeltaAUROC\\ (95\\% CI [\\RepeatedDeltaAUROCLow, \\RepeatedDeltaAUROCHigh]), which is statistically unresolved. Calibration moves in the opposite direction: ECE15 improvement is \\RepeatedDeltaECE\\ (95\\% CI [\\RepeatedDeltaECELow, \\RepeatedDeltaECEHigh]) and NLL improvement is \\RepeatedDeltaNLL\\ (95\\% CI [\\RepeatedDeltaNLLLow, \\RepeatedDeltaNLLHigh]); negative values favor repeated sampling under the registered improvement direction.",
@@ -633,63 +625,23 @@
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:428"
+      "manuscript_location": "main.tex:442"
     },
     {
-      "claim_text": "\\caption{Authorized five-sample comparison on the pre-registered \\RepeatedCellCount-cell ($3\\times\\RepeatedDatasetCount$) subset. AURC is lower-is-better; the other columns are higher-is-better.}",
+      "claim_text": "\\caption{Five-sample comparison on the pre-specified \\RepeatedCellCount-cell ($3\\times\\RepeatedDatasetCount$) subset. AURC is lower-is-better; the other columns are higher-is-better.}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:443"
+      "manuscript_location": "main.tex:457"
     },
     {
-      "claim_text": "the repeated-sampling baseline at $K\\in\\{2,3,5\\}$ without new generation.",
+      "claim_text": "Using fixed seed prefixes of the existing samples, we evaluate the repeated-sampling baseline at $K\\in\\{2,3,5\\}$ without new generation. AUROC rises from \\RQTwoKTwoAUROC{} to \\RQTwoKThreeAUROC{} to \\RQTwoKFiveAUROC{}, while AURC falls from \\RQTwoKTwoAURC{} to \\RQTwoKThreeAURC{} to \\RQTwoKFiveAURC{} as auxiliary time rises from \\RQTwoKTwoSeconds{} to \\RQTwoKThreeSeconds{} to \\RQTwoKFiveSeconds{} seconds per example. ECE$_{15}$ moves oppositely (\\RQTwoKTwoECE{}, \\RQTwoKThreeECE{}, \\RQTwoKFiveECE{}). Figure~\\ref{fig:rq2-cost-utility} presents this cost--utility pattern; Appendix~\\ref{tab:rq2-sample-efficiency} provides the complete numerical sensitivity. This analysis is secondary and does not select a new stopping policy.",
       "source_artifact": "results/generated/secondary/rq2_sample_efficiency/manifest.json",
       "source_field": "fixed K=2/3/5 sensitivity",
       "authorization_status": "SECONDARY_EXPLORATORY",
       "source_sha256": "a026df486fd8d7cfa907915cf23045e923507b8c176fddb3f6d9f2fce070e989",
-      "manuscript_location": "main.tex:458"
-    },
-    {
-      "claim_text": "$K$ & AUROC $\\uparrow$ & AUPRC $\\uparrow$ & AURC $\\downarrow$ & Risk@50 $\\downarrow$ & Risk@80 $\\downarrow$ & ECE15 $\\downarrow$ & Aux. s/example $\\downarrow$\\\\",
-      "source_artifact": "results/generated/final/rq2_manifest.json",
-      "source_field": "authorized repeated-sampling and selective-risk bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:469"
-    },
-    {
-      "claim_text": "2 & \\RQTwoKTwoAUROC & \\RQTwoKTwoAUPRC & \\RQTwoKTwoAURC & \\RQTwoKTwoRiskFifty & \\RQTwoKTwoRiskEighty & \\RQTwoKTwoECE & \\RQTwoKTwoSeconds\\\\",
-      "source_artifact": "results/generated/final/rq2_manifest.json",
-      "source_field": "authorized repeated-sampling and selective-risk bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
       "manuscript_location": "main.tex:471"
-    },
-    {
-      "claim_text": "3 & \\RQTwoKThreeAUROC & \\RQTwoKThreeAUPRC & \\RQTwoKThreeAURC & \\RQTwoKThreeRiskFifty & \\RQTwoKThreeRiskEighty & \\RQTwoKThreeECE & \\RQTwoKThreeSeconds\\\\",
-      "source_artifact": "results/generated/final/rq2_manifest.json",
-      "source_field": "authorized repeated-sampling and selective-risk bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:472"
-    },
-    {
-      "claim_text": "5 & \\RQTwoKFiveAUROC & \\RQTwoKFiveAUPRC & \\RQTwoKFiveAURC & \\RQTwoKFiveRiskFifty & \\RQTwoKFiveRiskEighty & \\RQTwoKFiveECE & \\RQTwoKFiveSeconds\\\\",
-      "source_artifact": "results/generated/final/rq2_manifest.json",
-      "source_field": "authorized repeated-sampling and selective-risk bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:473"
-    },
-    {
-      "claim_text": "\\caption{Secondary deterministic sensitivity over fixed prefixes of the existing five RQ2 samples (12 equal-weight cells). Lower $K$ reduces measured auxiliary generation time but weakens average ranking/selective metrics; ECE$_{15}$ instead worsens monotonically as $K$ increases. No new outputs were generated.}",
-      "source_artifact": "results/generated/final/rq2_manifest.json",
-      "source_field": "authorized repeated-sampling and selective-risk bindings",
-      "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:477"
     },
     {
       "claim_text": "\\includegraphics[width=0.98\\textwidth]{figures/generated/rq2_cost_utility.pdf}",
@@ -697,15 +649,15 @@
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:484"
+      "manuscript_location": "main.tex:476"
     },
     {
-      "claim_text": "\\caption{Secondary RQ2 cost--utility sensitivity. Increasing $K$ improves average error ranking and selective risk over the three fixed operating points, but costs more auxiliary time and worsens ECE$_{15}$. The figure is descriptive and does not select a new stopping policy.}",
+      "claim_text": "\\caption{Secondary RQ2 cost--utility sensitivity over $K=2,3,5$. Increasing $K$ improves average error ranking and selective risk over the three fixed operating points, but costs more auxiliary time and worsens ECE$_{15}$.}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:485"
+      "manuscript_location": "main.tex:477"
     },
     {
       "claim_text": "\\includegraphics[width=0.97\\textwidth]{figures/generated/rq2_selective_vs_repeated.pdf}",
@@ -713,7 +665,7 @@
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:493"
+      "manuscript_location": "main.tex:485"
     },
     {
       "claim_text": "\\paragraph{Evidence.} At the primary 50\\% cap, the policy attains accuracy \\AdaptiveAccuracy\\ versus \\AdaptiveBaseAccuracy\\ at base budget: a gain of \\AdaptiveDeltaBase\\ (95\\% CI [\\AdaptiveDeltaBaseLow, \\AdaptiveDeltaBaseHigh]). It also exceeds matched-random allocation by \\AdaptiveDeltaRandom\\ (95\\% CI [\\AdaptiveDeltaRandomLow, \\AdaptiveDeltaRandomHigh]). The difference from full refinement is \\AdaptiveDeltaRefined\\ (95\\% CI [\\AdaptiveDeltaRefinedLow, \\AdaptiveDeltaRefinedHigh]) and is unresolved. The policy selects \\AdaptiveSelectedFraction\\ of examples, costs \\AdaptiveCost\\ times base, and uses \\AdaptiveCostToFull\\ of full-refinement compute.",
@@ -721,7 +673,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:503"
+      "manuscript_location": "main.tex:496"
     },
     {
       "claim_text": "\\paragraph{Boundary.} The 25\\% and 75\\% caps are sensitivity analyses, not competing primary endpoints. They attain accuracy \\AdaptiveSensitivityTwentyFiveAccuracy\\ at \\AdaptiveSensitivityTwentyFiveCost$\\times$ base (selected fraction \\AdaptiveSensitivityTwentyFiveSelectedFraction) and \\AdaptiveSensitivitySeventyFiveAccuracy\\ at \\AdaptiveSensitivitySeventyFiveCost$\\times$ base (selected fraction \\AdaptiveSensitivitySeventyFiveSelectedFraction), respectively. The experiment tests two frozen budgets and cannot justify arbitrary dynamic schedules.",
@@ -729,7 +681,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:505"
+      "manuscript_location": "main.tex:498"
     },
     {
       "claim_text": "Random matched & \\AdaptiveRandomAccuracy & \\AdaptiveRandomCost & 0\\\\",
@@ -737,15 +689,15 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:516"
+      "manuscript_location": "main.tex:509"
     },
     {
-      "claim_text": "\\caption{Authorized primary adaptive second-pass evaluation at the frozen 50\\% selection cap. The full-refinement comparison is descriptive; its direct difference from \\method is statistically unresolved.}",
+      "claim_text": "\\caption{Primary adaptive second-pass evaluation at the pre-specified 50\\% selection cap. The full-refinement comparison is descriptive; its direct difference from \\method is statistically unresolved.}",
       "source_artifact": "results/adaptive/macro_cap_050.json",
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:520"
+      "manuscript_location": "main.tex:513"
     },
     {
       "claim_text": "\\includegraphics[width=0.98\\columnwidth]{figures/generated/rq3_accuracy_compute_tradeoff.pdf}",
@@ -753,39 +705,39 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:527"
+      "manuscript_location": "main.tex:520"
     },
     {
-      "claim_text": "\\paragraph{Design.} A separately frozen Llama-3.1-8B-Instruct control uses the same tasks and partitions; within-regime comparisons use the registered AR baseline. Its five-sample scientific settings were prospectively registered before any sampled RQ4 outcome existed. The original executor could run only the already-collected greedy control, so a later addendum supplied execution support for the registered sampled settings without changing seeds, sampling hyperparameters, token limits, datasets, partitions, telemetry, model revision, or hypotheses. We therefore record the greedy evidence as predating the addendum, state explicitly that no sampled outcome was observed before it, and do not describe the sampled executor as part of the original executable freeze.",
+      "claim_text": "\\paragraph{Design.} The pinned Llama-3.1-8B-Instruct control uses the same tasks and partitions. Within-regime comparisons use mean token entropy as the matched endpoint baseline; five-sample semantic disagreement provides a higher-cost comparator. Seeds, sampling settings, token limits, telemetry, model revision, and hypotheses were fixed before outcome scoring.",
       "source_artifact": "results/generated/final/rq4_scientific_claim_registry.json",
       "source_field": "confirmatory_claims and authorized macro metrics",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
-      "manuscript_location": "main.tex:536"
+      "manuscript_location": "main.tex:530"
     },
     {
-      "claim_text": "\\paragraph{Evidence and answer.} The immutable RQ4 registry authorizes all three registered hypotheses after Holm correction. Within the open AR control, the trajectory calibrator improves AURC over mean token entropy by 0.0343 (95\\% CI [0.0189, 0.0501]); its macro AUROC is 0.6889 versus 0.6433 for mean token entropy. Five-sample semantic disagreement is stronger in the reported macro comparison (AURC 0.2787; AUROC 0.7817) but requires multiple generations. Thus, temporal trace summaries remain useful without revision, while repeated sampling provides additional evidence at higher inference cost.",
+      "claim_text": "\\paragraph{Evidence and answer.} All three directional gates are met after Holm correction. Within the open AR control, the trace calibrator improves AURC over mean token entropy by 0.0343 (95\\% CI [0.0189, 0.0501]); its macro AUROC is 0.6889 versus 0.6433 for mean token entropy. Five-sample semantic disagreement is stronger in the reported macro comparison (AURC 0.2787; AUROC 0.7817) but requires multiple generations. Thus, temporal trace summaries remain useful without revision, while repeated sampling provides additional evidence at higher inference cost.",
       "source_artifact": "results/generated/final/rq4_scientific_claim_registry.json",
       "source_field": "confirmatory_claims and authorized macro metrics",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
-      "manuscript_location": "main.tex:537"
+      "manuscript_location": "main.tex:531"
     },
     {
-      "claim_text": "\\paragraph{Secondary exploratory actionability.} A separately frozen prefix analysis uses only stored token telemetry and the claim-bound scored outcomes, with no new generation. At 25\\%, 50\\%, 75\\%, and 100\\% of each generated trace, the trajectory model improves AURC over the matched endpoint-only prefix model by 0.0660 (95\\% CI [0.0569, 0.0752]), 0.0765 [0.0679, 0.0849], 0.0829 [0.0733, 0.0923], and 0.0881 [0.0802, 0.0958], respectively. These fixed-fraction results show that useful ranking information is already present in early AR prefixes; they do not define or optimize a stopping threshold and cannot modify H4a--H4c.",
+      "claim_text": "\\paragraph{Secondary exploratory actionability.} A pre-specified prefix analysis uses only stored token telemetry and scored outcomes, with no new generation. At 25\\%, 50\\%, 75\\%, and 100\\% of each generated trace, the trajectory model improves AURC over the matched endpoint-only prefix model by 0.0660 (95\\% CI [0.0569, 0.0752]), 0.0765 [0.0679, 0.0849], 0.0829 [0.0733, 0.0923], and 0.0881 [0.0802, 0.0958], respectively. These fixed-fraction results show that useful ranking information is already present in early AR prefixes; they do not define or optimize a stopping threshold and cannot modify H4a--H4c.",
       "source_artifact": "results/generated/secondary/rq4_early_actionability/manifest.json",
       "source_field": "fixed-prefix early-actionability evidence",
       "authorization_status": "SECONDARY_EXPLORATORY",
       "source_sha256": "f55fd76daef5ec68e50804ad7824468851c6f144df764e2754c624641a9db3b4",
-      "manuscript_location": "main.tex:538"
+      "manuscript_location": "main.tex:534"
     },
     {
-      "claim_text": "The authorized diffusion results support a layered interpretation rather than a claim that a new uncertainty signal solves every objective. RQ1 asks whether native trajectory telemetry adds held-out ranking information beyond the matched decision-time endpoint. RQ2 then asks whether that information survives as useful risk ordering under abstention and against a substantially more expensive repeated-sampling comparator; its ranking gains coexist with negative ECE15 and NLL comparisons, so selective usefulness must not be rewritten as uniform calibration superiority. RQ3 moves from prediction to action: calibrated risk improves the allocation of a frozen second-pass budget relative to base generation and matched-random allocation, while the interval against full refinement does not establish equivalence. Together, these results distinguish incremental information, selective utility, and compute allocation as separate empirical claims.",
+      "claim_text": "Native trajectory telemetry adds held-out ranking information beyond a matched decision-time endpoint, but that information does not improve every uncertainty objective. Under abstention, its AURC and AUPRC gains coexist with worse ECE$_{15}$ and NLL than repeated sampling, separating selective ordering from probability calibration. When used for action, calibrated risk improves allocation of a fixed second-pass budget over matched-random refinement, although the comparison with full refinement does not establish equivalence. The practical lesson is that ranking, calibration, and compute allocation should be evaluated as distinct capabilities.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:571"
+      "manuscript_location": "main.tex:567"
     },
     {
       "claim_text": "The repeated-sampling baseline has substantially higher inference cost. Wall-clock time, GPU memory, and provider pricing are hardware- and deployment-dependent, so the reported costs support the frozen environment rather than a universal economic ranking. For MATH-500, repeated-sample vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.",
@@ -793,7 +745,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:603"
+      "manuscript_location": "main.tex:594"
     },
     {
       "claim_text": "16 CPU cores, 48~GB of system memory, and one NVIDIA A100-SXM4-80GB GPU under",
@@ -1204,12 +1156,60 @@
       "manuscript_location": "appendix.tex:327"
     },
     {
+      "claim_text": "\\setlength{\\tabcolsep}{3.5pt}",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "appendix.tex:332"
+    },
+    {
+      "claim_text": "$K$ & AUROC $\\uparrow$ & AUPRC $\\uparrow$ & AURC $\\downarrow$ & Risk@50 $\\downarrow$ & Risk@80 $\\downarrow$ & ECE15 $\\downarrow$ & Aux. s/example $\\downarrow$\\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "appendix.tex:335"
+    },
+    {
+      "claim_text": "2 & \\RQTwoKTwoAUROC & \\RQTwoKTwoAUPRC & \\RQTwoKTwoAURC & \\RQTwoKTwoRiskFifty & \\RQTwoKTwoRiskEighty & \\RQTwoKTwoECE & \\RQTwoKTwoSeconds\\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "appendix.tex:337"
+    },
+    {
+      "claim_text": "3 & \\RQTwoKThreeAUROC & \\RQTwoKThreeAUPRC & \\RQTwoKThreeAURC & \\RQTwoKThreeRiskFifty & \\RQTwoKThreeRiskEighty & \\RQTwoKThreeECE & \\RQTwoKThreeSeconds\\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "appendix.tex:338"
+    },
+    {
+      "claim_text": "5 & \\RQTwoKFiveAUROC & \\RQTwoKFiveAUPRC & \\RQTwoKFiveAURC & \\RQTwoKFiveRiskFifty & \\RQTwoKFiveRiskEighty & \\RQTwoKFiveECE & \\RQTwoKFiveSeconds\\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "appendix.tex:339"
+    },
+    {
+      "claim_text": "\\caption{Complete secondary RQ2 sensitivity over fixed prefixes of the existing five samples (12 equal-weight cells). Lower $K$ reduces auxiliary generation time but weakens average ranking and selective metrics; ECE$_{15}$ worsens as $K$ increases.}",
+      "source_artifact": "results/generated/secondary/rq4_early_actionability/manifest.json",
+      "source_field": "fixed-prefix early-actionability evidence",
+      "authorization_status": "SECONDARY_EXPLORATORY",
+      "source_sha256": "f55fd76daef5ec68e50804ad7824468851c6f144df764e2754c624641a9db3b4",
+      "manuscript_location": "appendix.tex:342"
+    },
+    {
       "claim_text": "The threshold is chosen under the frozen 50\\% primary selection cap (25\\% and 75\\% are sensitivities).",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:333"
+      "manuscript_location": "appendix.tex:350"
     },
     {
       "claim_text": "The primary execution is a selective second-pass rerun: selected examples launch a separate refined-budget generation from scratch. Therefore the nominal mean compute is $B_0+fB_1$. We do not use the cheaper $B_0+f(B_1-B_0)$ continuation formula unless a model-specific runtime actually resumes the same trajectory. We report policy accuracy, selection fraction, normalized cost relative to $B_0$, and paired bootstrap intervals for accuracy differences versus base, fully refined, and expected random second-pass refinement. The primary 50\\% cap and the frozen 25\\%/75\\% sensitivities are each aggregated over the complete 18-cell matrix with equal cell weight and a paired class-stratified within-cell bootstrap. The 50\\% cap is the sole primary endpoint. Its direct accuracy difference from full refinement has a confidence interval spanning zero, so closeness of the point estimates is not interpreted as statistical equivalence.",
@@ -1217,7 +1217,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "appendix.tex:337"
+      "manuscript_location": "appendix.tex:354"
     },
     {
       "claim_text": "\\item raw and scored artifact SHA-256 hashes.",
@@ -1225,7 +1225,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:351"
+      "manuscript_location": "appendix.tex:368"
     },
     {
       "claim_text": "Fractions are fixed at 25\\%, 50\\%, 75\\%, and 100\\%; no fraction is selected from",
@@ -1233,7 +1233,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:372"
+      "manuscript_location": "appendix.tex:389"
     },
     {
       "claim_text": "after exact RQ4 completion, 60/60 PASS shard audits, and final evidence",
@@ -1241,7 +1241,7 @@
       "source_field": "confirmatory_claims and authorized macro metrics",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
-      "manuscript_location": "appendix.tex:380"
+      "manuscript_location": "appendix.tex:397"
     },
     {
       "claim_text": "25\\%, 50\\%, 75\\%, and 100\\% are 0.0660 (95\\% CI [0.0569, 0.0752]), 0.0765",
@@ -1249,7 +1249,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:383"
+      "manuscript_location": "appendix.tex:400"
     },
     {
       "claim_text": "[0.0679, 0.0849], 0.0829 [0.0733, 0.0923], and 0.0881 [0.0802, 0.0958].",
@@ -1257,7 +1257,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:384"
+      "manuscript_location": "appendix.tex:401"
     },
     {
       "claim_text": "\\includegraphics[width=0.72\\columnwidth]{figures/generated/family_macro_auroc_improvement.pdf}",
@@ -1265,7 +1265,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:429"
+      "manuscript_location": "appendix.tex:446"
     },
     {
       "claim_text": "\\includegraphics[width=0.95\\columnwidth]{figures/generated/adaptive_accuracy_cost_tradeoff.pdf}",
@@ -1273,7 +1273,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "appendix.tex:438"
+      "manuscript_location": "appendix.tex:455"
     },
     {
       "claim_text": "\\caption{Adaptive accuracy--cost trade-off for the frozen 25\\%, 50\\%, and 75\\% second-pass selection caps, with fixed base and refined budgets shown for context.}",
@@ -1281,7 +1281,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "appendix.tex:439"
+      "manuscript_location": "appendix.tex:456"
     },
     {
       "claim_text": "normalized length difference. MATH-500 parsed answers use the pinned symbolic",
@@ -1289,7 +1289,7 @@
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
       "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "appendix.tex:450"
+      "manuscript_location": "appendix.tex:467"
     },
     {
       "claim_text": "\\renewcommand{\\RepeatedAUROC}{0.5945}",
@@ -3012,12 +3012,68 @@
       "manuscript_location": "generated_rq1.tex:278"
     },
     {
-      "claim_text": "\\caption{Complete frozen RQ1 equal-cell macro results over 18 model--dataset cells. Improvements are oriented so positive values favor \\method; lower-is-better metrics therefore use baseline minus candidate. Confidence intervals are paired, class-stratified within cell and macro-averaged across cells.}",
+      "claim_text": "\\caption{RQ1 equal-cell macro results over 18 model--dataset cells. Improvements are oriented so positive values favor \\method; lower-is-better metrics therefore use baseline minus candidate. Confidence intervals are paired, class-stratified within cell and macro-averaged across cells.}",
       "source_artifact": "results/generated/final/rq1_manifest.json",
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
       "manuscript_location": "generated_rq1.tex:281"
+    },
+    {
+      "claim_text": "\\setlength{\\tabcolsep}{3.2pt}",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "generated_rq4.tex:7"
+    },
+    {
+      "claim_text": "\\begin{tabular}{@{}c>{\\raggedright\\arraybackslash}p{4.6cm}>{\\centering\\arraybackslash}p{3.1cm}cc@{}}",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "generated_rq4.tex:8"
+    },
+    {
+      "claim_text": "Gate & Registered contrast & Estimate [95\\% CI] & Holm $p$ & Decision \\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "generated_rq4.tex:10"
+    },
+    {
+      "claim_text": "H4a & Within-regime trace vs. endpoint & 0.0343 [0.0189, 0.0501] & 0.0006 & Gate met \\\\",
+      "source_artifact": "results/generated/final/rq4_scientific_claim_registry.json",
+      "source_field": "confirmatory_claims and authorized macro metrics",
+      "authorization_status": "AUTHORIZED_PRIMARY",
+      "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
+      "manuscript_location": "generated_rq4.tex:12"
+    },
+    {
+      "claim_text": "H4b & Diffusion dynamics beyond shared features & 0.0132 [0.0058, 0.0204] & 0.0006 & Gate met \\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "generated_rq4.tex:13"
+    },
+    {
+      "claim_text": "H4c & Within-regime vs. cross-paradigm transfer & 0.0322 [0.0242, 0.0401] & 0.0006 & Gate met \\\\",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "manuscript_location": "generated_rq4.tex:14"
+    },
+    {
+      "claim_text": "\\caption{RQ4 confirmatory gates. Intervals are paired class-stratified 95\\% CIs; positive estimates meet the corresponding registered directional test. H4b isolates diffusion-specific dynamics beyond shared distributional features, and H4c compares within-regime calibration with cross-paradigm transfer; neither is a causal observability contrast.}",
+      "source_artifact": "results/generated/final/rq4_scientific_claim_registry.json",
+      "source_field": "confirmatory_claims and authorized macro metrics",
+      "authorization_status": "AUTHORIZED_PRIMARY",
+      "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
+      "manuscript_location": "generated_rq4.tex:17"
     },
     {
       "claim_text": "\\newcommand{\\RQFiveRequestedResponses}{58260}",
@@ -3268,7 +3324,7 @@
       "manuscript_location": "generated_secondary_rq2.tex:24"
     },
     {
-      "claim_text": "\\setlength{\\tabcolsep}{3.5pt}",
+      "claim_text": "\\setlength{\\tabcolsep}{2.2pt}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
@@ -3276,7 +3332,7 @@
       "manuscript_location": "generated_synthesis.tex:8"
     },
     {
-      "claim_text": "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{2.5cm}>{\\raggedright\\arraybackslash}p{5.1cm}>{\\raggedright\\arraybackslash}p{4.0cm}>{\\raggedright\\arraybackslash}p{3.0cm}@{}}",
+      "claim_text": "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{1.7cm}>{\\raggedright\\arraybackslash}p{2.5cm}>{\\raggedright\\arraybackslash}p{4.0cm}>{\\raggedright\\arraybackslash}p{3.5cm}>{\\raggedright\\arraybackslash}p{3.0cm}@{}}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
@@ -3284,7 +3340,7 @@
       "manuscript_location": "generated_synthesis.tex:9"
     },
     {
-      "claim_text": "Native diffusion / denoising path & $\\Delta$AUROC $+0.0311$ [0.0103, 0.0502]; $\\Delta$AURC $+0.0324$ [0.0209, 0.0442] & Risk-guided refinement beats matched random by 0.0075 at 2.147$\\times$ base compute & Registered diffusion cells \\\\",
+      "claim_text": "Native diffusion & Denoising path & $\\Delta$AUROC $+0.0311$ [0.0103, 0.0502]; $\\Delta$AURC $+0.0324$ [0.0209, 0.0442] & Risk-guided refinement beats matched random by 0.0075 at 2.147$\\times$ base compute & Matched diffusion cells only \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
@@ -3292,7 +3348,7 @@
       "manuscript_location": "generated_synthesis.tex:13"
     },
     {
-      "claim_text": "Open AR / token trace & Trajectory vs mean entropy $\\Delta$AURC $+0.0343$ [0.0189, 0.0501] & Prefix advantage is visible by 25\\%; semantic disagreement uses five generations & One pinned model; no transfer claim \\\\",
+      "claim_text": "Open AR & Token distributions over one trace & Trace vs mean entropy $\\Delta$AURC $+0.0343$ [0.0189, 0.0501] & One trace; five-sample comparator requires separate generations & One pinned model; no transfer claim \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
@@ -3300,7 +3356,7 @@
       "manuscript_location": "generated_synthesis.tex:14"
     },
     {
-      "claim_text": "Repeated sampling / disagreement & Single trajectory vs five samples $\\Delta$AURC $+0.0199$ [0.0032, 0.0370] & K=2/3/5 costs 54.2/81.5/136.0 s/example; calibration worsens & No optimal K selected \\\\",
+      "claim_text": "Repeated sampling & Answer disagreement & Single trajectory vs five samples $\\Delta$AURC $+0.0199$ [0.0032, 0.0370] & $K=2/3/5$ costs 54.2/81.5/136.0 s/example & No optimal $K$ selected \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
@@ -3308,7 +3364,7 @@
       "manuscript_location": "generated_synthesis.tex:15"
     },
     {
-      "claim_text": "Hosted black box / behavior & Combined vs confidence $\\Delta$AURC $-0.0030$ [-0.0151, 0.0102]; not supported & Five responses per item; cell effects are descriptive & Unmatched models; gap not identifiable \\\\",
+      "claim_text": "Hosted black box & Text, confidence, repeated behavior & Combined vs confidence $\\Delta$AURC $-0.0030$ [-0.0151, 0.0102]; not supported & Five responses per item & Unmatched models; effect not identifiable \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",

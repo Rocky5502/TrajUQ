@@ -194,15 +194,15 @@ def render_summary_table(primary: dict) -> str:
             f"[{fmt_signed(node['improvement_ci_low'])}, {fmt_signed(node['improvement_ci_high'])}]\\\\"
         )
     return (
-        "\\begin{table*}[t]\n\\centering\n\\small\n"
+        "\\begin{table}[H]\n\\centering\n\\small\n"
         "\\begin{tabular}{lrrr}\n\\toprule\n"
         "Metric & Decision entropy & \\method & Oriented $\\Delta$ (95\\% CI)\\\\\n"
         "\\midrule\n" + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
-        "\\caption{Complete frozen RQ1 equal-cell macro results over 18 model--dataset cells. "
+        "\\caption{RQ1 equal-cell macro results over 18 model--dataset cells. "
         "Improvements are oriented so positive values favor \\method; lower-is-better metrics "
         "therefore use baseline minus candidate. Confidence intervals are paired, "
         "class-stratified within cell and macro-averaged across cells.}\n"
-        "\\label{tab:rq1-complete}\n\\end{table*}"
+        "\\label{tab:rq1-complete}\n\\end{table}"
     )
 
 

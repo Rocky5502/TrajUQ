@@ -172,23 +172,23 @@ def main() -> None:
 % Classification: DESCRIPTIVE_SYNTHESIS; scientific_claim_authority=false.
 \newcommand{{\CrossModelSynthesisState}}{{FINAL DESCRIPTIVE}}
 \newcommand{{\CrossModelSynthesisTable}}{{%
-\begin{{table*}}[H]
+\begin{{table}}[H]
 \centering
 \small
-\setlength{{\tabcolsep}}{{3.5pt}}
-\begin{{tabular}}{{@{{}}>{{\raggedright\arraybackslash}}p{{2.5cm}}>{{\raggedright\arraybackslash}}p{{5.1cm}}>{{\raggedright\arraybackslash}}p{{4.0cm}}>{{\raggedright\arraybackslash}}p{{3.0cm}}@{{}}}}
+\setlength{{\tabcolsep}}{{2.2pt}}
+\begin{{tabular}}{{@{{}}>{{\raggedright\arraybackslash}}p{{1.7cm}}>{{\raggedright\arraybackslash}}p{{2.5cm}}>{{\raggedright\arraybackslash}}p{{4.0cm}}>{{\raggedright\arraybackslash}}p{{3.5cm}}>{{\raggedright\arraybackslash}}p{{3.0cm}}@{{}}}}
 \toprule
-Regime / observable & Within-regime evidence & Actionability / cost & Boundary \\
+Regime & Observable evidence & Main within-regime result & Additional inference cost & Scientific boundary \\
 \midrule
-Native diffusion / denoising path & $\Delta$AUROC $+{f4(primary['macro']['auroc']['improvement_macro'])}$ [{f4(primary['macro']['auroc']['improvement_ci_low'])}, {f4(primary['macro']['auroc']['improvement_ci_high'])}]; $\Delta$AURC $+{f4(primary['macro']['aurc']['improvement_macro'])}$ [{f4(primary['macro']['aurc']['improvement_ci_low'])}, {f4(primary['macro']['aurc']['improvement_ci_high'])}] & Risk-guided refinement beats matched random by {f4(adaptive['intervals']['delta_vs_random']['point'])} at {adaptive['macro']['nominal_cost_ratio_to_base']:.3f}$\times$ base compute & Registered diffusion cells \\
-Open AR / token trace & Trajectory vs mean entropy $\Delta$AURC $+{f4(rq4['confirmatory_claims']['h4a']['estimate'])}$ [{f4(rq4['confirmatory_claims']['h4a']['ci_95'][0])}, {f4(rq4['confirmatory_claims']['h4a']['ci_95'][1])}] & Prefix advantage is visible by 25\%; semantic disagreement uses five generations & One pinned model; no transfer claim \\
-Repeated sampling / disagreement & Single trajectory vs five samples $\Delta$AURC $+{f4(repeated['macro']['aurc']['improvement_macro'])}$ [{f4(repeated['macro']['aurc']['improvement_ci_low'])}, {f4(repeated['macro']['aurc']['improvement_ci_high'])}] & K=2/3/5 costs {rq2_cost['macro'][0]['seconds']:.1f}/{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} s/example; calibration worsens & No optimal K selected \\
-Hosted black box / behavior & Combined vs confidence $\Delta$AURC ${f4(rq5['decisions']['rq5_behavioral_selective_prediction']['estimate'])}$ [{f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][0])}, {f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][1])}]; not supported & Five responses per item; cell effects are descriptive & Unmatched models; gap not identifiable \\
+Native diffusion & Denoising path & $\Delta$AUROC $+{f4(primary['macro']['auroc']['improvement_macro'])}$ [{f4(primary['macro']['auroc']['improvement_ci_low'])}, {f4(primary['macro']['auroc']['improvement_ci_high'])}]; $\Delta$AURC $+{f4(primary['macro']['aurc']['improvement_macro'])}$ [{f4(primary['macro']['aurc']['improvement_ci_low'])}, {f4(primary['macro']['aurc']['improvement_ci_high'])}] & Risk-guided refinement beats matched random by {f4(adaptive['intervals']['delta_vs_random']['point'])} at {adaptive['macro']['nominal_cost_ratio_to_base']:.3f}$\times$ base compute & Matched diffusion cells only \\
+Open AR & Token distributions over one trace & Trace vs mean entropy $\Delta$AURC $+{f4(rq4['confirmatory_claims']['h4a']['estimate'])}$ [{f4(rq4['confirmatory_claims']['h4a']['ci_95'][0])}, {f4(rq4['confirmatory_claims']['h4a']['ci_95'][1])}] & One trace; five-sample comparator requires separate generations & One pinned model; no transfer claim \\
+Repeated sampling & Answer disagreement & Single trajectory vs five samples $\Delta$AURC $+{f4(repeated['macro']['aurc']['improvement_macro'])}$ [{f4(repeated['macro']['aurc']['improvement_ci_low'])}, {f4(repeated['macro']['aurc']['improvement_ci_high'])}] & $K=2/3/5$ costs {rq2_cost['macro'][0]['seconds']:.1f}/{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} s/example & No optimal $K$ selected \\
+Hosted black box & Text, confidence, repeated behavior & Combined vs confidence $\Delta$AURC ${f4(rq5['decisions']['rq5_behavioral_selective_prediction']['estimate'])}$ [{f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][0])}, {f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][1])}]; not supported & Five responses per item & Unmatched models; effect not identifiable \\
 \bottomrule
 \end{{tabular}}
-\caption{{Observability-, actionability-, and cost-stratified synthesis. Every number retains its own registered within-regime baseline and aggregation rule. Rows are not pooled, and the table supports neither a causal observability law nor a raw cross-protocol model ranking. Positive, null, heterogeneous, and calibration-tradeoff findings are retained.}}
+\caption{{Observability- and cost-stratified synthesis. Every number retains its own within-regime baseline and aggregation rule. Rows are not pooled or numerically ranked: the systems are unmatched, so the table does not identify a causal effect of observability.}}
 \label{{tab:cross-model-synthesis}}
-\end{{table*}}}}
+\end{{table}}}}
 
 \newcommand{{\CrossModelAppendixTable}}{{%
 \begin{{table*}}[p]

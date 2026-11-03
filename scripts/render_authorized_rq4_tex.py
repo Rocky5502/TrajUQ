@@ -14,9 +14,9 @@ from pathlib import Path
 
 
 LABELS = {
-    "h4a": "Temporal summaries vs. endpoint confidence",
-    "h4b": "Diffusion revision/commitment beyond AR traces",
-    "h4c": "Within-regime vs. cross-paradigm calibration",
+    "h4a": "Within-regime trace vs. endpoint",
+    "h4b": "Diffusion dynamics beyond shared features",
+    "h4c": "Within-regime vs. cross-paradigm transfer",
 }
 
 
@@ -40,10 +40,10 @@ def render(registry_path: Path, output_path: Path) -> None:
         if decision != "SUPPORTED":
             raise SystemExit(f"Unexpected RQ4 decision for {key}: {decision}")
         rows.append(
-            f"{key.upper()} & {LABELS[key]} & "
+            f"H4{key[-1]} & {LABELS[key]} & "
             f"{_fmt(float(claim['estimate']))} "
             f"[{_fmt(float(low))}, {_fmt(float(high))}] & "
-            f"{float(claim['holm_adjusted_p']):.4f} & Supp. \\\\"
+            f"{float(claim['holm_adjusted_p']):.4f} & Gate met \\\\"
         )
 
     source_hash = next(
@@ -58,16 +58,16 @@ def render(registry_path: Path, output_path: Path) -> None:
             r"\newcommand{\RQFourRegistryTable}{%",
             r"\begin{table}[H]",
             r"\centering",
-            r"\footnotesize",
-            r"\setlength{\tabcolsep}{2pt}",
-            r"\begin{tabular}{@{}c>{\raggedright\arraybackslash}p{2.65cm}>{\centering\arraybackslash}p{2.25cm}cc@{}}",
+            r"\small",
+            r"\setlength{\tabcolsep}{3.2pt}",
+            r"\begin{tabular}{@{}c>{\raggedright\arraybackslash}p{4.6cm}>{\centering\arraybackslash}p{3.1cm}cc@{}}",
             r"\toprule",
             r"Gate & Registered contrast & Estimate [95\% CI] & Holm $p$ & Decision \\",
             r"\midrule",
             *rows,
             r"\bottomrule",
             r"\end{tabular}",
-            r"\caption{Authorized RQ4 confirmatory gates, rendered from the immutable scientific claim registry. Intervals are paired class-stratified 95\% CIs; positive values support the registered directional hypotheses. Supp. denotes \textsc{supported}.}",
+            r"\caption{RQ4 confirmatory gates. Intervals are paired class-stratified 95\% CIs; positive estimates meet the corresponding registered directional test. H4b isolates diffusion-specific dynamics beyond shared distributional features, and H4c compares within-regime calibration with cross-paradigm transfer; neither is a causal observability contrast.}",
             r"\label{tab:rq4-confirmatory-gates}",
             r"\end{table}%",
             r"}",

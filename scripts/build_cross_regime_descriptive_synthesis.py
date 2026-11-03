@@ -28,12 +28,24 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def matches_preserved_bytes(path: Path, expected_sha256: str, expected_bytes: int) -> bool:
+    """Accept exact bytes or Git's LF projection of a CRLF-bound text artifact."""
+    payload = path.read_bytes()
+    if len(payload) == expected_bytes and hashlib.sha256(payload).hexdigest() == expected_sha256:
+        return True
+    if b"\r\n" in payload:
+        return False
+    projected = payload.replace(b"\n", b"\r\n")
+    return len(projected) == expected_bytes and hashlib.sha256(projected).hexdigest() == expected_sha256
+
+
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def write_json_new(path: Path, payload: dict) -> None:
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
 def f4(value: float) -> str:
@@ -67,7 +79,7 @@ def main() -> None:
             raise SystemExit("optional RQ4 early-actionability manifest sidecar drift")
         for artifact in early_manifest["artifacts"]:
             artifact_path = early_path.parent / artifact["path"]
-            if sha256(artifact_path) != artifact["sha256"] or artifact_path.stat().st_size != artifact["bytes"]:
+            if not matches_preserved_bytes(artifact_path, artifact["sha256"], artifact["bytes"]):
                 raise SystemExit(f"optional RQ4 early-actionability artifact drift: {artifact['path']}")
         early = load(early_path.parent / "early_actionability.json")
         if early.get("status") != "PASS" or early.get("scientific_claim_authority") is not False:
@@ -78,7 +90,7 @@ def main() -> None:
         {
             "regime": "Native diffusion trajectory",
             "observed_information": "Native denoising trajectory",
-            "registered_comparison": "TrajUQ vs terminal-entropy baseline",
+            "registered_comparison": "TrajUQ vs terminal-entropy baseline; single trajectory vs registered repeated sampling",
             "principal_result": (
                 f"Delta AUROC {f4(primary['macro']['auroc']['improvement_macro'])} "
                 f"[{f4(primary['macro']['auroc']['improvement_ci_low'])}, "
@@ -91,10 +103,17 @@ def main() -> None:
                 f"Selective refinement at cap 0.50: Delta accuracy vs random "
                 f"{f4(adaptive['intervals']['delta_vs_random']['point'])} "
                 f"[{f4(adaptive['intervals']['delta_vs_random']['ci_low'])}, "
-                f"{f4(adaptive['intervals']['delta_vs_random']['ci_high'])}]"
+                f"{f4(adaptive['intervals']['delta_vs_random']['ci_high'])}]; "
+                f"five-sample Delta AURC {f4(repeated['macro']['aurc']['improvement_macro'])} "
+                f"[{f4(repeated['macro']['aurc']['improvement_ci_low'])}, "
+                f"{f4(repeated['macro']['aurc']['improvement_ci_high'])}]"
             ),
-            "cost": f"{adaptive['macro']['nominal_cost_ratio_to_base']:.3f}x base compute",
-            "boundary": "Within registered diffusion cells only",
+            "cost": (
+                f"refinement {adaptive['macro']['nominal_cost_ratio_to_base']:.3f}x base; "
+                f"K=2/3/5: {rq2_cost['macro'][0]['seconds']:.1f}/"
+                f"{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} auxiliary seconds/example"
+            ),
+            "boundary": "Within registered diffusion cells; no post-hoc optimal K",
         },
         {
             "regime": "Open autoregressive trace",
@@ -117,19 +136,6 @@ def main() -> None:
             "boundary": "One pinned open-weight model; no diffusion-to-AR transfer claim",
         },
         {
-            "regime": "Repeated sampling",
-            "observed_information": "Cross-generation semantic disagreement",
-            "registered_comparison": "Single-trajectory TrajUQ vs five samples",
-            "principal_result": (
-                f"Delta AURC {f4(repeated['macro']['aurc']['improvement_macro'])} "
-                f"[{f4(repeated['macro']['aurc']['improvement_ci_low'])}, "
-                f"{f4(repeated['macro']['aurc']['improvement_ci_high'])}]"
-            ),
-            "actionability": "K=2/3/5 improves ranking and selective risk; ECE15 worsens",
-            "cost": f"K=2/3/5: {rq2_cost['macro'][0]['seconds']:.1f}/{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} auxiliary seconds/example",
-            "boundary": "Three-point sensitivity; no post-hoc optimal K",
-        },
-        {
             "regime": "Hosted black-box behavior",
             "observed_information": "Verbalized confidence plus repeated behavior",
             "registered_comparison": "Combined behavioral vs verbalized confidence",
@@ -147,7 +153,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     csv_path = OUT / "regime_summary.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -175,18 +181,17 @@ def main() -> None:
 \begin{{table}}[H]
 \centering
 \small
-\setlength{{\tabcolsep}}{{2.2pt}}
-\begin{{tabular}}{{@{{}}>{{\raggedright\arraybackslash}}p{{1.7cm}}>{{\raggedright\arraybackslash}}p{{2.5cm}}>{{\raggedright\arraybackslash}}p{{4.0cm}}>{{\raggedright\arraybackslash}}p{{3.5cm}}>{{\raggedright\arraybackslash}}p{{3.0cm}}@{{}}}}
+\setlength{{\tabcolsep}}{{2.8pt}}
+\begin{{tabular}}{{@{{}}>{{\raggedright\arraybackslash}}p{{1.7cm}}>{{\raggedright\arraybackslash}}p{{2.6cm}}>{{\raggedright\arraybackslash}}p{{3.1cm}}>{{\raggedright\arraybackslash}}p{{4.2cm}}>{{\raggedright\arraybackslash}}p{{3.1cm}}@{{}}}}
 \toprule
-Regime & Observable evidence & Main within-regime result & Additional inference cost & Scientific boundary \\
+Access regime & Single-run evidence & Optional/additional inference & Main within-regime result & Cost and boundary \\
 \midrule
-Native diffusion & Denoising path & $\Delta$AUROC $+{f4(primary['macro']['auroc']['improvement_macro'])}$ [{f4(primary['macro']['auroc']['improvement_ci_low'])}, {f4(primary['macro']['auroc']['improvement_ci_high'])}]; $\Delta$AURC $+{f4(primary['macro']['aurc']['improvement_macro'])}$ [{f4(primary['macro']['aurc']['improvement_ci_low'])}, {f4(primary['macro']['aurc']['improvement_ci_high'])}] & Risk-guided refinement beats matched random by {f4(adaptive['intervals']['delta_vs_random']['point'])} at {adaptive['macro']['nominal_cost_ratio_to_base']:.3f}$\times$ base compute & Matched diffusion cells only \\
-Open AR & Token distributions over one trace & Trace vs mean entropy $\Delta$AURC $+{f4(rq4['confirmatory_claims']['h4a']['estimate'])}$ [{f4(rq4['confirmatory_claims']['h4a']['ci_95'][0])}, {f4(rq4['confirmatory_claims']['h4a']['ci_95'][1])}] & One trace; five-sample comparator requires separate generations & One pinned model; no transfer claim \\
-Repeated sampling & Answer disagreement & Single trajectory vs five samples $\Delta$AURC $+{f4(repeated['macro']['aurc']['improvement_macro'])}$ [{f4(repeated['macro']['aurc']['improvement_ci_low'])}, {f4(repeated['macro']['aurc']['improvement_ci_high'])}] & $K=2/3/5$ costs {rq2_cost['macro'][0]['seconds']:.1f}/{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} s/example & No optimal $K$ selected \\
-Hosted black box & Text, confidence, repeated behavior & Combined vs confidence $\Delta$AURC ${f4(rq5['decisions']['rq5_behavioral_selective_prediction']['estimate'])}$ [{f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][0])}, {f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][1])}]; not supported & Five responses per item & Unmatched models; effect not identifiable \\
+Native diffusion & Active/unresolved token distributions and denoising dynamics & Repeated samples ($K=2/3/5$) or risk-guided second-pass refinement & $\Delta$AUROC $+{f4(primary['macro']['auroc']['improvement_macro'])}$ [{f4(primary['macro']['auroc']['improvement_ci_low'])}, {f4(primary['macro']['auroc']['improvement_ci_high'])}]; $\Delta$AURC $+{f4(primary['macro']['aurc']['improvement_macro'])}$ [{f4(primary['macro']['aurc']['improvement_ci_low'])}, {f4(primary['macro']['aurc']['improvement_ci_high'])}] & Refinement {adaptive['macro']['nominal_cost_ratio_to_base']:.3f}$\times$ base; $K$ costs {rq2_cost['macro'][0]['seconds']:.1f}/{rq2_cost['macro'][1]['seconds']:.1f}/{rq2_cost['macro'][2]['seconds']:.1f} s/example; matched cells only \\
+Open AR & Ordered pre-commit token distributions and trace summaries & Five-generation semantic disagreement comparator & Trace vs mean entropy $\Delta$AURC $+{f4(rq4['confirmatory_claims']['h4a']['estimate'])}$ [{f4(rq4['confirmatory_claims']['h4a']['ci_95'][0])}, {f4(rq4['confirmatory_claims']['h4a']['ci_95'][1])}] & One trace vs five generations; one pinned model; no transfer claim \\
+Hosted black box & Deployment-visible text, confidence, and metadata & Repeated responses required by the frozen behavioral estimator & Combined vs confidence $\Delta$AURC ${f4(rq5['decisions']['rq5_behavioral_selective_prediction']['estimate'])}$ [{f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][0])}, {f4(rq5['decisions']['rq5_behavioral_selective_prediction']['ci_95'][1])}]; not supported & Five provider responses/item; unmatched models; effect not identifiable \\
 \bottomrule
 \end{{tabular}}
-\caption{{Observability- and cost-stratified synthesis. Every number retains its own within-regime baseline and aggregation rule. Rows are not pooled or numerically ranked: the systems are unmatched, so the table does not identify a causal effect of observability.}}
+\caption{{Three-regime observability- and cost-stratified synthesis. Repeated sampling and refinement are additional inference, not access regimes. Every number retains its own within-regime baseline and aggregation rule. Rows are not pooled or numerically ranked: the systems are unmatched, so the table does not identify a causal effect of observability.}}
 \label{{tab:cross-model-synthesis}}
 \end{{table}}}}
 
@@ -218,9 +223,8 @@ Black-box behavior & Combined vs confidence on matched requests & Open-weight AR
 \toprule
 Regime & Native path & Token trace & Repeats & Confidence & Cost unit \\
 \midrule
-Native diffusion & yes & no & optional & no & Base/refinement compute ratio \\
+Native diffusion & yes & no & optional & no & Base/refinement ratio or auxiliary seconds and $K$ \\
 Open autoregressive & no & yes & optional & no & Generation count \\
-Repeated sampling & no & no & yes & no & Auxiliary seconds and K \\
 Hosted black box & no & no & yes & yes & Provider request count \\
 \bottomrule
 \end{{tabular}}
@@ -228,7 +232,8 @@ Hosted black box & no & no & yes & yes & Provider request count \\
 \label{{tab:cross-model-signal-availability}}
 \end{{table*}}}}
 """
-    TEX.write_text(tex, encoding="utf-8")
+    with TEX.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(tex)
 
     manifest = {
         "schema": "trajuq_cross_regime_descriptive_synthesis_manifest_v2",
@@ -242,7 +247,8 @@ Hosted black box & no & no & yes & yes & Provider request count \\
     }
     manifest_path = OUT / "manifest.json"
     write_json_new(manifest_path, manifest)
-    (OUT / "manifest.json.sha256").write_text(sha256(manifest_path) + "\n", encoding="ascii")
+    with (OUT / "manifest.json.sha256").open("w", encoding="ascii", newline="\n") as handle:
+        handle.write(sha256(manifest_path) + "\n")
     print(json.dumps({"status": "PASS", "manifest_sha256": sha256(manifest_path)}, indent=2))
 
 

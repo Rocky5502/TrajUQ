@@ -2,7 +2,7 @@
   "schema": "trajuq_manuscript_claim_audit_v1",
   "status": "PASS",
   "paper_dir": ".",
-  "quantitative_statement_count": 425,
+  "quantitative_statement_count": 430,
   "unauthorized_value_count": 0,
   "stale_language_count": 0,
   "duplicate_result_block_count": 0,
@@ -16,7 +16,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:1"
     },
     {
@@ -40,7 +40,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:52"
     },
     {
@@ -48,7 +48,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:54"
     },
     {
@@ -56,7 +56,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:55"
     },
     {
@@ -64,7 +64,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:69"
     },
     {
@@ -72,7 +72,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:87"
     },
     {
@@ -80,7 +80,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:88"
     },
     {
@@ -88,7 +88,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:89"
     },
     {
@@ -96,7 +96,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:90"
     },
     {
@@ -104,7 +104,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:95"
     },
     {
@@ -112,7 +112,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:96"
     },
     {
@@ -120,7 +120,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:97"
     },
     {
@@ -128,7 +128,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:98"
     },
     {
@@ -136,7 +136,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:99"
     },
     {
@@ -144,7 +144,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:100"
     },
     {
@@ -152,7 +152,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:103"
     },
     {
@@ -160,7 +160,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:106"
     },
     {
@@ -168,7 +168,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:107"
     },
     {
@@ -176,7 +176,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:111"
     },
     {
@@ -184,7 +184,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:114"
     },
     {
@@ -192,7 +192,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:115"
     },
     {
@@ -200,7 +200,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:123"
     },
     {
@@ -208,7 +208,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:125"
     },
     {
@@ -216,7 +216,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:132"
     },
     {
@@ -224,7 +224,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:136"
     },
     {
@@ -232,7 +232,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:140"
     },
     {
@@ -240,7 +240,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:146"
     },
     {
@@ -248,352 +248,400 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:153"
     },
     {
-      "claim_text": "$X^{(0)},\\ldots,X^{(T)}$.",
+      "claim_text": "Let $x$ denote an evaluation input and let $y\\in\\{0,1\\}$ be correctness",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:162"
+    },
+    {
+      "claim_text": "assigned by an external scorer after generation, with $y=1$ for a correct",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "main.tex:163"
     },
     {
-      "claim_text": "Let $A_{t,j}\\in\\{0,1\\}$ indicate that position $j$ belongs to the currently active generation block and",
+      "claim_text": "answer and $y=0$ for an error.  We study three access regimes",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:166"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:164"
     },
     {
-      "claim_text": "$M_{t,j}\\in\\{0,1\\}$ indicate that it is unresolved (masked).",
+      "claim_text": "s_r(x)=g_r(z_r)\\approx \\Pr(y=0\\mid O_r(x)).",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:167"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:171"
+    },
+    {
+      "claim_text": "R_r(c)=\\frac{1}{|I_{r,c}|}\\sum_{i\\in I_{r,c}}(1-y_i), \\qquad",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:211"
+    },
+    {
+      "claim_text": "\\widehat{\\mathrm{AURC}}_r=\\frac{1}{|\\mathcal{C}|}",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:212"
+    },
+    {
+      "claim_text": "selective second-pass diffusion refinement; Section~4.7 gives its frozen",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:223"
+    },
+    {
+      "claim_text": "formulation, Sections~4--6 instantiate the native-diffusion estimator and the",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:248"
+    },
+    {
+      "claim_text": "$X^{(0)},\\ldots,X^{(T)}$.  At step $t$, $p_{t,j}$ is the categorical",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:256"
     },
     {
       "claim_text": "\\mathcal{U}_t = \\{j: A_{t,j}=1 \\land M_{t,j}=1\\}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:170"
-    },
-    {
-      "claim_text": "$y\\in\\{0,1\\}$, where $y=1$ denotes a correct answer.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:174"
-    },
-    {
-      "claim_text": "$P(y=0\\mid z)$ from a feature vector $z$ computed only from the pre-outcome trajectory.",
-      "source_artifact": "ARTIFACT_MANIFEST.json",
-      "source_field": "frozen protocol, artifact, and provenance bindings",
-      "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:177"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:261"
     },
     {
       "claim_text": "-\\frac{1}{\\log |\\mathcal{V}|}",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:186"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:266"
     },
     {
       "claim_text": "We also record top-1 confidence and top-2 margin,",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:189"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:269"
     },
     {
       "claim_text": "m_{t,j}=p^{(1)}_{t,j}-p^{(2)}_{t,j}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:191"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:271"
     },
     {
       "claim_text": "To measure distributional instability, for positions unresolved at both $t-1$ and $t$, we compute normalized Jensen--Shannon drift",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:194"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:274"
     },
     {
       "claim_text": "\\frac{1}{2}D_{\\mathrm{KL}}(p_{t,j}\\Vert q_{t,j})+",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:198"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:278"
     },
     {
       "claim_text": "\\frac{1}{2}D_{\\mathrm{KL}}(p_{t-1,j}\\Vert q_{t,j})",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:199"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:279"
     },
     {
       "claim_text": "}{\\log 2},",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:200"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:280"
     },
     {
       "claim_text": "where $q_{t,j}=(p_{t,j}+p_{t-1,j})/2$.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:202"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:282"
     },
     {
       "claim_text": "This keeps $J_{t,j}\\in[0,1]$.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:203"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:283"
     },
     {
       "claim_text": "Let $\\hat{v}_{t,j}$ be the top-1 proposal.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:205"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:285"
     },
     {
       "claim_text": "R_{t,j}=\\mathbb{1}[\\hat{v}_{t,j}\\neq\\hat{v}_{t-1,j}],",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:208"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:288"
     },
     {
       "claim_text": "If $c_j\\in[0,1]$ is the normalized decision index immediately before commitment, then large $c_j$ denotes late commitment.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:215"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:295"
     },
     {
       "claim_text": "decision-time entropy; mean, 90th-percentile, and temporal slope of trajectory entropy; mean and minimum margin; mean, 90th-percentile, slope, and late mean of JS drift; overall and late revision rates; mask persistence; late mask fraction; and mean commitment time.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:233"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:313"
     },
     {
       "claim_text": "For RQ3, each model has a complete base-generation budget $B_0$ and a separate refined-generation budget $B_1>B_0$.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:255"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:335"
     },
     {
       "claim_text": "\\textsc{Refine}, & \\calp(z_{B_0})>\\tau,\\\\",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:262"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:342"
     },
     {
       "claim_text": "Every example first incurs $B_0$; selected examples then launch a second $B_1$ run from scratch, giving mean nominal cost $B_0+fB_1$ at selected fraction $f$. This conservative accounting matches the artifacts we actually execute and does not assume resumable denoising. We compare to fixed $B_0$, fixed $B_1$, and random second-pass refinement at the same selected fraction.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:266"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:346"
+    },
+    {
+      "claim_text": "Section~3 defines the three access contracts and their compatibility boundary.",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:352"
+    },
+    {
+      "claim_text": "open diffusion families; the open-AR regime by the pinned Llama-3.1-8B control;",
+      "source_artifact": "ARTIFACT_MANIFEST.json",
+      "source_field": "frozen protocol, artifact, and provenance bindings",
+      "authorization_status": "PROTOCOL_CONTRACT",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:354"
     },
     {
       "claim_text": "LLaDA-MoE-7B-A1B-Instruct, SDAR-1.7B-Chat, and Dream-v0-Instruct-7B.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:282"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:365"
     },
     {
       "claim_text": "FLARE/HybridDiffusion-2B is a diagnostic extension because one checkpoint supports both AR and diffusion inference \\citep{zhu2026flare}.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:283"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:366"
     },
     {
       "claim_text": "RQ4 adds the pinned open-weight Llama-3.1-8B-Instruct control after the original",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:286"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:369"
     },
     {
       "claim_text": "frozen SiliconFlow identifiers \\texttt{Pro/deepseek-ai/DeepSeek-V3.2},",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:288"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:371"
     },
     {
       "claim_text": "\\texttt{Pro/zai-org/GLM-5.1}, and",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:289"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:372"
     },
     {
       "claim_text": "\\texttt{Pro/moonshotai/Kimi-K2.6}. These API systems do not enter the original",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:290"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:373"
     },
     {
       "claim_text": "GSM8K, MATH-500, GPQA-Diamond, ARC-Challenge, MMLU-Pro, and TruthfulQA.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:296"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:379"
     },
     {
       "claim_text": "To keep the complete $3\\times6$ study inside a predeclared three-day single-A100",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:299"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:382"
     },
     {
       "claim_text": "call} using SHA-256 ranking of namespaced example IDs with seed 2027.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:301"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:384"
     },
     {
       "claim_text": "The cap is 500 examples per role where specified: GSM8K train/test are capped",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:302"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:385"
     },
     {
       "claim_text": "at 500 each, while ARC-Challenge and MMLU-Pro retain their smaller official",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:303"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:386"
     },
     {
       "claim_text": "calibration splits and cap only the larger test split at 500; the three",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:304"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:387"
     },
     {
       "claim_text": "MATH-500 uses a pinned symbolic equivalence scorer; string equality is not used as a substitute.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:307"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:390"
     },
     {
       "claim_text": "primary ledger contains \\TotalPrimaryGPUHours{} measured A100 GPU-hours;",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:328"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:411"
     },
     {
       "claim_text": "The preserved attested open-weight environment used one NVIDIA A100-SXM4-80GB with",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:335"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:418"
     },
     {
       "claim_text": "bfloat16 open-weight inference. Exact driver, CUDA, PyTorch, Transformers,",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:336"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:419"
     },
     {
       "claim_text": "For MATH-500, sampled answers are clustered pairwise with the pinned symbolic equivalence scorer rather than string matching.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:358"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:441"
     },
     {
       "claim_text": "decoding uses temperature $0.6$, top-$p$ $0.95$, a 256-token answer budget,",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:365"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:448"
     },
     {
       "claim_text": "provider reasoning mode with a 512-token thinking budget, and no provider seed",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:366"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:449"
     },
     {
       "claim_text": "ECE is reported with 15 bins plus 10- and 20-bin sensitivity.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:383"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:466"
     },
     {
       "claim_text": "\\texttt{SECONDARY\\_EXPLORATORY} before it was computed. It uses fixed 25\\%, 50\\%, 75\\%, and 100\\% prefixes",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:399"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:482"
     },
     {
       "claim_text": "\\includegraphics[width=0.96\\textwidth]{figures/generated/primary_auroc_improvement_matrix.pdf}",
@@ -601,7 +649,7 @@
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:420"
+      "manuscript_location": "main.tex:503"
     },
     {
       "claim_text": "\\includegraphics[width=0.55\\textwidth]{figures/generated/rq1_feature_ablation.pdf}",
@@ -609,7 +657,7 @@
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:431"
+      "manuscript_location": "main.tex:514"
     },
     {
       "claim_text": "\\caption{Feature-family ablations relative to decision-only calibration. Points show equal-cell macro AUROC improvements and bars show paired 95\\% confidence intervals.}",
@@ -617,23 +665,23 @@
       "source_field": "authorized RQ1 evidence bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "cc0d3d64f7c1db3a8495a651c6a5930c0fe5f1358b44e276166b8b4d5fd6311a",
-      "manuscript_location": "main.tex:432"
+      "manuscript_location": "main.tex:515"
     },
     {
       "claim_text": "\\paragraph{Evidence.} On the complete registered 12-cell subset, \\method improves AURC by \\RepeatedDeltaAURC\\ (95\\% CI [\\RepeatedDeltaAURCLow, \\RepeatedDeltaAURCHigh]) and AUPRC by \\RepeatedDeltaAUPRC\\ (95\\% CI [\\RepeatedDeltaAUPRCLow, \\RepeatedDeltaAUPRCHigh]). The AUROC difference is \\RepeatedDeltaAUROC\\ (95\\% CI [\\RepeatedDeltaAUROCLow, \\RepeatedDeltaAUROCHigh]), which is statistically unresolved. Calibration moves in the opposite direction: ECE15 improvement is \\RepeatedDeltaECE\\ (95\\% CI [\\RepeatedDeltaECELow, \\RepeatedDeltaECEHigh]) and NLL improvement is \\RepeatedDeltaNLL\\ (95\\% CI [\\RepeatedDeltaNLLLow, \\RepeatedDeltaNLLHigh]); negative values favor repeated sampling under the registered improvement direction.",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:442"
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
+      "manuscript_location": "main.tex:525"
     },
     {
       "claim_text": "\\caption{Five-sample comparison on the pre-specified \\RepeatedCellCount-cell ($3\\times\\RepeatedDatasetCount$) subset. AURC is lower-is-better; the other columns are higher-is-better.}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:457"
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
+      "manuscript_location": "main.tex:540"
     },
     {
       "claim_text": "Using fixed seed prefixes of the existing samples, we evaluate the repeated-sampling baseline at $K\\in\\{2,3,5\\}$ without new generation. AUROC rises from \\RQTwoKTwoAUROC{} to \\RQTwoKThreeAUROC{} to \\RQTwoKFiveAUROC{}, while AURC falls from \\RQTwoKTwoAURC{} to \\RQTwoKThreeAURC{} to \\RQTwoKFiveAURC{} as auxiliary time rises from \\RQTwoKTwoSeconds{} to \\RQTwoKThreeSeconds{} to \\RQTwoKFiveSeconds{} seconds per example. ECE$_{15}$ moves oppositely (\\RQTwoKTwoECE{}, \\RQTwoKThreeECE{}, \\RQTwoKFiveECE{}). Figure~\\ref{fig:rq2-cost-utility} presents this cost--utility pattern; Appendix~\\ref{tab:rq2-sample-efficiency} provides the complete numerical sensitivity. This analysis is secondary and does not select a new stopping policy.",
@@ -641,31 +689,31 @@
       "source_field": "fixed K=2/3/5 sensitivity",
       "authorization_status": "SECONDARY_EXPLORATORY",
       "source_sha256": "a026df486fd8d7cfa907915cf23045e923507b8c176fddb3f6d9f2fce070e989",
-      "manuscript_location": "main.tex:471"
+      "manuscript_location": "main.tex:554"
     },
     {
       "claim_text": "\\includegraphics[width=0.98\\textwidth]{figures/generated/rq2_cost_utility.pdf}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:476"
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
+      "manuscript_location": "main.tex:559"
     },
     {
       "claim_text": "\\caption{Secondary RQ2 cost--utility sensitivity over $K=2,3,5$. Increasing $K$ improves average error ranking and selective risk over the three fixed operating points, but costs more auxiliary time and worsens ECE$_{15}$.}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:477"
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
+      "manuscript_location": "main.tex:560"
     },
     {
       "claim_text": "\\includegraphics[width=0.97\\textwidth]{figures/generated/rq2_selective_vs_repeated.pdf}",
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
-      "manuscript_location": "main.tex:485"
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
+      "manuscript_location": "main.tex:568"
     },
     {
       "claim_text": "\\paragraph{Evidence.} At the primary 50\\% cap, the policy attains accuracy \\AdaptiveAccuracy\\ versus \\AdaptiveBaseAccuracy\\ at base budget: a gain of \\AdaptiveDeltaBase\\ (95\\% CI [\\AdaptiveDeltaBaseLow, \\AdaptiveDeltaBaseHigh]). It also exceeds matched-random allocation by \\AdaptiveDeltaRandom\\ (95\\% CI [\\AdaptiveDeltaRandomLow, \\AdaptiveDeltaRandomHigh]). The difference from full refinement is \\AdaptiveDeltaRefined\\ (95\\% CI [\\AdaptiveDeltaRefinedLow, \\AdaptiveDeltaRefinedHigh]) and is unresolved. The policy selects \\AdaptiveSelectedFraction\\ of examples, costs \\AdaptiveCost\\ times base, and uses \\AdaptiveCostToFull\\ of full-refinement compute.",
@@ -673,7 +721,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:496"
+      "manuscript_location": "main.tex:579"
     },
     {
       "claim_text": "\\paragraph{Boundary.} The 25\\% and 75\\% caps are sensitivity analyses, not competing primary endpoints. They attain accuracy \\AdaptiveSensitivityTwentyFiveAccuracy\\ at \\AdaptiveSensitivityTwentyFiveCost$\\times$ base (selected fraction \\AdaptiveSensitivityTwentyFiveSelectedFraction) and \\AdaptiveSensitivitySeventyFiveAccuracy\\ at \\AdaptiveSensitivitySeventyFiveCost$\\times$ base (selected fraction \\AdaptiveSensitivitySeventyFiveSelectedFraction), respectively. The experiment tests two frozen budgets and cannot justify arbitrary dynamic schedules.",
@@ -681,7 +729,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:498"
+      "manuscript_location": "main.tex:581"
     },
     {
       "claim_text": "Random matched & \\AdaptiveRandomAccuracy & \\AdaptiveRandomCost & 0\\\\",
@@ -689,7 +737,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:509"
+      "manuscript_location": "main.tex:592"
     },
     {
       "claim_text": "\\caption{Primary adaptive second-pass evaluation at the pre-specified 50\\% selection cap. The full-refinement comparison is descriptive; its direct difference from \\method is statistically unresolved.}",
@@ -697,7 +745,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:513"
+      "manuscript_location": "main.tex:596"
     },
     {
       "claim_text": "\\includegraphics[width=0.98\\columnwidth]{figures/generated/rq3_accuracy_compute_tradeoff.pdf}",
@@ -705,7 +753,7 @@
       "source_field": "registered 50 percent adaptive-compute endpoint",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "b61c7975fd69be615ec6698ac9f0a4a5855f0d3dfda7735d523ee65e8ae3dea4",
-      "manuscript_location": "main.tex:520"
+      "manuscript_location": "main.tex:603"
     },
     {
       "claim_text": "\\paragraph{Design.} The pinned Llama-3.1-8B-Instruct control uses the same tasks and partitions. Within-regime comparisons use mean token entropy as the matched endpoint baseline; five-sample semantic disagreement provides a higher-cost comparator. Seeds, sampling settings, token limits, telemetry, model revision, and hypotheses were fixed before outcome scoring.",
@@ -713,7 +761,7 @@
       "source_field": "confirmatory_claims and authorized macro metrics",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
-      "manuscript_location": "main.tex:530"
+      "manuscript_location": "main.tex:613"
     },
     {
       "claim_text": "\\paragraph{Evidence and answer.} All three directional gates are met after Holm correction. Within the open AR control, the trace calibrator improves AURC over mean token entropy by 0.0343 (95\\% CI [0.0189, 0.0501]); its macro AUROC is 0.6889 versus 0.6433 for mean token entropy. Five-sample semantic disagreement is stronger in the reported macro comparison (AURC 0.2787; AUROC 0.7817) but requires multiple generations. Thus, temporal trace summaries remain useful without revision, while repeated sampling provides additional evidence at higher inference cost.",
@@ -721,7 +769,7 @@
       "source_field": "confirmatory_claims and authorized macro metrics",
       "authorization_status": "AUTHORIZED_PRIMARY",
       "source_sha256": "f0bed48151b4910945f38fcec29b097bcac47a5d0770311ed64b1c06241f576c",
-      "manuscript_location": "main.tex:531"
+      "manuscript_location": "main.tex:614"
     },
     {
       "claim_text": "\\paragraph{Secondary exploratory actionability.} A pre-specified prefix analysis uses only stored token telemetry and scored outcomes, with no new generation. At 25\\%, 50\\%, 75\\%, and 100\\% of each generated trace, the trajectory model improves AURC over the matched endpoint-only prefix model by 0.0660 (95\\% CI [0.0569, 0.0752]), 0.0765 [0.0679, 0.0849], 0.0829 [0.0733, 0.0923], and 0.0881 [0.0802, 0.0958], respectively. These fixed-fraction results show that useful ranking information is already present in early AR prefixes; they do not define or optimize a stopping threshold and cannot modify H4a--H4c.",
@@ -729,30 +777,30 @@
       "source_field": "fixed-prefix early-actionability evidence",
       "authorization_status": "SECONDARY_EXPLORATORY",
       "source_sha256": "f55fd76daef5ec68e50804ad7824468851c6f144df764e2754c624641a9db3b4",
-      "manuscript_location": "main.tex:534"
+      "manuscript_location": "main.tex:617"
     },
     {
       "claim_text": "Native trajectory telemetry adds held-out ranking information beyond a matched decision-time endpoint, but that information does not improve every uncertainty objective. Under abstention, its AURC and AUPRC gains coexist with worse ECE$_{15}$ and NLL than repeated sampling, separating selective ordering from probability calibration. When used for action, calibrated risk improves allocation of a fixed second-pass budget over matched-random refinement, although the comparison with full refinement does not establish equivalence. The practical lesson is that ranking, calibration, and compute allocation should be evaluated as distinct capabilities.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:567"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:650"
     },
     {
       "claim_text": "The repeated-sampling baseline has substantially higher inference cost. Wall-clock time, GPU memory, and provider pricing are hardware- and deployment-dependent, so the reported costs support the frozen environment rather than a universal economic ranking. For MATH-500, repeated-sample vote classes depend on the pinned symbolic-equivalence parser; parser failures or unsupported expressions can still merge or split equivalence classes imperfectly.",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
-      "manuscript_location": "main.tex:594"
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
+      "manuscript_location": "main.tex:677"
     },
     {
       "claim_text": "16 CPU cores, 48~GB of system memory, and one NVIDIA A100-SXM4-80GB GPU under",
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:10"
     },
     {
@@ -760,7 +808,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:11"
     },
     {
@@ -768,7 +816,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:29"
     },
     {
@@ -776,7 +824,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:34"
     },
     {
@@ -792,7 +840,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:41"
     },
     {
@@ -800,7 +848,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:50"
     },
     {
@@ -808,7 +856,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:51"
     },
     {
@@ -816,7 +864,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:54"
     },
     {
@@ -824,7 +872,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:55"
     },
     {
@@ -832,7 +880,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:87"
     },
     {
@@ -840,7 +888,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:95"
     },
     {
@@ -848,7 +896,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:96"
     },
     {
@@ -856,7 +904,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:102"
     },
     {
@@ -864,7 +912,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:104"
     },
     {
@@ -872,7 +920,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:105"
     },
     {
@@ -880,7 +928,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:107"
     },
     {
@@ -888,7 +936,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:120"
     },
     {
@@ -896,7 +944,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:121"
     },
     {
@@ -904,7 +952,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:127"
     },
     {
@@ -912,7 +960,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:128"
     },
     {
@@ -920,7 +968,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:132"
     },
     {
@@ -928,7 +976,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:133"
     },
     {
@@ -936,7 +984,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:151"
     },
     {
@@ -944,7 +992,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:171"
     },
     {
@@ -952,7 +1000,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:180"
     },
     {
@@ -960,7 +1008,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:212"
     },
     {
@@ -968,7 +1016,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:216"
     },
     {
@@ -976,7 +1024,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:217"
     },
     {
@@ -984,7 +1032,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:218"
     },
     {
@@ -992,7 +1040,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:221"
     },
     {
@@ -1000,7 +1048,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:226"
     },
     {
@@ -1008,7 +1056,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:236"
     },
     {
@@ -1016,7 +1064,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:244"
     },
     {
@@ -1024,7 +1072,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:251"
     },
     {
@@ -1032,7 +1080,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:252"
     },
     {
@@ -1040,7 +1088,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:272"
     },
     {
@@ -1048,7 +1096,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:279"
     },
     {
@@ -1056,7 +1104,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:290"
     },
     {
@@ -1064,7 +1112,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:297"
     },
     {
@@ -1072,7 +1120,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:298"
     },
     {
@@ -1080,7 +1128,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:299"
     },
     {
@@ -1088,7 +1136,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:300"
     },
     {
@@ -1096,7 +1144,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:305"
     },
     {
@@ -1104,7 +1152,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:306"
     },
     {
@@ -1112,7 +1160,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:308"
     },
     {
@@ -1120,7 +1168,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:311"
     },
     {
@@ -1128,7 +1176,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:314"
     },
     {
@@ -1144,7 +1192,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "appendix.tex:326"
     },
     {
@@ -1152,7 +1200,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:327"
     },
     {
@@ -1160,7 +1208,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:332"
     },
     {
@@ -1168,7 +1216,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:335"
     },
     {
@@ -1176,7 +1224,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:337"
     },
     {
@@ -1184,7 +1232,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:338"
     },
     {
@@ -1192,7 +1240,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:339"
     },
     {
@@ -1208,7 +1256,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:350"
     },
     {
@@ -1224,7 +1272,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:368"
     },
     {
@@ -1232,7 +1280,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:389"
     },
     {
@@ -1248,7 +1296,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:400"
     },
     {
@@ -1256,7 +1304,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:401"
     },
     {
@@ -1264,7 +1312,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:446"
     },
     {
@@ -1288,7 +1336,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "appendix.tex:467"
     },
     {
@@ -1296,7 +1344,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:8"
     },
     {
@@ -1304,7 +1352,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:10"
     },
     {
@@ -1312,7 +1360,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:12"
     },
     {
@@ -1320,7 +1368,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:14"
     },
     {
@@ -1328,7 +1376,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:16"
     },
     {
@@ -1336,7 +1384,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:18"
     },
     {
@@ -1344,7 +1392,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:20"
     },
     {
@@ -1352,7 +1400,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:22"
     },
     {
@@ -1360,7 +1408,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:24"
     },
     {
@@ -1368,7 +1416,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:26"
     },
     {
@@ -1376,7 +1424,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:28"
     },
     {
@@ -1384,7 +1432,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:30"
     },
     {
@@ -1392,7 +1440,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:32"
     },
     {
@@ -1400,7 +1448,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:34"
     },
     {
@@ -1408,7 +1456,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:36"
     },
     {
@@ -1416,7 +1464,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:38"
     },
     {
@@ -1424,7 +1472,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:40"
     },
     {
@@ -1432,7 +1480,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:42"
     },
     {
@@ -1440,7 +1488,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:44"
     },
     {
@@ -1448,7 +1496,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:46"
     },
     {
@@ -1456,7 +1504,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:48"
     },
     {
@@ -1464,7 +1512,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:50"
     },
     {
@@ -1472,7 +1520,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:52"
     },
     {
@@ -1480,7 +1528,7 @@
       "source_artifact": "results/generated/final/rq2_manifest.json",
       "source_field": "authorized repeated-sampling and selective-risk bindings",
       "authorization_status": "AUTHORIZED_PRIMARY",
-      "source_sha256": "ef624b79788dce21c6a2ba433c3b85e671dc5e318cb50f370e44d34c6e3de604",
+      "source_sha256": "48e5875a97497bad582009f9a0b184e21895b01b81de5d6da017b3cf678efcd0",
       "manuscript_location": "generated_authorized_rq23.tex:54"
     },
     {
@@ -1688,7 +1736,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:4"
     },
     {
@@ -1696,7 +1744,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:10"
     },
     {
@@ -1704,7 +1752,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:15"
     },
     {
@@ -1712,7 +1760,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:16"
     },
     {
@@ -1720,7 +1768,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:17"
     },
     {
@@ -1728,7 +1776,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:18"
     },
     {
@@ -1736,7 +1784,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:19"
     },
     {
@@ -1744,7 +1792,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:20"
     },
     {
@@ -1752,7 +1800,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:21"
     },
     {
@@ -1760,7 +1808,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:22"
     },
     {
@@ -1768,7 +1816,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:23"
     },
     {
@@ -1776,7 +1824,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:24"
     },
     {
@@ -1784,7 +1832,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:25"
     },
     {
@@ -1792,7 +1840,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:26"
     },
     {
@@ -1800,7 +1848,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:27"
     },
     {
@@ -1808,7 +1856,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:28"
     },
     {
@@ -1816,7 +1864,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:31"
     },
     {
@@ -1824,7 +1872,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:32"
     },
     {
@@ -1832,7 +1880,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:34"
     },
     {
@@ -1840,7 +1888,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:35"
     },
     {
@@ -1848,7 +1896,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:36"
     },
     {
@@ -1856,7 +1904,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:37"
     },
     {
@@ -1864,7 +1912,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:43"
     },
     {
@@ -1872,7 +1920,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:46"
     },
     {
@@ -1880,7 +1928,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_compute.tex:47"
     },
     {
@@ -1888,7 +1936,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_results.tex:5"
     },
     {
@@ -3024,7 +3072,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_rq4.tex:7"
     },
     {
@@ -3032,7 +3080,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_rq4.tex:8"
     },
     {
@@ -3040,7 +3088,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_rq4.tex:10"
     },
     {
@@ -3056,7 +3104,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_rq4.tex:13"
     },
     {
@@ -3064,7 +3112,7 @@
       "source_artifact": "ARTIFACT_MANIFEST.json",
       "source_field": "frozen protocol, artifact, and provenance bindings",
       "authorization_status": "PROTOCOL_CONTRACT",
-      "source_sha256": "3a1daf501a3f6303a0a4ca6fed1c4e94e7e9fe9b7c234ed659f12545aa34e0a1",
+      "source_sha256": "10572492abc23ff744aa313221f6e6145d256fec2ca9dba4b9e54e0e3a34e4c5",
       "manuscript_location": "generated_rq4.tex:14"
     },
     {
@@ -3324,92 +3372,84 @@
       "manuscript_location": "generated_secondary_rq2.tex:24"
     },
     {
-      "claim_text": "\\setlength{\\tabcolsep}{2.2pt}",
+      "claim_text": "\\setlength{\\tabcolsep}{2.8pt}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
       "manuscript_location": "generated_synthesis.tex:8"
     },
     {
-      "claim_text": "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{1.7cm}>{\\raggedright\\arraybackslash}p{2.5cm}>{\\raggedright\\arraybackslash}p{4.0cm}>{\\raggedright\\arraybackslash}p{3.5cm}>{\\raggedright\\arraybackslash}p{3.0cm}@{}}",
+      "claim_text": "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{1.7cm}>{\\raggedright\\arraybackslash}p{2.6cm}>{\\raggedright\\arraybackslash}p{3.1cm}>{\\raggedright\\arraybackslash}p{4.2cm}>{\\raggedright\\arraybackslash}p{3.1cm}@{}}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
       "manuscript_location": "generated_synthesis.tex:9"
     },
     {
-      "claim_text": "Native diffusion & Denoising path & $\\Delta$AUROC $+0.0311$ [0.0103, 0.0502]; $\\Delta$AURC $+0.0324$ [0.0209, 0.0442] & Risk-guided refinement beats matched random by 0.0075 at 2.147$\\times$ base compute & Matched diffusion cells only \\\\",
+      "claim_text": "Native diffusion & Active/unresolved token distributions and denoising dynamics & Repeated samples ($K=2/3/5$) or risk-guided second-pass refinement & $\\Delta$AUROC $+0.0311$ [0.0103, 0.0502]; $\\Delta$AURC $+0.0324$ [0.0209, 0.0442] & Refinement 2.147$\\times$ base; $K$ costs 54.2/81.5/136.0 s/example; matched cells only \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
       "manuscript_location": "generated_synthesis.tex:13"
     },
     {
-      "claim_text": "Open AR & Token distributions over one trace & Trace vs mean entropy $\\Delta$AURC $+0.0343$ [0.0189, 0.0501] & One trace; five-sample comparator requires separate generations & One pinned model; no transfer claim \\\\",
+      "claim_text": "Open AR & Ordered pre-commit token distributions and trace summaries & Five-generation semantic disagreement comparator & Trace vs mean entropy $\\Delta$AURC $+0.0343$ [0.0189, 0.0501] & One trace vs five generations; one pinned model; no transfer claim \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
       "manuscript_location": "generated_synthesis.tex:14"
     },
     {
-      "claim_text": "Repeated sampling & Answer disagreement & Single trajectory vs five samples $\\Delta$AURC $+0.0199$ [0.0032, 0.0370] & $K=2/3/5$ costs 54.2/81.5/136.0 s/example & No optimal $K$ selected \\\\",
+      "claim_text": "Hosted black box & Deployment-visible text, confidence, and metadata & Repeated responses required by the frozen behavioral estimator & Combined vs confidence $\\Delta$AURC $-0.0030$ [-0.0151, 0.0102]; not supported & Five provider responses/item; unmatched models; effect not identifiable \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
       "manuscript_location": "generated_synthesis.tex:15"
-    },
-    {
-      "claim_text": "Hosted black box & Text, confidence, repeated behavior & Combined vs confidence $\\Delta$AURC $-0.0030$ [-0.0151, 0.0102]; not supported & Five responses per item & Unmatched models; effect not identifiable \\\\",
-      "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
-      "source_field": "descriptive cross-regime table bindings",
-      "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:16"
     },
     {
       "claim_text": "\\setlength{\\tabcolsep}{2.5pt}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:27"
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
+      "manuscript_location": "generated_synthesis.tex:26"
     },
     {
       "claim_text": "\\begin{tabular}{p{2.7cm}p{3.8cm}p{3.8cm}p{3.8cm}}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:28"
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
+      "manuscript_location": "generated_synthesis.tex:27"
     },
     {
       "claim_text": "Repeated sampling & K=2/3/5 on the same 12 cells & Native trace and hosted black-box endpoints & No post-hoc winner \\\\",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:34"
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
+      "manuscript_location": "generated_synthesis.tex:33"
     },
     {
       "claim_text": "\\setlength{\\tabcolsep}{2pt}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:46"
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
+      "manuscript_location": "generated_synthesis.tex:45"
     },
     {
       "claim_text": "\\begin{tabular}{p{2.4cm}ccccp{4.8cm}}",
       "source_artifact": "results/generated/secondary/cross_regime_synthesis/manifest.json",
       "source_field": "descriptive cross-regime table bindings",
       "authorization_status": "DESCRIPTIVE_ONLY",
-      "source_sha256": "20e54bbc5d351ecdc3e1e5b25933cc36eb8d8d927dad923ed1b44fcfd77a901f",
-      "manuscript_location": "generated_synthesis.tex:47"
+      "source_sha256": "3980f4fe63a3388cec7e4aec2fc2192874699fe832ec0375476414a63954c529",
+      "manuscript_location": "generated_synthesis.tex:46"
     }
   ]
 }

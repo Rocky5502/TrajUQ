@@ -2,15 +2,15 @@
   "artifacts": [
     {
       "path": "results/generated/secondary/cross_regime_synthesis/summary.json",
-      "sha256": "94e72c03ddcdb24c8f70110769321d11665e401c372896bd252c313e925bb0d3"
+      "sha256": "f8c69a9f18cf38090c029d3558d0b083bf27a04bde0e01330f55f68e1125a485"
     },
     {
       "path": "results/generated/secondary/cross_regime_synthesis/regime_summary.csv",
-      "sha256": "dc38c8bd0ff1613e5a2c494c52ac750bbb901832225f23752008679ce1c5a158"
+      "sha256": "dcf74116df35d249535b83afda55690c25bb569e73d7a5206c97f8e454f612e0"
     },
     {
       "path": "paper/generated_synthesis.tex",
-      "sha256": "28073718a06c4c3e57e7cc4893c65884ecad43e51547f1e345acc4d95ff0f267"
+      "sha256": "c86836988bf9d5d1a234a2d44f2d1f05fa8ecfcb9a063019bbfbd4e2cfeaeefd"
     }
   ],
   "config": {

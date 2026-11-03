@@ -1,0 +1,60 @@
+{
+  "schema": "trajuq_server_final_inventory_public_v1",
+  "created_utc": "2026-11-03T05:47:15Z",
+  "status": "SERVER_SAFE_TO_PARK",
+  "gpu_scientific_work_complete": true,
+  "gpu_systems_work_complete": true,
+  "systems_executors_off_server": true,
+  "server_only_unbacked_artifact_count": 0,
+  "active_required_server_process_count": 0,
+  "paid_a100_no_longer_required": true,
+  "verified_backups": [
+    {
+      "artifact": "RQ4 production evidence snapshot",
+      "sha256": "fa22535b13042fe489f949fd1f9fd6f4f6c1b538714c8eb8b06a8bab7c371bc0",
+      "status": "PASS"
+    },
+    {
+      "artifact": "RQ4 final generation manifest",
+      "sha256": "52e016ec6c17ea4268b2eaa2e9dcd2c7eb53a79c6d42453d6befbe6f4983338f",
+      "status": "PASS"
+    },
+    {
+      "artifact": "RQ4 generation source bundle",
+      "sha256": "34a18ec4b8271010f87c54750e6be49525bf1a9ddf3d9d2b62df1f564aac0281",
+      "status": "PASS"
+    },
+    {
+      "artifact": "RQ4 analysis source bundle",
+      "sha256": "97949835bbd4cc4e86317f009b79bb7a22edd15a4f2a289bab8602d0ed61f4ae",
+      "status": "PASS"
+    },
+    {
+      "artifact": "RQ4 early-actionability output",
+      "sha256": "c2a05eabfa011a14d47c0e3d418188a14b794209dd584e5f2d163b34a5b5ada6",
+      "status": "PASS"
+    },
+    {
+      "artifact": "RQ5 canonical terminal backup",
+      "sha256": "cc500062ab985e3bb3d7836698c1d1308c5800c76de400de34a97439752d0b6f",
+      "status": "PASS"
+    },
+    {
+      "artifact": "Systems diagnostics preservation archive",
+      "sha256": "1d8655630f167915da5395649946fbfaa08838c3dce81d35b6ac5c58403d0c30",
+      "status": "PASS"
+    }
+  ],
+  "executed_systems_sources": {
+    "TRAJUQ_GPU_SYSTEMS_BENCH_20261031.py": "3b50a1b2a269cde3bfcbcae7c4cfe7011a0be2e1b7d903ec5bcb152940fa3faf",
+    "TRAJUQ_GPU_CONTEXT_DECODE_SCALING_20261031.py": "473dd67b29dd48b7c9637549a98a23be0b9a65c4656b6da73ebbf800b2bd9698",
+    "TRAJUQ_GPU_ENDURANCE_20261031.py": "b654f0098f671266153526be75bca8fb6af7e793e0c392958703cdc81f0967b6",
+    "TRAJUQ_WAIT_AND_PRESERVE_20261031.sh": "5d3cad32c8909a28f6c3fed4a3e9fa6266d61d046240a80677894711d708a409"
+  },
+  "privacy": {
+    "credentials_included": false,
+    "private_hosts_included": false,
+    "private_local_paths_included": false,
+    "raw_provider_bodies_included": false
+  }
+}

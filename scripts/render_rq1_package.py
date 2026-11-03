@@ -168,8 +168,9 @@ def build_macros(
         "with model-family and calibration heterogeneity retained as first-class findings."
     )
     macros["PaperStateLimitationsSentence"] = (
-        "RQ1 is complete and provenance-bound; RQ2--RQ5 claims remain provisional "
-        "until their respective frozen registries pass final validation."
+        "RQ1--RQ4 primary claims and the registered RQ5 comparison are complete "
+        "and authorization-bound; secondary exploratory analyses cannot alter "
+        "their primary gates."
     )
     macros["DetailedPrimaryTable"] = render_primary_detail_table(primary, config)
     return macros
@@ -316,7 +317,7 @@ def main() -> None:
     macros = build_macros(payloads["primary"], payloads["claim_gate"], payloads["ablation"], payloads["prior_signals"], payloads["calibration_sensitivity"], config)
     figures = render_figures(payloads["primary"], payloads["ablation"], config)
 
-    lines = ["% GENERATED FILE -- DO NOT TYPE RESULT VALUES BY HAND.", "% Complete provenance-bound RQ1 package; downstream RQs remain pending."]
+    lines = ["% GENERATED FILE -- DO NOT TYPE RESULT VALUES BY HAND.", "% Complete provenance-bound RQ1 package; downstream RQs are supplied by their authorized interfaces."]
     for key, path in paths.items():
         lines.append(f"% source {key}: {path.relative_to(ROOT).as_posix()} sha256={sha256(path)}")
     for name, value in macros.items():

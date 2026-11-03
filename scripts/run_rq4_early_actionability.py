@@ -297,7 +297,8 @@ def main() -> None:
                 *[item for name in metric_names for item in (name, f"n_estimable_{name}")],
             ],
         )
-        writer.writeheader(); writer.writerows(macro)
+        writer.writeheader()
+        writer.writerows(macro)
     artifacts = []
     for path in sorted(output.iterdir()):
         if path.is_file():

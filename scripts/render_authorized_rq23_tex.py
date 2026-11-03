@@ -84,7 +84,7 @@ def render(paths: dict[str, Path]) -> str:
 
     lines = [
         "% GENERATED FILE -- DO NOT TYPE RESULT VALUES BY HAND.",
-        "% Authorized RQ2/RQ3 manuscript interface; RQ4/RQ5 remain pending.",
+        "% Authorized RQ2/RQ3 manuscript interface; RQ4/RQ5 are supplied by separate final interfaces.",
     ]
     source_names = {
         "rq2": "results/repeated_sampling/macro_trajuq_vs_repeated.json",

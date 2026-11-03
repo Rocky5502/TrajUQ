@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use the TrajUQ software, please cite this repository. Add the associated paper citation once it is public."
-title: "TrajUQ: Trajectory-Aware Uncertainty for Language Generation"
+title: "TrajUQ: Observability-Stratified, Cost-Aware Uncertainty for Language Generation"
 type: software
 authors:
   - family-names: "Sah"

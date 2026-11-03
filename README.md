@@ -2,7 +2,7 @@
 
 # TrajUQ
 
-### Trajectory-aware uncertainty across diffusion, autoregressive, and black-box language generation
+### Observability-stratified, cost-aware uncertainty for language generation
 
 <p>
   <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white">
@@ -11,17 +11,17 @@
   <img alt="Research artifact" src="https://img.shields.io/badge/Artifact-Reproducible-0a7ea4">
 </p>
 
-**Uncertainty is not only a final confidence score. TrajUQ studies how uncertainty evolves while a language model generates.**
+**TrajUQ studies which uncertainty signals remain useful as access to the generation process decreases—and what inference cost is required to obtain them.**
 
 </div>
 
 ---
 
-TrajUQ is a research framework for measuring, calibrating, and using uncertainty across **diffusion language models**, an **autoregressive control**, and **black-box hosted LLMs**. It combines outcome-isolated telemetry, exact revision pinning, parity gates, calibrated selective prediction, adaptive compute, behavioral uncertainty, and evidence-bound statistical analysis.
+TrajUQ is an observability-stratified empirical framework for measuring, calibrating, and using uncertainty across **native diffusion trajectories**, an **open autoregressive token trace**, and **output-only hosted LLM behavior**. It combines outcome-isolated telemetry, exact revision pinning, parity gates, calibrated selective prediction, adaptive compute, explicit inference-cost accounting, and evidence-bound statistical analysis.
 
 > **Repository boundary:** this repository contains research code, frozen scientific configurations, manifests, tests, and reproducibility material. Manuscript/venue authoring files are intentionally maintained outside the repository.
 
-> **Final scientific closure:** RQ1--RQ5 are complete and evidence-bound. The
+> **Verified study status:** RQ1--RQ5 are complete and evidence-bound. The
 > RQ5 primary comparison is retained as `NOT_SUPPORTED`; cross-model
 > heterogeneity is `DESCRIPTIVE_ONLY`, and unmatched cross-observability
 > comparisons remain `NOT_IDENTIFIABLE`. See
@@ -87,13 +87,13 @@ TrajUQ deliberately spans three observability regimes: native diffusion trajecto
 
 | Model | Paradigm | Access | Study role | Parameters | Frozen revision / provider-visible identifier | Uncertainty view |
 |---|---|---|---|---:|---|---|
-| [LLaDA-MoE-7B-A1B-Instruct](https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct) | Masked diffusion MoE | Open-weight | RQ1–RQ3 primary | 7.36B total / 1.4B active | \`783d3467f108d28ac0a78d3e41af16ab05cabd8d\` | entropy, margin, drift, revisions, persistence, commitment |
-| [SDAR-1.7B-Chat](https://huggingface.co/JetLM/SDAR-1.7B-Chat) | Blockwise diffusion | Open-weight | RQ1–RQ3 primary | 2.03B | \`14fcc4b796f05b9a11aa565b2353199af757d079\` | blockwise trajectory uncertainty + revisions |
-| [Dream-v0-Instruct-7B](https://huggingface.co/Dream-org/Dream-v0-Instruct-7B) | Masked diffusion | Open-weight | RQ1–RQ3 primary | 7.62B | \`05334cb9faaf763692dcf9d8737c642be2b2a6ae\` | pre-transfer trajectory uncertainty |
-| [Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | Autoregressive | Open-weight | RQ4 control | 8.03B | \`0e9e39f249a16976918f6564b8830bc894c89659\` | token entropy, margin, selected-token log probability |
-| **DeepSeek-V3.2** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | \`Pro/deepseek-ai/DeepSeek-V3.2\` | repeated-sample disagreement, consistency, verbalized confidence |
-| **GLM-5.1** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | \`Pro/zai-org/GLM-5.1\` | repeated-sample disagreement, consistency, verbalized confidence |
-| **Kimi-K2.6** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | \`Pro/moonshotai/Kimi-K2.6\` | repeated-sample disagreement, consistency, verbalized confidence |
+| [LLaDA-MoE-7B-A1B-Instruct](https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct) | Masked diffusion MoE | Open-weight | RQ1–RQ3 primary | 7.36B total / 1.4B active | `783d3467f108d28ac0a78d3e41af16ab05cabd8d` | entropy, margin, drift, revisions, persistence, commitment |
+| [SDAR-1.7B-Chat](https://huggingface.co/JetLM/SDAR-1.7B-Chat) | Blockwise diffusion | Open-weight | RQ1–RQ3 primary | 2.03B | `14fcc4b796f05b9a11aa565b2353199af757d079` | blockwise trajectory uncertainty + revisions |
+| [Dream-v0-Instruct-7B](https://huggingface.co/Dream-org/Dream-v0-Instruct-7B) | Masked diffusion | Open-weight | RQ1–RQ3 primary | 7.62B | `05334cb9faaf763692dcf9d8737c642be2b2a6ae` | pre-transfer trajectory uncertainty |
+| [Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | Autoregressive | Open-weight | RQ4 control | 8.03B | `0e9e39f249a16976918f6564b8830bc894c89659` | token entropy, margin, selected-token log probability |
+| **DeepSeek-V3.2** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | `Pro/deepseek-ai/DeepSeek-V3.2` | repeated-sample disagreement, consistency, verbalized confidence |
+| **GLM-5.1** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | `Pro/zai-org/GLM-5.1` | repeated-sample disagreement, consistency, verbalized confidence |
+| **Kimi-K2.6** | Hosted LLM | Black-box API | RQ5 | provider-managed / not assumed observable | `Pro/moonshotai/Kimi-K2.6` | repeated-sample disagreement, consistency, verbalized confidence |
 | [HybridDiffusion-2B](https://huggingface.co/yuchen-zhu-zyc/HybridDiffusion-2B) | Hybrid AR/diffusion | Open-weight diagnostic | Diagnostic only | upstream 2B-class checkpoint | upstream runtime pinned separately | same-checkpoint AR/diffusion comparison |
 
 For hosted RQ5 models, provider-side weights, exact backend revisions, routing, precision, and hardware are **not treated as observable facts**. The provider-visible model IDs above are the reproducibility boundary.
@@ -171,7 +171,7 @@ Requires model and dataset access plus the registered compute environment:
 
 The authoritative frozen experiment implementation is:
 
-\`28002055c828c6910840de6f2105aa6367514144\`
+`28002055c828c6910840de6f2105aa6367514144`
 
 Later repository commits may improve documentation, security, packaging, and usability without rewriting that experiment identity.
 

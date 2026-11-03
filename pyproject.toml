@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "traj-uq"
 version = "0.1.0"
-description = "Trajectory-aware uncertainty across diffusion, autoregressive, and black-box language generation"
+description = "Observability-stratified, cost-aware uncertainty for language generation"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

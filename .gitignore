@@ -27,6 +27,7 @@ results/*
 !results/rq1/
 results/rq1/*
 dist/
+build/
 tmp/
 output/
 wandb/

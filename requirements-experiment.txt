@@ -2,7 +2,7 @@
 # runtime recorded in manifests/environment.json. Install the CUDA 12.4 Torch
 # wheel from the official PyTorch index before installing this file.
 -r requirements-analysis.txt
-torch==2.6.0
+torch==2.14.1
 transformers==4.52.4
 datasets>=3.0
 accelerate>=0.34

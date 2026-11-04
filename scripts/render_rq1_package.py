@@ -281,7 +281,16 @@ def render_figures(primary: dict, ablation: dict, config: dict) -> dict[str, Pat
     ax.grid(axis="x", color=GRID, linewidth=0.5)
     ax.invert_yaxis()
     for yi, value in zip(y, numbers):
-        ax.annotate(f"{value:+.3f}", (value, yi), xytext=(4 if value >= 0 else -4, 0), textcoords="offset points", ha="left" if value >= 0 else "right", va="center")
+        # Keep value labels inside the plotting area.  Placing a negative label
+        # to the left of its marker overlaps the SDAR tick label at column size.
+        ax.annotate(
+            f"{value:+.3f}",
+            (value, yi),
+            xytext=(4, 0),
+            textcoords="offset points",
+            ha="left",
+            va="center",
+        )
     fig.tight_layout(pad=0.25)
     save_set(fig, family)
     plt.close(fig)

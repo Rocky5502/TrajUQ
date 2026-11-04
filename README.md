@@ -83,7 +83,7 @@ Full definitions and claim boundaries: **[docs/RESEARCH_QUESTIONS.md](docs/RESEA
 
 ## LLM model matrix
 
-TrajUQ deliberately spans three observability regimes: native diffusion trajectories, autoregressive token trajectories, and behavioral black-box uncertainty.
+TrajUQ deliberately spans three observability regimes: native diffusion trajectories, open autoregressive token traces, and behavioral black-box uncertainty.
 
 | Model | Paradigm | Access | Study role | Parameters | Frozen revision / provider-visible identifier | Uncertainty view |
 |---|---|---|---|---:|---|---|
@@ -102,16 +102,16 @@ Exact configurations, parameter evidence, prompts, decoding settings, and teleme
 
 ## Datasets
 
-| Dataset | Source | Evaluation policy |
-|---|---|---|
-| GSM8K | [openai/gsm8k](https://huggingface.co/datasets/openai/gsm8k) | official train → calibration; official test → evaluation; deterministic caps |
-| MATH-500 | [HuggingFaceH4/MATH-500](https://huggingface.co/datasets/HuggingFaceH4/MATH-500) | deterministic internal holdout of the source test split |
-| GPQA-Diamond | [Idavidrein/gpqa](https://huggingface.co/datasets/Idavidrein/gpqa) | gated source; deterministic internal holdout |
-| ARC-Challenge | [allenai/ai2_arc](https://huggingface.co/datasets/allenai/ai2_arc) | official validation → calibration; official test → evaluation |
-| MMLU-Pro | [TIGER-Lab/MMLU-Pro](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro) | official validation → calibration; official test → evaluation |
-| TruthfulQA | [truthfulqa/truthful_qa](https://huggingface.co/datasets/truthfulqa/truthful_qa) | deterministic internal holdout of validation |
+| Dataset | Frozen source | Primary reference | Evaluation policy |
+|---|---|---|---|
+| GSM8K | [openai/gsm8k](https://huggingface.co/datasets/openai/gsm8k) | [Cobbe et al. (2021)](https://arxiv.org/abs/2110.14168) | official train → calibration; official test → evaluation; deterministic caps |
+| MATH-500 | [HuggingFaceH4/MATH-500](https://huggingface.co/datasets/HuggingFaceH4/MATH-500) | [Hendrycks et al. (2021)](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/be83ab3ecd0db773eb2dc1b0a17836a1-Abstract-round2.html) | deterministic internal holdout of the source test split |
+| GPQA-Diamond | [Idavidrein/gpqa](https://huggingface.co/datasets/Idavidrein/gpqa) | [Rein et al. (2023)](https://arxiv.org/abs/2311.12022) | gated source; deterministic internal holdout |
+| ARC-Challenge | [allenai/ai2_arc](https://huggingface.co/datasets/allenai/ai2_arc) | [Clark et al. (2018)](https://arxiv.org/abs/1803.05457) | official validation → calibration; official test → evaluation |
+| MMLU-Pro | [TIGER-Lab/MMLU-Pro](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro) | [Wang et al. (2024)](https://arxiv.org/abs/2406.01574) | official validation → calibration; official test → evaluation |
+| TruthfulQA | [truthfulqa/truthful_qa](https://huggingface.co/datasets/truthfulqa/truthful_qa) | [Lin et al. (2022)](https://aclanthology.org/2022.acl-long.229/) | deterministic internal holdout of validation |
 
-Exact source IDs, immutable revisions, split rules, caps, scorer boundaries, and redistribution policy: **[docs/DATASETS.md](docs/DATASETS.md)**.
+Exact source IDs, immutable revisions, primary references, split rules, caps, scorer boundaries, and redistribution policy: **[docs/DATASETS.md](docs/DATASETS.md)** and **[manifests/datasets.json](manifests/datasets.json)**.
 
 ## How TrajUQ works
 

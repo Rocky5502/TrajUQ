@@ -9,4 +9,4 @@ PyYAML==6.0.3
 ruff==0.15.22
 scikit-learn==1.9.1
 scipy==1.17.1
-threadpoolctl==3.7.0
+threadpoolctl==3.8.0
